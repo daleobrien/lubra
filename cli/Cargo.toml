@@ -20,5 +20,5 @@ overflow-checks = false
 strip = "debuginfo"
 
 [[bin]]
-name = "sim"
+name = "lubra"
 path = "src/main.rs"
