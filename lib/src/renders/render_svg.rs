@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 use std::io::prelude::*;
+use std::ptr::addr_of_mut;
 
 pub enum TileType {
     S1,
@@ -149,25 +150,25 @@ impl Tile {
 
         let h: f64 = unitSize * f64::sqrt(3.0) / 2.0;
 
-        if flipped {
-            path.append(&format!(
-                " M {x} {y} h {s} l {c} {h} z ",
-                s = unitSize,
-                c = -unitSize / 2.0,
-                x = origin.x,
-                y = origin.y,
-                h = h
-            ));
-        } else {
-            path.append(&format!(
-                "M {x} {y} h {s} l {c} {h} z ",
-                s = unitSize,
-                c = -unitSize / 2.0,
-                x = origin.x,
-                y = origin.y + h,
-                h = -h
-            ));
-        }
+        // if flipped {
+        //     path.append(&format!(
+        //         " M {x} {y} h {s} l {c} {h} z ",
+        //         s = unitSize,
+        //         c = -unitSize / 2.0,
+        //         x = origin.x,
+        //         y = origin.y,
+        //         h = h
+        //     ));
+        // } else {
+        //     path.append(&format!(
+        //         "M {x} {y} h {s} l {c} {h} z ",
+        //         s = unitSize,
+        //         c = -unitSize / 2.0,
+        //         x = origin.x,
+        //         y = origin.y + h,
+        //         h = -h
+        //     ));
+        // }
         let radius: f64 = unitSize / 2.0;
 
         match tileType {
@@ -195,7 +196,19 @@ impl Tile {
                     path.arc(origin.x + unitSize / 2.0, origin.y, radius, 2, true);
                 }
             }
-            TileType::C1 => {}
+            TileType::C1 => {
+                if flipped {
+                    path.arc(origin.x + unitSize / 2.0, origin.y + h, radius, 5, true);
+                } else {
+                    path.arc(origin.x + unitSize / 2.0, origin.y, radius, 2, true);
+                }
+                path.append(&format!(
+                    "M {x} {y} v {h} z ",
+                    x = origin.x + unitSize / 2.0,
+                    y = origin.y,
+                    h = h
+                ));
+            }
             TileType::C2 => {}
             TileType::C3 => {}
             TileType::L1 => {
@@ -272,14 +285,15 @@ impl RenderSvg {
         for i in 1..20 {
             let mut row: Vec<Tile> = Vec::new();
             for j in 1..20 {
-                let mut choice: TileType = TileType::L3;
-                match (i + j) % 6 {
+                let mut choice: TileType = TileType::C1;
+                match (i * j) % 7 {
                     0 => choice = TileType::A2,
                     1 => choice = TileType::A1,
                     2 => choice = TileType::A3,
                     4 => choice = TileType::L1,
                     5 => choice = TileType::L2,
                     6 => choice = TileType::L3,
+                    7 => choice = TileType::C1,
                     _ => {}
                 }
                 let tile = Tile::new("black".to_string(), Coordinate { i: i, j: j }, choice);
