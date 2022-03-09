@@ -151,7 +151,7 @@ impl Tile {
 
         if flipped {
             path.append(&format!(
-                " M {x} {y} h {s} l {c} {h} z",
+                " M {x} {y} h {s} l {c} {h} z ",
                 s = unitSize,
                 c = -unitSize / 2.0,
                 x = origin.x,
@@ -160,7 +160,7 @@ impl Tile {
             ));
         } else {
             path.append(&format!(
-                " M {x} {y} h {s} l {c} {h} z",
+                "M {x} {y} h {s} l {c} {h} z ",
                 s = unitSize,
                 c = -unitSize / 2.0,
                 x = origin.x,
@@ -198,8 +198,35 @@ impl Tile {
             TileType::L1 => {}
             TileType::L2 => {}
             TileType::L3 => {}
-            TileType::C1 => {}
-            TileType::C2 => {}
+            TileType::C1 => {
+                path.append(&format!(
+                    "M {x} {y} v {h} z ",
+                    x = origin.x + unitSize / 2.0,
+                    y = origin.y,
+                    h = h
+                ));
+            }
+            TileType::C2 => {
+                let c = 3.0 * unitSize / 4.0;
+                let d = unitSize / 4.0 * f64::sqrt(3.0);
+                if flipped {
+                    path.append(&format!(
+                        "M {x} {y} l {c} {d} z ",
+                        x = origin.x,
+                        y = origin.y,
+                        c = c,
+                        d = d,
+                    ));
+                } else {
+                    path.append(&format!(
+                        "M {x} {y} l {c} {d} z ",
+                        x = origin.x,
+                        y = origin.y + h,
+                        c = c,
+                        d = -d,
+                    ));
+                }
+            }
             TileType::C3 => {}
             TileType::X1 => {}
             TileType::Z1 => {}
@@ -236,10 +263,21 @@ impl RenderSvg {
     pub fn new() -> Self {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
 
+        let validTiles = [TileType::A1, TileType::A2, TileType::A3, TileType::C1];
+
         for i in 1..8 {
             let mut row: Vec<Tile> = Vec::new();
             for j in 1..6 {
-                let tile = Tile::new("black".to_string(), Coordinate { i: i, j: j }, TileType::A3);
+                let mut choice: TileType = TileType::C2;
+                // match (i * j) % 6 {
+                //     0 => choice = TileType::A2,
+                //     1 => choice = TileType::A1,
+                //     2 => choice = TileType::A3,
+                //     4 => choice = TileType::C1,
+                //     5 => choice = TileType::C2,
+                //     _ => {}
+                // }
+                let tile = Tile::new("black".to_string(), Coordinate { i: i, j: j }, choice);
                 row.push(tile);
             }
             tiles.push(row);
