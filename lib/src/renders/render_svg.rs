@@ -195,10 +195,10 @@ impl Tile {
                     path.arc(origin.x + unitSize / 2.0, origin.y, radius, 2, true);
                 }
             }
-            TileType::L1 => {}
-            TileType::L2 => {}
-            TileType::L3 => {}
-            TileType::C1 => {
+            TileType::C1 => {}
+            TileType::C2 => {}
+            TileType::C3 => {}
+            TileType::L1 => {
                 path.append(&format!(
                     "M {x} {y} v {h} z ",
                     x = origin.x + unitSize / 2.0,
@@ -206,28 +206,32 @@ impl Tile {
                     h = h
                 ));
             }
-            TileType::C2 => {
+            TileType::L2 => {
                 let c = 3.0 * unitSize / 4.0;
-                let d = unitSize / 4.0 * f64::sqrt(3.0);
-                if flipped {
-                    path.append(&format!(
-                        "M {x} {y} l {c} {d} z ",
-                        x = origin.x,
-                        y = origin.y,
-                        c = c,
-                        d = d,
-                    ));
+                let y = if flipped { origin.y } else { origin.y + h };
+                let d = if flipped {
+                    unitSize / 4.0 * f64::sqrt(3.0)
                 } else {
-                    path.append(&format!(
-                        "M {x} {y} l {c} {d} z ",
-                        x = origin.x,
-                        y = origin.y + h,
-                        c = c,
-                        d = -d,
-                    ));
-                }
+                    -unitSize / 4.0 * f64::sqrt(3.0)
+                };
+                path.append(&format!(
+                    "M {x} {y} l {c} {d} z ",
+                    x = origin.x,
+                    y = y,
+                    c = c,
+                    d = d,
+                ));
             }
-            TileType::C3 => {}
+            TileType::L3 => {
+                let d = if flipped { -h / 2.0 } else { h / 2.0 };
+                path.append(&format!(
+                    "M {x} {y} l {c} {d} z ",
+                    x = origin.x + unitSize / 4.0,
+                    y = origin.y + h / 2.0,
+                    c = 3.0 / 4.0 * unitSize,
+                    d = d,
+                ));
+            }
             TileType::X1 => {}
             TileType::Z1 => {}
         }
@@ -265,18 +269,19 @@ impl RenderSvg {
 
         let validTiles = [TileType::A1, TileType::A2, TileType::A3, TileType::C1];
 
-        for i in 1..8 {
+        for i in 1..20 {
             let mut row: Vec<Tile> = Vec::new();
-            for j in 1..6 {
-                let mut choice: TileType = TileType::C2;
-                // match (i * j) % 6 {
-                //     0 => choice = TileType::A2,
-                //     1 => choice = TileType::A1,
-                //     2 => choice = TileType::A3,
-                //     4 => choice = TileType::C1,
-                //     5 => choice = TileType::C2,
-                //     _ => {}
-                // }
+            for j in 1..20 {
+                let mut choice: TileType = TileType::L3;
+                match (i + j) % 6 {
+                    0 => choice = TileType::A2,
+                    1 => choice = TileType::A1,
+                    2 => choice = TileType::A3,
+                    4 => choice = TileType::L1,
+                    5 => choice = TileType::L2,
+                    6 => choice = TileType::L3,
+                    _ => {}
+                }
                 let tile = Tile::new("black".to_string(), Coordinate { i: i, j: j }, choice);
                 row.push(tile);
             }
