@@ -3,6 +3,23 @@ use std::error::Error;
 use std::fs;
 use std::io::prelude::*;
 
+pub enum TileType {
+    S1,
+    S2,
+    S3,
+    A1,
+    A2,
+    A3,
+    L1,
+    L2,
+    L3,
+    C1,
+    C2,
+    C3,
+    X1,
+    Z1,
+}
+
 pub struct Point {
     x: f64,
     y: f64,
@@ -18,19 +35,17 @@ pub struct Path {
     stroke_width: f64,
     path: String,
     opacity: f64,
-    S: f64,
+    unitSize: f64,
 }
 
 impl Path {
-    pub fn new(stroke: String, stroke_width: f64, opacity: f64) -> Path {
-        let s = 30.0;
-
+    pub fn new(stroke: String, stroke_width: f64, opacity: f64, unitSize: f64) -> Path {
         Path {
             stroke: stroke,
             stroke_width: stroke_width,
             path: String::new(),
             opacity: opacity,
-            S: s,
+            unitSize: unitSize,
         }
     }
 
@@ -111,60 +126,97 @@ impl Path {
 pub struct Tile {
     path: Path,
     position: Coordinate,
-    size: f64,
-    rotated: bool,
+    unitSize: f64,
+    flipped: bool,
     origin: Point,
-    mask: u8,
+    tileType: TileType,
 }
 
 impl Tile {
-    pub fn new(stroke: String, position: Coordinate, mask: u8) -> Tile {
-        let s = 100.0;
+    pub fn new(stroke: String, position: Coordinate, tileType: TileType) -> Tile {
+        let unitSize = 100.0;
 
         let origin = Point {
-            x: s * (position.i as f64 + (position.j % 2) as f64 / 2.0),
-            y: s * (position.j as f64 * f64::sqrt(3.0) / 2.0),
+            // x: s / 2.0 * (position.i as f64 + (position.j % 2) as f64 / 1.0),
+            x: unitSize / 2.0 * (position.i as f64),
+            y: unitSize * (position.j as f64 * f64::sqrt(3.0) / 2.0),
         };
-        let rotated = position.j % 2 == 1;
-        println!("{} {}", origin.x, origin.y);
+        let flipped = (position.j + position.i) % 2 == 1;
+        println!("{} {} -> {}", origin.x, origin.y, flipped);
 
         // stroke: String, stroke_width: f64, opacity: f64
-        let mut path = Path::new("black".to_string(), 3.0, 1.0);
+        let mut path = Path::new("black".to_string(), 3.0, 1.0, unitSize);
 
-        let h: f64 = s * f64::sqrt(3.0) / 2.0;
-        path.append(&format!(
-            " M {x} {y} h {s} l {c} {h} z",
-            s = s,
-            c = -s / 2.0,
-            x = origin.x,
-            y = origin.y,
-            h = h
-        ));
-        // TODO: flip
-        let p8x = origin.x + s / 4.0;
-        let p8y = origin.y + s * f64::sqrt(3.0) / 4.0;
-        let cx = origin.x + s / 2.0;
-        let cy = origin.y + s * 1.0 / f64::sqrt(3.0) / 2.0;
+        let h: f64 = unitSize * f64::sqrt(3.0) / 2.0;
 
-        if mask & (8 + 16) == 8 + 16 {
-            path.arc(origin.x, origin.y, s / 2.0, 1, true);
-        } else if mask & 8 + 4 == 8 {
+        if flipped {
             path.append(&format!(
-                "M {p8x} {p8y} L {cx} {cy}",
-                cx = cx,
-                cy = cy,
-                p8x = p8x,
-                p8y = p8y
+                " M {x} {y} h {s} l {c} {h} z",
+                s = unitSize,
+                c = -unitSize / 2.0,
+                x = origin.x,
+                y = origin.y,
+                h = h
+            ));
+        } else {
+            path.append(&format!(
+                " M {x} {y} h {s} l {c} {h} z",
+                s = unitSize,
+                c = -unitSize / 2.0,
+                x = origin.x,
+                y = origin.y + h,
+                h = -h
             ));
         }
+        const radius: f64 = unitSize / 2.0;
+        match tileType {
+            TileType::S1 => {}
+            TileType::S2 => {}
+            TileType::S3 => {}
+            TileType::A1 => {
+                if flipped {
+                    path.arc(origin.x, origin.y, radius, 1, true);
+                } else {
+                    path.arc(origin.x, origin.y + h, radius, 6, true);
+                }
+            }
+            TileType::A2 => {}
+            TileType::A3 => {}
+            TileType::L1 => {}
+            TileType::L2 => {}
+            TileType::L3 => {}
+            TileType::C1 => {}
+            TileType::C2 => {}
+            TileType::C3 => {}
+            TileType::X1 => {}
+            TileType::Z1 => {}
+        }
+
+        // // TODO: flip
+        // let p8x = origin.x + s / 4.0;
+        // let p8y = origin.y + s * f64::sqrt(3.0) / 4.0;
+        // let cx = origin.x + s / 2.0;
+        // let cy = origin.y + s * 1.0 / f64::sqrt(3.0) / 2.0;
+        //
+        // if mask & (8 + 16) == 8 + 16 {
+        //     path.arc(origin.x, origin.y, s / 2.0, 1, true);
+        // } else if mask & 8 + 4 == 8 {
+        //     path.append(&format!(
+        //         "M {p8x} {p8y} L {cx} {cy}",
+        //         cx = cx,
+        //         cy = cy,
+        //         p8x = p8x,
+        //         p8y = p8y
+        //     ));
+        // }
 
         let mut obj = Self {
             path: path,
             position: position,
-            size: s,
-            rotated: rotated,
+            unitSize: unitSize,
+            flipped: flipped,
             origin: origin,
-            mask: mask,
+            tileType: tileType,
         };
 
         return obj;
@@ -180,20 +232,23 @@ impl Tile {
 
 pub struct RenderSvg {
     pub style: Option<String>,
-    tiles: HashMap<String, Tile>,
+    tiles: Vec<Vec<Tile>>,
     width: f64,
     height: f64,
 }
 
 impl RenderSvg {
     pub fn new() -> Self {
-        let mut tiles: HashMap<String, Tile> = HashMap::new();
+        let mut tiles: Vec<Vec<Tile>> = Vec::new();
 
-        let tile1 = Tile::new("black".to_string(), Coordinate { i: 1, j: 1 }, 8);
-        let tile2 = Tile::new("black".to_string(), Coordinate { i: 1, j: 2 }, 8 + 16);
-
-        tiles.insert("walls".to_string(), tile1);
-        tiles.insert("more".to_string(), tile2);
+        for i in 1..8 {
+            let mut row: Vec<Tile> = Vec::new();
+            for j in 1..6 {
+                let tile = Tile::new("black".to_string(), Coordinate { i: i, j: j }, TileType::A1);
+                row.push(tile);
+            }
+            tiles.push(row);
+        }
 
         let mut obj = Self {
             style: None,
@@ -201,6 +256,7 @@ impl RenderSvg {
             width: 1000.0,
             height: 1000.0,
         };
+
         // // Test line to begin with
         // // obj.add_to_path("walls", " M 0 0 h 100 v 100 h -100 z");
         // // quadratic curve
@@ -246,9 +302,11 @@ impl RenderSvg {
 
         svg.push_str(&format!("<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke=\"black\">", w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
 
-        for (_key, tile) in &self.tiles {
-            println!("> {}", tile.to_string());
-            svg.push_str(&tile.to_string());
+        for row in &self.tiles {
+            for tile in row {
+                println!("> {}", tile.to_string());
+                svg.push_str(&tile.to_string());
+            }
         }
         svg.push_str("</svg>");
 
