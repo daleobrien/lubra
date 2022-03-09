@@ -168,7 +168,8 @@ impl Tile {
                 h = -h
             ));
         }
-        const radius: f64 = unitSize / 2.0;
+        let radius: f64 = unitSize / 2.0;
+
         match tileType {
             TileType::S1 => {}
             TileType::S2 => {}
@@ -180,8 +181,20 @@ impl Tile {
                     path.arc(origin.x, origin.y + h, radius, 6, true);
                 }
             }
-            TileType::A2 => {}
-            TileType::A3 => {}
+            TileType::A2 => {
+                if flipped {
+                    path.arc(origin.x + unitSize, origin.y, radius, 3, true);
+                } else {
+                    path.arc(origin.x + unitSize, origin.y + h, radius, 4, true);
+                }
+            }
+            TileType::A3 => {
+                if flipped {
+                    path.arc(origin.x + unitSize / 2.0, origin.y + h, radius, 5, true);
+                } else {
+                    path.arc(origin.x + unitSize / 2.0, origin.y, radius, 2, true);
+                }
+            }
             TileType::L1 => {}
             TileType::L2 => {}
             TileType::L3 => {}
@@ -191,24 +204,6 @@ impl Tile {
             TileType::X1 => {}
             TileType::Z1 => {}
         }
-
-        // // TODO: flip
-        // let p8x = origin.x + s / 4.0;
-        // let p8y = origin.y + s * f64::sqrt(3.0) / 4.0;
-        // let cx = origin.x + s / 2.0;
-        // let cy = origin.y + s * 1.0 / f64::sqrt(3.0) / 2.0;
-        //
-        // if mask & (8 + 16) == 8 + 16 {
-        //     path.arc(origin.x, origin.y, s / 2.0, 1, true);
-        // } else if mask & 8 + 4 == 8 {
-        //     path.append(&format!(
-        //         "M {p8x} {p8y} L {cx} {cy}",
-        //         cx = cx,
-        //         cy = cy,
-        //         p8x = p8x,
-        //         p8y = p8y
-        //     ));
-        // }
 
         let mut obj = Self {
             path: path,
@@ -244,7 +239,7 @@ impl RenderSvg {
         for i in 1..8 {
             let mut row: Vec<Tile> = Vec::new();
             for j in 1..6 {
-                let tile = Tile::new("black".to_string(), Coordinate { i: i, j: j }, TileType::A1);
+                let tile = Tile::new("black".to_string(), Coordinate { i: i, j: j }, TileType::A3);
                 row.push(tile);
             }
             tiles.push(row);
