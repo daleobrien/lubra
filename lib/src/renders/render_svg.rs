@@ -150,52 +150,62 @@ impl Tile {
 
         let h: f64 = unitSize * f64::sqrt(3.0) / 2.0;
 
-        // if flipped {
-        //     path.append(&format!(
-        //         " M {x} {y} h {s} l {c} {h} z ",
-        //         s = unitSize,
-        //         c = -unitSize / 2.0,
-        //         x = origin.x,
-        //         y = origin.y,
-        //         h = h
-        //     ));
-        // } else {
-        //     path.append(&format!(
-        //         "M {x} {y} h {s} l {c} {h} z ",
-        //         s = unitSize,
-        //         c = -unitSize / 2.0,
-        //         x = origin.x,
-        //         y = origin.y + h,
-        //         h = -h
-        //     ));
-        // }
+        if flipped {
+            path.append(&format!(
+                " M {x} {y} h {s} l {c} {h} z ",
+                s = unitSize,
+                c = -unitSize / 2.0,
+                x = origin.x,
+                y = origin.y,
+                h = h
+            ));
+        } else {
+            path.append(&format!(
+                "M {x} {y} h {s} l {c} {h} z ",
+                s = unitSize,
+                c = -unitSize / 2.0,
+                x = origin.x,
+                y = origin.y + h,
+                h = -h
+            ));
+        }
         let radius: f64 = unitSize / 2.0;
 
         match tileType {
-            TileType::S1 => {}
+            TileType::S1 => {
+                let x = if flipped { h / 3.0 } else { -h / 3.0 };
+                let y = if flipped { origin.y } else { origin.y + h };
+                path.append(&format!(
+                    "M {x} {y} v {h} z ",
+                    x = origin.x + unitSize / 2.0,
+                    y = y,
+                    h = x
+                ));
+            }
             TileType::S2 => {}
             TileType::S3 => {}
             TileType::A1 => {
-                if flipped {
-                    path.arc(origin.x, origin.y, radius, 1, true);
-                } else {
-                    path.arc(origin.x, origin.y + h, radius, 6, true);
-                }
-            }
-            TileType::A2 => {
-                if flipped {
-                    path.arc(origin.x + unitSize, origin.y, radius, 3, true);
-                } else {
-                    path.arc(origin.x + unitSize, origin.y + h, radius, 4, true);
-                }
-            }
-            TileType::A3 => {
                 if flipped {
                     path.arc(origin.x + unitSize / 2.0, origin.y + h, radius, 5, true);
                 } else {
                     path.arc(origin.x + unitSize / 2.0, origin.y, radius, 2, true);
                 }
             }
+            TileType::A2 => {
+                if flipped {
+                    path.arc(origin.x, origin.y, radius, 1, true);
+                } else {
+                    path.arc(origin.x, origin.y + h, radius, 6, true);
+                }
+            }
+            TileType::A3 => {
+                if flipped {
+                    path.arc(origin.x + unitSize, origin.y, radius, 3, true);
+                } else {
+                    path.arc(origin.x + unitSize, origin.y + h, radius, 4, true);
+                }
+            }
+
             TileType::C1 => {
                 if flipped {
                     path.arc(origin.x + unitSize / 2.0, origin.y + h, radius, 5, true);
@@ -209,8 +219,42 @@ impl Tile {
                     h = h
                 ));
             }
-            TileType::C2 => {}
-            TileType::C3 => {}
+            TileType::C2 => {
+                let c = 3.0 * unitSize / 4.0;
+                let y = if flipped { origin.y } else { origin.y + h };
+                let d = if flipped {
+                    unitSize / 4.0 * f64::sqrt(3.0)
+                } else {
+                    -unitSize / 4.0 * f64::sqrt(3.0)
+                };
+                path.append(&format!(
+                    "M {x} {y} l {c} {d} z ",
+                    x = origin.x,
+                    y = y,
+                    c = c,
+                    d = d,
+                ));
+                if flipped {
+                    path.arc(origin.x, origin.y, radius, 1, true);
+                } else {
+                    path.arc(origin.x, origin.y + h, radius, 6, true);
+                }
+            }
+            TileType::C3 => {
+                let d = if flipped { -h / 2.0 } else { h / 2.0 };
+                path.append(&format!(
+                    "M {x} {y} l {c} {d} z ",
+                    x = origin.x + unitSize / 4.0,
+                    y = origin.y + h / 2.0,
+                    c = 3.0 / 4.0 * unitSize,
+                    d = d,
+                ));
+                if flipped {
+                    path.arc(origin.x + unitSize, origin.y, radius, 3, true);
+                } else {
+                    path.arc(origin.x + unitSize, origin.y + h, radius, 4, true);
+                }
+            }
             TileType::L1 => {
                 path.append(&format!(
                     "M {x} {y} v {h} z ",
@@ -285,17 +329,19 @@ impl RenderSvg {
         for i in 1..20 {
             let mut row: Vec<Tile> = Vec::new();
             for j in 1..20 {
-                let mut choice: TileType = TileType::C1;
-                match (i * j) % 7 {
-                    0 => choice = TileType::A2,
-                    1 => choice = TileType::A1,
-                    2 => choice = TileType::A3,
-                    4 => choice = TileType::L1,
-                    5 => choice = TileType::L2,
-                    6 => choice = TileType::L3,
-                    7 => choice = TileType::C1,
-                    _ => {}
-                }
+                let mut choice: TileType = TileType::S1;
+                // match (i * j) % 10 {
+                //     0 => choice = TileType::A2,
+                //     1 => choice = TileType::A1,
+                //     2 => choice = TileType::A3,
+                //     4 => choice = TileType::L1,
+                //     5 => choice = TileType::L2,
+                //     6 => choice = TileType::L3,
+                //     7 => choice = TileType::C1,
+                //     8 => choice = TileType::C2,
+                //     9 => choice = TileType::C3,
+                //     _ => {}
+                // }
                 let tile = Tile::new("black".to_string(), Coordinate { i: i, j: j }, choice);
                 row.push(tile);
             }
