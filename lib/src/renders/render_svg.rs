@@ -5,7 +5,9 @@ use std::fs;
 use std::io::prelude::*;
 use std::ptr::addr_of_mut;
 
-const UNIT: f64 = 100.0;
+const U: f64 = 100.0;
+const M: f64 = 50.0;
+const H: f64 = 86.60254037844386; // U * f64::sqrt(3.0) / 2.0;
 
 pub struct Point {
     x: f64,
@@ -135,28 +137,22 @@ impl S1 for Tile {
                 x: origin.x,
                 y: origin.y,
             },
-            delta: Point { x: UNIT, y: 0.0 },
+            delta: Point { x: U, y: 0.0 },
         });
 
         lines.push(Line {
             start: Point {
-                x: origin.x + UNIT,
+                x: origin.x + U,
                 y: origin.y,
             },
-            delta: Point {
-                x: -UNIT / 2.0,
-                y: UNIT * f64::sqrt(3.0) / 2.0,
-            },
+            delta: Point { x: -M, y: H },
         });
         lines.push(Line {
             start: Point {
-                x: origin.x + UNIT / 2.0,
-                y: origin.y + UNIT * f64::sqrt(3.0) / 2.0,
+                x: origin.x + M,
+                y: origin.y + H,
             },
-            delta: Point {
-                x: -UNIT / 2.0,
-                y: -UNIT * f64::sqrt(3.0) / 2.0,
-            },
+            delta: Point { x: -M, y: -H },
         });
         return Tile {
             lines: lines,
@@ -180,8 +176,8 @@ impl RenderSvg {
             let mut row: Vec<Tile> = Vec::new();
             for j in 1..2 {
                 let tile: Tile = S1::new(Point {
-                    x: UNIT * i as f64,
-                    y: UNIT * f64::sqrt(3.0) / 2.0 * j as f64,
+                    x: U * i as f64,
+                    y: U * f64::sqrt(3.0) / 2.0 * j as f64,
                 });
                 row.push(tile);
             }
