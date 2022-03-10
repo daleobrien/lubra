@@ -72,10 +72,6 @@ impl Path {
             "M {} {} l {} {} z ",
             line.start.x, line.start.y, line.delta.x, line.delta.y
         );
-        println!(
-            "path -? {:?} <= {},{} -> {},{}",
-            path, line.start.x, line.start.y, line.delta.x, line.delta.y
-        );
         self.path.push_str(&path);
     }
     // https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
@@ -133,13 +129,35 @@ impl S1 for Tile {
         let mut lines: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
 
-        let start = Point {
-            x: origin.x,
-            y: origin.y,
-        };
-        let delta = Point { x: UNIT, y: 0.0 };
-        lines.push(Line { start, delta });
+        // Make a consts and add addition, so I can add in the origin with +
+        lines.push(Line {
+            start: Point {
+                x: origin.x,
+                y: origin.y,
+            },
+            delta: Point { x: UNIT, y: 0.0 },
+        });
 
+        lines.push(Line {
+            start: Point {
+                x: origin.x + UNIT,
+                y: origin.y,
+            },
+            delta: Point {
+                x: -UNIT / 2.0,
+                y: UNIT * f64::sqrt(3.0) / 2.0,
+            },
+        });
+        lines.push(Line {
+            start: Point {
+                x: origin.x + UNIT / 2.0,
+                y: origin.y + UNIT * f64::sqrt(3.0) / 2.0,
+            },
+            delta: Point {
+                x: -UNIT / 2.0,
+                y: -UNIT * f64::sqrt(3.0) / 2.0,
+            },
+        });
         return Tile {
             lines: lines,
             arcs: arcs,
@@ -158,12 +176,12 @@ impl RenderSvg {
     pub fn new() -> Self {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
 
-        for i in 1..20 {
+        for i in 1..2 {
             let mut row: Vec<Tile> = Vec::new();
-            for j in 1..20 {
+            for j in 1..2 {
                 let tile: Tile = S1::new(Point {
                     x: UNIT * i as f64,
-                    y: UNIT * j as f64,
+                    y: UNIT * f64::sqrt(3.0) / 2.0 * j as f64,
                 });
                 row.push(tile);
             }
