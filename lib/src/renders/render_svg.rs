@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
-use crate::renders::constants::{C, D, H, M, U};
+use crate::renders::constants::{M, U};
 use crate::renders::primatives::{Coordinate, Line, Point, Segment};
 use crate::renders::shapes::{
-    LONG_L1_A, LONG_L1_V, LONG_L2_A, LONG_L2_V, LONG_L3_A, LONG_L3_V, SHORT_S1_A, SHORT_S1_V,
-    SHORT_S2_A, SHORT_S2_V, SHORT_S3_A, SHORT_S3_V, TRIANGLE_A, TRIANGLE_V,
+    A1_A, A1_V, LONG_L1_A, LONG_L1_V, LONG_L2_A, LONG_L2_V, LONG_L3_A, LONG_L3_V, SHORT_S1_A,
+    SHORT_S1_V, SHORT_S2_A, SHORT_S2_V, SHORT_S3_A, SHORT_S3_V, TRIANGLE_A, TRIANGLE_V,
 };
 
 pub struct Path {
@@ -56,11 +56,15 @@ impl Path {
         self.path.push_str(&path);
     }
     // https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
-    pub fn arc(&mut self, x: f64, y: f64, r: f64, segment: u32, ccw: bool) {
-        let ccw = if ccw { "1" } else { "0" };
+    pub fn arc(&mut self, arc: &Segment) {
+        let ccw = "1";
+        let x = arc.centre.x;
+        let y = arc.centre.y;
+        let r = arc.radius;
+        let segment = arc.segment;
 
         let pi6 = 2.0 * std::f64::consts::FRAC_PI_6;
-        let angles_from_segment: HashMap<u32, (f64, f64)> = HashMap::from([
+        let angles_from_segment: HashMap<u64, (f64, f64)> = HashMap::from([
             (1, (0.0 * pi6, 1.0 * pi6)),
             (2, (1.0 * pi6, 2.0 * pi6)),
             (3, (2.0 * pi6, 3.0 * pi6)),
@@ -98,6 +102,9 @@ impl Tile {
         for line in self.lines.iter() {
             path.line(line);
         }
+        for arc in self.arcs.iter() {
+            path.arc(arc);
+        }
         return path.to_string();
     }
 }
@@ -123,6 +130,10 @@ pub trait L2 {
 }
 
 pub trait L3 {
+    fn new(coordinate: Coordinate) -> Self;
+}
+
+pub trait A1 {
     fn new(coordinate: Coordinate) -> Self;
 }
 
@@ -242,6 +253,23 @@ impl L3 for Tile {
     }
 }
 
+impl A1 for Tile {
+    fn new(coordinate: Coordinate) -> Self {
+        let mut lines: Vec<Line> = Vec::new();
+        let mut arcs: Vec<Segment> = Vec::new();
+        let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
+
+        create_triangle(flipped).map(|line| lines.push(line + origin));
+        arcs.push(if flipped { A1_V } else { A1_A } + origin);
+
+        return Tile {
+            lines,
+            arcs,
+            coordinate,
+        };
+    }
+}
+
 pub struct RenderSvg {
     pub style: Option<String>,
     tiles: Vec<Vec<Tile>>,
@@ -256,7 +284,7 @@ impl RenderSvg {
         for i in 1..8 {
             let mut row: Vec<Tile> = Vec::new();
             for j in 1..6 {
-                let tile: Tile = L3::new(Coordinate { i, j });
+                let tile: Tile = A1::new(Coordinate { i, j });
                 row.push(tile);
             }
             tiles.push(row);

@@ -47,3 +47,18 @@ pub struct Segment {
     pub radius: f64,
     pub segment: u64, // Can be much smaller, but now this structure is alligned
 }
+
+impl Add<Point> for Segment {
+    type Output = Self;
+
+    fn add(self, other: Point) -> Self {
+        Self {
+            centre: Point {
+                x: self.centre.x + other.x,
+                y: self.centre.y + other.y,
+            },
+            radius: self.radius,
+            segment: self.segment,
+        }
+    }
+}

@@ -1,5 +1,5 @@
 use crate::renders::constants::{C, D, H, M, Q1, Q3, U, Z};
-use crate::renders::primatives::{Line, Point};
+use crate::renders::primatives::{Line, Point, Segment};
 
 pub const TRIANGLE_A: [Line; 3] = [
     Line {
@@ -89,4 +89,15 @@ pub const LONG_L3_A: Line = Line {
 pub const LONG_L2_V: Line = Line {
     start: Point { x: Q3, y: H - C },
     delta: Point { x: -Q3, y: C - H },
+};
+
+pub const A1_V: Segment = Segment {
+    centre: Point { x: M, y: H },
+    radius: M,
+    segment: 5,
+};
+pub const A1_A: Segment = Segment {
+    centre: Point { x: M, y: Z },
+    radius: M,
+    segment: 2,
 };
