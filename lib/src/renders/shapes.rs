@@ -31,62 +31,62 @@ pub const TRIANGLE_V: [Line; 3] = [
     },
 ];
 
-pub const SHORT_S1_A: Line = Line {
+pub const S1_A: Line = Line {
     start: Point { x: M, y: H },
     delta: Point { x: Z, y: -D },
 };
 
-pub const SHORT_S1_V: Line = Line {
+pub const S1_V: Line = Line {
     start: Point { x: M, y: Z },
     delta: Point { x: Z, y: D },
 };
 
-pub const SHORT_S2_A: Line = Line {
+pub const S2_A: Line = Line {
     start: Point { x: Q3, y: C },
     delta: Point { x: -Q1, y: C - D },
 };
 
-pub const SHORT_S2_V: Line = Line {
+pub const S2_V: Line = Line {
     start: Point { x: Q1, y: H - C },
     delta: Point { x: Q1, y: D - C },
 };
 
-pub const SHORT_S3_A: Line = Line {
+pub const S3_A: Line = Line {
     start: Point { x: Q1, y: C },
     delta: Point { x: Q1, y: C - D },
 };
 
-pub const SHORT_S3_V: Line = Line {
+pub const S3_V: Line = Line {
     start: Point { x: Q3, y: H - C },
     delta: Point { x: -Q1, y: D - C },
 };
 
-pub const LONG_L1_A: Line = Line {
+pub const L1_A: Line = Line {
     start: Point { x: M, y: Z },
     delta: Point { x: Z, y: H },
 };
 
-pub const LONG_L1_V: Line = Line {
+pub const L1_V: Line = Line {
     start: Point { x: M, y: Z },
     delta: Point { x: Z, y: H },
 };
 
-pub const LONG_L2_A: Line = Line {
+pub const L2_A: Line = Line {
     start: Point { x: Q3, y: C },
     delta: Point { x: -Q3, y: H - C },
 };
 
-pub const LONG_L3_V: Line = Line {
+pub const L3_V: Line = Line {
     start: Point { x: Q1, y: H - C },
     delta: Point { x: Q3, y: C - H },
 };
 
-pub const LONG_L3_A: Line = Line {
+pub const L3_A: Line = Line {
     start: Point { x: Q1, y: C },
     delta: Point { x: Q3, y: H - C },
 };
 
-pub const LONG_L2_V: Line = Line {
+pub const L2_V: Line = Line {
     start: Point { x: Q3, y: H - C },
     delta: Point { x: -Q3, y: C - H },
 };
