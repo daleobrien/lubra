@@ -5,8 +5,9 @@ use std::fs;
 use crate::renders::constants::{M, U};
 use crate::renders::primatives::{Coordinate, Line, Point, Segment};
 use crate::renders::shapes::{
-    A1_A, A1_V, A2_A, A2_V, LONG_L1_A, LONG_L1_V, LONG_L2_A, LONG_L2_V, LONG_L3_A, LONG_L3_V,
-    SHORT_S1_A, SHORT_S1_V, SHORT_S2_A, SHORT_S2_V, SHORT_S3_A, SHORT_S3_V, TRIANGLE_A, TRIANGLE_V,
+    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, LONG_L1_A, LONG_L1_V, LONG_L2_A, LONG_L2_V, LONG_L3_A,
+    LONG_L3_V, SHORT_S1_A, SHORT_S1_V, SHORT_S2_A, SHORT_S2_V, SHORT_S3_A, SHORT_S3_V, TRIANGLE_A,
+    TRIANGLE_V,
 };
 
 pub struct Path {
@@ -138,6 +139,10 @@ pub trait A1 {
 }
 
 pub trait A2 {
+    fn new(coordinate: Coordinate) -> Self;
+}
+
+pub trait A3 {
     fn new(coordinate: Coordinate) -> Self;
 }
 
@@ -291,6 +296,23 @@ impl A2 for Tile {
     }
 }
 
+impl A3 for Tile {
+    fn new(coordinate: Coordinate) -> Self {
+        let mut lines: Vec<Line> = Vec::new();
+        let mut arcs: Vec<Segment> = Vec::new();
+        let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
+
+        create_triangle(flipped).map(|line| lines.push(line + origin));
+        arcs.push(if flipped { A3_V } else { A3_A } + origin);
+
+        return Tile {
+            lines,
+            arcs,
+            coordinate,
+        };
+    }
+}
+
 pub struct RenderSvg {
     pub style: Option<String>,
     tiles: Vec<Vec<Tile>>,
@@ -305,7 +327,7 @@ impl RenderSvg {
         for i in 1..8 {
             let mut row: Vec<Tile> = Vec::new();
             for j in 1..6 {
-                let tile: Tile = A2::new(Coordinate { i, j });
+                let tile: Tile = A3::new(Coordinate { i, j });
                 row.push(tile);
             }
             tiles.push(row);
