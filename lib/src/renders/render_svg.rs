@@ -105,6 +105,9 @@ enum TileType {
     L1,
     L2,
     L3,
+    C1,
+    C2,
+    C3,
 }
 
 impl Tile {
@@ -126,6 +129,18 @@ impl Tile {
             TileType::A1 => arcs.push(if flipped { A1_V } else { A1_A } + origin),
             TileType::A2 => arcs.push(if flipped { A2_V } else { A2_A } + origin),
             TileType::A3 => arcs.push(if flipped { A3_V } else { A3_A } + origin),
+            TileType::C1 => {
+                lines.push(if flipped { L1_V } else { L1_A } + origin);
+                arcs.push(if flipped { A1_V } else { A1_A } + origin);
+            }
+            TileType::C2 => {
+                lines.push(if flipped { L2_V } else { L2_A } + origin);
+                arcs.push(if flipped { A2_V } else { A2_A } + origin);
+            }
+            TileType::C3 => {
+                lines.push(if flipped { L3_V } else { L3_A } + origin);
+                arcs.push(if flipped { A3_V } else { A3_A } + origin);
+            }
         }
         return Tile {
             lines,
@@ -175,7 +190,7 @@ impl RenderSvg {
         for i in 1..8 {
             let mut row: Vec<Tile> = Vec::new();
             for j in 1..6 {
-                let tile: Tile = Tile::new(Coordinate { i, j }, TileType::A2);
+                let tile: Tile = Tile::new(Coordinate { i, j }, TileType::C1);
                 row.push(tile);
             }
             tiles.push(row);

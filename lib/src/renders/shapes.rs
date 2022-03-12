@@ -103,9 +103,9 @@ pub const A1_A: Segment = Segment {
 };
 
 pub const A2_V: Segment = Segment {
-    centre: Point { x: U, y: Z },
+    centre: Point { x: Z, y: Z },
     radius: M,
-    segment: 3,
+    segment: 1,
 };
 pub const A2_A: Segment = Segment {
     centre: Point { x: Z, y: H },
@@ -114,9 +114,9 @@ pub const A2_A: Segment = Segment {
 };
 
 pub const A3_V: Segment = Segment {
-    centre: Point { x: Z, y: Z },
+    centre: Point { x: U, y: Z },
     radius: M,
-    segment: 1,
+    segment: 3,
 };
 pub const A3_A: Segment = Segment {
     centre: Point { x: U, y: H },
