@@ -8,7 +8,7 @@ use rand::{
     Rng,
 };
 
-use crate::renders::constants::{H, M, Q1, U, V, W, Y, Z};
+use crate::renders::constants::{D, H, M, Q1, U, V, W, Y, Z};
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, M1_A, M1_V, M2_A, M2_V,
@@ -257,6 +257,15 @@ impl Tile {
                 let line2 = if flipped { Q1_V } else { Q1_A } + origin;
                 faint.push(line2 + Point { x: -W, y: Z });
                 faint.push(line2 + Point { x: W, y: Z });
+
+                let line3 = if flipped { S1_V } else { S1_A } + origin;
+                if flipped {
+                    lines.push(line3 + Point { x: -W, y: H - D });
+                    lines.push(line3 + Point { x: W, y: H - D });
+                } else {
+                    lines.push(line3 + Point { x: -W, y: D - H });
+                    lines.push(line3 + Point { x: W, y: D - H });
+                }
             }
             TileType::C2 => lines.push(if flipped { L2_V } else { L2_A } + origin),
             TileType::C3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
@@ -323,19 +332,19 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
-        let I: u32 = 2;
-        let J: u32 = 1;
+        // let I: u32 = 2;
+        // let J: u32 = 1;
         //
-        // let I: u32 = 18;
-        // let J: u32 = 10;
+        let I: u32 = 18;
+        let J: u32 = 10;
 
         for i in 0..I {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
             for j in 0..J {
-                // let tile_type: TileType = rand::random();
-                // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                let path: Tile = Tile::new(Coordinate { i, j }, TileType::C1);
+                let tile_type: TileType = rand::random();
+                let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
+                //let path: Tile = Tile::new(Coordinate { i, j }, TileType::C2);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
