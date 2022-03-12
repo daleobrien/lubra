@@ -1,5 +1,7 @@
 pub const U: f64 = 100.0;
 pub const M: f64 = 50.0;
+pub const Q1: f64 = 25.0;
+pub const Q3: f64 = 75.0;
 
 // U * f64::sqrt(3.0) / 2.0;
 pub const H: f64 = 86.60254037844386467637231707529361834714;

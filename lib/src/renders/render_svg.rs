@@ -4,7 +4,9 @@ use std::fs;
 
 use crate::renders::constants::{C, D, H, M, U};
 use crate::renders::primatives::{Coordinate, Line, Point, Segment};
-use crate::renders::shapes::{SHORT_S1_A, SHORT_S1_V, TRIANGLE_A, TRIANGLE_V};
+use crate::renders::shapes::{
+    SHORT_S1_A, SHORT_S1_V, SHORT_S2_A, SHORT_S2_V, SHORT_S3_A, SHORT_S3_V, TRIANGLE_A, TRIANGLE_V,
+};
 
 pub struct Path {
     stroke: String,
@@ -103,33 +105,75 @@ pub trait S1 {
     fn new(coordinate: Coordinate) -> Self;
 }
 
+pub trait S2 {
+    fn new(coordinate: Coordinate) -> Self;
+}
+
+pub trait S3 {
+    fn new(coordinate: Coordinate) -> Self;
+}
+
 pub fn create_triangle(flipped: bool) -> [Line; 3] {
     return if flipped { TRIANGLE_V } else { TRIANGLE_A };
+}
+
+pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool) {
+    let origin = Point {
+        x: M * coordinate.i as f64,
+        y: U * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
+    };
+    let flipped = (coordinate.j + coordinate.i) % 2 == 0;
+
+    return (origin, flipped);
 }
 
 impl S1 for Tile {
     fn new(coordinate: Coordinate) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let arcs: Vec<Segment> = Vec::new();
-
-        let origin = Point {
-            x: M * coordinate.i as f64,
-            y: U * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
-        };
-        let flipped = (coordinate.j + coordinate.i) % 2 == 0;
+        let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
         create_triangle(flipped).map(|line| lines.push(line + origin));
-
-        if flipped {
-            lines.push(SHORT_S1_V + origin);
-        } else {
-            lines.push(SHORT_S1_A + origin);
-        }
+        lines.push(if flipped { SHORT_S1_V } else { SHORT_S1_A } + origin);
 
         return Tile {
-            lines: lines,
-            arcs: arcs,
-            coordinate: coordinate,
+            lines,
+            arcs,
+            coordinate,
+        };
+    }
+}
+
+impl S2 for Tile {
+    fn new(coordinate: Coordinate) -> Self {
+        let mut lines: Vec<Line> = Vec::new();
+        let arcs: Vec<Segment> = Vec::new();
+        let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
+
+        create_triangle(flipped).map(|line| lines.push(line + origin));
+        lines.push(if flipped { SHORT_S2_V } else { SHORT_S2_A } + origin);
+
+        return Tile {
+            lines,
+            arcs,
+            coordinate,
+        };
+    }
+}
+
+impl S3 for Tile {
+    fn new(coordinate: Coordinate) -> Self {
+        let mut lines: Vec<Line> = Vec::new();
+        let arcs: Vec<Segment> = Vec::new();
+        let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
+
+        create_triangle(flipped).map(|line| lines.push(line + origin));
+        lines.push(if flipped { SHORT_S3_V } else { SHORT_S3_A } + origin);
+
+        return Tile {
+            lines,
+            arcs,
+            coordinate,
         };
     }
 }
@@ -148,7 +192,7 @@ impl RenderSvg {
         for i in 1..8 {
             let mut row: Vec<Tile> = Vec::new();
             for j in 1..6 {
-                let tile: Tile = S1::new(Coordinate { i, j });
+                let tile: Tile = S3::new(Coordinate { i, j });
                 row.push(tile);
             }
             tiles.push(row);
