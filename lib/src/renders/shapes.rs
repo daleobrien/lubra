@@ -1,4 +1,4 @@
-use crate::renders::constants::{C, D, H, M, P, Q, Q1, Q3, U, W, Z};
+use crate::renders::constants::{C, D, H, M, P, Q, Q1, Q3, S, T, U, W, Z};
 use crate::renders::primatives::{Line, Point, Segment};
 
 pub const TRIANGLE_A: [Line; 3] = [
@@ -73,12 +73,12 @@ pub const P1_V: Line = Line {
 
 pub const P2_A: Line = Line {
     start: Point { x: Q3, y: C },
-    delta: Point { x: -Q1, y: C - D },
+    delta: Point { x: -T, y: S },
 };
 
 pub const P2_V: Line = Line {
     start: Point { x: Q3, y: H - C },
-    delta: Point { x: -Q1, y: D - C },
+    delta: Point { x: -T, y: -S },
 };
 
 pub const Q1_A: Line = Line {

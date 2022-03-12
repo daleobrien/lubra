@@ -280,8 +280,13 @@ impl Tile {
             }
             TileType::C2 => {
                 let line1 = if flipped { P2_V } else { P2_A } + origin;
-                lines.push(line1 + Point { x: V, y: Y });
-                lines.push(line1 + Point { x: -V, y: -Y });
+                if flipped {
+                    lines.push(line1 + Point { x: -V, y: Y });
+                    lines.push(line1 + Point { x: V, y: -Y });
+                } else {
+                    lines.push(line1 + Point { x: V, y: Y });
+                    lines.push(line1 + Point { x: -V, y: -Y });
+                }
             }
             TileType::C3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
             TileType::X1 => {
@@ -359,7 +364,7 @@ impl RenderSvg {
             for j in 0..J {
                 // let tile_type: TileType = rand::random();
                 // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                let path: Tile = Tile::new(Coordinate { i, j }, TileType::S3);
+                let path: Tile = Tile::new(Coordinate { i, j }, TileType::C2);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
