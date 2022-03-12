@@ -4,6 +4,8 @@ pub const Q1: f64 = 25.0;
 pub const Q3: f64 = 75.0;
 pub const Z: f64 = 0.0;
 
+pub const Rd: f64 = 10.0;
+
 // U * f64::sqrt(3.0) / 2.0;
 pub const H: f64 = 86.60254037844386467637231707529361834714;
 

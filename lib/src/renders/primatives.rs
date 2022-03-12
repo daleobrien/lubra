@@ -6,6 +6,11 @@ pub struct Point {
     pub y: f64,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct Radius {
+    pub r: f64,
+}
+
 impl Add for Point {
     type Output = Self;
 
@@ -42,6 +47,7 @@ pub struct Coordinate {
     pub j: u32,
 }
 
+#[derive(Clone, Copy)]
 pub struct Segment {
     pub centre: Point,
     pub radius: f64,
@@ -50,7 +56,6 @@ pub struct Segment {
 
 impl Add<Point> for Segment {
     type Output = Self;
-
     fn add(self, other: Point) -> Self {
         Self {
             centre: Point {
@@ -58,6 +63,21 @@ impl Add<Point> for Segment {
                 y: self.centre.y + other.y,
             },
             radius: self.radius,
+            segment: self.segment,
+        }
+    }
+}
+
+impl Add<Radius> for Segment {
+    type Output = Self;
+
+    fn add(self, other: Radius) -> Self {
+        Self {
+            radius: self.radius + other.r,
+            centre: Point {
+                x: self.centre.x,
+                y: self.centre.y,
+            },
             segment: self.segment,
         }
     }

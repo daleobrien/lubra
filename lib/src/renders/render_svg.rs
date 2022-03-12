@@ -1,14 +1,15 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
+use std::ptr::null;
 
 use rand::{
     distributions::{Distribution, Standard},
     Rng,
 };
 
-use crate::renders::constants::{H, M, U};
-use crate::renders::primatives::{Coordinate, Line, Point, Segment};
+use crate::renders::constants::{Rd, H, M, Q1, U};
+use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, S1_A, S1_V, S2_A, S2_V,
     S3_A, S3_V, TRIANGLE_A, TRIANGLE_V,
@@ -147,6 +148,21 @@ impl Tile {
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
+        let only_an_arc: Option<Segment> = match tile {
+            TileType::A1 => Some(if flipped { A1_V } else { A1_A } + origin),
+            TileType::A2 => Some(if flipped { A2_V } else { A2_A } + origin),
+            TileType::A3 => Some(if flipped { A3_V } else { A3_A } + origin),
+            _ => None,
+        };
+
+        match only_an_arc {
+            Some(arc) => {
+                arcs.push(arc + Radius { r: -Rd });
+                arcs.push(arc + Radius { r: Rd });
+            }
+            _ => {}
+        }
+
         match tile {
             TileType::S1 => lines.push(if flipped { S1_V } else { S1_A } + origin),
             TileType::S2 => lines.push(if flipped { S2_V } else { S2_A } + origin),
@@ -154,9 +170,7 @@ impl Tile {
             TileType::L1 => lines.push(if flipped { L1_V } else { L1_A } + origin),
             TileType::L2 => lines.push(if flipped { L2_V } else { L2_A } + origin),
             TileType::L3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
-            TileType::A1 => arcs.push(if flipped { A1_V } else { A1_A } + origin),
-            TileType::A2 => arcs.push(if flipped { A2_V } else { A2_A } + origin),
-            TileType::A3 => arcs.push(if flipped { A3_V } else { A3_A } + origin),
+
             TileType::C1 => {
                 lines.push(if flipped { L1_V } else { L1_A } + origin);
                 arcs.push(if flipped { A1_V } else { A1_A } + origin);
@@ -174,9 +188,10 @@ impl Tile {
                 lines.push(if flipped { S2_V } else { S2_A } + origin);
                 lines.push(if flipped { S3_V } else { S3_A } + origin);
             }
-            _ => {
+            TileType::Z1 => {
                 create_triangle(flipped).map(|line| lines.push(line + origin));
             }
+            _ => {}
         }
         return Tile {
             lines,
