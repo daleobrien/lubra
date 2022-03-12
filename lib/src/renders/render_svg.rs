@@ -12,8 +12,8 @@ use crate::renders::constants::{D, H, M, Q1, U, V, W, Y, Z};
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, M1_A, M1_V, M2_A, M2_V,
-    M3_A, M3_V, P1_A, P1_V, P2_A, P2_V, Q1_A, Q1_V, S1_A, S1_V, S2_A, S2_V, S3_A, S3_V, TRIANGLE_A,
-    TRIANGLE_V,
+    M3_A, M3_V, P1_A, P1_V, P2_A, P2_V, Q1_A, Q1_V, Q2_A, Q2_V, S1_A, S1_V, S2_A, S2_V, S3_A, S3_V,
+    TRIANGLE_A, TRIANGLE_V,
 };
 
 pub struct Path {
@@ -280,12 +280,19 @@ impl Tile {
             }
             TileType::C2 => {
                 let line1 = if flipped { P2_V } else { P2_A } + origin;
+                let line2 = if flipped { Q2_V } else { Q2_A } + origin;
                 if flipped {
                     lines.push(line1 + Point { x: -V, y: Y });
                     lines.push(line1 + Point { x: V, y: -Y });
+
+                    faint.push(line2 + Point { x: -V, y: Y });
+                    faint.push(line2 + Point { x: V, y: -Y });
                 } else {
                     lines.push(line1 + Point { x: V, y: Y });
                     lines.push(line1 + Point { x: -V, y: -Y });
+
+                    faint.push(line2 + Point { x: V, y: Y });
+                    faint.push(line2 + Point { x: -V, y: -Y });
                 }
             }
             TileType::C3 => lines.push(if flipped { L3_V } else { L3_A } + origin),

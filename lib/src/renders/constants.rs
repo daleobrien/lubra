@@ -19,7 +19,8 @@ pub const D: f64 = 28.86751345948128822545743902509787278238;
 // U Cos[30]/6, or U/12 or 1/(4 Sqrt[3])
 pub const Y: f64 = 14.43375672974064411272871951254893639119;
 
-// Sqrt[5 - Sqrt[21]] / 3  -> height between edge up to arc
+// Height between edge up to arc
+// Sqrt[5 - Sqrt[21]] / 3
 pub const P: f64 = 21.53612739984605478977441096017763182983;
 
 // Cos[60] P (y delta)
@@ -27,5 +28,10 @@ pub const S: f64 = 10.76806369992302739488720548008881591492;
 // Sin[60] P (x delta)
 pub const T: f64 = 18.65083342740479237134084386215752018330;
 
-// hieght from P to 2/3 up the triangle 1/Sqrt[3] - P
+// Height from P to 2/3 up the triangle 1/Sqrt[3] - P
 pub const Q: f64 = 36.19889951911652166114046709001811373493;
+
+// Cos[60] Q (y delta)
+pub const K: f64 = 18.09944975955826083057023354500905686746;
+// Sin[60] Q (x delta)
+pub const L: f64 = 31.34916657259520762865915613784247981670;
