@@ -8,11 +8,11 @@ use rand::{
     Rng,
 };
 
-use crate::renders::constants::{Rd, H, M, Q1, U};
+use crate::renders::constants::{H, M, Q1, THICKNESS, U};
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
-    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, S1_A, S1_V, S2_A, S2_V,
-    S3_A, S3_V, TRIANGLE_A, TRIANGLE_V,
+    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, M1_A, M1_V, S1_A, S1_V,
+    S2_A, S2_V, S3_A, S3_V, TRIANGLE_A, TRIANGLE_V,
 };
 
 pub struct Path {
@@ -93,11 +93,44 @@ impl Path {
             ccw = ccw,
         ));
     }
+
+    pub fn semi(&mut self, arc: &Segment) {
+        let ccw = "1";
+        let x = arc.centre.x;
+        let y = arc.centre.y;
+        let r = arc.radius;
+        let segment = arc.segment;
+
+        let pi6 = 2.0 * std::f64::consts::FRAC_PI_6;
+        let angles_from_segment: HashMap<u64, (f64, f64)> = HashMap::from([
+            (1, (0.0 * pi6, 3.0 * pi6)),
+            (2, (1.0 * pi6, 4.0 * pi6)),
+            (3, (2.0 * pi6, 5.0 * pi6)),
+            (4, (3.0 * pi6, 6.0 * pi6)),
+            (5, (4.0 * pi6, 7.0 * pi6)),
+            (6, (5.0 * pi6, 8.0 * pi6)),
+        ]);
+
+        assert!(segment <= 6 && segment > 0);
+        let (start, end) = angles_from_segment.get(&segment).unwrap_or(&(0.0, 0.0));
+        let (a, b) = self.polar(x, y, r, *start);
+        let (c, d) = self.polar(x, y, r, *end);
+        self.path.push_str(&format!(
+            "M {a} {b} A {r} {r} 0 0 {ccw} {c} {d} ",
+            a = a,
+            b = b,
+            c = c,
+            d = d,
+            r = r,
+            ccw = ccw,
+        ));
+    }
 }
 
 pub struct Tile {
     lines: Vec<Line>,
     arcs: Vec<Segment>,
+    semi: Vec<Segment>,
     coordinate: Coordinate,
 }
 
@@ -145,6 +178,7 @@ impl Tile {
     fn new(coordinate: Coordinate, tile: TileType) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
+        let mut semi: Vec<Segment> = Vec::new();
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
@@ -152,37 +186,34 @@ impl Tile {
             TileType::A1 => Some(if flipped { A1_V } else { A1_A } + origin),
             TileType::A2 => Some(if flipped { A2_V } else { A2_A } + origin),
             TileType::A3 => Some(if flipped { A3_V } else { A3_A } + origin),
+            TileType::C1 => Some(if flipped { A1_V } else { A1_A } + origin),
+            TileType::C2 => Some(if flipped { A2_V } else { A2_A } + origin),
+            TileType::C3 => Some(if flipped { A3_V } else { A3_A } + origin),
             _ => None,
         };
 
         match only_an_arc {
             Some(arc) => {
-                arcs.push(arc + Radius { r: -Rd });
-                arcs.push(arc + Radius { r: Rd });
+                arcs.push(arc + Radius { r: -THICKNESS });
+                arcs.push(arc + Radius { r: THICKNESS });
             }
             _ => {}
         }
 
         match tile {
-            TileType::S1 => lines.push(if flipped { S1_V } else { S1_A } + origin),
+            TileType::S1 => {
+                lines.push(if flipped { S1_V } else { S1_A } + origin);
+                semi.push(if flipped { M1_V } else { M1_A } + origin);
+            }
             TileType::S2 => lines.push(if flipped { S2_V } else { S2_A } + origin),
             TileType::S3 => lines.push(if flipped { S3_V } else { S3_A } + origin),
             TileType::L1 => lines.push(if flipped { L1_V } else { L1_A } + origin),
             TileType::L2 => lines.push(if flipped { L2_V } else { L2_A } + origin),
             TileType::L3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
 
-            TileType::C1 => {
-                lines.push(if flipped { L1_V } else { L1_A } + origin);
-                arcs.push(if flipped { A1_V } else { A1_A } + origin);
-            }
-            TileType::C2 => {
-                lines.push(if flipped { L2_V } else { L2_A } + origin);
-                arcs.push(if flipped { A2_V } else { A2_A } + origin);
-            }
-            TileType::C3 => {
-                lines.push(if flipped { L3_V } else { L3_A } + origin);
-                arcs.push(if flipped { A3_V } else { A3_A } + origin);
-            }
+            TileType::C1 => lines.push(if flipped { L1_V } else { L1_A } + origin),
+            TileType::C2 => lines.push(if flipped { L2_V } else { L2_A } + origin),
+            TileType::C3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
             TileType::X1 => {
                 lines.push(if flipped { S1_V } else { S1_A } + origin);
                 lines.push(if flipped { S2_V } else { S2_A } + origin);
@@ -196,6 +227,7 @@ impl Tile {
         return Tile {
             lines,
             arcs,
+            semi,
             coordinate,
         };
     }
@@ -207,6 +239,9 @@ impl Tile {
         }
         for arc in self.arcs.iter() {
             path.arc(arc);
+        }
+        for semi in self.semi.iter() {
+            path.semi(semi);
         }
     }
 }
