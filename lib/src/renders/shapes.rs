@@ -47,8 +47,8 @@ pub const S2_A: Line = Line {
 };
 
 pub const S2_V: Line = Line {
-    start: Point { x: Q1, y: H - C },
-    delta: Point { x: Q1, y: D - C },
+    start: Point { x: Q3, y: H - C },
+    delta: Point { x: -Q1, y: D - C },
 };
 
 pub const S3_A: Line = Line {
@@ -57,8 +57,8 @@ pub const S3_A: Line = Line {
 };
 
 pub const S3_V: Line = Line {
-    start: Point { x: Q3, y: H - C },
-    delta: Point { x: -Q1, y: D - C },
+    start: Point { x: Q1, y: H - C },
+    delta: Point { x: Q1, y: D - C },
 };
 
 pub const P1_A: Line = Line {
@@ -69,6 +69,16 @@ pub const P1_A: Line = Line {
 pub const P1_V: Line = Line {
     start: Point { x: M, y: Z },
     delta: Point { x: Z, y: P },
+};
+
+pub const P2_A: Line = Line {
+    start: Point { x: Q3, y: C },
+    delta: Point { x: -Q1, y: C - D },
+};
+
+pub const P2_V: Line = Line {
+    start: Point { x: Q3, y: H - C },
+    delta: Point { x: -Q1, y: D - C },
 };
 
 pub const Q1_A: Line = Line {
@@ -124,7 +134,7 @@ pub const M1_A: Segment = Segment {
 pub const M2_V: Segment = Segment {
     centre: Point { x: M, y: D },
     radius: W,
-    segment: 5,
+    segment: 3,
 };
 pub const M2_A: Segment = Segment {
     centre: Point { x: M, y: H - D },
@@ -134,7 +144,7 @@ pub const M2_A: Segment = Segment {
 pub const M3_V: Segment = Segment {
     centre: Point { x: M, y: D },
     radius: W,
-    segment: 3,
+    segment: 5,
 };
 pub const M3_A: Segment = Segment {
     centre: Point { x: M, y: H - D },

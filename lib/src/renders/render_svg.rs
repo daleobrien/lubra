@@ -12,7 +12,8 @@ use crate::renders::constants::{D, H, M, Q1, U, V, W, Y, Z};
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, M1_A, M1_V, M2_A, M2_V,
-    M3_A, M3_V, P1_A, P1_V, Q1_A, Q1_V, S1_A, S1_V, S2_A, S2_V, S3_A, S3_V, TRIANGLE_A, TRIANGLE_V,
+    M3_A, M3_V, P1_A, P1_V, P2_A, P2_V, Q1_A, Q1_V, S1_A, S1_V, S2_A, S2_V, S3_A, S3_V, TRIANGLE_A,
+    TRIANGLE_V,
 };
 
 pub struct Path {
@@ -212,16 +213,26 @@ impl Tile {
             }
             TileType::S2 => {
                 let line = if flipped { S2_V } else { S2_A } + origin;
-                lines.push(line + Point { x: V, y: Y });
-                lines.push(line + Point { x: -V, y: -Y });
+                if flipped {
+                    lines.push(line + Point { x: -V, y: Y });
+                    lines.push(line + Point { x: V, y: -Y });
+                } else {
+                    lines.push(line + Point { x: V, y: Y });
+                    lines.push(line + Point { x: -V, y: -Y });
+                }
 
                 semi.push(if flipped { M2_V } else { M2_A } + origin);
             }
             TileType::S3 => {
                 let line = if flipped { S3_V } else { S3_A } + origin;
 
-                lines.push(line + Point { x: V, y: -Y });
-                lines.push(line + Point { x: -V, y: Y });
+                if flipped {
+                    lines.push(line + Point { x: -V, y: -Y });
+                    lines.push(line + Point { x: V, y: Y });
+                } else {
+                    lines.push(line + Point { x: V, y: -Y });
+                    lines.push(line + Point { x: -V, y: Y });
+                }
 
                 semi.push(if flipped { M3_V } else { M3_A } + origin);
             }
@@ -267,7 +278,11 @@ impl Tile {
                     lines.push(line3 + Point { x: W, y: D - H });
                 }
             }
-            TileType::C2 => lines.push(if flipped { L2_V } else { L2_A } + origin),
+            TileType::C2 => {
+                let line1 = if flipped { P2_V } else { P2_A } + origin;
+                lines.push(line1 + Point { x: V, y: Y });
+                lines.push(line1 + Point { x: -V, y: -Y });
+            }
             TileType::C3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
             TileType::X1 => {
                 arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
@@ -332,19 +347,19 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
-        // let I: u32 = 2;
-        // let J: u32 = 1;
+        let I: u32 = 2;
+        let J: u32 = 1;
         //
-        let I: u32 = 18;
-        let J: u32 = 10;
+        // let I: u32 = 18;
+        // let J: u32 = 10;
 
         for i in 0..I {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
             for j in 0..J {
-                let tile_type: TileType = rand::random();
-                let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                //let path: Tile = Tile::new(Coordinate { i, j }, TileType::C2);
+                // let tile_type: TileType = rand::random();
+                // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
+                let path: Tile = Tile::new(Coordinate { i, j }, TileType::S3);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
