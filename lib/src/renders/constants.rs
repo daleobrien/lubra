@@ -18,3 +18,8 @@ pub const D: f64 = 28.86751345948128822545743902509787278238;
 
 // U Cos[30]/6, or U/12 or 1/(4 Sqrt[3])
 pub const Y: f64 = 14.43375672974064411272871951254893639119;
+
+// Sqrt[5 - Sqrt[21]] / 3  -> height between edge up to arc
+pub const P: f64 = 21.53612739984605478977441096017763182983;
+// hieght from P to 2/3 up the triangle 1/Sqrt[3] - P
+pub const Q: f64 = 36.19889951911652166114046709001811373493;

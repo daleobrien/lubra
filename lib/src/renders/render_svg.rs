@@ -12,7 +12,7 @@ use crate::renders::constants::{H, M, Q1, U, V, W, Y, Z};
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, M1_A, M1_V, M2_A, M2_V,
-    M3_A, M3_V, S1_A, S1_V, S2_A, S2_V, S3_A, S3_V, TRIANGLE_A, TRIANGLE_V,
+    M3_A, M3_V, P1_A, P1_V, Q1_A, Q1_V, S1_A, S1_V, S2_A, S2_V, S3_A, S3_V, TRIANGLE_A, TRIANGLE_V,
 };
 
 pub struct Path {
@@ -129,6 +129,7 @@ impl Path {
 
 pub struct Tile {
     lines: Vec<Line>,
+    faint: Vec<Line>,
     arcs: Vec<Segment>,
     semi: Vec<Segment>,
     coordinate: Coordinate,
@@ -177,6 +178,7 @@ impl Distribution<TileType> for Standard {
 impl Tile {
     fn new(coordinate: Coordinate, tile: TileType) -> Self {
         let mut lines: Vec<Line> = Vec::new();
+        let mut faint: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
         let mut semi: Vec<Segment> = Vec::new();
 
@@ -228,10 +230,34 @@ impl Tile {
                 lines.push(line + Point { x: W, y: Z });
                 lines.push(line + Point { x: -W, y: Z });
             }
-            TileType::L2 => lines.push(if flipped { L2_V } else { L2_A } + origin),
-            TileType::L3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
+            TileType::L2 => {
+                if flipped {
+                    lines.push(L2_V + origin + Point { x: V, y: -Y });
+                    lines.push(L2_V + origin + Point { x: -V, y: Y });
+                } else {
+                    lines.push(L2_A + origin + Point { x: V, y: Y });
+                    lines.push(L2_A + origin + Point { x: -V, y: -Y });
+                }
+            }
+            TileType::L3 => {
+                if flipped {
+                    lines.push(L3_V + origin + Point { x: -V, y: -Y });
+                    lines.push(L3_V + origin + Point { x: V, y: Y });
+                } else {
+                    lines.push(L3_A + origin + Point { x: -V, y: Y });
+                    lines.push(L3_A + origin + Point { x: V, y: -Y });
+                }
+            }
 
-            TileType::C1 => lines.push(if flipped { L1_V } else { L1_A } + origin),
+            TileType::C1 => {
+                let line1 = if flipped { P1_V } else { P1_A } + origin;
+                lines.push(line1 + Point { x: -W, y: Z });
+                lines.push(line1 + Point { x: W, y: Z });
+
+                let line2 = if flipped { Q1_V } else { Q1_A } + origin;
+                faint.push(line2 + Point { x: -W, y: Z });
+                faint.push(line2 + Point { x: W, y: Z });
+            }
             TileType::C2 => lines.push(if flipped { L2_V } else { L2_A } + origin),
             TileType::C3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
             TileType::X1 => {
@@ -246,16 +272,20 @@ impl Tile {
         }
         return Tile {
             lines,
+            faint,
             arcs,
             semi,
             coordinate,
         };
     }
 
-    pub fn add_to_path(&self, path: &mut Path) {
+    pub fn add_to_path(&self, path: &mut Path, faint_path: &mut Path) {
         // self.lines.iter().map(|line| path.line(line));
         for line in self.lines.iter() {
             path.line(line);
+        }
+        for line in self.faint.iter() {
+            faint_path.line(line);
         }
         for arc in self.arcs.iter() {
             path.arc(arc);
@@ -293,19 +323,19 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
-        // let I: u32 = 2;
-        // let J: u32 = 1;
+        let I: u32 = 2;
+        let J: u32 = 1;
         //
-        let I: u32 = 18;
-        let J: u32 = 10;
+        // let I: u32 = 18;
+        // let J: u32 = 10;
 
         for i in 0..I {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
             for j in 0..J {
-                let tile_type: TileType = rand::random();
-                let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                // let path: Tile = Tile::new(Coordinate { i, j }, TileType::S3);
+                // let tile_type: TileType = rand::random();
+                // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
+                let path: Tile = Tile::new(Coordinate { i, j }, TileType::C1);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
@@ -344,19 +374,21 @@ impl RenderSvg {
         svg.push_str(&format!("<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke=\"black\">", w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
 
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
+        let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
         let mut wall = Path::new("red".to_string(), 1.0, 0.5);
 
         for row in &self.tiles {
             for tile in row {
-                tile.add_to_path(&mut path)
+                tile.add_to_path(&mut path, &mut faint_path);
             }
         }
         for row in &self.walls {
             for tile in row {
-                tile.add_to_path(&mut wall)
+                tile.add_to_path(&mut wall, &mut faint_path)
             }
         }
 
+        svg.push_str(&faint_path.to_string());
         svg.push_str(&path.to_string());
         svg.push_str(&wall.to_string());
         svg.push_str("</svg>");
