@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
-use crate::renders::constants::{M, U};
+use crate::renders::constants::{H, M, U};
 use crate::renders::primatives::{Coordinate, Line, Point, Segment};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, S1_A, S1_V, S2_A, S2_V,
@@ -171,7 +171,7 @@ pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool
         x: M * coordinate.i as f64,
         y: U * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
     };
-    let flipped = (coordinate.j + coordinate.i) % 2 == 0;
+    let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
     return (origin, flipped);
 }
@@ -187,9 +187,12 @@ impl RenderSvg {
     pub fn new() -> Self {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
 
-        for i in 1..8 {
+        let I: u32 = 18;
+        let J: u32 = 10;
+
+        for i in 0..I {
             let mut row: Vec<Tile> = Vec::new();
-            for j in 1..6 {
+            for j in 0..J {
                 let tile: Tile = Tile::new(Coordinate { i, j }, TileType::C1);
                 row.push(tile);
             }
@@ -199,8 +202,8 @@ impl RenderSvg {
         let mut obj = Self {
             style: None,
             tiles: tiles,
-            width: 1000.0,
-            height: 1000.0,
+            width: (I + 1) as f64 * M,
+            height: (J) as f64 * H,
         };
 
         return obj;
@@ -217,8 +220,8 @@ impl RenderSvg {
 
         let view_box = format!(
             "viewBox=\"-{m} -{m} {w} {h}\" ",
-            w = w + margin,
-            h = h + margin,
+            w = w + 2.0 * margin,
+            h = h + 2.0 * margin,
             m = margin
         );
 
