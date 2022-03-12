@@ -8,11 +8,11 @@ use rand::{
     Rng,
 };
 
-use crate::renders::constants::{H, M, Q1, THICKNESS, U};
+use crate::renders::constants::{H, M, Q1, U, V, W, Y, Z};
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
-    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, M1_A, M1_V, S1_A, S1_V,
-    S2_A, S2_V, S3_A, S3_V, TRIANGLE_A, TRIANGLE_V,
+    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, L1_A, L1_V, L2_A, L2_V, L3_A, L3_V, M1_A, M1_V, M2_A, M2_V,
+    S1_A, S1_V, S2_A, S2_V, S3_A, S3_V, TRIANGLE_A, TRIANGLE_V,
 };
 
 pub struct Path {
@@ -194,20 +194,33 @@ impl Tile {
 
         match only_an_arc {
             Some(arc) => {
-                arcs.push(arc + Radius { r: -THICKNESS });
-                arcs.push(arc + Radius { r: THICKNESS });
+                arcs.push(arc + Radius { r: -W });
+                arcs.push(arc + Radius { r: W });
             }
             _ => {}
         }
 
         match tile {
             TileType::S1 => {
-                lines.push(if flipped { S1_V } else { S1_A } + origin);
+                let line = if flipped { S1_V } else { S1_A } + origin;
+                lines.push(line + Point { x: W, y: Z });
+                lines.push(line + Point { x: -W, y: Z });
+
                 semi.push(if flipped { M1_V } else { M1_A } + origin);
             }
-            TileType::S2 => lines.push(if flipped { S2_V } else { S2_A } + origin),
+            TileType::S2 => {
+                let line = if flipped { S2_V } else { S2_A } + origin;
+                lines.push(line + Point { x: V, y: Y });
+                lines.push(line + Point { x: -V, y: -Y });
+
+                semi.push(if flipped { M2_V } else { M2_A } + origin);
+            }
             TileType::S3 => lines.push(if flipped { S3_V } else { S3_A } + origin),
-            TileType::L1 => lines.push(if flipped { L1_V } else { L1_A } + origin),
+            TileType::L1 => {
+                let line = if flipped { L1_V } else { L1_A } + origin;
+                lines.push(line + Point { x: W, y: Z });
+                lines.push(line + Point { x: -W, y: Z });
+            }
             TileType::L2 => lines.push(if flipped { L2_V } else { L2_A } + origin),
             TileType::L3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
 
@@ -215,9 +228,9 @@ impl Tile {
             TileType::C2 => lines.push(if flipped { L2_V } else { L2_A } + origin),
             TileType::C3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
             TileType::X1 => {
-                lines.push(if flipped { S1_V } else { S1_A } + origin);
-                lines.push(if flipped { S2_V } else { S2_A } + origin);
-                lines.push(if flipped { S3_V } else { S3_A } + origin);
+                arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
+                arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
+                arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
             }
             TileType::Z1 => {
                 create_triangle(flipped).map(|line| lines.push(line + origin));
@@ -273,6 +286,9 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
+        // let I: u32 = 2;
+        // let J: u32 = 1;
+
         let I: u32 = 18;
         let J: u32 = 10;
 
@@ -282,6 +298,7 @@ impl RenderSvg {
             for j in 0..J {
                 let tile_type: TileType = rand::random();
                 let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
+                //let path: Tile = Tile::new(Coordinate { i, j }, TileType::S2);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
