@@ -1,34 +1,10 @@
 use std::collections::HashMap;
 use std::error::Error;
-use std::fmt::format;
 use std::fs;
-use std::io::prelude::*;
-use std::ptr::addr_of_mut;
 
-const U: f64 = 100.0;
-const M: f64 = 50.0;
-const H: f64 = 86.60254037844386; // U * f64::sqrt(3.0) / 2.0;
-
-pub struct Point {
-    x: f64,
-    y: f64,
-}
-
-pub struct Line {
-    start: Point,
-    delta: Point,
-}
-
-pub struct Coordinate {
-    i: u32,
-    j: u32,
-}
-
-pub struct Segment {
-    centre: Point,
-    radius: f64,
-    segment: u64, // Can be much smaller, but now this structure is alligned
-}
+use crate::renders::constants::{C, D, H, M, U};
+use crate::renders::primatives::{Coordinate, Line, Point, Segment};
+use crate::renders::shapes::{SHORT_S1_A, SHORT_S1_V, TRIANGLE_A, TRIANGLE_V};
 
 pub struct Path {
     stroke: String,
@@ -109,6 +85,7 @@ impl Path {
 pub struct Tile {
     lines: Vec<Line>,
     arcs: Vec<Segment>,
+    coordinate: Coordinate,
 }
 
 impl Tile {
@@ -123,40 +100,36 @@ impl Tile {
 }
 
 pub trait S1 {
-    fn new(origin: Point) -> Self;
+    fn new(coordinate: Coordinate) -> Self;
+}
+
+pub fn create_triangle(flipped: bool) -> [Line; 3] {
+    return if flipped { TRIANGLE_V } else { TRIANGLE_A };
 }
 
 impl S1 for Tile {
-    fn new(origin: Point) -> Self {
+    fn new(coordinate: Coordinate) -> Self {
         let mut lines: Vec<Line> = Vec::new();
-        let mut arcs: Vec<Segment> = Vec::new();
+        let arcs: Vec<Segment> = Vec::new();
 
-        // Make a consts and add addition, so I can add in the origin with +
-        lines.push(Line {
-            start: Point {
-                x: origin.x,
-                y: origin.y,
-            },
-            delta: Point { x: U, y: 0.0 },
-        });
+        let origin = Point {
+            x: M * coordinate.i as f64,
+            y: U * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
+        };
+        let flipped = (coordinate.j + coordinate.i) % 2 == 0;
 
-        lines.push(Line {
-            start: Point {
-                x: origin.x + U,
-                y: origin.y,
-            },
-            delta: Point { x: -M, y: H },
-        });
-        lines.push(Line {
-            start: Point {
-                x: origin.x + M,
-                y: origin.y + H,
-            },
-            delta: Point { x: -M, y: -H },
-        });
+        create_triangle(flipped).map(|line| lines.push(line + origin));
+
+        if flipped {
+            lines.push(SHORT_S1_V + origin);
+        } else {
+            lines.push(SHORT_S1_A + origin);
+        }
+
         return Tile {
             lines: lines,
             arcs: arcs,
+            coordinate: coordinate,
         };
     }
 }
@@ -172,13 +145,10 @@ impl RenderSvg {
     pub fn new() -> Self {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
 
-        for i in 1..2 {
+        for i in 1..8 {
             let mut row: Vec<Tile> = Vec::new();
-            for j in 1..2 {
-                let tile: Tile = S1::new(Point {
-                    x: U * i as f64,
-                    y: U * f64::sqrt(3.0) / 2.0 * j as f64,
-                });
+            for j in 1..6 {
+                let tile: Tile = S1::new(Coordinate { i, j });
                 row.push(tile);
             }
             tiles.push(row);
@@ -214,7 +184,7 @@ impl RenderSvg {
 
         for row in &self.tiles {
             for tile in row {
-                println!("> {}", tile.to_string());
+                // println!("> {}", tile.to_string());
                 svg.push_str(&tile.to_string());
             }
         }
