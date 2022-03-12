@@ -2,6 +2,11 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 
+use rand::{
+    distributions::{Distribution, Standard},
+    Rng,
+};
+
 use crate::renders::constants::{H, M, U};
 use crate::renders::primatives::{Coordinate, Line, Point, Segment};
 use crate::renders::shapes::{
@@ -95,6 +100,7 @@ pub struct Tile {
     coordinate: Coordinate,
 }
 
+#[derive(Debug)]
 enum TileType {
     S1,
     S2,
@@ -108,6 +114,30 @@ enum TileType {
     C1,
     C2,
     C3,
+    X1,
+    Z1,
+}
+
+impl Distribution<TileType> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> TileType {
+        match rng.gen_range(0..=12) {
+            // rand 0.8
+            0 => TileType::S1,
+            1 => TileType::S2,
+            2 => TileType::S3,
+            3 => TileType::A1,
+            4 => TileType::A2,
+            5 => TileType::A3,
+            6 => TileType::L1,
+            7 => TileType::L2,
+            8 => TileType::L3,
+            9 => TileType::C1,
+            10 => TileType::C2,
+            11 => TileType::C3,
+            12 => TileType::X1,
+            _ => TileType::Z1,
+        }
+    }
 }
 
 impl Tile {
@@ -141,6 +171,12 @@ impl Tile {
                 lines.push(if flipped { L3_V } else { L3_A } + origin);
                 arcs.push(if flipped { A3_V } else { A3_A } + origin);
             }
+            TileType::X1 => {
+                lines.push(if flipped { S1_V } else { S1_A } + origin);
+                lines.push(if flipped { S2_V } else { S2_A } + origin);
+                lines.push(if flipped { S3_V } else { S3_A } + origin);
+            }
+            _ => {}
         }
         return Tile {
             lines,
@@ -150,7 +186,7 @@ impl Tile {
     }
 
     pub fn to_string(&self) -> String {
-        let mut path = Path::new("black".to_string(), 1.0, 1.0);
+        let mut path = Path::new("black".to_string(), 3.0, 1.0);
         // self.lines.iter().map(|line| path.line(line));
         for line in self.lines.iter() {
             path.line(line);
@@ -179,6 +215,7 @@ pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool
 pub struct RenderSvg {
     pub style: Option<String>,
     tiles: Vec<Vec<Tile>>,
+    walls: Vec<Vec<Tile>>,
     width: f64,
     height: f64,
 }
@@ -186,22 +223,29 @@ pub struct RenderSvg {
 impl RenderSvg {
     pub fn new() -> Self {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
+        let mut walls: Vec<Vec<Tile>> = Vec::new();
 
         let I: u32 = 18;
         let J: u32 = 10;
 
         for i in 0..I {
-            let mut row: Vec<Tile> = Vec::new();
+            let mut row_path: Vec<Tile> = Vec::new();
+            let mut row_wall: Vec<Tile> = Vec::new();
             for j in 0..J {
-                let tile: Tile = Tile::new(Coordinate { i, j }, TileType::C1);
-                row.push(tile);
+                let tile_type: TileType = rand::random();
+                let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
+                let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
+                row_path.push(path);
+                row_wall.push(wall);
             }
-            tiles.push(row);
+            tiles.push(row_path);
+            walls.push(row_wall);
         }
 
         let mut obj = Self {
             style: None,
-            tiles: tiles,
+            tiles,
+            walls,
             width: (I + 1) as f64 * M,
             height: (J) as f64 * H,
         };
