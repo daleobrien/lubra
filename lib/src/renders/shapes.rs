@@ -101,3 +101,14 @@ pub const A1_A: Segment = Segment {
     radius: M,
     segment: 2,
 };
+
+pub const A2_V: Segment = Segment {
+    centre: Point { x: U, y: Z },
+    radius: M,
+    segment: 3,
+};
+pub const A2_A: Segment = Segment {
+    centre: Point { x: Z, y: H },
+    radius: M,
+    segment: 6,
+};
