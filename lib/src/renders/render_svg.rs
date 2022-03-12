@@ -147,8 +147,6 @@ impl Tile {
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
-        create_triangle(flipped).map(|line| lines.push(line + origin));
-
         match tile {
             TileType::S1 => lines.push(if flipped { S1_V } else { S1_A } + origin),
             TileType::S2 => lines.push(if flipped { S2_V } else { S2_A } + origin),
@@ -176,7 +174,9 @@ impl Tile {
                 lines.push(if flipped { S2_V } else { S2_A } + origin);
                 lines.push(if flipped { S3_V } else { S3_A } + origin);
             }
-            _ => {}
+            _ => {
+                create_triangle(flipped).map(|line| lines.push(line + origin));
+            }
         }
         return Tile {
             lines,
@@ -185,8 +185,7 @@ impl Tile {
         };
     }
 
-    pub fn to_string(&self) -> String {
-        let mut path = Path::new("black".to_string(), 3.0, 1.0);
+    pub fn add_to_path(&self, path: &mut Path) {
         // self.lines.iter().map(|line| path.line(line));
         for line in self.lines.iter() {
             path.line(line);
@@ -194,7 +193,6 @@ impl Tile {
         for arc in self.arcs.iter() {
             path.arc(arc);
         }
-        return path.to_string();
     }
 }
 
@@ -271,12 +269,22 @@ impl RenderSvg {
 
         svg.push_str(&format!("<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke=\"black\">", w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
 
+        let mut path = Path::new("black".to_string(), 3.0, 1.0);
+        let mut wall = Path::new("red".to_string(), 1.0, 0.5);
+
         for row in &self.tiles {
             for tile in row {
-                // println!("> {}", tile.to_string());
-                svg.push_str(&tile.to_string());
+                tile.add_to_path(&mut path)
             }
         }
+        for row in &self.walls {
+            for tile in row {
+                tile.add_to_path(&mut wall)
+            }
+        }
+
+        svg.push_str(&path.to_string());
+        svg.push_str(&wall.to_string());
         svg.push_str("</svg>");
 
         fs::write(file_name, svg.as_bytes())?;
