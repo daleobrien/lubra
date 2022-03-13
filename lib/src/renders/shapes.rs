@@ -91,3 +91,35 @@ pub const M3_A: Segment = Segment {
     radius: W,
     segment: 6,
 };
+
+pub const N1_A: Segment = Segment {
+    centre: Point { x: M, y: Z },
+    radius: W,
+    segment: 1,
+};
+pub const N1_V: Segment = Segment {
+    centre: Point { x: M, y: H },
+    radius: W,
+    segment: 4,
+};
+pub const N2_V: Segment = Segment {
+    centre: Point { x: Z, y: Z },
+    radius: W,
+    segment: 6,
+};
+pub const N2_A: Segment = Segment {
+    centre: Point { x: Z, y: H },
+    radius: W,
+    segment: 5,
+};
+
+pub const N3_V: Segment = Segment {
+    centre: Point { x: U, y: Z },
+    radius: W,
+    segment: 2,
+};
+pub const N3_A: Segment = Segment {
+    centre: Point { x: U, y: H },
+    radius: W,
+    segment: 3,
+};

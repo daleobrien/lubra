@@ -15,7 +15,8 @@ use crate::renders::constants::{
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
-    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, M1_A, M1_V, M2_A, M2_V, M3_A, M3_V, TRIANGLE_A, TRIANGLE_V,
+    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, M1_A, M1_V, M2_A, M2_V, M3_A, M3_V, N1_A, N1_V, N2_A, N2_V,
+    N3_A, N3_V, TRIANGLE_A, TRIANGLE_V,
 };
 
 pub struct Path {
@@ -151,13 +152,16 @@ enum TileType {
     C1,
     C2,
     C3,
+    N1,
+    N2,
+    N3,
     X1,
     Z1,
 }
 
 impl Distribution<TileType> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> TileType {
-        match rng.gen_range(0..=12) {
+        match rng.gen_range(0..=15) {
             // rand 0.8
             0 => TileType::S1,
             1 => TileType::S2,
@@ -168,10 +172,13 @@ impl Distribution<TileType> for Standard {
             6 => TileType::L1,
             7 => TileType::L2,
             8 => TileType::L3,
-            9 => TileType::C1,
-            10 => TileType::C2,
-            11 => TileType::C3,
-            12 => TileType::X1,
+            9 => TileType::N1,
+            10 => TileType::N2,
+            11 => TileType::N3,
+            12 => TileType::C1,
+            13 => TileType::C2,
+            14 => TileType::C3,
+            15 => TileType::X1,
             _ => TileType::Z1,
         }
     }
@@ -236,6 +243,27 @@ impl Tile {
                     lines.push(L34 + origin);
                     lines.push(L33 + origin);
                     semi.push(M3_A + origin);
+                }
+            }
+            TileType::N1 => {
+                if flipped {
+                    semi.push(N1_V + origin);
+                } else {
+                    semi.push(N1_A + origin);
+                }
+            }
+            TileType::N2 => {
+                if flipped {
+                    semi.push(N2_V + origin);
+                } else {
+                    semi.push(N2_A + origin);
+                }
+            }
+            TileType::N3 => {
+                if flipped {
+                    semi.push(N3_V + origin);
+                } else {
+                    semi.push(N3_A + origin);
                 }
             }
             TileType::L1 => {
@@ -374,10 +402,10 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
-        // let n: u32 = 2;
-        // let m: u32 = 1;
+        //let n: u32 = 2;
+        //let m: u32 = 1;
         //
-        let n: u32 = 18;
+        let n: u32 = 19;
         let m: u32 = 10;
 
         for i in 0..n {
@@ -386,7 +414,7 @@ impl RenderSvg {
             for j in 0..m {
                 let tile_type: TileType = rand::random();
                 let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                //let path: Tile = Tile::new(Coordinate { i, j }, TileType::C3);
+                //let path: Tile = Tile::new(Coordinate { i, j }, TileType::N3);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
@@ -411,7 +439,7 @@ impl RenderSvg {
     pub fn render(self, file_name: String) -> Result<(), Box<dyn Error>> {
         let mut svg = String::new();
 
-        let margin = 10.0;
+        let margin = 50.0;
         let w = self.width;
         let h = self.height;
 
