@@ -9,7 +9,8 @@ use rand::{
 };
 
 use crate::renders::constants::{
-    H, L03, L04, L05, L06, L09, L10, L18, L27, L28, L29, L30, L33, L34, M, Q1, U, W, Z,
+    H, L03, L04, L05, L06, L09, L10, L18, L27, L28, L29, L30, L33, L34, L41, L49, L50, L51, L52,
+    L53, L54, L56, L57, L59, L60, M, Q1, U, W, Z,
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
@@ -237,29 +238,28 @@ impl Tile {
                     semi.push(M3_A + origin);
                 }
             }
-            // TileType::L1 => {
-            //     let line = if flipped { L1_V } else { L1_A } + origin;
-            //     lines.push(line + Point { x: W, y: Z });
-            //     lines.push(line + Point { x: -W, y: Z });
-            // }
-            // TileType::L2 => {
-            //     if flipped {
-            //         lines.push(L2_V + origin + Point { x: V, y: -Y });
-            //         lines.push(L2_V + origin + Point { x: -V, y: Y });
-            //     } else {
-            //         lines.push(L2_A + origin + Point { x: V, y: Y });
-            //         lines.push(L2_A + origin + Point { x: -V, y: -Y });
-            //     }
-            // }
-            // TileType::L3 => {
-            //     if flipped {
-            //         lines.push(L3_V + origin + Point { x: -V, y: -Y });
-            //         lines.push(L3_V + origin + Point { x: V, y: Y });
-            //     } else {
-            //         lines.push(L3_A + origin + Point { x: -V, y: Y });
-            //         lines.push(L3_A + origin + Point { x: V, y: -Y });
-            //     }
-            // }
+            TileType::L1 => {
+                lines.push(L49 + origin);
+                lines.push(L52 + origin);
+            }
+            TileType::L2 => {
+                if flipped {
+                    lines.push(L51 + origin);
+                    lines.push(L54 + origin);
+                } else {
+                    lines.push(L60 + origin);
+                    lines.push(L57 + origin);
+                }
+            }
+            TileType::L3 => {
+                if flipped {
+                    lines.push(L50 + origin);
+                    lines.push(L53 + origin);
+                } else {
+                    lines.push(L59 + origin);
+                    lines.push(L56 + origin);
+                }
+            }
             //
             // TileType::C1 => {
             //     let line1 = if flipped { P1_V } else { P1_A } + origin;
@@ -372,7 +372,7 @@ impl RenderSvg {
             for j in 0..J {
                 // let tile_type: TileType = rand::random();
                 // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                let path: Tile = Tile::new(Coordinate { i, j }, TileType::S3);
+                let path: Tile = Tile::new(Coordinate { i, j }, TileType::A3);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
