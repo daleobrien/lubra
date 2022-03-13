@@ -16,7 +16,7 @@ use crate::renders::constants::{
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, M1_A, M1_V, M2_A, M2_V, M3_A, M3_V, N1_A, N1_V, N2_A, N2_V,
-    N3_A, N3_V, TRIANGLE_A, TRIANGLE_V,
+    N3_A, N3_V, T1_A, T1_V, T2_A, T2_V, T3_A, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
 
 pub struct Path {
@@ -143,6 +143,9 @@ enum TileType {
     S1,
     S2,
     S3,
+    T1,
+    T2,
+    T3,
     A1,
     A2,
     A3,
@@ -155,13 +158,16 @@ enum TileType {
     N1,
     N2,
     N3,
+    M1,
+    M2,
+    M3,
     X1,
     Z1,
 }
 
 impl Distribution<TileType> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> TileType {
-        match rng.gen_range(0..=15) {
+        match rng.gen_range(0..=21) {
             // rand 0.8
             0 => TileType::S1,
             1 => TileType::S2,
@@ -178,7 +184,13 @@ impl Distribution<TileType> for Standard {
             12 => TileType::C1,
             13 => TileType::C2,
             14 => TileType::C3,
-            15 => TileType::X1,
+            15 => TileType::M1,
+            16 => TileType::M2,
+            17 => TileType::M3,
+            18 => TileType::T1,
+            19 => TileType::T2,
+            20 => TileType::T3,
+            21 => TileType::X1,
             _ => TileType::Z1,
         }
     }
@@ -245,6 +257,27 @@ impl Tile {
                     semi.push(M3_A + origin);
                 }
             }
+            TileType::T1 => {
+                if flipped {
+                    semi.push(T1_V + origin);
+                } else {
+                    semi.push(T1_A + origin);
+                }
+            }
+            TileType::T2 => {
+                if flipped {
+                    semi.push(T2_V + origin);
+                } else {
+                    semi.push(T2_A + origin);
+                }
+            }
+            TileType::T3 => {
+                if flipped {
+                    semi.push(T3_V + origin);
+                } else {
+                    semi.push(T3_A + origin);
+                }
+            }
             TileType::N1 => {
                 if flipped {
                     semi.push(N1_V + origin);
@@ -264,6 +297,33 @@ impl Tile {
                     semi.push(N3_V + origin);
                 } else {
                     semi.push(N3_A + origin);
+                }
+            }
+            TileType::M1 => {
+                if flipped {
+                    semi.push(N2_V + origin);
+                    semi.push(N3_V + origin);
+                } else {
+                    semi.push(N2_A + origin);
+                    semi.push(N3_A + origin);
+                }
+            }
+            TileType::M2 => {
+                if flipped {
+                    semi.push(N1_V + origin);
+                    semi.push(N3_V + origin);
+                } else {
+                    semi.push(N1_A + origin);
+                    semi.push(N3_A + origin);
+                }
+            }
+            TileType::M3 => {
+                if flipped {
+                    semi.push(N1_V + origin);
+                    semi.push(N2_V + origin);
+                } else {
+                    semi.push(N1_A + origin);
+                    semi.push(N2_A + origin);
                 }
             }
             TileType::L1 => {
@@ -402,19 +462,19 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
-        //let n: u32 = 2;
-        //let m: u32 = 1;
+        let n: u32 = 2;
+        let m: u32 = 1;
         //
-        let n: u32 = 19;
-        let m: u32 = 10;
+        //let n: u32 = 19;
+        //let m: u32 = 10;
 
         for i in 0..n {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
             for j in 0..m {
-                let tile_type: TileType = rand::random();
-                let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                //let path: Tile = Tile::new(Coordinate { i, j }, TileType::N3);
+                //let tile_type: TileType = rand::random();
+                //let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
+                let path: Tile = Tile::new(Coordinate { i, j }, TileType::T3);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);

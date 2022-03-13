@@ -1,4 +1,4 @@
-use crate::renders::constants::{D, H, M, U, W, Z};
+use crate::renders::constants::{D, H, M, Q1, Q3, U, W, Z};
 use crate::renders::primatives::{Line, Point, Segment};
 
 pub const TRIANGLE_A: [Line; 3] = [
@@ -59,6 +59,37 @@ pub const A3_A: Segment = Segment {
     centre: Point { x: U, y: H },
     radius: M,
     segment: 4,
+};
+
+pub const T1_V: Segment = Segment {
+    centre: Point { x: M, y: Z },
+    radius: W,
+    segment: 1,
+};
+pub const T1_A: Segment = Segment {
+    centre: Point { x: M, y: H },
+    radius: W,
+    segment: 4,
+};
+pub const T2_V: Segment = Segment {
+    centre: Point { x: Q3, y: H / 2.0 },
+    radius: W,
+    segment: 3,
+};
+pub const T2_A: Segment = Segment {
+    centre: Point { x: Q3, y: H / 2.0 },
+    radius: W,
+    segment: 2,
+};
+pub const T3_V: Segment = Segment {
+    centre: Point { x: Q1, y: H / 2.0 },
+    radius: W,
+    segment: 5,
+};
+pub const T3_A: Segment = Segment {
+    centre: Point { x: Q1, y: H / 2.0 },
+    radius: W,
+    segment: 6,
 };
 
 pub const M1_V: Segment = Segment {

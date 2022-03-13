@@ -1,6 +1,8 @@
 use crate::renders::primatives::{Line, Point};
 
 pub const U: f64 = 120.0;
+pub const Q1: f64 = 30.0;
+pub const Q3: f64 = 90.0;
 pub const M: f64 = 60.0;
 pub const Z: f64 = 0.0;
 
