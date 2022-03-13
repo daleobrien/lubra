@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::ops::{Add, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Point {
@@ -21,6 +21,16 @@ impl Add for Point {
         }
     }
 }
+impl Sub for Point {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        Self {
+            x: self.x - other.x,
+            y: self.y - other.y,
+        }
+    }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Line {
@@ -36,6 +46,20 @@ impl Add<Point> for Line {
             start: Point {
                 x: self.start.x + other.x,
                 y: self.start.y + other.y,
+            },
+            delta: self.delta,
+        }
+    }
+}
+
+impl Sub<Point> for Line {
+    type Output = Self;
+
+    fn sub(self, other: Point) -> Self {
+        Self {
+            start: Point {
+                x: self.start.x - other.x,
+                y: self.start.y - other.y,
             },
             delta: self.delta,
         }
