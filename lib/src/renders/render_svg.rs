@@ -9,8 +9,10 @@ use rand::{
 };
 
 use crate::renders::constants::{
-    H, L03, L04, L05, L06, L09, L10, L18, L27, L28, L29, L30, L33, L34, L41, L49, L50, L51, L52,
-    L53, L54, L56, L57, L59, L60, M, Q1, U, W, Z,
+    H, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, L13, L14, L15, L16, L17, L18,
+    L19, L20, L21, L22, L24, L25, L26, L27, L28, L29, L30, L31, L32, L33, L34, L35, L36, L37, L38,
+    L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59,
+    L60, M, Q1, U, W, Z,
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
@@ -261,47 +263,62 @@ impl Tile {
                 }
             }
             //
-            // TileType::C1 => {
-            //     let line1 = if flipped { P1_V } else { P1_A } + origin;
-            //     lines.push(line1 + Point { x: -W, y: Z });
-            //     lines.push(line1 + Point { x: W, y: Z });
-            //
-            //     let line2 = if flipped { Q1_V } else { Q1_A } + origin;
-            //     faint.push(line2 + Point { x: -W, y: Z });
-            //     faint.push(line2 + Point { x: W, y: Z });
-            //
-            //     let line3 = if flipped { S1_V } else { S1_A } + origin;
-            //     if flipped {
-            //         lines.push(line3 + Point { x: -W, y: H - D });
-            //         lines.push(line3 + Point { x: W, y: H - D });
-            //     } else {
-            //         lines.push(line3 + Point { x: -W, y: D - H });
-            //         lines.push(line3 + Point { x: W, y: D - H });
-            //     }
-            // }
-            // TileType::C2 => {
-            //     let line1 = if flipped { P2_V } else { P2_A } + origin;
-            //     let line2 = if flipped { Q2_V } else { Q2_A } + origin;
-            //     if flipped {
-            //         lines.push(line1 + Point { x: -V, y: Y });
-            //         lines.push(line1 + Point { x: V, y: -Y });
-            //
-            //         faint.push(line2 + Point { x: -V, y: Y });
-            //         faint.push(line2 + Point { x: V, y: -Y });
-            //     } else {
-            //         lines.push(line1 + Point { x: V, y: Y });
-            //         lines.push(line1 + Point { x: -V, y: -Y });
-            //
-            //         faint.push(line2 + Point { x: V, y: Y });
-            //         faint.push(line2 + Point { x: -V, y: -Y });
-            //     }
-            // }
-            // TileType::C3 => lines.push(if flipped { L3_V } else { L3_A } + origin),
-            // TileType::X1 => {
-            //     arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
-            //     arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
-            //     arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
-            // }
+            TileType::C1 => {
+                if flipped {
+                    lines.push(L07 + origin);
+                    lines.push(L08 + origin);
+                    lines.push(L18 + origin);
+                    lines.push(L17 + origin);
+                    faint.push(L21 + origin);
+                    faint.push(L22 + origin);
+                } else {
+                    lines.push(L31 + origin);
+                    lines.push(L32 + origin);
+                    lines.push(L42 + origin);
+                    lines.push(L41 + origin);
+                    faint.push(L45 + origin);
+                    faint.push(L46 + origin);
+                }
+            }
+            TileType::C2 => {
+                if flipped {
+                    lines.push(L01 + origin);
+                    lines.push(L02 + origin);
+                    lines.push(L15 + origin);
+                    lines.push(L16 + origin);
+                    faint.push(L19 + origin);
+                    faint.push(L20 + origin);
+                } else {
+                    lines.push(L25 + origin);
+                    lines.push(L26 + origin);
+                    lines.push(L40 + origin);
+                    lines.push(L39 + origin);
+                    faint.push(L43 + origin);
+                    faint.push(L44 + origin);
+                }
+            }
+            TileType::C3 => {
+                if flipped {
+                    lines.push(L11 + origin);
+                    lines.push(L12 + origin);
+                    lines.push(L13 + origin);
+                    lines.push(L14 + origin);
+                    faint.push(L24 + origin);
+                    faint.push(L24 + origin);
+                } else {
+                    lines.push(L35 + origin);
+                    lines.push(L36 + origin);
+                    lines.push(L37 + origin);
+                    lines.push(L38 + origin);
+                    faint.push(L47 + origin);
+                    faint.push(L48 + origin);
+                }
+            }
+            TileType::X1 => {
+                arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
+                arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
+                arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
+            }
             TileType::Z1 => {
                 create_triangle(flipped).map(|line| lines.push(line + origin));
             }
@@ -360,19 +377,19 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
-        let I: u32 = 2;
-        let J: u32 = 1;
+        // let I: u32 = 2;
+        // let J: u32 = 1;
         //
-        // let I: u32 = 18;
-        // let J: u32 = 10;
+        let I: u32 = 18;
+        let J: u32 = 10;
 
         for i in 0..I {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
             for j in 0..J {
-                // let tile_type: TileType = rand::random();
-                // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                let path: Tile = Tile::new(Coordinate { i, j }, TileType::A3);
+                let tile_type: TileType = rand::random();
+                let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
+                //let path: Tile = Tile::new(Coordinate { i, j }, TileType::C3);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
