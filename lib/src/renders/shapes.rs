@@ -1,4 +1,4 @@
-use crate::renders::constants::{D, H, M, Q1, Q3, U, W, Z};
+use crate::renders::constants::{D, H, M, U, W, Z};
 use crate::renders::primatives::{Line, Point, Segment};
 
 pub const TRIANGLE_A: [Line; 3] = [

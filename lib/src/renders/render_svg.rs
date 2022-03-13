@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
-use std::ptr::null;
 
 use rand::{
     distributions::{Distribution, Standard},
@@ -10,9 +9,9 @@ use rand::{
 
 use crate::renders::constants::{
     H, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, L13, L14, L15, L16, L17, L18,
-    L19, L20, L21, L22, L24, L25, L26, L27, L28, L29, L30, L31, L32, L33, L34, L35, L36, L37, L38,
-    L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59,
-    L60, M, Q1, U, W, Z,
+    L19, L20, L21, L22, L23, L24, L25, L26, L27, L28, L29, L30, L31, L32, L33, L34, L35, L36, L37,
+    L38, L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57,
+    L59, L60, M, U, W,
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
@@ -136,7 +135,6 @@ pub struct Tile {
     faint: Vec<Line>,
     arcs: Vec<Segment>,
     semi: Vec<Segment>,
-    coordinate: Coordinate,
 }
 
 #[derive(Debug)]
@@ -303,7 +301,7 @@ impl Tile {
                     lines.push(L12 + origin);
                     lines.push(L13 + origin);
                     lines.push(L14 + origin);
-                    faint.push(L24 + origin);
+                    faint.push(L23 + origin);
                     faint.push(L24 + origin);
                 } else {
                     lines.push(L35 + origin);
@@ -329,7 +327,6 @@ impl Tile {
             faint,
             arcs,
             semi,
-            coordinate,
         };
     }
 
@@ -377,16 +374,16 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
-        // let I: u32 = 2;
-        // let J: u32 = 1;
+        // let n: u32 = 2;
+        // let m: u32 = 1;
         //
-        let I: u32 = 18;
-        let J: u32 = 10;
+        let n: u32 = 18;
+        let m: u32 = 10;
 
-        for i in 0..I {
+        for i in 0..n {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
-            for j in 0..J {
+            for j in 0..m {
                 let tile_type: TileType = rand::random();
                 let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
                 //let path: Tile = Tile::new(Coordinate { i, j }, TileType::C3);
@@ -398,12 +395,12 @@ impl RenderSvg {
             walls.push(row_wall);
         }
 
-        let mut obj = Self {
+        let obj = Self {
             style: None,
             tiles,
             walls,
-            width: (I + 1) as f64 * M,
-            height: (J) as f64 * H,
+            width: (n + 1) as f64 * M,
+            height: (m) as f64 * H,
         };
 
         return obj;
