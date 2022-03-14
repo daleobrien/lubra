@@ -206,7 +206,7 @@ impl Distribution<TileType> for Standard {
 }
 
 impl Tile {
-    fn new(coordinate: Coordinate, tile: TileType) -> Self {
+    fn new(coordinate: Coordinate, tile: &TileType) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let mut faint: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
@@ -536,22 +536,92 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
-        let n: u32 = 2;
-        let m: u32 = 1;
+        // let n: u32 = 2;
+        // let m: u32 = 1;
         //
-        //let n: u32 = 19;
-        //let m: u32 = 10;
 
-        for i in 0..n {
+        let them_all = [
+            TileType::S1,
+            TileType::S1,
+            TileType::S2,
+            TileType::S2,
+            TileType::S3,
+            TileType::S3,
+            TileType::A1,
+            TileType::A1,
+            TileType::A2,
+            TileType::A2,
+            TileType::A3,
+            TileType::A3,
+            TileType::L1,
+            TileType::L1,
+            TileType::L2,
+            TileType::L2,
+            TileType::L3,
+            TileType::L3,
+            TileType::N1,
+            TileType::N1,
+            TileType::N2,
+            TileType::N2,
+            TileType::N3,
+            TileType::N3,
+            TileType::C1,
+            TileType::C1,
+            TileType::C2,
+            TileType::C2,
+            TileType::C3,
+            TileType::C3,
+            TileType::M1,
+            TileType::M1,
+            TileType::M2,
+            TileType::M2,
+            TileType::M3,
+            TileType::M3,
+            TileType::T1,
+            TileType::T1,
+            TileType::T2,
+            TileType::T2,
+            TileType::T3,
+            TileType::T3,
+            TileType::Y1,
+            TileType::Y1,
+            TileType::Y2,
+            TileType::Y2,
+            TileType::Y3,
+            TileType::Y3,
+            TileType::X1,
+            TileType::X1,
+            TileType::X1,
+            TileType::X1,
+            TileType::X1,
+            TileType::X1,
+        ];
+
+        let n: u32 = 18;
+        let m: u32 = (them_all.len() as u32) / 3u32;
+
+        let mut tile_index = 0;
+
+        for j in 0..m {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
-            for j in 0..m {
+            if j % 2 != 0 {
+                continue;
+            }
+            for i in 0..n {
+                if i % 3 != 0 {
+                    continue;
+                }
+                println!("{}", tile_index);
                 // let tile_type: TileType = rand::random();
                 // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                let path: Tile = Tile::new(Coordinate { i, j }, TileType::Y3);
-                let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
+                let tile_type = &them_all[tile_index];
+                let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
+                let wall: Tile = Tile::new(Coordinate { i, j }, &TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
+
+                tile_index += 1;
             }
             tiles.push(row_path);
             walls.push(row_wall);
@@ -588,7 +658,7 @@ impl RenderSvg {
 
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
-        let mut wall = Path::new("red".to_string(), 1.0, 0.5);
+        let mut wall = Path::new("brown".to_string(), 1.0, 0.5);
 
         for row in &self.tiles {
             for tile in row {
