@@ -8,10 +8,12 @@ use rand::{
 };
 
 use crate::renders::constants::{
-    H, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, L13, L14, L15, L16, L17, L18,
-    L19, L20, L21, L22, L23, L24, L25, L26, L27, L28, L29, L30, L31, L32, L33, L34, L35, L36, L37,
-    L38, L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57,
-    L59, L60, M, U, W,
+    H, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L100, L102, L103, L104, L106, L107, L109,
+    L11, L112, L113, L116, L118, L12, L120, L13, L14, L15, L16, L17, L18, L19, L20, L21, L22, L23,
+    L24, L25, L26, L27, L28, L29, L30, L31, L32, L33, L34, L35, L36, L37, L38, L39, L40, L41, L42,
+    L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59, L60, L61, L62, L64,
+    L65, L66, L67, L68, L70, L71, L72, L74, L75, L77, L79, L80, L82, L83, L85, L86, L87, L91, L92,
+    L94, L96, L97, L98, M, U, W,
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
@@ -45,7 +47,7 @@ impl Path {
         if d.is_empty() {
             return "".to_string();
         }
-        return format!("<path stroke-opacity=\"{opacity}\" stroke-width=\"{w}\" stroke=\"{colour}\" d=\"{d}\"/>",
+        return format!("<path stroke-opacity=\"{opacity}\" stroke-width=\"{w}\" stroke-linecap=\"round\" stroke=\"{colour}\" d=\"{d}\"/>",
                        opacity = opacity, w = w, colour = colour, d = d);
     }
 
@@ -161,13 +163,16 @@ enum TileType {
     M1,
     M2,
     M3,
+    Y1,
+    Y2,
+    Y3,
     X1,
     Z1,
 }
 
 impl Distribution<TileType> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> TileType {
-        match rng.gen_range(0..=21) {
+        match rng.gen_range(0..=24) {
             // rand 0.8
             0 => TileType::S1,
             1 => TileType::S2,
@@ -190,7 +195,10 @@ impl Distribution<TileType> for Standard {
             18 => TileType::T1,
             19 => TileType::T2,
             20 => TileType::T3,
-            21 => TileType::X1,
+            21 => TileType::Y1,
+            22 => TileType::Y2,
+            23 => TileType::Y3,
+            24 => TileType::X1,
             _ => TileType::Z1,
         }
     }
@@ -348,6 +356,70 @@ impl Tile {
                     lines.push(L56 + origin);
                 }
             }
+            TileType::Y1 => {
+                if flipped {
+                    lines.push(L50 + origin);
+                    lines.push(L53 + origin);
+
+                    lines.push(L74 + origin);
+                    lines.push(L66 + origin);
+                    lines.push(L02 + origin);
+
+                    faint.push(L92 + origin);
+                    faint.push(L103 + origin);
+                } else {
+                    lines.push(L59 + origin);
+                    lines.push(L56 + origin);
+                    //
+                    lines.push(L80 + origin);
+                    lines.push(L26 + origin);
+                    lines.push(L72 + origin);
+                    //
+                    faint.push(L102 + origin);
+                    faint.push(L116 + origin);
+                }
+            }
+            TileType::Y2 => {
+                if flipped {
+                    lines.push(L49 + origin);
+                    lines.push(L52 + origin);
+
+                    lines.push(L62 + origin);
+                    lines.push(L77 + origin);
+                    lines.push(L12 + origin);
+
+                    faint.push(L106 + origin);
+                    faint.push(L96 + origin);
+                } else {
+                    lines.push(L49 + origin);
+                    lines.push(L52 + origin);
+                    lines.push(L67 + origin);
+                    lines.push(L83 + origin);
+                    lines.push(L36 + origin);
+                    faint.push(L120 + origin);
+                    faint.push(L98 + origin);
+                }
+            }
+            TileType::Y3 => {
+                // lines.push(L01 + origin);
+                // lines.push(L64 + origin);
+                // lines.push(L75 + origin);
+
+                // lines.push(L25 + origin);
+                // lines.push(L82 + origin);
+                // lines.push(L70 + origin);
+                if flipped {
+                    lines.push(L51 + origin);
+                    lines.push(L54 + origin);
+                } else {
+                    lines.push(L60 + origin);
+                    lines.push(L57 + origin);
+
+                    lines.push(L68 + origin);
+                    lines.push(L31 + origin);
+                }
+            }
+
             //
             TileType::C1 => {
                 if flipped {
@@ -472,9 +544,9 @@ impl RenderSvg {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
             for j in 0..m {
-                //let tile_type: TileType = rand::random();
-                //let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                let path: Tile = Tile::new(Coordinate { i, j }, TileType::T3);
+                // let tile_type: TileType = rand::random();
+                // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
+                let path: Tile = Tile::new(Coordinate { i, j }, TileType::Y2);
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileType::Z1);
                 row_path.push(path);
                 row_wall.push(wall);
@@ -510,7 +582,7 @@ impl RenderSvg {
             m = margin
         );
 
-        svg.push_str(&format!("<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke=\"black\">", w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
+        svg.push_str(&format!("<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\">", w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
 
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
