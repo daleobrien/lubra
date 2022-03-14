@@ -8,18 +8,17 @@ use rand::{
 };
 
 use crate::renders::constants::{
-    H, L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L100, L101, L102, L103, L104, L105, L106,
-    L107, L108, L109, L11, L110, L111, L112, L113, L114, L115, L116, L117, L118, L12, L120, L122,
-    L123, L124, L128, L13, L14, L15, L16, L17, L18, L19, L20, L21, L22, L23, L24, L25, L26, L27,
-    L28, L29, L30, L31, L32, L33, L34, L35, L36, L37, L38, L39, L40, L41, L42, L43, L44, L45, L46,
-    L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59, L60, L61, L62, L63, L64, L65, L66, L67,
-    L68, L69, L70, L71, L72, L73, L74, L75, L76, L77, L79, L80, L81, L82, L83, L85, L86, L87, L88,
-    L91, L92, L93, L94, L95, L96, L97, L98, L99, M, U, W,
+    H, L01, L02, L07, L08, L102, L103, L106, L107, L108, L109, L11, L110, L111, L112, L113, L114,
+    L115, L116, L117, L118, L12, L120, L122, L123, L124, L128, L13, L14, L15, L16, L17, L18, L19,
+    L20, L21, L22, L23, L24, L25, L26, L27, L28, L29, L30, L31, L32, L33, L34, L35, L36, L37, L38,
+    L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59,
+    L60, L61, L62, L63, L64, L65, L66, L67, L68, L69, L70, L71, L72, L73, L74, L75, L76, L77, L79,
+    L80, L81, L82, L83, L85, L86, L87, L88, L91, L92, L93, L94, L95, L96, L97, L98, L99, M, U, W,
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
-    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, M1_A, M1_V, M2_A, M2_V, M3_A, M3_V, N1_A, N1_V, N2_A, N2_V,
-    N3_A, N3_V, T1_A, T1_V, T2_A, T2_V, T3_A, T3_V, TRIANGLE_A, TRIANGLE_V,
+    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, N1_A, N1_V, N2_A, N2_V, N3_A, N3_V, T1_A, T1_V, T2_A, T2_V,
+    T3_A, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
 
 pub struct Path {
@@ -143,9 +142,9 @@ pub struct Tile {
 
 #[derive(Debug)]
 enum TileType {
-    S1,
-    S2,
-    S3,
+    // S1,
+    // S2,
+    // S3,
     T1,
     T2,
     T3,
@@ -161,9 +160,6 @@ enum TileType {
     N1,
     N2,
     N3,
-    M1,
-    M2,
-    M3,
     Y1,
     Y2,
     Y3,
@@ -173,11 +169,14 @@ enum TileType {
 
 impl Distribution<TileType> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> TileType {
-        match rng.gen_range(0..=24) {
+        match rng.gen_range(0..=18) {
             // rand 0.8
-            0 => TileType::S1,
-            1 => TileType::S2,
-            2 => TileType::S3,
+            // 0 => TileType::S1,
+            // 1 => TileType::S2,
+            // 2 => TileType::S3,
+            0 => TileType::Y1,
+            1 => TileType::Y2,
+            2 => TileType::Y3,
             3 => TileType::A1,
             4 => TileType::A2,
             5 => TileType::A3,
@@ -190,16 +189,10 @@ impl Distribution<TileType> for Standard {
             12 => TileType::C1,
             13 => TileType::C2,
             14 => TileType::C3,
-            15 => TileType::M1,
-            16 => TileType::M2,
-            17 => TileType::M3,
-            18 => TileType::T1,
-            19 => TileType::T2,
-            20 => TileType::T3,
-            21 => TileType::Y1,
-            22 => TileType::Y2,
-            23 => TileType::Y3,
-            24 => TileType::X1,
+            15 => TileType::T1,
+            16 => TileType::T2,
+            17 => TileType::T3,
+            18 => TileType::X1,
             _ => TileType::Z1,
         }
     }
@@ -233,39 +226,39 @@ impl Tile {
         }
 
         match tile {
-            TileType::S1 => {
-                if flipped {
-                    lines.push(L05 + origin);
-                    lines.push(L06 + origin);
-                    semi.push(M1_V + origin);
-                } else {
-                    lines.push(L29 + origin);
-                    lines.push(L30 + origin);
-                    semi.push(M1_A + origin);
-                }
-            }
-            TileType::S2 => {
-                if flipped {
-                    lines.push(L03 + origin);
-                    lines.push(L04 + origin);
-                    semi.push(M2_V + origin);
-                } else {
-                    lines.push(L27 + origin);
-                    lines.push(L28 + origin);
-                    semi.push(M2_A + origin);
-                }
-            }
-            TileType::S3 => {
-                if flipped {
-                    lines.push(L10 + origin);
-                    lines.push(L09 + origin);
-                    semi.push(M3_V + origin);
-                } else {
-                    lines.push(L34 + origin);
-                    lines.push(L33 + origin);
-                    semi.push(M3_A + origin);
-                }
-            }
+            // TileType::S1 => {
+            //     if flipped {
+            //         lines.push(L05 + origin);
+            //         lines.push(L06 + origin);
+            //         semi.push(M1_V + origin);
+            //     } else {
+            //         lines.push(L29 + origin);
+            //         lines.push(L30 + origin);
+            //         semi.push(M1_A + origin);
+            //     }
+            // }
+            // TileType::S2 => {
+            //     if flipped {
+            //         lines.push(L03 + origin);
+            //         lines.push(L04 + origin);
+            //         semi.push(M2_V + origin);
+            //     } else {
+            //         lines.push(L27 + origin);
+            //         lines.push(L28 + origin);
+            //         semi.push(M2_A + origin);
+            //     }
+            // }
+            // TileType::S3 => {
+            //     if flipped {
+            //         lines.push(L10 + origin);
+            //         lines.push(L09 + origin);
+            //         semi.push(M3_V + origin);
+            //     } else {
+            //         lines.push(L34 + origin);
+            //         lines.push(L33 + origin);
+            //         semi.push(M3_A + origin);
+            //     }
+            // }
             TileType::T1 => {
                 if flipped {
                     semi.push(T1_V + origin);
@@ -306,33 +299,6 @@ impl Tile {
                     semi.push(N3_V + origin);
                 } else {
                     semi.push(N3_A + origin);
-                }
-            }
-            TileType::M1 => {
-                if flipped {
-                    semi.push(N2_V + origin);
-                    semi.push(N3_V + origin);
-                } else {
-                    semi.push(N2_A + origin);
-                    semi.push(N3_A + origin);
-                }
-            }
-            TileType::M2 => {
-                if flipped {
-                    semi.push(N1_V + origin);
-                    semi.push(N3_V + origin);
-                } else {
-                    semi.push(N1_A + origin);
-                    semi.push(N3_A + origin);
-                }
-            }
-            TileType::M3 => {
-                if flipped {
-                    semi.push(N1_V + origin);
-                    semi.push(N2_V + origin);
-                } else {
-                    semi.push(N1_A + origin);
-                    semi.push(N2_A + origin);
                 }
             }
             TileType::L1 => {
@@ -541,12 +507,12 @@ impl RenderSvg {
         //
 
         let them_all = [
-            TileType::S1,
-            TileType::S1,
-            TileType::S2,
-            TileType::S2,
-            TileType::S3,
-            TileType::S3,
+            // TileType::S1,
+            // TileType::S1,
+            // TileType::S2,
+            // TileType::S2,
+            // TileType::S3,
+            // TileType::S3,
             TileType::A1,
             TileType::A1,
             TileType::A2,
@@ -571,12 +537,6 @@ impl RenderSvg {
             TileType::C2,
             TileType::C3,
             TileType::C3,
-            TileType::M1,
-            TileType::M1,
-            TileType::M2,
-            TileType::M2,
-            TileType::M3,
-            TileType::M3,
             TileType::T1,
             TileType::T1,
             TileType::T2,
@@ -612,7 +572,6 @@ impl RenderSvg {
                 if i % 3 != 0 {
                     continue;
                 }
-                println!("{}", tile_index);
                 // let tile_type: TileType = rand::random();
                 // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
                 let tile_type = &them_all[tile_index];
