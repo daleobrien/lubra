@@ -199,7 +199,9 @@ impl Distribution<TileType> for Standard {
 }
 
 impl Tile {
-    fn new(coordinate: Coordinate, tile: &TileType) -> Self {
+    // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
+    // Just fill the remaining with X3
+    fn new(coordinate: Coordinate, tiles: [&TileType; 6]) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let mut faint: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
@@ -207,249 +209,252 @@ impl Tile {
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
-        let only_an_arc: Option<Segment> = match tile {
-            TileType::A1 => Some(if flipped { A1_V } else { A1_A } + origin),
-            TileType::A2 => Some(if flipped { A2_V } else { A2_A } + origin),
-            TileType::A3 => Some(if flipped { A3_V } else { A3_A } + origin),
-            TileType::C1 => Some(if flipped { A1_V } else { A1_A } + origin),
-            TileType::C2 => Some(if flipped { A2_V } else { A2_A } + origin),
-            TileType::C3 => Some(if flipped { A3_V } else { A3_A } + origin),
-            _ => None,
-        };
+        for tile in tiles {
+            let only_an_arc: Option<Segment> = match tile {
+                TileType::A1 => Some(if flipped { A1_V } else { A1_A } + origin),
+                TileType::A2 => Some(if flipped { A2_V } else { A2_A } + origin),
+                TileType::A3 => Some(if flipped { A3_V } else { A3_A } + origin),
+                TileType::C1 => Some(if flipped { A1_V } else { A1_A } + origin),
+                TileType::C2 => Some(if flipped { A2_V } else { A2_A } + origin),
+                TileType::C3 => Some(if flipped { A3_V } else { A3_A } + origin),
+                _ => None,
+            };
 
-        match only_an_arc {
-            Some(arc) => {
-                arcs.push(arc + Radius { r: -W });
-                arcs.push(arc + Radius { r: W });
+            match only_an_arc {
+                Some(arc) => {
+                    arcs.push(arc + Radius { r: -W });
+                    arcs.push(arc + Radius { r: W });
+                }
+                _ => {}
             }
-            _ => {}
-        }
 
-        match tile {
-            // TileType::S1 => {
-            //     if flipped {
-            //         lines.push(L05 + origin);
-            //         lines.push(L06 + origin);
-            //         semi.push(M1_V + origin);
-            //     } else {
-            //         lines.push(L29 + origin);
-            //         lines.push(L30 + origin);
-            //         semi.push(M1_A + origin);
-            //     }
-            // }
-            // TileType::S2 => {
-            //     if flipped {
-            //         lines.push(L03 + origin);
-            //         lines.push(L04 + origin);
-            //         semi.push(M2_V + origin);
-            //     } else {
-            //         lines.push(L27 + origin);
-            //         lines.push(L28 + origin);
-            //         semi.push(M2_A + origin);
-            //     }
-            // }
-            // TileType::S3 => {
-            //     if flipped {
-            //         lines.push(L10 + origin);
-            //         lines.push(L09 + origin);
-            //         semi.push(M3_V + origin);
-            //     } else {
-            //         lines.push(L34 + origin);
-            //         lines.push(L33 + origin);
-            //         semi.push(M3_A + origin);
-            //     }
-            // }
-            TileType::T1 => {
-                if flipped {
-                    semi.push(T1_V + origin);
-                } else {
-                    semi.push(T1_A + origin);
+            match tile {
+                // TileType::S1 => {
+                //     if flipped {
+                //         lines.push(L05 + origin);
+                //         lines.push(L06 + origin);
+                //         semi.push(M1_V + origin);
+                //     } else {
+                //         lines.push(L29 + origin);
+                //         lines.push(L30 + origin);
+                //         semi.push(M1_A + origin);
+                //     }
+                // }
+                // TileType::S2 => {
+                //     if flipped {
+                //         lines.push(L03 + origin);
+                //         lines.push(L04 + origin);
+                //         semi.push(M2_V + origin);
+                //     } else {
+                //         lines.push(L27 + origin);
+                //         lines.push(L28 + origin);
+                //         semi.push(M2_A + origin);
+                //     }
+                // }
+                // TileType::S3 => {
+                //     if flipped {
+                //         lines.push(L10 + origin);
+                //         lines.push(L09 + origin);
+                //         semi.push(M3_V + origin);
+                //     } else {
+                //         lines.push(L34 + origin);
+                //         lines.push(L33 + origin);
+                //         semi.push(M3_A + origin);
+                //     }
+                // }
+                TileType::T1 => {
+                    if flipped {
+                        semi.push(T1_V + origin);
+                    } else {
+                        semi.push(T1_A + origin);
+                    }
                 }
-            }
-            TileType::T2 => {
-                if flipped {
-                    semi.push(T2_V + origin);
-                } else {
-                    semi.push(T2_A + origin);
+                TileType::T2 => {
+                    if flipped {
+                        semi.push(T2_V + origin);
+                    } else {
+                        semi.push(T2_A + origin);
+                    }
                 }
-            }
-            TileType::T3 => {
-                if flipped {
-                    semi.push(T3_V + origin);
-                } else {
-                    semi.push(T3_A + origin);
+                TileType::T3 => {
+                    if flipped {
+                        semi.push(T3_V + origin);
+                    } else {
+                        semi.push(T3_A + origin);
+                    }
                 }
-            }
-            TileType::N1 => {
-                if flipped {
-                    semi.push(N1_V + origin);
-                } else {
-                    semi.push(N1_A + origin);
+                TileType::N1 => {
+                    if flipped {
+                        semi.push(N1_V + origin);
+                    } else {
+                        semi.push(N1_A + origin);
+                    }
                 }
-            }
-            TileType::N2 => {
-                if flipped {
-                    semi.push(N2_V + origin);
-                } else {
-                    semi.push(N2_A + origin);
+                TileType::N2 => {
+                    if flipped {
+                        semi.push(N2_V + origin);
+                    } else {
+                        semi.push(N2_A + origin);
+                    }
                 }
-            }
-            TileType::N3 => {
-                if flipped {
-                    semi.push(N3_V + origin);
-                } else {
-                    semi.push(N3_A + origin);
+                TileType::N3 => {
+                    if flipped {
+                        semi.push(N3_V + origin);
+                    } else {
+                        semi.push(N3_A + origin);
+                    }
                 }
-            }
-            TileType::L1 => {
-                lines.push(L49 + origin);
-                lines.push(L52 + origin);
-            }
-            TileType::L2 => {
-                if flipped {
-                    lines.push(L51 + origin);
-                    lines.push(L54 + origin);
-                } else {
-                    lines.push(L60 + origin);
-                    lines.push(L57 + origin);
-                }
-            }
-            TileType::L3 => {
-                if flipped {
-                    lines.push(L50 + origin);
-                    lines.push(L53 + origin);
-                } else {
-                    lines.push(L59 + origin);
-                    lines.push(L56 + origin);
-                }
-            }
-            TileType::Y1 => {
-                if flipped {
-                    lines.push(L50 + origin);
-                    lines.push(L53 + origin);
-
-                    lines.push(L74 + origin);
-                    lines.push(L66 + origin);
-                    lines.push(L02 + origin);
-
-                    faint.push(L92 + origin);
-                    faint.push(L103 + origin);
-                } else {
-                    lines.push(L59 + origin);
-                    lines.push(L56 + origin);
-                    //
-                    lines.push(L80 + origin);
-                    lines.push(L26 + origin);
-                    lines.push(L72 + origin);
-                    //
-                    faint.push(L102 + origin);
-                    faint.push(L116 + origin);
-                }
-            }
-            TileType::Y2 => {
-                if flipped {
+                TileType::L1 => {
                     lines.push(L49 + origin);
                     lines.push(L52 + origin);
+                }
+                TileType::L2 => {
+                    if flipped {
+                        lines.push(L51 + origin);
+                        lines.push(L54 + origin);
+                    } else {
+                        lines.push(L60 + origin);
+                        lines.push(L57 + origin);
+                    }
+                }
+                TileType::L3 => {
+                    if flipped {
+                        lines.push(L50 + origin);
+                        lines.push(L53 + origin);
+                    } else {
+                        lines.push(L59 + origin);
+                        lines.push(L56 + origin);
+                    }
+                }
+                TileType::Y1 => {
+                    if flipped {
+                        lines.push(L50 + origin);
+                        lines.push(L53 + origin);
 
-                    lines.push(L62 + origin);
-                    lines.push(L77 + origin);
-                    lines.push(L12 + origin);
+                        lines.push(L74 + origin);
+                        lines.push(L66 + origin);
+                        lines.push(L02 + origin);
 
-                    faint.push(L106 + origin);
-                    faint.push(L96 + origin);
-                } else {
-                    lines.push(L49 + origin);
-                    lines.push(L52 + origin);
-                    lines.push(L67 + origin);
-                    lines.push(L83 + origin);
-                    lines.push(L36 + origin);
-                    faint.push(L120 + origin);
-                    faint.push(L98 + origin);
+                        faint.push(L92 + origin);
+                        faint.push(L103 + origin);
+                    } else {
+                        lines.push(L59 + origin);
+                        lines.push(L56 + origin);
+                        //
+                        lines.push(L80 + origin);
+                        lines.push(L26 + origin);
+                        lines.push(L72 + origin);
+                        //
+                        faint.push(L102 + origin);
+                        faint.push(L116 + origin);
+                    }
                 }
-            }
-            TileType::Y3 => {
-                if flipped {
-                    lines.push(L51 + origin);
-                    lines.push(L54 + origin);
-                    lines.push(L76 + origin);
-                    lines.push(L63 + origin);
-                    lines.push(L08 + origin);
-                    faint.push(L123 + origin);
-                    faint.push(L110 + origin);
-                } else {
-                    lines.push(L60 + origin);
-                    lines.push(L57 + origin);
-                    lines.push(L32 + origin);
-                    lines.push(L81 + origin);
-                    lines.push(L69 + origin);
+                TileType::Y2 => {
+                    if flipped {
+                        lines.push(L49 + origin);
+                        lines.push(L52 + origin);
 
-                    faint.push(L117 + origin);
-                    faint.push(L99 + origin);
-                }
-            }
+                        lines.push(L62 + origin);
+                        lines.push(L77 + origin);
+                        lines.push(L12 + origin);
 
-            //
-            TileType::C1 => {
-                if flipped {
-                    lines.push(L07 + origin);
-                    lines.push(L08 + origin);
-                    lines.push(L18 + origin);
-                    lines.push(L17 + origin);
-                    faint.push(L21 + origin);
-                    faint.push(L22 + origin);
-                } else {
-                    lines.push(L31 + origin);
-                    lines.push(L32 + origin);
-                    lines.push(L42 + origin);
-                    lines.push(L41 + origin);
-                    faint.push(L45 + origin);
-                    faint.push(L46 + origin);
+                        faint.push(L106 + origin);
+                        faint.push(L96 + origin);
+                    } else {
+                        lines.push(L49 + origin);
+                        lines.push(L52 + origin);
+                        lines.push(L67 + origin);
+                        lines.push(L83 + origin);
+                        lines.push(L36 + origin);
+                        faint.push(L120 + origin);
+                        faint.push(L98 + origin);
+                    }
                 }
-            }
-            TileType::C2 => {
-                if flipped {
-                    lines.push(L01 + origin);
-                    lines.push(L02 + origin);
-                    lines.push(L15 + origin);
-                    lines.push(L16 + origin);
-                    faint.push(L19 + origin);
-                    faint.push(L20 + origin);
-                } else {
-                    lines.push(L25 + origin);
-                    lines.push(L26 + origin);
-                    lines.push(L40 + origin);
-                    lines.push(L39 + origin);
-                    faint.push(L43 + origin);
-                    faint.push(L44 + origin);
+                TileType::Y3 => {
+                    if flipped {
+                        lines.push(L51 + origin);
+                        lines.push(L54 + origin);
+                        lines.push(L76 + origin);
+                        lines.push(L63 + origin);
+                        lines.push(L08 + origin);
+                        faint.push(L123 + origin);
+                        faint.push(L110 + origin);
+                    } else {
+                        lines.push(L60 + origin);
+                        lines.push(L57 + origin);
+                        lines.push(L32 + origin);
+                        lines.push(L81 + origin);
+                        lines.push(L69 + origin);
+
+                        faint.push(L117 + origin);
+                        faint.push(L99 + origin);
+                    }
                 }
-            }
-            TileType::C3 => {
-                if flipped {
-                    lines.push(L11 + origin);
-                    lines.push(L12 + origin);
-                    lines.push(L13 + origin);
-                    lines.push(L14 + origin);
-                    faint.push(L23 + origin);
-                    faint.push(L24 + origin);
-                } else {
-                    lines.push(L35 + origin);
-                    lines.push(L36 + origin);
-                    lines.push(L37 + origin);
-                    lines.push(L38 + origin);
-                    faint.push(L47 + origin);
-                    faint.push(L48 + origin);
+
+                //
+                TileType::C1 => {
+                    if flipped {
+                        lines.push(L07 + origin);
+                        lines.push(L08 + origin);
+                        lines.push(L18 + origin);
+                        lines.push(L17 + origin);
+                        faint.push(L21 + origin);
+                        faint.push(L22 + origin);
+                    } else {
+                        lines.push(L31 + origin);
+                        lines.push(L32 + origin);
+                        lines.push(L42 + origin);
+                        lines.push(L41 + origin);
+                        faint.push(L45 + origin);
+                        faint.push(L46 + origin);
+                    }
                 }
+                TileType::C2 => {
+                    if flipped {
+                        lines.push(L01 + origin);
+                        lines.push(L02 + origin);
+                        lines.push(L15 + origin);
+                        lines.push(L16 + origin);
+                        faint.push(L19 + origin);
+                        faint.push(L20 + origin);
+                    } else {
+                        lines.push(L25 + origin);
+                        lines.push(L26 + origin);
+                        lines.push(L40 + origin);
+                        lines.push(L39 + origin);
+                        faint.push(L43 + origin);
+                        faint.push(L44 + origin);
+                    }
+                }
+                TileType::C3 => {
+                    if flipped {
+                        lines.push(L11 + origin);
+                        lines.push(L12 + origin);
+                        lines.push(L13 + origin);
+                        lines.push(L14 + origin);
+                        faint.push(L23 + origin);
+                        faint.push(L24 + origin);
+                    } else {
+                        lines.push(L35 + origin);
+                        lines.push(L36 + origin);
+                        lines.push(L37 + origin);
+                        lines.push(L38 + origin);
+                        faint.push(L47 + origin);
+                        faint.push(L48 + origin);
+                    }
+                }
+                TileType::X1 => {
+                    arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
+                    arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
+                    arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
+                }
+                TileType::Z1 => {
+                    create_triangle(flipped).map(|line| lines.push(line + origin));
+                }
+                _ => {}
             }
-            TileType::X1 => {
-                arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
-                arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
-                arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
-            }
-            TileType::Z1 => {
-                create_triangle(flipped).map(|line| lines.push(line + origin));
-            }
-            _ => {}
         }
+
         return Tile {
             lines,
             faint,
@@ -575,8 +580,28 @@ impl RenderSvg {
                 // let tile_type: TileType = rand::random();
                 // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
                 let tile_type = &them_all[tile_index];
-                let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                let wall: Tile = Tile::new(Coordinate { i, j }, &TileType::Z1);
+                let path: Tile = Tile::new(
+                    Coordinate { i, j },
+                    [
+                        tile_type,
+                        &TileType::Z1,
+                        &TileType::Z1,
+                        &TileType::Z1,
+                        &TileType::Z1,
+                        &TileType::Z1,
+                    ],
+                );
+                let wall: Tile = Tile::new(
+                    Coordinate { i, j },
+                    [
+                        &TileType::Z1,
+                        &TileType::Z1,
+                        &TileType::Z1,
+                        &TileType::Z1,
+                        &TileType::Z1,
+                        &TileType::Z1,
+                    ],
+                );
                 row_path.push(path);
                 row_wall.push(wall);
 
