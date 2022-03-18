@@ -8,12 +8,10 @@ use rand::{
 };
 
 use crate::renders::constants::{
-    H, L01, L02, L07, L08, L102, L103, L106, L107, L108, L109, L11, L110, L111, L112, L113, L114,
-    L115, L116, L117, L118, L12, L120, L122, L123, L124, L128, L13, L14, L15, L16, L17, L18, L19,
-    L20, L21, L22, L23, L24, L25, L26, L27, L28, L29, L30, L31, L32, L33, L34, L35, L36, L37, L38,
-    L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59,
-    L60, L61, L62, L63, L64, L65, L66, L67, L68, L69, L70, L71, L72, L73, L74, L75, L76, L77, L79,
-    L80, L81, L82, L83, L85, L86, L87, L88, L91, L92, L93, L94, L95, L96, L97, L98, L99, M, U, W,
+    H, L01, L02, L07, L08, L102, L103, L106, L11, L110, L116, L117, L12, L120, L123, L13, L14, L15,
+    L16, L17, L18, L19, L20, L21, L22, L23, L24, L25, L26, L31, L32, L35, L36, L37, L38, L39, L40,
+    L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59, L60, L62,
+    L63, L66, L67, L69, L72, L74, L76, L77, L80, L81, L83, L92, L96, L98, L99, M, U, W,
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
 use crate::renders::shapes::{
@@ -164,12 +162,14 @@ enum TileType {
     Y2,
     Y3,
     X1,
+    X2,
+    X3,
     Z1,
 }
 
 impl Distribution<TileType> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> TileType {
-        match rng.gen_range(0..=18) {
+        match rng.gen_range(0..=20) {
             // rand 0.8
             // 0 => TileType::S1,
             // 1 => TileType::S2,
@@ -193,6 +193,8 @@ impl Distribution<TileType> for Standard {
             16 => TileType::T2,
             17 => TileType::T3,
             18 => TileType::X1,
+            19 => TileType::X2,
+            20 => TileType::X3,
             _ => TileType::Z1,
         }
     }
@@ -448,6 +450,40 @@ impl Tile {
                     arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
                     arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
                 }
+                TileType::X2 => {
+                    if flipped {
+                        lines.push(L50 + origin);
+                        lines.push(L53 + origin);
+
+                        lines.push(L74 + origin);
+                        lines.push(L66 + origin);
+                        lines.push(L02 + origin);
+
+                        faint.push(L92 + origin);
+                        faint.push(L103 + origin);
+
+                        // faint.push(L63 + origin);
+                        lines.push(L08 + origin);
+                        lines.push(L07 + origin);
+                    } else {
+                        lines.push(L59 + origin);
+                        lines.push(L56 + origin);
+                        //
+                        lines.push(L80 + origin);
+                        lines.push(L26 + origin);
+                        lines.push(L72 + origin);
+                        //
+                        faint.push(L102 + origin);
+                        faint.push(L116 + origin);
+
+                        lines.push(L31 + origin);
+                        lines.push(L32 + origin);
+                        //faint.push(L69 + origin);
+                    }
+                }
+                TileType::X3 => {
+                    // This is always empty
+                }
                 TileType::Z1 => {
                     create_triangle(flipped).map(|line| lines.push(line + origin));
                 }
@@ -557,9 +593,9 @@ impl RenderSvg {
             TileType::X1,
             TileType::X1,
             TileType::X1,
-            TileType::X1,
-            TileType::X1,
-            TileType::X1,
+            TileType::X2,
+            TileType::X2,
+            TileType::X3,
         ];
 
         let n: u32 = 18;
@@ -584,11 +620,11 @@ impl RenderSvg {
                     Coordinate { i, j },
                     [
                         tile_type,
-                        &TileType::Z1,
-                        &TileType::Z1,
-                        &TileType::Z1,
-                        &TileType::Z1,
-                        &TileType::Z1,
+                        &TileType::X3,
+                        &TileType::X3,
+                        &TileType::X3,
+                        &TileType::X3,
+                        &TileType::X3,
                     ],
                 );
                 let wall: Tile = Tile::new(
