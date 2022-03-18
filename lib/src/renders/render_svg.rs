@@ -521,9 +521,11 @@ pub fn create_triangle(flipped: bool) -> [Line; 3] {
 }
 
 pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool) {
+    let x_margin = 50.0;
+    let y_margin = 0.0;
     let origin = Point {
-        x: M * coordinate.i as f64,
-        y: U * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
+        x: (M + x_margin) * coordinate.i as f64,
+        y: (U + y_margin) * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
     };
     let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
@@ -717,7 +719,7 @@ impl RenderSvg {
                 &TileType::X3,
             ],
             [
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -726,7 +728,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::N1,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -742,7 +744,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::N2,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -759,14 +761,14 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N2,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -775,7 +777,7 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -791,7 +793,7 @@ impl RenderSvg {
             [
                 &TileType::N2,
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -808,7 +810,7 @@ impl RenderSvg {
                 &TileType::N1,
                 &TileType::N2,
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -822,7 +824,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -839,7 +841,7 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -863,7 +865,7 @@ impl RenderSvg {
             [
                 &TileType::N2,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -888,7 +890,7 @@ impl RenderSvg {
                 &TileType::N1,
                 &TileType::N2,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -901,7 +903,7 @@ impl RenderSvg {
                 &TileType::X3,
             ],
             [
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L3,
                 &TileType::X3,
                 &TileType::X3,
@@ -911,7 +913,7 @@ impl RenderSvg {
             [
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -926,7 +928,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::N1,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L3,
                 &TileType::X3,
                 &TileType::X3,
@@ -936,13 +938,13 @@ impl RenderSvg {
                 &TileType::N1,
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
-                &TileType::L2,
-                &TileType::L3,
+                &TileType::Y1,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -958,7 +960,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::N2,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L3,
                 &TileType::X3,
                 &TileType::X3,
@@ -976,14 +978,14 @@ impl RenderSvg {
                 &TileType::N2,
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N1,
-                &TileType::L2,
-                &TileType::L3,
+                &TileType::Y1,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -999,7 +1001,7 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N2,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1017,7 +1019,7 @@ impl RenderSvg {
                 &TileType::N2,
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::X3,
             ],
             [
@@ -1125,8 +1127,8 @@ impl RenderSvg {
                 &TileType::X3,
             ],
             [
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1150,8 +1152,8 @@ impl RenderSvg {
             ],
             [
                 &TileType::N1,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1166,8 +1168,8 @@ impl RenderSvg {
             ],
             [
                 &TileType::N2,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1191,8 +1193,8 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N2,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -1214,15 +1216,15 @@ impl RenderSvg {
             ],
             [
                 &TileType::N3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
-                &TileType::L1,
-                &TileType::L3,
+                &TileType::Y2,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1255,8 +1257,8 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -1279,15 +1281,15 @@ impl RenderSvg {
             [
                 &TileType::N2,
                 &TileType::N3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N2,
-                &TileType::L1,
-                &TileType::L3,
+                &TileType::Y2,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1320,8 +1322,8 @@ impl RenderSvg {
                 &TileType::N1,
                 &TileType::N2,
                 &TileType::N3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::X3,
             ],
             [
@@ -1333,8 +1335,8 @@ impl RenderSvg {
                 &TileType::X3,
             ],
             [
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1349,7 +1351,7 @@ impl RenderSvg {
                 &TileType::X3,
             ],
             [
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L1,
                 &TileType::X3,
                 &TileType::X3,
@@ -1358,8 +1360,8 @@ impl RenderSvg {
             ],
             [
                 &TileType::N1,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1382,15 +1384,15 @@ impl RenderSvg {
             ],
             [
                 &TileType::N2,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
-                &TileType::L1,
-                &TileType::L2,
+                &TileType::Y3,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1414,7 +1416,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::N2,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L1,
                 &TileType::X3,
                 &TileType::X3,
@@ -1423,8 +1425,8 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N2,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -1438,8 +1440,8 @@ impl RenderSvg {
             ],
             [
                 &TileType::N3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1454,7 +1456,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L1,
                 &TileType::X3,
                 &TileType::X3,
@@ -1463,8 +1465,8 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -1487,15 +1489,15 @@ impl RenderSvg {
             [
                 &TileType::N2,
                 &TileType::N3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N3,
-                &TileType::L1,
-                &TileType::L2,
+                &TileType::Y3,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1519,7 +1521,7 @@ impl RenderSvg {
             [
                 &TileType::N2,
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L1,
                 &TileType::X3,
                 &TileType::X3,
@@ -1528,8 +1530,8 @@ impl RenderSvg {
                 &TileType::N1,
                 &TileType::N2,
                 &TileType::N3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
             ],
             [
@@ -1549,7 +1551,7 @@ impl RenderSvg {
                 &TileType::X3,
             ],
             [
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::A2,
                 &TileType::X3,
                 &TileType::X3,
@@ -1566,8 +1568,8 @@ impl RenderSvg {
             ],
             [
                 &TileType::T3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1598,7 +1600,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::N1,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::A2,
                 &TileType::X3,
                 &TileType::X3,
@@ -1614,7 +1616,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L1,
                 &TileType::X3,
                 &TileType::X3,
@@ -1623,8 +1625,8 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::T3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -1654,7 +1656,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::N2,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::A2,
                 &TileType::X3,
                 &TileType::X3,
@@ -1669,9 +1671,9 @@ impl RenderSvg {
                 &TileType::X3,
             ],
             [
-                &TileType::Y2,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::L2,
-                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1679,8 +1681,8 @@ impl RenderSvg {
             [
                 &TileType::N2,
                 &TileType::T3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -1702,8 +1704,8 @@ impl RenderSvg {
             ],
             [
                 &TileType::T3,
-                &TileType::L1,
-                &TileType::L2,
+                &TileType::Y3,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1727,7 +1729,7 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N2,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::A2,
                 &TileType::X3,
                 &TileType::X3,
@@ -1742,16 +1744,16 @@ impl RenderSvg {
             ],
             [
                 &TileType::N1,
-                &TileType::Y2,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::L2,
-                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N2,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L1,
                 &TileType::X3,
                 &TileType::X3,
@@ -1760,8 +1762,8 @@ impl RenderSvg {
                 &TileType::N1,
                 &TileType::N2,
                 &TileType::T3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
             ],
             [
@@ -1790,7 +1792,7 @@ impl RenderSvg {
             ],
             [
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::A2,
                 &TileType::X3,
                 &TileType::X3,
@@ -1805,9 +1807,9 @@ impl RenderSvg {
                 &TileType::X3,
             ],
             [
-                &TileType::Y2,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::L3,
-                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1815,8 +1817,8 @@ impl RenderSvg {
             [
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -1837,9 +1839,9 @@ impl RenderSvg {
                 &TileType::X3,
             ],
             [
-                &TileType::T3,
-                &TileType::L1,
-                &TileType::L3,
+                &TileType::T2,
+                &TileType::Y2,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1863,7 +1865,7 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::A2,
                 &TileType::X3,
                 &TileType::X3,
@@ -1878,16 +1880,16 @@ impl RenderSvg {
             ],
             [
                 &TileType::N1,
-                &TileType::Y2,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::L3,
-                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L1,
                 &TileType::X3,
                 &TileType::X3,
@@ -1896,8 +1898,8 @@ impl RenderSvg {
                 &TileType::N1,
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
             ],
             [
@@ -1918,8 +1920,8 @@ impl RenderSvg {
             ],
             [
                 &TileType::T1,
-                &TileType::L2,
-                &TileType::L3,
+                &TileType::Y1,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
@@ -1943,7 +1945,7 @@ impl RenderSvg {
             [
                 &TileType::N2,
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::A2,
                 &TileType::X3,
                 &TileType::X3,
@@ -1958,17 +1960,17 @@ impl RenderSvg {
             ],
             [
                 &TileType::N2,
-                &TileType::Y2,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::L3,
-                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N3,
-                &TileType::Y2,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::L2,
-                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -1976,8 +1978,8 @@ impl RenderSvg {
                 &TileType::N2,
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::X3,
             ],
             [
@@ -2007,8 +2009,8 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::T1,
-                &TileType::L2,
-                &TileType::L3,
+                &TileType::Y1,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -2022,17 +2024,17 @@ impl RenderSvg {
             ],
             [
                 &TileType::N2,
-                &TileType::T3,
-                &TileType::L1,
-                &TileType::L3,
+                &TileType::T2,
+                &TileType::Y2,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::L1,
-                &TileType::L2,
+                &TileType::Y3,
+                &TileType::X3,
                 &TileType::X3,
                 &TileType::X3,
             ],
@@ -2056,7 +2058,7 @@ impl RenderSvg {
                 &TileType::N1,
                 &TileType::N2,
                 &TileType::N3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::A2,
                 &TileType::X3,
             ],
@@ -2071,24 +2073,24 @@ impl RenderSvg {
             [
                 &TileType::N1,
                 &TileType::N2,
-                &TileType::Y2,
+                &TileType::T2,
+                &TileType::T1,
                 &TileType::L3,
-                &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N1,
                 &TileType::N3,
-                &TileType::Y2,
+                &TileType::T3,
+                &TileType::T1,
                 &TileType::L2,
-                &TileType::X3,
                 &TileType::X3,
             ],
             [
                 &TileType::N2,
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::T3,
+                &TileType::T2,
                 &TileType::L1,
                 &TileType::X3,
             ],
@@ -2097,12 +2099,12 @@ impl RenderSvg {
                 &TileType::N2,
                 &TileType::N3,
                 &TileType::T3,
-                &TileType::Y2,
-                &TileType::X3,
+                &TileType::T2,
+                &TileType::T1,
             ],
         ];
 
-        let n: u32 = 36;
+        let n: u32 = 26;
         let m: u32 = (all_tiles.len() as u32) / 3u32;
 
         let mut tile_index = 0;
@@ -2141,8 +2143,8 @@ impl RenderSvg {
             self.walls.push(row_wall);
         }
 
-        self.width = (n + 1) as f64 * M;
-        self.height = (m) as f64 * H;
+        self.width = (n + 1) as f64 * (M + 50.0);
+        self.height = (m) as f64 * (H + 00.0);
     }
 
     pub fn display_basic_tiles(&mut self) {
@@ -2267,8 +2269,9 @@ impl RenderSvg {
             m = margin
         );
 
-        svg.push_str(&format!("<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\">",
-                              w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
+        svg.push_str(&format!(
+            "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\">",
+            w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
 
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
