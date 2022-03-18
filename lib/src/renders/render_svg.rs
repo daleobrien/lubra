@@ -543,8 +543,20 @@ impl RenderSvg {
         let mut tiles: Vec<Vec<Tile>> = Vec::new();
         let mut walls: Vec<Vec<Tile>> = Vec::new();
 
-        // let n: u32 = 2;
-        // let m: u32 = 1;
+        let obj = Self {
+            style: None,
+            tiles,
+            walls,
+            width: 0f64,
+            height: 0f64,
+        };
+
+        return obj;
+    }
+
+    pub fn display_all_tiles(&mut self) {}
+
+    pub fn display_basic_tiles(&mut self) {
         //
 
         let them_all = [
@@ -643,21 +655,13 @@ impl RenderSvg {
 
                 tile_index += 1;
             }
-            tiles.push(row_path);
-            walls.push(row_wall);
+            self.tiles.push(row_path);
+            self.walls.push(row_wall);
         }
 
-        let obj = Self {
-            style: None,
-            tiles,
-            walls,
-            width: (n + 1) as f64 * M,
-            height: (m) as f64 * H,
-        };
-
-        return obj;
+        self.width = (n + 1) as f64 * M;
+        self.height = (m) as f64 * H;
     }
-
     // Path commands
     // https://github.com/bodoni/svg/blob/master/src/node/element/path/data.rs
     pub fn render(self, file_name: String) -> Result<(), Box<dyn Error>> {
