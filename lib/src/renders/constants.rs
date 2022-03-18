@@ -1,5 +1,34 @@
 use crate::renders::primatives::{Line, Point};
 
+#[derive(Debug)]
+pub enum TileType {
+    // S1,
+    // S2,
+    // S3,
+    T1,
+    T2,
+    T3,
+    A1,
+    A2,
+    A3,
+    L1,
+    L2,
+    L3,
+    C1,
+    C2,
+    C3,
+    N1,
+    N2,
+    N3,
+    Y1,
+    Y2,
+    Y3,
+    X1,
+    X2,
+    X3,
+    Z1,
+}
+
 pub const U: f64 = 120.0;
 pub const Q1: f64 = 30.0;
 pub const Q3: f64 = 90.0;
