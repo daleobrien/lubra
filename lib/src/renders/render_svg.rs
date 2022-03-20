@@ -12,11 +12,12 @@ use crate::renders::constants::{
     L14, L15, L16, L17, L18, L19, L20, L21, L22, L23, L24, L25, L26, L31, L32, L35, L36, L37, L38,
     L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59,
     L60, L62, L63, L66, L67, L69, L72, L74, L76, L77, L80, L81, L83, L92, L96, L98, L99, M, U, W,
+    WALL,
 };
-use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment};
+use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
 use crate::renders::shapes::{
-    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, N1_A, N1_V, N2_A, N2_V, N3_A, N3_V, T1_A, T1_V, T2_A, T2_V,
-    T3_A, T3_V, TRIANGLE_A, TRIANGLE_V,
+    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, N1_A, N1_V, N2_A, N2_V, N3_A, N3_V, T1_A, T1_V, T2_A,
+    T2_ARC, T2_V, T3_A, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
 use crate::renders::tile_shapes_all::ALL_TILES;
 use crate::renders::tile_shapes_primitive::PRIMITIVE_TILES;
@@ -85,8 +86,11 @@ impl Path {
             (6, (5.0 * pi6, 6.0 * pi6)),
         ]);
 
-        assert!(segment <= 6 && segment > 0);
-        let (start, end) = angles_from_segment.get(&segment).unwrap_or(&(0.0, 0.0));
+        // assert!(segment <= 6 && segment > 0);
+
+        let (start, end) = angles_from_segment
+            .get(&(segment % 7))
+            .unwrap_or(&(0.0, 0.0));
         let (a, b) = self.polar(x, y, r, *start);
         let (c, d) = self.polar(x, y, r, *end);
         self.path.push_str(&format!(
@@ -137,6 +141,7 @@ pub struct Tile {
     lines: Vec<Line>,
     faint: Vec<Line>,
     arcs: Vec<Segment>,
+    farcs: Vec<Segment>,
     semi: Vec<Segment>,
 }
 
@@ -180,6 +185,7 @@ impl Tile {
         let mut lines: Vec<Line> = Vec::new();
         let mut faint: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
+        let mut farcs: Vec<Segment> = Vec::new();
         let mut semi: Vec<Segment> = Vec::new();
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
@@ -246,9 +252,21 @@ impl Tile {
                 }
                 TileType::T2 => {
                     if flipped {
-                        semi.push(T2_V + origin);
+                        if tiles.contains(&&TileType::L1) {
+                            farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
+                            farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
+                            arcs.push(T2_ARC + origin + SegmentOffset { offset: 5 });
+                        } else {
+                            semi.push(T2_V + origin);
+                        }
                     } else {
-                        semi.push(T2_A + origin);
+                        if tiles.contains(&&TileType::L1) {
+                            farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
+                            farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
+                            arcs.push(T2_ARC + origin + SegmentOffset { offset: 2 });
+                        } else {
+                            semi.push(T2_A + origin);
+                        }
                     }
                 }
                 TileType::T3 => {
@@ -469,6 +487,7 @@ impl Tile {
             faint,
             arcs,
             semi,
+            farcs,
         };
     }
 
@@ -477,14 +496,19 @@ impl Tile {
         for line in self.lines.iter() {
             path.line(line);
         }
-        for line in self.faint.iter() {
-            faint_path.line(line);
-        }
+
         for arc in self.arcs.iter() {
             path.arc(arc);
         }
         for semi in self.semi.iter() {
             path.semi(semi);
+        }
+
+        for line in self.faint.iter() {
+            faint_path.line(line);
+        }
+        for farc in self.farcs.iter() {
+            faint_path.arc(farc);
         }
     }
 }
@@ -529,6 +553,38 @@ impl RenderSvg {
         return obj;
     }
 
+    pub fn display_one_tile(&mut self) {
+        let mut row_path: Vec<Tile> = Vec::new();
+        let mut row_wall: Vec<Tile> = Vec::new();
+
+        let tile = [
+            &TileType::L1,
+            &TileType::T2,
+            &TileType::X3,
+            &TileType::X3,
+            &TileType::X3,
+            &TileType::X3,
+        ];
+
+        let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, tile);
+        let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, tile);
+
+        row_path.push(path1);
+        row_path.push(path2);
+
+        let wall1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, WALL);
+        let wall2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, WALL);
+
+        row_wall.push(wall1);
+        row_wall.push(wall2);
+
+        self.tiles.push(row_path);
+        self.walls.push(row_wall);
+
+        self.width = 2.0 * (M + 50.0);
+        self.height = H + 0.0;
+    }
+
     pub fn display_all_tiles(&mut self) {
         let n: u32 = 26;
         let m: u32 = (ALL_TILES.len() as u32) / 3u32;
@@ -551,17 +607,7 @@ impl RenderSvg {
                 }
                 let path: Tile = Tile::new(Coordinate { i, j }, ALL_TILES[tile_index]);
                 tile_index += 1;
-                let wall: Tile = Tile::new(
-                    Coordinate { i, j },
-                    [
-                        &TileType::Z1,
-                        &TileType::X3,
-                        &TileType::X3,
-                        &TileType::X3,
-                        &TileType::X3,
-                        &TileType::X3,
-                    ],
-                );
+                let wall: Tile = Tile::new(Coordinate { i, j }, WALL);
                 row_path.push(path);
                 row_wall.push(wall);
             }
@@ -628,6 +674,7 @@ impl RenderSvg {
         self.width = (n + 1) as f64 * M;
         self.height = (m) as f64 * H;
     }
+
     // Path commands
     // https://github.com/bodoni/svg/blob/master/src/node/element/path/data.rs
     pub fn render(self, file_name: String) -> Result<(), Box<dyn Error>> {
@@ -645,12 +692,12 @@ impl RenderSvg {
         );
 
         svg.push_str(&format!(
-            "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\">",
+            "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\" >",
             w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
 
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
-        let mut wall = Path::new("brown".to_string(), 1.0, 0.5);
+        let mut wall = Path::new("brown".to_string(), 3.0, 0.3);
 
         for row in &self.tiles {
             for tile in row {

@@ -71,6 +71,13 @@ pub const T1_A: Segment = Segment {
     radius: W,
     segment: 4,
 };
+
+pub const T2_ARC: Segment = Segment {
+    centre: Point { x: Q3, y: H / 2.0 },
+    radius: W,
+    segment: 0,
+};
+
 pub const T2_V: Segment = Segment {
     centre: Point { x: Q3, y: H / 2.0 },
     radius: W,

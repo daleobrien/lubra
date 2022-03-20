@@ -1,6 +1,8 @@
 use crate::renders::primatives::{Line, Point};
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
-#[derive(Debug)]
+#[derive(EnumIter, Debug, PartialEq)]
 pub enum TileType {
     // S1,
     // S2,
@@ -28,6 +30,15 @@ pub enum TileType {
     X3,
     Z1,
 }
+
+pub const WALL: [&TileType; 6] = [
+    &TileType::Z1,
+    &TileType::X3,
+    &TileType::X3,
+    &TileType::X3,
+    &TileType::X3,
+    &TileType::X3,
+];
 
 pub const U: f64 = 120.0;
 pub const Q1: f64 = 30.0;

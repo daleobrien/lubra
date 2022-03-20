@@ -21,6 +21,7 @@ impl Add for Point {
         }
     }
 }
+
 impl Sub for Point {
     type Output = Self;
 
@@ -71,11 +72,29 @@ pub struct Coordinate {
     pub j: u32,
 }
 
+pub struct SegmentOffset {
+    pub offset: u64,
+}
+
 #[derive(Clone, Copy)]
 pub struct Segment {
     pub centre: Point,
     pub radius: f64,
-    pub segment: u64, // Can be much smaller, but now this structure is alligned
+    pub segment: u64, // Can be much smaller, but now this structure is aligned
+}
+
+impl Add<SegmentOffset> for Segment {
+    type Output = Self;
+    fn add(self, other: SegmentOffset) -> Self {
+        Self {
+            centre: Point {
+                x: self.centre.x,
+                y: self.centre.y,
+            },
+            radius: self.radius,
+            segment: self.segment + other.offset,
+        }
+    }
 }
 
 impl Add<Point> for Segment {
