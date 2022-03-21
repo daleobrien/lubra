@@ -88,7 +88,18 @@ fn main() {
                                 }
                             }
                             if flat_curves.len() > 0 {
-                                print!("A{:?}", flat_curves)
+                                if flat_curves.len() > 2 {
+                                    print!("X1,")
+                                } else {
+                                    match (flat_curves[0], flat_curves[1]) {
+                                        (4, 5) => print!("A1,"),
+                                        (5, 6) => print!("A3,"),
+                                        (6, 4) => print!("A2,"),
+                                        _ => {
+                                            print!("ERROR 3")
+                                        }
+                                    }
+                                }
                             }
                             println!("");
                             last_perm_curves_len = perm_curves_len;
