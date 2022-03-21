@@ -51,6 +51,8 @@ fn main() {
                             if perm_curves_len >= 4 && last_perm_curves_len >= 4 {
                                 continue;
                             }
+
+                            // Render
                             count += 1;
                             print!("{count} ");
                             if flat_points.len() > 0 {
@@ -63,12 +65,26 @@ fn main() {
                                 }
                             }
                             if flat_lines.len() > 0 {
-                                // TODO: more, could be 2, 3, and then use Y, or X2
-                                match flat_lines[0] {
-                                    1 => print!("L1,"),
-                                    2 => print!("L2,"),
-                                    3 => print!("L3,"),
-                                    _ => {}
+                                if flat_lines.len() > 4 {
+                                    print!("X2,")
+                                } else if flat_lines.len() > 2 {
+                                    match (flat_lines[0], flat_lines[2]) {
+                                        (1, 2) => print!("Y3,"),
+                                        (1, 3) => print!("Y2,"),
+                                        (2, 3) => print!("Y1,"),
+                                        _ => {
+                                            print!("ERROR 1")
+                                        }
+                                    }
+                                } else {
+                                    match flat_lines[0] {
+                                        1 => print!("L1,"),
+                                        2 => print!("L2,"),
+                                        3 => print!("L3,"),
+                                        _ => {
+                                            print!("ERROR 2")
+                                        }
+                                    }
                                 }
                             }
                             if flat_curves.len() > 0 {
