@@ -1,12 +1,16 @@
-use array_tool::vec::Intersect;
+use std::collections::HashMap;
+
+use array_tool::vec::{Intersect, Union};
 use itertools::Itertools;
 
-// 0.8.2
+use lib::renders::constants::TileType;
 
 fn main() {
     let points: Vec<Vec<u8>> = vec![vec![1], vec![2], vec![3], vec![4], vec![5], vec![6]];
     let lines: Vec<Vec<u8>> = vec![vec![1, 6], vec![2, 5], vec![3, 4]];
     let curves: Vec<Vec<u8>> = vec![vec![4, 5], vec![5, 6], vec![6, 4]];
+
+    let mut tiles_by_index: HashMap<u8, Vec<Vec<TileType>>> = HashMap::new();
 
     let mut count = 0;
 
@@ -54,59 +58,86 @@ fn main() {
 
                             // Render
                             count += 1;
-                            print!("{count} ");
+                            let mut primatives_in_tile: Vec<TileType> = vec![];
                             if flat_points.len() > 0 {
                                 for x in flat_points.clone() {
                                     if [1, 2, 3].contains(&x) {
-                                        print!("N{x},");
+                                        match x {
+                                            1 => primatives_in_tile.push(TileType::N1),
+                                            2 => primatives_in_tile.push(TileType::N2),
+                                            3 => primatives_in_tile.push(TileType::N3),
+                                            _ => {
+                                                print!("ERROR N{x}")
+                                            }
+                                        }
                                     } else {
-                                        print!("T{x},");
+                                        match x {
+                                            4 => primatives_in_tile.push(TileType::T1),
+                                            5 => primatives_in_tile.push(TileType::T2),
+                                            6 => primatives_in_tile.push(TileType::T3),
+                                            _ => {
+                                                print!("ERROR T{x}")
+                                            }
+                                        }
                                     }
                                 }
                             }
                             if flat_lines.len() > 0 {
                                 if flat_lines.len() > 4 {
-                                    print!("X2,")
+                                    primatives_in_tile.push(TileType::X2)
                                 } else if flat_lines.len() > 2 {
                                     match (flat_lines[0], flat_lines[2]) {
-                                        (1, 2) => print!("Y3,"),
-                                        (1, 3) => print!("Y2,"),
-                                        (2, 3) => print!("Y1,"),
+                                        (1, 2) => primatives_in_tile.push(TileType::Y3),
+                                        (1, 3) => primatives_in_tile.push(TileType::Y2),
+                                        (2, 3) => primatives_in_tile.push(TileType::Y1),
                                         _ => {
-                                            print!("ERROR 1")
+                                            print!("ERROR Yx")
                                         }
                                     }
                                 } else {
                                     match flat_lines[0] {
-                                        1 => print!("L1,"),
-                                        2 => print!("L2,"),
-                                        3 => print!("L3,"),
+                                        1 => primatives_in_tile.push(TileType::L1),
+                                        2 => primatives_in_tile.push(TileType::L2),
+                                        3 => primatives_in_tile.push(TileType::L3),
                                         _ => {
-                                            print!("ERROR 2")
+                                            print!("ERROR Lx")
                                         }
                                     }
                                 }
                             }
                             if flat_curves.len() > 0 {
                                 if flat_curves.len() > 2 {
-                                    print!("X1,")
+                                    primatives_in_tile.push(TileType::X1)
                                 } else {
                                     match (flat_curves[0], flat_curves[1]) {
-                                        (4, 5) => print!("A1,"),
-                                        (5, 6) => print!("A3,"),
-                                        (6, 4) => print!("A2,"),
+                                        (4, 5) => primatives_in_tile.push(TileType::A1),
+                                        (5, 6) => primatives_in_tile.push(TileType::A3),
+                                        (6, 4) => primatives_in_tile.push(TileType::A2),
                                         _ => {
-                                            print!("ERROR 3")
+                                            print!("ERROR Ax")
                                         }
                                     }
                                 }
                             }
-                            println!("");
                             last_perm_curves_len = perm_curves_len;
+
+                            // Convert the edge/vertex numbers to a binary numbr
+                            let node_numbers = flat_points
+                                .union(flat_curves.clone())
+                                .union(flat_lines.clone());
+
+                            let node_number: u8 =
+                                node_numbers.iter().map(|&val| 1 << (val - 1)).sum();
+
+                            tiles_by_index
+                                .entry(node_number)
+                                .or_insert_with(Vec::new)
+                                .push(primatives_in_tile);
                         }
                     }
                 }
             }
         }
     }
+    println!("Found {count} unique tiles")
 }
