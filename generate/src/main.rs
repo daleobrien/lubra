@@ -147,13 +147,11 @@ fn main() {
 
     for (key, value) in tiles_by_index.iter().sorted_by_key(|x| x.0) {
         println!("{} <{}>: {:?}", key, value.len(), value);
-        if *key & 1u8 == 1u8 {
-            println!(".1.")
-            // TODO: insert in corresponding HashMaps
-        }
-        if *key & 2u8 == 2u8 {
-            println!(".2.")
-        }
+        // Or do we use a match, for and mask off the bits, I think maybe that's the way
+        // Can be an array at here, it's a known length
+        let lowest_key = *key & 7u8;
+        // first_side[lowest_key].push ... like above
+
         // And so on
     }
 }
