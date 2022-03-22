@@ -10,6 +10,8 @@ fn main() {
     let lines: Vec<Vec<u8>> = vec![vec![1, 6], vec![2, 5], vec![3, 4]];
     let curves: Vec<Vec<u8>> = vec![vec![4, 5], vec![5, 6], vec![6, 4]];
 
+    // The key is the binary represention of the vertex/edges that have connections.
+    // For a given edge, we can then find compatible tiles
     let mut tiles_by_index: HashMap<u8, Vec<Vec<TileType>>> = HashMap::new();
 
     let mut count = 0;
@@ -129,6 +131,8 @@ fn main() {
                             let node_number: u8 =
                                 node_numbers.iter().map(|&val| 1 << (val - 1)).sum();
 
+                            // Should I pad out the vec?, or should I do the same in my other code,
+                            // use Vec instead of fixed length Array
                             tiles_by_index
                                 .entry(node_number)
                                 .or_insert_with(Vec::new)
@@ -139,5 +143,17 @@ fn main() {
             }
         }
     }
-    println!("Found {count} unique tiles")
+    println!("Found {count} unique tiles");
+
+    for (key, value) in tiles_by_index.iter().sorted_by_key(|x| x.0) {
+        println!("{} <{}>: {:?}", key, value.len(), value);
+        if *key & 1u8 == 1u8 {
+            println!(".1.")
+            // TODO: insert in corresponding HashMaps
+        }
+        if *key & 2u8 == 2u8 {
+            println!(".2.")
+        }
+        // And so on
+    }
 }
