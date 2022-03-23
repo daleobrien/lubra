@@ -1,157 +1,134 @@
 use std::collections::HashMap;
 
-use array_tool::vec::{Intersect, Union};
 use itertools::Itertools;
 
-use lib::renders::constants::TileType;
+/*
+       1
+[1]  4  5   [2]
+   2  6  3
+     [3]
+
+
+
+   I don't really need enum for tile, it can be a bit field
+*/
+
+fn mask_from_list_of_masks(list_of_mask: Vec<&u8>) -> u8 {
+    let mask: u8 = list_of_mask.iter().fold(0b0, |mut sum, &x| {
+        sum = sum | x;
+        sum
+    });
+    return mask;
+}
 
 fn main() {
-    let points: Vec<Vec<u8>> = vec![vec![1], vec![2], vec![3], vec![4], vec![5], vec![6]];
-    let lines: Vec<Vec<u8>> = vec![vec![1, 6], vec![2, 5], vec![3, 4]];
-    let curves: Vec<Vec<u8>> = vec![vec![4, 5], vec![5, 6], vec![6, 4]];
+    let points: Vec<u8> = vec![0b000001, 0b000010, 0b000100, 0b001000, 0b010000, 0b100000];
+    let lines: Vec<u8> = vec![0b100001, 0b010010, 0b001100];
+    let curves: Vec<u8> = vec![0b000000, 0b011000, 0b110000, 0b101000, 0b111000]; // All combinations
 
     // The key is the binary represention of the vertex/edges that have connections.
     // For a given edge, we can then find compatible tiles
-    let mut tiles_by_index: HashMap<u8, Vec<Vec<TileType>>> = HashMap::new();
+    let mut tiles_by_index: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
 
     let mut count = 0;
 
     for points_k in 0..=points.len() {
         for perm_points in points.iter().combinations(points_k).unique() {
-            let flat_points = perm_points
-                .into_iter()
-                .flat_map(|s| s.clone())
-                .collect::<Vec<u8>>();
+            let point_mask = mask_from_list_of_masks(perm_points);
 
             for points_l in 0..=lines.len() {
                 for perm_lines in lines.iter().combinations(points_l).unique() {
-                    // Check they don't intersect
-                    let flat_lines = perm_lines
-                        .into_iter()
-                        .flat_map(|s| s.clone())
-                        .collect::<Vec<u8>>();
+                    let line_mask = mask_from_list_of_masks(perm_lines);
 
-                    if flat_points.intersect(flat_lines.clone()).len() > 0 {
+                    // Check they don't intersect
+                    if point_mask & line_mask != 0 {
                         continue;
                     }
 
-                    let mut last_perm_curves_len = 0;
-                    for curves_l in 0..curves.len() {
-                        for perm_curves in curves.iter().combinations(curves_l).unique() {
-                            // Check they don't intersect
-                            let flat_curves = perm_curves
-                                .into_iter()
-                                .flat_map(|s| s.clone())
-                                .collect::<Vec<u8>>();
-
-                            if flat_points.intersect(flat_curves.clone()).len() > 0 {
-                                continue;
-                            }
-
-                            if flat_lines.intersect(flat_curves.clone()).len() > 0 {
-                                continue;
-                            }
-                            // Skip if last collection of curves had 2 or more curves, since it's a
-                            // fully connected, in really the same way.
-                            let perm_curves_len = flat_curves.len();
-                            if perm_curves_len >= 4 && last_perm_curves_len >= 4 {
-                                continue;
-                            }
-
-                            // Render
-                            count += 1;
-                            let mut primatives_in_tile: Vec<TileType> = vec![];
-                            if flat_points.len() > 0 {
-                                for x in flat_points.clone() {
-                                    if [1, 2, 3].contains(&x) {
-                                        match x {
-                                            1 => primatives_in_tile.push(TileType::N1),
-                                            2 => primatives_in_tile.push(TileType::N2),
-                                            3 => primatives_in_tile.push(TileType::N3),
-                                            _ => {
-                                                print!("ERROR N{x}")
-                                            }
-                                        }
-                                    } else {
-                                        match x {
-                                            4 => primatives_in_tile.push(TileType::T1),
-                                            5 => primatives_in_tile.push(TileType::T2),
-                                            6 => primatives_in_tile.push(TileType::T3),
-                                            _ => {
-                                                print!("ERROR T{x}")
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            if flat_lines.len() > 0 {
-                                if flat_lines.len() > 4 {
-                                    primatives_in_tile.push(TileType::X2)
-                                } else if flat_lines.len() > 2 {
-                                    match (flat_lines[0], flat_lines[2]) {
-                                        (1, 2) => primatives_in_tile.push(TileType::Y3),
-                                        (1, 3) => primatives_in_tile.push(TileType::Y2),
-                                        (2, 3) => primatives_in_tile.push(TileType::Y1),
-                                        _ => {
-                                            print!("ERROR Yx")
-                                        }
-                                    }
-                                } else {
-                                    match flat_lines[0] {
-                                        1 => primatives_in_tile.push(TileType::L1),
-                                        2 => primatives_in_tile.push(TileType::L2),
-                                        3 => primatives_in_tile.push(TileType::L3),
-                                        _ => {
-                                            print!("ERROR Lx")
-                                        }
-                                    }
-                                }
-                            }
-                            if flat_curves.len() > 0 {
-                                if flat_curves.len() > 2 {
-                                    primatives_in_tile.push(TileType::X1)
-                                } else {
-                                    match (flat_curves[0], flat_curves[1]) {
-                                        (4, 5) => primatives_in_tile.push(TileType::A1),
-                                        (5, 6) => primatives_in_tile.push(TileType::A3),
-                                        (6, 4) => primatives_in_tile.push(TileType::A2),
-                                        _ => {
-                                            print!("ERROR Ax")
-                                        }
-                                    }
-                                }
-                            }
-                            last_perm_curves_len = perm_curves_len;
-
-                            // Convert the edge/vertex numbers to a binary numbr
-                            let node_numbers = flat_points
-                                .union(flat_curves.clone())
-                                .union(flat_lines.clone());
-
-                            let node_number: u8 =
-                                node_numbers.iter().map(|&val| 1 << (val - 1)).sum();
-
-                            // Should I pad out the vec?, or should I do the same in my other code,
-                            // use Vec instead of fixed length Array
-                            tiles_by_index
-                                .entry(node_number)
-                                .or_insert_with(Vec::new)
-                                .push(primatives_in_tile);
+                    for curve_mask in curves.iter() {
+                        // Check they don't intersect
+                        if point_mask & curve_mask != 0
+                            || point_mask & line_mask != 0
+                            || curve_mask & line_mask != 0
+                        {
+                            continue;
                         }
+                        // Skip if last collection of curves had 2 or more curves, since it's a
+                        // fully connected, in really the same way.
+
+                        count += 1;
+                        // println!(
+                        //     "{count:#3}: points:{:#08b} lines:{:#08b} curves:{:#08b}",
+                        //     point_mask, line_mask, curve_mask
+                        // );
+                        let key = point_mask | line_mask | curve_mask;
+                        tiles_by_index.entry(key).or_insert_with(Vec::new).push([
+                            point_mask,
+                            line_mask,
+                            *curve_mask,
+                        ]);
                     }
                 }
             }
         }
     }
     println!("Found {count} unique tiles");
+    //
+    let mut side_1: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
+    let mut side_2: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
+    let mut side_3: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
 
-    for (key, value) in tiles_by_index.iter().sorted_by_key(|x| x.0) {
-        println!("{} <{}>: {:?}", key, value.len(), value);
-        // Or do we use a match, for and mask off the bits, I think maybe that's the way
-        // Can be an array at here, it's a known length
-        let lowest_key = *key & 7u8;
-        // first_side[lowest_key].push ... like above
+    let mut side_1_2: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
+    let mut side_2_3: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
+    let mut side_3_1: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
 
-        // And so on
+    let mut side_1_2_3: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
+
+    //
+    for (key, tiles) in tiles_by_index.iter().sorted_by_key(|x| x.0) {
+        let side_2_index = *key & 0b010101; // 153
+        let side_3_index = *key & 0b100110; // 236
+
+        let side_1_2_index = *key & 0b011111; // 12345
+        let side_2_3_index = *key & 0b110111; // 123 5
+        let side_3_1_index = *key & 0b101111; // 1234 6
+
+        let side_1_2_3_index = *key & 0b111111; // 123456
+
+        // 142
+        side_1
+            .entry(*key & 0b001011)
+            .or_insert_with(Vec::new)
+            .extend(tiles); // 142
+        side_1
+            .entry(*key & 0b010101)
+            .or_insert_with(Vec::new)
+            .extend(tiles); // 153
+        side_3
+            .entry(*key & 0b100110)
+            .or_insert_with(Vec::new)
+            .extend(tiles);
+
+        side_1_2
+            .entry(side_1_2_index)
+            .or_insert_with(Vec::new)
+            .extend(tiles);
+        side_2_3
+            .entry(side_2_3_index)
+            .or_insert_with(Vec::new)
+            .extend(tiles);
+        side_3_1
+            .entry(side_3_1_index)
+            .or_insert_with(Vec::new)
+            .extend(tiles);
+
+        side_1_2_3
+            .entry(side_1_2_3_index)
+            .or_insert_with(Vec::new)
+            .extend(tiles);
+    }
+
+    for (key, tiles) in side_1_2_3.iter().sorted_by_key(|x| x.0) {
+        println!("{key:#08b} {:?}", tiles);
     }
 }
