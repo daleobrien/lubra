@@ -13,7 +13,7 @@ use tera::{Context, Tera};
 
 const POINTS: [u32; 6] = [0b000001, 0b000010, 0b000100, 0b001000, 0b010000, 0b100000];
 const LINES: [u32; 3] = [0b100001, 0b010010, 0b001100];
-const CURVES: [u32; 5] = [0b000000, 0b011000, 0b110000, 0b101000, 0b111000]; // All combinations
+const CURVES_COMINATIONS: [u32; 5] = [0b000000, 0b011000, 0b110000, 0b101000, 0b111000];
 
 struct Combinations {
     tiles_by_index: HashMap<u32, Vec<u32>>,
@@ -21,7 +21,6 @@ struct Combinations {
 
 impl Combinations {
     pub fn new() -> Self {
-        //let tiles_by_index: HashMap<u32, Vec<u32>> = HashMap::new();
         return Self {
             tiles_by_index: HashMap::new(),
         };
@@ -117,7 +116,7 @@ impl Combinations {
                             continue;
                         }
 
-                        for curve_mask in CURVES.iter() {
+                        for curve_mask in CURVES_COMINATIONS.iter() {
                             // Check they don't intersect
                             if curve_mask & point_mask != 0 || curve_mask & line_mask != 0 {
                                 continue;
