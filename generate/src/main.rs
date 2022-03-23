@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fs;
+use std::time::Instant;
 
 use itertools::Itertools;
 use tera::{Context, Tera};
@@ -139,9 +140,15 @@ impl Combinations {
 }
 
 fn main() {
-    let mut tiles_by_index: HashMap<u32, Vec<u32>> = HashMap::new();
+    let now = Instant::now();
 
     let mut combinations = Combinations::new();
     combinations.build_all_posible_tiles();
     combinations.create_tile_subset_rust_files();
+
+    let elapsed_time = now.elapsed();
+    println!(
+        "Running slow_function() took {} ms.",
+        elapsed_time.as_millis()
+    );
 }
