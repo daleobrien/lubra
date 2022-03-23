@@ -13,22 +13,20 @@ use itertools::Itertools;
    I don't really need enum for tile, it can be a bit field
 */
 
-fn mask_from_list_of_masks(list_of_mask: Vec<&u8>) -> u8 {
-    let mask: u8 = list_of_mask.iter().fold(0b0, |mut sum, &x| {
+fn mask_from_list_of_masks(list_of_mask: Vec<&u32>) -> u32 {
+    let mask: u32 = list_of_mask.iter().fold(0b0, |mut sum, &x| {
         sum = sum | x;
         sum
     });
     return mask;
 }
 
-const POINTS: [u8;6] = [0b000001, 0b000010, 0b000100, 0b001000, 0b010000, 0b100000];
-const LINES:[u8;3] = [0b100001, 0b010010, 0b001100];
-const CURVES: [u8;5] = [0b000000, 0b011000, 0b110000, 0b101000, 0b111000]; // All combinations
+const POINTS: [u32; 6] = [0b000001, 0b000010, 0b000100, 0b001000, 0b010000, 0b100000];
+const LINES: [u32; 3] = [0b100001, 0b010010, 0b001100];
+const CURVES: [u32; 5] = [0b000000, 0b011000, 0b110000, 0b101000, 0b111000]; // All combinations
 
 fn main() {
-    
- 
-    let mut tiles_by_index: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
+    let mut tiles_by_index: HashMap<u32, Vec<u32>> = HashMap::new();
 
     let mut count = 0;
 
@@ -40,7 +38,7 @@ fn main() {
                 for perm_lines in LINES.iter().combinations(points_l).unique() {
                     let line_mask = mask_from_list_of_masks(perm_lines);
 
-                    // Check they don't intersect
+                    // Check they if they intersect, if so, skip
                     if point_mask & line_mask != 0 {
                         continue;
                     }
@@ -53,20 +51,13 @@ fn main() {
                         {
                             continue;
                         }
-                        // Skip if last collection of curves had 2 or more curves, since it's a
-                        // fully connected, in really the same way.
 
                         count += 1;
-                        // println!(
-                        //     "{count:#3}: points:{:#08b} lines:{:#08b} curves:{:#08b}",
-                        //     point_mask, line_mask, curve_mask
-                        // );
                         let key = point_mask | line_mask | curve_mask;
-                        tiles_by_index.entry(key).or_insert_with(Vec::new).push([
-                            point_mask,
-                            line_mask,
-                            *curve_mask,
-                        ]);
+                        tiles_by_index
+                            .entry(key)
+                            .or_insert_with(Vec::new)
+                            .push(point_mask << 16 | line_mask << 8 | *curve_mask);
                     }
                 }
             }
@@ -74,16 +65,16 @@ fn main() {
     }
 
     println!("Found {count} unique tiles");
-    // Move around
-    let mut side_1: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
-    let mut side_2: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
-    let mut side_3: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
+    //
+    let mut side_1: HashMap<u32, Vec<u32>> = HashMap::new();
+    let mut side_2: HashMap<u32, Vec<u32>> = HashMap::new();
+    let mut side_3: HashMap<u32, Vec<u32>> = HashMap::new();
 
-    let mut side_1_2: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
-    let mut side_2_3: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
-    let mut side_3_1: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
+    let mut side_1_2: HashMap<u32, Vec<u32>> = HashMap::new();
+    let mut side_2_3: HashMap<u32, Vec<u32>> = HashMap::new();
+    let mut side_3_1: HashMap<u32, Vec<u32>> = HashMap::new();
 
-    let mut side_1_2_3: HashMap<u8, Vec<[u8; 3]>> = HashMap::new();
+    let mut side_1_2_3: HashMap<u32, Vec<u32>> = HashMap::new();
 
     //
     for (key, tiles) in tiles_by_index.iter().sorted_by_key(|x| x.0) {
@@ -117,7 +108,7 @@ fn main() {
             .extend(tiles);
     }
 
-    for (key, tiles) in side_1_2_3.iter().sorted_by_key(|x| x.0) {
-        println!("{key:#08b} {:?}", tiles);
+    for (key, tiles) in side_2_3.iter().sorted_by_key(|x| x.0) {
+        println!("{key} {:?}", tiles);
     }
 }
