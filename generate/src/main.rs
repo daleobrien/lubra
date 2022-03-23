@@ -1,6 +1,7 @@
-use std::collections::HashMap;
-
 use itertools::Itertools;
+use std::collections::HashMap;
+use std::fs;
+use tera::{Context, Tera};
 
 /*
        1
@@ -105,7 +106,33 @@ fn main() {
             .extend(tiles);
     }
 
-    for (key, tiles) in side_2_3.iter().sorted_by_key(|x| x.0) {
-        println!("{key} {:?}", tiles);
-    }
+    let tera = match Tera::new("src/templates/*.rs") {
+        Ok(t) => t,
+        Err(e) => {
+            println!("Parsing error(s): {}", e);
+            ::std::process::exit(1);
+        }
+    };
+    let mut context = Context::new();
+    context.insert("side_1", &side_1);
+    context.insert("side_2", &side_2);
+    context.insert("side_3", &side_3);
+    context.insert("side_1_2", &side_1_2);
+    context.insert("side_2_3", &side_2_3);
+    context.insert("side_3_1", &side_3_1);
+    context.insert("side_1_2_3", &side_1_2_3);
+    let rendered = tera.render("tile_subsets.rs", &context);
+
+    fs::write("../lib/src/renders/tile_subsets.rs", rendered.unwrap())
+        .expect("Unable to write file");
+
+    // for (key, tiles) in side_2_3.iter().sorted_by_key(|x| x.0) {
+    //     println!("{key} {:?}", tiles);
+
+    // let x = match key {
+    //    7 =>vec!(270592, 2424832, 11520, 327720, 2165760, 794880, 2949120),
+    //    38=> vec!(2490368, 393256, 2231296, 3014656),
+    //    _=>vec!(),
+    //};
+    //}
 }

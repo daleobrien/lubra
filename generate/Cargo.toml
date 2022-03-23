@@ -9,6 +9,7 @@ edition = "2021"
 lib = { path = "../lib" }
 itertools = "0.8.2"
 array_tool = "1.0.3"
+tera = "1"
 
 [profile.release]
 opt-level = 3
