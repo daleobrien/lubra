@@ -45,10 +45,7 @@ fn main() {
 
                     for curve_mask in CURVES.iter() {
                         // Check they don't intersect
-                        if point_mask & curve_mask != 0
-                            || point_mask & line_mask != 0
-                            || curve_mask & line_mask != 0
-                        {
+                        if curve_mask & point_mask != 0 || curve_mask & line_mask != 0 {
                             continue;
                         }
 
