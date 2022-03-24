@@ -86,6 +86,7 @@ impl Combinations {
             }
         };
         let mut context = Context::new();
+
         context.insert("side_1", &side_1);
         context.insert("side_2", &side_2);
         context.insert("side_3", &side_3);
@@ -93,6 +94,31 @@ impl Combinations {
         context.insert("side_2_3", &side_2_3);
         context.insert("side_3_1", &side_3_1);
         context.insert("side_1_2_3", &side_1_2_3);
+        //
+        let mut side_1_keys: Vec<u32> = side_1.into_keys().collect();
+        let mut side_2_keys: Vec<u32> = side_2.into_keys().collect();
+        let mut side_3_keys: Vec<u32> = side_3.into_keys().collect();
+        let mut side_1_2_keys: Vec<u32> = side_1_2.into_keys().collect();
+        let mut side_2_3_keys: Vec<u32> = side_2_3.into_keys().collect();
+        let mut side_3_1_keys: Vec<u32> = side_3_1.into_keys().collect();
+        let mut side_1_2_3_keys: Vec<u32> = side_1_2_3.into_keys().collect();
+        //
+        side_1_keys.sort_unstable();
+        side_2_keys.sort_unstable();
+        side_3_keys.sort_unstable();
+        side_1_2_keys.sort_unstable();
+        side_2_3_keys.sort_unstable();
+        side_3_1_keys.sort_unstable();
+        side_1_2_3_keys.sort_unstable();
+
+        context.insert("side_1_keys", &side_1_keys);
+        context.insert("side_2_keys", &side_2_keys);
+        context.insert("side_3_keys", &side_3_keys);
+        context.insert("side_1_2_keys", &side_1_2_keys);
+        context.insert("side_2_3_keys", &side_2_3_keys);
+        context.insert("side_3_1_keys", &side_3_1_keys);
+        context.insert("side_1_2_3_keys", &side_1_2_3_keys);
+
         let rendered = tera.render("tile_subsets.rs", &context);
 
         fs::write("../lib/src/renders/tile_subsets.rs", rendered.unwrap())
