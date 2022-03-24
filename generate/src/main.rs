@@ -18,32 +18,39 @@ use tera::{Context, Tera};
 bitflags! {
   #[derive(Default, serde::Deserialize)]
   pub struct TileBitMask: u32 {
-    const A1 = 0b000_000_000_001;
-    const A2 = 0b000_000_000_010;
-    const A3 = 0b000_000_000_100;
+    //                                   XXX
+    const A1 = 0b000_000_000_000_000_000_001;
+    const A2 = 0b000_000_000_000_000_000_010;
+    const A3 = 0b000_000_000_000_000_000_100;
 
-    const L1 = 0b000_000_001_000;
-    const L2 = 0b000_000_010_000;
-    const L3 = 0b000_000_100_000;
+    //                               XXX
+    const L1 = 0b000_000_000_000_000_001_000;
+    const L2 = 0b000_000_000_000_000_010_000;
+    const L3 = 0b000_000_000_000_000_100_000;
 
-    const X1 = 0b000_000_000_111; // Special bit!
-    const X2 = 0b000_000_111_000;
+    //           XXX
+    const X1 = 0b001_000_000_000_000_000_000;
+    const X2 = 0b010_000_000_000_000_000_000;
 
-    const Y1 = 0b000_000_110_000; // Could have one Lbit set, since it's sold, and another Ybi
-    const Y2 = 0b000_000_101_000;
-    const Y3 = 0b000_000_011_000;
+    //               XXX
+    const Y1 = 0b000_010_000_000_000_100_000;
+    const Y2 = 0b000_100_000_000_000_001_000;
+    const Y3 = 0b000_001_000_000_000_010_000;
 
-    const C1 = 0b000_000_001_001; // Maybe has a C bit set only
-    const C2 = 0b000_000_010_010;
-    const C3 = 0b000_000_100_100;
+    //                   XXX
+    const C1 = 0b000_000_001_000_000_000_001;
+    const C2 = 0b000_000_010_000_000_000_010;
+    const C3 = 0b000_000_100_000_000_000_100;
 
-    const N1 = 0b000_001_000_000;
-    const N2 = 0b000_010_000_000;
-    const N3 = 0b000_100_000_000;
+    //                           XXX
+    const N1 = 0b000_000_000_000_001_000_000;
+    const N2 = 0b000_000_000_000_010_000_000;
+    const N3 = 0b000_000_000_000_100_000_000;
 
-    const T1 = 0b001_000_000_000;
-    const T2 = 0b010_000_000_000;
-    const T3 = 0b100_000_000_000;
+    //                       XXX
+    const T1 = 0b000_000_000_001_000_000_000;
+    const T2 = 0b000_000_000_010_000_000_000;
+    const T3 = 0b000_000_000_100_000_000_000;
   }
 }
 
@@ -61,15 +68,8 @@ impl From<[u32; 3]> for TileBitMask {
         let [point_mask, line_mask, curve_mask] = masks;
         let mut value = TileBitMask::from_bits_truncate(point_mask << 6);
 
-        if line_mask & 0b001 == 0b001 {
-            value |= TileBitMask::L1;
-        };
-        if line_mask & 0b010 == 0b010 {
-            value |= TileBitMask::L2;
-        };
-        if line_mask & 0b100 == 0b100 {
-            value |= TileBitMask::L2;
-        };
+        // TODO: Get more complicated
+        // e.g if A1 and L1 then C1 and clear A1/L1
         if curve_mask & 0b011_000 == 0b011_000 {
             value |= TileBitMask::A1;
         };
@@ -79,6 +79,31 @@ impl From<[u32; 3]> for TileBitMask {
         if curve_mask & 0b110_000 == 0b110_000 {
             value |= TileBitMask::A3;
         };
+        if line_mask & 0b001 == 0b001 {
+            value |= TileBitMask::L1;
+        };
+        if line_mask & 0b010 == 0b010 {
+            value |= TileBitMask::L2;
+        };
+        if line_mask & 0b100 == 0b100 {
+            value |= TileBitMask::L2;
+        };
+
+        // Add in Cx
+        if value & (TileBitMask::A1 | TileBitMask::L1) == (TileBitMask::A1 | TileBitMask::L1) {
+            value |= TileBitMask::C1;
+            value ^= TileBitMask::L1;
+        }
+        if value & (TileBitMask::A2 | TileBitMask::L2) == (TileBitMask::A2 | TileBitMask::L2) {
+            value |= TileBitMask::C2;
+            value ^= TileBitMask::L2;
+        }
+        if value & (TileBitMask::A3 | TileBitMask::L3) == (TileBitMask::A3 | TileBitMask::L3) {
+            value |= TileBitMask::C3;
+            value ^= TileBitMask::L3;
+        }
+
+       // TODO: Yx Xx
         value
     }
 }
@@ -226,6 +251,7 @@ impl Combinations {
                             let value: TileBitMask =
                                 TileBitMask::from([point_mask, line_mask, *curve_mask]);
 
+                            println!("{:?}", value);
                             // Encode into better bit structure. Use bit enum!
                             self.tiles_by_index
                                 .entry(key)
