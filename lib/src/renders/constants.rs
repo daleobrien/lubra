@@ -1,6 +1,133 @@
 use crate::renders::primatives::{Line, Point};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
+use bitflags::bitflags;
+use serde::ser::{Serialize, SerializeMap, SerializeSeq, Serializer};
+
+bitflags! {
+  #[derive(Default, serde::Deserialize)]
+  pub struct TileFlags: u32 {
+    //                                   XXX
+    const A1 = 0b000_000_000_000_000_000_001;
+    const A2 = 0b000_000_000_000_000_000_010;
+    const A3 = 0b000_000_000_000_000_000_100;
+    const AX = 0b000_000_000_000_000_000_111;
+
+    //                               XXX
+    const L1 = 0b000_000_000_000_000_001_000;
+    const L2 = 0b000_000_000_000_000_010_000;
+    const L3 = 0b000_000_000_000_000_100_000;
+    const LX = 0b000_000_000_000_000_111_000;
+
+    //           XXX
+    const X1 = 0b001_000_000_000_000_000_000;
+    const X2 = 0b010_000_000_000_000_000_000;
+
+    //               XXX
+    const Y1 = 0b000_010_000_000_000_100_000;
+    const Y2 = 0b000_100_000_000_000_001_000;
+    const Y3 = 0b000_001_000_000_000_010_000;
+
+    //                   XXX
+    const C1 = 0b000_000_001_000_000_000_001;
+    const C2 = 0b000_000_010_000_000_000_010;
+    const C3 = 0b000_000_100_000_000_000_100;
+
+    //                           XXX
+    const N1 = 0b000_000_000_000_001_000_000;
+    const N2 = 0b000_000_000_000_010_000_000;
+    const N3 = 0b000_000_000_000_100_000_000;
+
+    //                       XXX
+    const T1 = 0b000_000_000_001_000_000_000;
+    const T2 = 0b000_000_000_010_000_000_000;
+    const T3 = 0b000_000_000_100_000_000_000;
+  }
+}
+
+impl Serialize for TileFlags {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_u32(self.bits)
+    }
+}
+
+impl From<[u32; 3]> for TileFlags {
+    fn from(masks: [u32; 3]) -> TileFlags {
+        let [point_mask, line_mask, curve_mask] = masks;
+        let mut value = TileFlags::from_bits_truncate(point_mask << 6);
+
+        // TODO: Get more complicated
+        // e.g if A1 and L1 then C1 and clear A1/L1
+        if curve_mask & 0b011_000 == 0b011_000 {
+            value |= TileFlags::A1;
+        };
+        if curve_mask & 0b101_000 == 0b101_000 {
+            value |= TileFlags::A2;
+        };
+        if curve_mask & 0b110_000 == 0b110_000 {
+            value |= TileFlags::A3;
+        };
+        if line_mask & 0b001 == 0b001 {
+            value |= TileFlags::L1;
+        };
+        if line_mask & 0b010 == 0b010 {
+            value |= TileFlags::L2;
+        };
+        if line_mask & 0b100 == 0b100 {
+            value |= TileFlags::L2;
+        };
+
+        // CXs
+        if value & (TileFlags::A1 | TileFlags::L1) == (TileFlags::A1 | TileFlags::L1) {
+            value |= TileFlags::C1;
+            value ^= TileFlags::L1;
+        }
+        if value & (TileFlags::A2 | TileFlags::L2) == (TileFlags::A2 | TileFlags::L2) {
+            value |= TileFlags::C2;
+            value ^= TileFlags::L2;
+        }
+        if value & (TileFlags::A3 | TileFlags::L3) == (TileFlags::A3 | TileFlags::L3) {
+            value |= TileFlags::C3;
+            value ^= TileFlags::L3;
+        }
+
+        // X1
+        if value & (TileFlags::AX) == (TileFlags::AX) {
+            value |= TileFlags::X1;
+            value ^= TileFlags::AX;
+        }
+
+        // X2
+        if value & TileFlags::LX == TileFlags::L3 {
+            value |= TileFlags::X2;
+            value ^= TileFlags::L1;
+            value ^= TileFlags::L2;
+            // L3 is solid
+        } else {
+            // Yxs
+            if value & (TileFlags::L2 | TileFlags::L3) == (TileFlags::L2 | TileFlags::L3) {
+                value |= TileFlags::Y1;
+                value ^= TileFlags::L2;
+                // L3 is solid
+            }
+            if value & (TileFlags::L1 | TileFlags::L3) == (TileFlags::L1 | TileFlags::L3) {
+                value |= TileFlags::Y2;
+                value ^= TileFlags::L3;
+                // L1 is solid
+            }
+            if value & (TileFlags::L1 | TileFlags::L2) == (TileFlags::L1 | TileFlags::L2) {
+                value |= TileFlags::Y3;
+                value ^= TileFlags::L1;
+                // L2 is solid
+            }
+        }
+
+        value
+    }
+}
 
 #[derive(EnumIter, Debug, PartialEq)]
 pub enum TileType {

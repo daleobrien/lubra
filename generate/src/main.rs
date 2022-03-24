@@ -1,11 +1,10 @@
-use bitflags::bitflags;
 use itertools::Itertools;
 use serde::ser::{Serialize, SerializeMap, SerializeSeq, Serializer};
 use std::collections::HashMap;
 use std::fs;
 use std::time::Instant;
 use tera::{Context, Tera};
-
+use lib::renders::constants::TileFlags;
 /*
        1
 [1]  4  5   [2]
@@ -15,137 +14,16 @@ use tera::{Context, Tera};
 
 // This a way to represent tiles to help with rendering
 
-bitflags! {
-  #[derive(Default, serde::Deserialize)]
-  pub struct TileBitMask: u32 {
-    //                                   XXX
-    const A1 = 0b000_000_000_000_000_000_001;
-    const A2 = 0b000_000_000_000_000_000_010;
-    const A3 = 0b000_000_000_000_000_000_100;
-    const AX = 0b000_000_000_000_000_000_111;
 
-    //                               XXX
-    const L1 = 0b000_000_000_000_000_001_000;
-    const L2 = 0b000_000_000_000_000_010_000;
-    const L3 = 0b000_000_000_000_000_100_000;
-    const LX = 0b000_000_000_000_000_111_000;
 
-    //           XXX
-    const X1 = 0b001_000_000_000_000_000_000;
-    const X2 = 0b010_000_000_000_000_000_000;
 
-    //               XXX
-    const Y1 = 0b000_010_000_000_000_100_000;
-    const Y2 = 0b000_100_000_000_000_001_000;
-    const Y3 = 0b000_001_000_000_000_010_000;
-
-    //                   XXX
-    const C1 = 0b000_000_001_000_000_000_001;
-    const C2 = 0b000_000_010_000_000_000_010;
-    const C3 = 0b000_000_100_000_000_000_100;
-
-    //                           XXX
-    const N1 = 0b000_000_000_000_001_000_000;
-    const N2 = 0b000_000_000_000_010_000_000;
-    const N3 = 0b000_000_000_000_100_000_000;
-
-    //                       XXX
-    const T1 = 0b000_000_000_001_000_000_000;
-    const T2 = 0b000_000_000_010_000_000_000;
-    const T3 = 0b000_000_000_100_000_000_000;
-  }
-}
-
-impl Serialize for TileBitMask {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_u32(self.bits)
-    }
-}
-
-impl From<[u32; 3]> for TileBitMask {
-    fn from(masks: [u32; 3]) -> TileBitMask {
-        let [point_mask, line_mask, curve_mask] = masks;
-        let mut value = TileBitMask::from_bits_truncate(point_mask << 6);
-
-        // TODO: Get more complicated
-        // e.g if A1 and L1 then C1 and clear A1/L1
-        if curve_mask & 0b011_000 == 0b011_000 {
-            value |= TileBitMask::A1;
-        };
-        if curve_mask & 0b101_000 == 0b101_000 {
-            value |= TileBitMask::A2;
-        };
-        if curve_mask & 0b110_000 == 0b110_000 {
-            value |= TileBitMask::A3;
-        };
-        if line_mask & 0b001 == 0b001 {
-            value |= TileBitMask::L1;
-        };
-        if line_mask & 0b010 == 0b010 {
-            value |= TileBitMask::L2;
-        };
-        if line_mask & 0b100 == 0b100 {
-            value |= TileBitMask::L2;
-        };
-
-        // CXs
-        if value & (TileBitMask::A1 | TileBitMask::L1) == (TileBitMask::A1 | TileBitMask::L1) {
-            value |= TileBitMask::C1;
-            value ^= TileBitMask::L1;
-        }
-        if value & (TileBitMask::A2 | TileBitMask::L2) == (TileBitMask::A2 | TileBitMask::L2) {
-            value |= TileBitMask::C2;
-            value ^= TileBitMask::L2;
-        }
-        if value & (TileBitMask::A3 | TileBitMask::L3) == (TileBitMask::A3 | TileBitMask::L3) {
-            value |= TileBitMask::C3;
-            value ^= TileBitMask::L3;
-        }
-
-        // X1
-        if value & (TileBitMask::AX) == (TileBitMask::AX) {
-            value |= TileBitMask::X1;
-            value ^= TileBitMask::AX;
-        }
-
-        // X2
-        if value & TileBitMask::LX == TileBitMask::L3 {
-            value |= TileBitMask::X2;
-            value ^= TileBitMask::L1;
-            value ^= TileBitMask::L2;
-            // L3 is solid
-        } else {
-            // Yxs
-            if value & (TileBitMask::L2 | TileBitMask::L3) == (TileBitMask::L2 | TileBitMask::L3) {
-                value |= TileBitMask::Y1;
-                value ^= TileBitMask::L2;
-                // L3 is solid
-            }
-            if value & (TileBitMask::L1 | TileBitMask::L3) == (TileBitMask::L1 | TileBitMask::L3) {
-                value |= TileBitMask::Y2;
-                value ^= TileBitMask::L3;
-                // L1 is solid
-            }
-            if value & (TileBitMask::L1 | TileBitMask::L2) == (TileBitMask::L1 | TileBitMask::L2) {
-                value |= TileBitMask::Y3;
-                value ^= TileBitMask::L1;
-                // L2 is solid
-            }
-        }
-
-        value
-    }
-}
 
 const POINTS: [u32; 6] = [0b000001, 0b000010, 0b000100, 0b001000, 0b010000, 0b100000];
 const LINES: [u32; 3] = [0b100001, 0b010010, 0b001100];
 const CURVES_COMINATIONS: [u32; 5] = [0b000_000, 0b011_000, 0b110_000, 0b101_000, 0b111_000];
 
 struct Combinations {
-    tiles_by_index: HashMap<u32, Vec<TileBitMask>>,
+    tiles_by_index: HashMap<u32, Vec<TileFlags>>,
 }
 
 impl Combinations {
@@ -164,15 +42,15 @@ impl Combinations {
 
     fn create_tile_subset_rust_files(&self) {
         //
-        let mut side_1: HashMap<u32, Vec<TileBitMask>> = HashMap::new();
-        let mut side_2: HashMap<u32, Vec<TileBitMask>> = HashMap::new();
-        let mut side_3: HashMap<u32, Vec<TileBitMask>> = HashMap::new();
+        let mut side_1: HashMap<u32, Vec<TileFlags>> = HashMap::new();
+        let mut side_2: HashMap<u32, Vec<TileFlags>> = HashMap::new();
+        let mut side_3: HashMap<u32, Vec<TileFlags>> = HashMap::new();
 
-        let mut side_1_2: HashMap<u32, Vec<TileBitMask>> = HashMap::new();
-        let mut side_2_3: HashMap<u32, Vec<TileBitMask>> = HashMap::new();
-        let mut side_3_1: HashMap<u32, Vec<TileBitMask>> = HashMap::new();
+        let mut side_1_2: HashMap<u32, Vec<TileFlags>> = HashMap::new();
+        let mut side_2_3: HashMap<u32, Vec<TileFlags>> = HashMap::new();
+        let mut side_3_1: HashMap<u32, Vec<TileFlags>> = HashMap::new();
 
-        let mut side_1_2_3: HashMap<u32, Vec<TileBitMask>> = HashMap::new();
+        let mut side_1_2_3: HashMap<u32, Vec<TileFlags>> = HashMap::new();
 
         //
         for (key, tiles) in self.tiles_by_index.iter().sorted_by_key(|x| x.0) {
@@ -280,8 +158,8 @@ impl Combinations {
                             count += 1;
                             let key = point_mask | line_mask | curve_mask;
 
-                            let value: TileBitMask =
-                                TileBitMask::from([point_mask, line_mask, *curve_mask]);
+                            let value: TileFlags =
+                                TileFlags::from([point_mask, line_mask, *curve_mask]);
 
                             println!("{:?}", value);
                             // Encode into better bit structure. Use bit enum!

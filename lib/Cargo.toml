@@ -10,3 +10,5 @@ edition = "2021"
 rand = "0.8"
 strum = "0.24"
 strum_macros = "0.24"
+serde = { version = "1.0.136", features = ["derive"] }
+bitflags = "1.3"
