@@ -22,11 +22,13 @@ bitflags! {
     const A1 = 0b000_000_000_000_000_000_001;
     const A2 = 0b000_000_000_000_000_000_010;
     const A3 = 0b000_000_000_000_000_000_100;
+    const AX = 0b000_000_000_000_000_000_111;
 
     //                               XXX
     const L1 = 0b000_000_000_000_000_001_000;
     const L2 = 0b000_000_000_000_000_010_000;
     const L3 = 0b000_000_000_000_000_100_000;
+    const LX = 0b000_000_000_000_000_111_000;
 
     //           XXX
     const X1 = 0b001_000_000_000_000_000_000;
@@ -89,7 +91,7 @@ impl From<[u32; 3]> for TileBitMask {
             value |= TileBitMask::L2;
         };
 
-        // Add in Cx
+        // CXs
         if value & (TileBitMask::A1 | TileBitMask::L1) == (TileBitMask::A1 | TileBitMask::L1) {
             value |= TileBitMask::C1;
             value ^= TileBitMask::L1;
@@ -103,7 +105,37 @@ impl From<[u32; 3]> for TileBitMask {
             value ^= TileBitMask::L3;
         }
 
-       // TODO: Yx Xx
+        // X1
+        if value & (TileBitMask::AX) == (TileBitMask::AX) {
+            value |= TileBitMask::X1;
+            value ^= TileBitMask::AX;
+        }
+
+        // X2
+        if value & TileBitMask::LX == TileBitMask::L3 {
+            value |= TileBitMask::X2;
+            value ^= TileBitMask::L1;
+            value ^= TileBitMask::L2;
+            // L3 is solid
+        } else {
+            // Yxs
+            if value & (TileBitMask::L2 | TileBitMask::L3) == (TileBitMask::L2 | TileBitMask::L3) {
+                value |= TileBitMask::Y1;
+                value ^= TileBitMask::L2;
+                // L3 is solid
+            }
+            if value & (TileBitMask::L1 | TileBitMask::L3) == (TileBitMask::L1 | TileBitMask::L3) {
+                value |= TileBitMask::Y2;
+                value ^= TileBitMask::L3;
+                // L1 is solid
+            }
+            if value & (TileBitMask::L1 | TileBitMask::L2) == (TileBitMask::L1 | TileBitMask::L2) {
+                value |= TileBitMask::Y3;
+                value ^= TileBitMask::L1;
+                // L2 is solid
+            }
+        }
+
         value
     }
 }
