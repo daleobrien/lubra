@@ -3,19 +3,9 @@ use std::fs;
 
 use rand::seq::SliceRandom;
 
-use crate::renders::constants::{
-    TileFlags, H, L01, L02, L07, L08, L102, L103, L106, L11, L110, L116, L117, L12, L120, L123,
-    L13, L14, L15, L16, L17, L18, L19, L20, L21, L22, L23, L24, L25, L26, L31, L32, L35, L36, L37,
-    L38, L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57,
-    L59, L60, L62, L63, L66, L67, L69, L72, L74, L76, L77, L80, L81, L83, L92, L96, L98, L99, M, U,
-    W,
-};
-use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
+use crate::renders::constants::{TileFlags, H, M};
+use crate::renders::primatives::Coordinate;
 use crate::renders::render_tile::Tile;
-use crate::renders::shapes::{
-    A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, N1_A, N1_V, N2_A, N2_V, N3_A, N3_V, T1_A, T1_A_ARC, T1_V,
-    T1_V_ARC, T2_A, T2_ARC, T2_V, T3_A, T3_ARC, T3_V, TRIANGLE_A, TRIANGLE_V,
-};
 use crate::renders::svg_path::Path;
 use crate::renders::tile_subsets::{match_side_1, match_side_1_2_3, match_side_3};
 
@@ -29,8 +19,8 @@ pub struct RenderSvg {
 
 impl RenderSvg {
     pub fn new() -> Self {
-        let mut tiles: Vec<Vec<Tile>> = Vec::new();
-        let mut walls: Vec<Vec<Tile>> = Vec::new();
+        let tiles: Vec<Vec<Tile>> = Vec::new();
+        let walls: Vec<Vec<Tile>> = Vec::new();
 
         let obj = Self {
             style: None,
@@ -67,8 +57,6 @@ impl RenderSvg {
     }
 
     pub fn display_all_tiles(&mut self) {
-        let mut tile_index = 0;
-
         for j in 0..63 {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
@@ -107,8 +95,6 @@ impl RenderSvg {
     }
 
     pub fn display_random_grid(&mut self) {
-        let mut tile_index = 0;
-
         let m = 9;
         let n = 6;
         for j in 0..n {
