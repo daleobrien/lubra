@@ -5,3 +5,4 @@ mod shapes;
 mod tile_shapes_all;
 mod tile_shapes_primitive;
 mod tile_subsets;
+mod svg_path;
