@@ -61,6 +61,17 @@ pub const A3_A: Segment = Segment {
     segment: 4,
 };
 
+pub const T1_V_ARC: Segment = Segment {
+    centre: Point { x: M, y: Z },
+    radius: W,
+    segment: 0,
+};
+pub const T1_A_ARC: Segment = Segment {
+    centre: Point { x: M, y: H },
+    radius: W,
+    segment: 0,
+};
+
 pub const T1_V: Segment = Segment {
     centre: Point { x: M, y: Z },
     radius: W,
