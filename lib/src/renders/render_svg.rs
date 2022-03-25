@@ -16,7 +16,7 @@ use crate::renders::shapes::{
     T1_V_ARC, T2_A, T2_ARC, T2_V, T3_A, T3_ARC, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
 use crate::renders::svg_path::Path;
-use crate::renders::tile_subsets::{match_side_1, match_side_1_2_3};
+use crate::renders::tile_subsets::{match_side_1, match_side_1_2_3, match_side_3};
 
 pub struct Tile {
     lines: Vec<Line>,
@@ -502,8 +502,20 @@ impl RenderSvg {
                 let coord: Coordinate = Coordinate { i, j };
 
                 let mut tile: Option<&u32> = Some(&TileFlags::W1.bits());
+
                 if i == 0 && j == 0 {
                     let possible_tiles = match_side_1(0);
+                    tile = possible_tiles.choose(&mut rand::thread_rng());
+                    if tile.is_some() {
+                        let path: Tile = Tile::new(
+                            coord,
+                            TileFlags::from_bits_truncate(*tile.unwrap_or(&TileFlags::W1.bits())),
+                        );
+                        row_path.push(path);
+                    }
+                } else if j == 0 && i % 2 == 1 {
+                    println!("{i}");
+                    let possible_tiles = match_side_3(0);
                     tile = possible_tiles.choose(&mut rand::thread_rng());
                     if tile.is_some() {
                         let path: Tile = Tile::new(
