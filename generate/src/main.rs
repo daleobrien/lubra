@@ -131,13 +131,13 @@ impl Combinations {
     fn build_all_posible_tiles(&mut self) {
         let mut count = 0;
 
-        for POINT_GRAPH_k in 0..=POINT_GRAPH.len() {
-            for perm_POINT_GRAPH in POINT_GRAPH.iter().combinations(POINT_GRAPH_k).unique() {
-                let point_mask = self.mask_from_list_of_masks(perm_POINT_GRAPH);
+        for point_graph_k in 0..=POINT_GRAPH.len() {
+            for perm_point_graph in POINT_GRAPH.iter().combinations(point_graph_k).unique() {
+                let point_mask = self.mask_from_list_of_masks(perm_point_graph);
 
-                for POINT_GRAPH_l in 0..=LINE_GRAPH.len() {
-                    for perm_LINE_GRAPH in LINE_GRAPH.iter().combinations(POINT_GRAPH_l).unique() {
-                        let line_mask = self.mask_from_list_of_masks(perm_LINE_GRAPH);
+                for point_graph_l in 0..=LINE_GRAPH.len() {
+                    for perm_line_graph in LINE_GRAPH.iter().combinations(point_graph_l).unique() {
+                        let line_mask = self.mask_from_list_of_masks(perm_line_graph);
 
                         // Check they if they intersect, if so, skip
                         if point_mask & line_mask != 0 {

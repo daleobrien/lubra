@@ -1,7 +1,6 @@
 use bitflags::bitflags;
 use serde::ser::{Serialize, SerializeMap, SerializeSeq, Serializer};
 use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
 
 use crate::renders::primatives::{Line, Point};
 
@@ -9,7 +8,7 @@ bitflags! {
   #[derive(Default, serde::Deserialize)]
   pub struct TileFlags: u32 {
     //           XXX
-    const W1 = 0b001_001_000_000_000_000_000_000;
+    const W1 = 0b001_000_000_000_000_000_000_000;
     //               XXX
     const X1 = 0b000_001_000_000_000_000_000_000;
     const X2 = 0b000_010_000_000_000_000_000_000;
@@ -54,10 +53,30 @@ impl Serialize for TileFlags {
 impl From<[u32; 3]> for TileFlags {
     fn from(masks: [u32; 3]) -> TileFlags {
         let [point_mask, line_mask, curve_mask] = masks;
-        let mut value = TileFlags::from_bits_truncate(point_mask << 6);
 
-        // TODO: Get more complicated
-        // e.g if A1 and L1 then C1 and clear A1/L1
+        // Nx and Tx
+        let mut value = TileFlags::from_bits_truncate(0);
+
+        if point_mask & 0b000_001 == 0b000_001 {
+            value |= TileFlags::N1;
+        };
+        if point_mask & 0b000_010 == 0b000_010 {
+            value |= TileFlags::N2;
+        };
+        if point_mask & 0b000_100 == 0b000_100 {
+            value |= TileFlags::N3;
+        };
+
+        if point_mask & 0b100_000 == 0b100_000 {
+            value |= TileFlags::T1;
+        };
+        if point_mask & 0b010_000 == 0b010_000 {
+            value |= TileFlags::T2;
+        };
+        if point_mask & 0b001_000 == 0b001_000 {
+            value |= TileFlags::T3;
+        };
+
         if curve_mask & 0b011_000 == 0b011_000 {
             value |= TileFlags::A1;
         };
@@ -74,9 +93,10 @@ impl From<[u32; 3]> for TileFlags {
             value |= TileFlags::L2;
         };
         if line_mask & 0b100 == 0b100 {
-            value |= TileFlags::L2;
+            value |= TileFlags::L3;
         };
 
+        // e.g if A1 and L1 then C1 and clear A1/L1
         // CXs
         if value & (TileFlags::A1 | TileFlags::L1) == (TileFlags::A1 | TileFlags::L1) {
             value |= TileFlags::C1;
@@ -98,7 +118,7 @@ impl From<[u32; 3]> for TileFlags {
         }
 
         // X2
-        if value & TileFlags::LX == TileFlags::L3 {
+        if value & TileFlags::LX == TileFlags::LX {
             value |= TileFlags::X2;
             value ^= TileFlags::L1;
             value ^= TileFlags::L2;
@@ -125,44 +145,6 @@ impl From<[u32; 3]> for TileFlags {
         value
     }
 }
-
-#[derive(EnumIter, Debug, PartialEq)]
-pub enum TileType {
-    // S1,
-    // S2,
-    // S3,
-    T1,
-    T2,
-    T3,
-    A1,
-    A2,
-    A3,
-    L1,
-    L2,
-    L3,
-    C1,
-    C2,
-    C3,
-    N1,
-    N2,
-    N3,
-    Y1,
-    Y2,
-    Y3,
-    X1,
-    X2,
-    X3,
-    Z1,
-}
-
-pub const WALL: [&TileType; 6] = [
-    &TileType::Z1,
-    &TileType::X3,
-    &TileType::X3,
-    &TileType::X3,
-    &TileType::X3,
-    &TileType::X3,
-];
 
 pub const U: f64 = 120.0;
 pub const Q1: f64 = 30.0;

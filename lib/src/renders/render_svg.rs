@@ -14,8 +14,7 @@ use crate::renders::shapes::{
     T2_ARC, T2_V, T3_A, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
 use crate::renders::svg_path::Path;
-use crate::renders::tile_shapes_all::ALL_TILES;
-use crate::renders::tile_shapes_primitive::PRIMITIVE_TILES;
+use crate::renders::tile_subsets::match_side_1_2_3;
 
 pub struct Tile {
     lines: Vec<Line>,
@@ -28,7 +27,7 @@ pub struct Tile {
 impl Tile {
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
-    fn new(coordinate: Coordinate, tile: u32) -> Self {
+    fn new(coordinate: Coordinate, mask: TileFlags) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let mut faint: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
@@ -37,8 +36,7 @@ impl Tile {
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
-        let mask = TileFlags::from_bits_truncate(tile);
-
+        // let mask = TileFlags::from_bits_truncate(tile);
         if mask.contains(TileFlags::A1) {
             let arc = if flipped { A1_V } else { A1_A } + origin;
             arcs.push(arc + Radius { r: -W });
@@ -361,113 +359,63 @@ impl RenderSvg {
         let mut row_path: Vec<Tile> = Vec::new();
         let mut row_wall: Vec<Tile> = Vec::new();
 
-        //         let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, tile);
-        //         let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, tile);
+        let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::C1);
+        let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::C1);
+
+        row_path.push(path1);
+        row_path.push(path2);
+
+        let wall1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::W1);
+        let wall2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::W1);
         //
-        //         row_path.push(path1);
-        //         row_path.push(path2);
-        //
-        //         let wall1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, WALL);
-        //         let wall2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, WALL);
-        //
-        //         row_wall.push(wall1);
-        //         row_wall.push(wall2);
-        //
-        //         self.tiles.push(row_path);
-        //         self.walls.push(row_wall);
+        row_wall.push(wall1);
+        row_wall.push(wall2);
+
+        self.tiles.push(row_path);
+        self.walls.push(row_wall);
 
         self.width = 2.0 * (M + 50.0);
         self.height = H + 0.0;
     }
 
     pub fn display_all_tiles(&mut self) {
-        let n: u32 = 26;
-        let m: u32 = (ALL_TILES.len() as u32) / 3u32;
-
         let mut tile_index = 0;
 
-        for j in 0..m {
+        for j in 0..63 {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
-            if j % 2 != 0 {
-                continue;
-            }
-            for i in 0..n {
-                if i % 2 != 0 {
-                    continue;
-                }
 
-                if tile_index + 1 >= ALL_TILES.len() {
-                    continue;
-                }
-                //let path: Tile = Tile::new(Coordinate { i, j }, ALL_TILES[tile_index]);
-                tile_index += 1;
-                //let wall: Tile = Tile::new(Coordinate { i, j }, WALL);
-                //row_path.push(path);
-                //row_wall.push(wall);
+            let possible_tiles = match_side_1_2_3(j);
+
+            let mut i = 0;
+            println!("");
+            for tile in possible_tiles.iter() {
+                println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
+
+                let coord1: Coordinate = Coordinate { i: i * 2, j: j * 2 };
+                let coord2: Coordinate = Coordinate {
+                    i: i * 2 + 1,
+                    j: j * 2,
+                };
+
+                let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
+                let wall1: Tile = Tile::new(coord1, TileFlags::W1);
+
+                let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile));
+                let wall2: Tile = Tile::new(coord2, TileFlags::W1);
+
+                row_path.push(path1);
+                row_wall.push(wall1);
+                row_path.push(path2);
+                row_wall.push(wall2);
+                i += 1;
             }
             self.tiles.push(row_path);
             self.walls.push(row_wall);
         }
 
-        self.width = (n + 1) as f64 * (M + 50.0);
-        self.height = (m) as f64 * (H + 00.0);
-    }
-
-    pub fn display_basic_tiles(&mut self) {
-        //
-
-        let n: u32 = 18;
-        let m: u32 = (PRIMITIVE_TILES.len() as u32) / 3u32;
-
-        let mut tile_index = 0;
-
-        for j in 0..m {
-            let mut row_path: Vec<Tile> = Vec::new();
-            let mut row_wall: Vec<Tile> = Vec::new();
-            if j % 2 != 0 {
-                continue;
-            }
-            for i in 0..n {
-                if i % 3 != 0 {
-                    continue;
-                }
-                // let tile_type: TileType = rand::random();
-                // let path: Tile = Tile::new(Coordinate { i, j }, tile_type);
-                let tile_type = &PRIMITIVE_TILES[tile_index];
-                // let path: Tile = Tile::new(
-                //     Coordinate { i, j },
-                //     [
-                //         tile_type,
-                //         &TileType::X3,
-                //         &TileType::X3,
-                //         &TileType::X3,
-                //         &TileType::X3,
-                //         &TileType::X3,
-                //     ],
-                // );
-                // let wall: Tile = Tile::new(
-                //     Coordinate { i, j },
-                //     [
-                //         &TileType::Z1,
-                //         &TileType::Z1,
-                //         &TileType::Z1,
-                //         &TileType::Z1,
-                //         &TileType::Z1,
-                //         &TileType::Z1,
-                //     ],
-                // );
-                //row_path.push(path);
-                //row_wall.push(wall);
-
-                tile_index += 1;
-            }
-            self.tiles.push(row_path);
-            self.walls.push(row_wall);
-        }
-
-        self.width = (n + 1) as f64 * M;
-        self.height = (m) as f64 * H;
+        self.width = (10 * 2) as f64 * (M + 50.0);
+        self.height = (63 * 2) as f64 * (H + 00.0);
     }
 
     // Path commands

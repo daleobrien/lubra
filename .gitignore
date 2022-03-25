@@ -6,3 +6,5 @@
 .idea/lubra.iml
 test.svg
 .DS_Store
+cli/test-all.svg
+cli/test-one-tile.svg
