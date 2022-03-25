@@ -1,10 +1,10 @@
 use itertools::Itertools;
+use lib::renders::constants::TileFlags;
 use serde::ser::{Serialize, SerializeMap, SerializeSeq, Serializer};
 use std::collections::HashMap;
 use std::fs;
 use std::time::Instant;
 use tera::{Context, Tera};
-use lib::renders::constants::TileFlags;
 /*
        1
 [1]  4  5   [2]
@@ -13,14 +13,10 @@ use lib::renders::constants::TileFlags;
 */
 
 // This a way to represent tiles to help with rendering
-
-
-
-
-
-const POINTS: [u32; 6] = [0b000001, 0b000010, 0b000100, 0b001000, 0b010000, 0b100000];
-const LINES: [u32; 3] = [0b100001, 0b010010, 0b001100];
-const CURVES_COMINATIONS: [u32; 5] = [0b000_000, 0b011_000, 0b110_000, 0b101_000, 0b111_000];
+// TODO: Rename, they are graph nodes
+const POINT_GRAPH: [u32; 6] = [0b000001, 0b000010, 0b000100, 0b001000, 0b010000, 0b100000];
+const LINE_GRAPH: [u32; 3] = [0b100001, 0b010010, 0b001100];
+const CURVE_COMINATION_GRAPH: [u32; 5] = [0b000_000, 0b011_000, 0b110_000, 0b101_000, 0b111_000];
 
 struct Combinations {
     tiles_by_index: HashMap<u32, Vec<TileFlags>>,
@@ -136,20 +132,20 @@ impl Combinations {
     fn build_all_posible_tiles(&mut self) {
         let mut count = 0;
 
-        for points_k in 0..=POINTS.len() {
-            for perm_points in POINTS.iter().combinations(points_k).unique() {
-                let point_mask = self.mask_from_list_of_masks(perm_points);
+        for POINT_GRAPH_k in 0..=POINT_GRAPH.len() {
+            for perm_POINT_GRAPH in POINT_GRAPH.iter().combinations(POINT_GRAPH_k).unique() {
+                let point_mask = self.mask_from_list_of_masks(perm_POINT_GRAPH);
 
-                for points_l in 0..=LINES.len() {
-                    for perm_lines in LINES.iter().combinations(points_l).unique() {
-                        let line_mask = self.mask_from_list_of_masks(perm_lines);
+                for POINT_GRAPH_l in 0..=LINE_GRAPH.len() {
+                    for perm_LINE_GRAPH in LINE_GRAPH.iter().combinations(POINT_GRAPH_l).unique() {
+                        let line_mask = self.mask_from_list_of_masks(perm_LINE_GRAPH);
 
                         // Check they if they intersect, if so, skip
                         if point_mask & line_mask != 0 {
                             continue;
                         }
 
-                        for curve_mask in CURVES_COMINATIONS.iter() {
+                        for curve_mask in CURVE_COMINATION_GRAPH.iter() {
                             // Check they don't intersect
                             if curve_mask & point_mask != 0 || curve_mask & line_mask != 0 {
                                 continue;
