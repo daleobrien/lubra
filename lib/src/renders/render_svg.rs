@@ -22,6 +22,7 @@ pub struct Tile {
     arcs: Vec<Segment>,
     farcs: Vec<Segment>,
     semi: Vec<Segment>,
+    fsemi: Vec<Segment>,
 }
 
 impl Tile {
@@ -33,6 +34,7 @@ impl Tile {
         let mut arcs: Vec<Segment> = Vec::new();
         let mut farcs: Vec<Segment> = Vec::new();
         let mut semi: Vec<Segment> = Vec::new();
+        let mut fsemi: Vec<Segment> = Vec::new();
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
@@ -97,7 +99,13 @@ impl Tile {
 
         if mask.contains(TileFlags::T3) {
             if flipped {
-                if mask.contains(TileFlags::L1) {
+                if mask.contains(TileFlags::Y3) {
+                    fsemi.push(T3_V + origin);
+                } else if mask.contains(TileFlags::L2) {
+                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
+                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 5 });
+                    arcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
+                } else if mask.contains(TileFlags::L1) {
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
                     arcs.push(T3_ARC + origin + SegmentOffset { offset: 5 });
@@ -105,7 +113,13 @@ impl Tile {
                     semi.push(T3_V + origin);
                 }
             } else {
-                if mask.contains(TileFlags::L1) {
+                if mask.contains(TileFlags::Y3) {
+                    fsemi.push(T3_A + origin);
+                } else if mask.contains(TileFlags::L2) {
+                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
+                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 2 });
+                    arcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
+                } else if mask.contains(TileFlags::L1) {
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
                     arcs.push(T3_ARC + origin + SegmentOffset { offset: 2 });
@@ -313,6 +327,7 @@ impl Tile {
             faint,
             arcs,
             semi,
+            fsemi,
             farcs,
         };
     }
@@ -335,6 +350,9 @@ impl Tile {
         }
         for farc in self.farcs.iter() {
             faint_path.arc(farc);
+        }
+        for fsemi in self.fsemi.iter() {
+            faint_path.semi(fsemi);
         }
     }
 }
@@ -387,9 +405,14 @@ impl RenderSvg {
         // let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T2);
         //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L1 | TileFlags::T3);
         //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T3);
-        let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L2 | TileFlags::T1);
-        let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L2 | TileFlags::T1);
 
+        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L2 | TileFlags::T1);
+        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L2 | TileFlags::T1);
+        // let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L2 | TileFlags::T3);
+        // let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L2 | TileFlags::T3);
+
+        let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::Y3 | TileFlags::T3);
+        let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::Y3 | TileFlags::T3);
         row_path.push(path1);
         row_path.push(path2);
 
