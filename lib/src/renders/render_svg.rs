@@ -1,6 +1,8 @@
 use std::error::Error;
 use std::fs;
 
+use rand::seq::SliceRandom;
+
 use crate::renders::constants::{
     TileFlags, H, L01, L02, L07, L08, L102, L103, L106, L11, L110, L116, L117, L12, L120, L123,
     L13, L14, L15, L16, L17, L18, L19, L20, L21, L22, L23, L24, L25, L26, L31, L32, L35, L36, L37,
@@ -14,7 +16,7 @@ use crate::renders::shapes::{
     T1_V_ARC, T2_A, T2_ARC, T2_V, T3_A, T3_ARC, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
 use crate::renders::svg_path::Path;
-use crate::renders::tile_subsets::match_side_1_2_3;
+use crate::renders::tile_subsets::{match_side_1, match_side_1_2_3};
 
 pub struct Tile {
     lines: Vec<Line>,
@@ -386,7 +388,7 @@ pub fn create_triangle(flipped: bool) -> [Line; 3] {
 }
 
 pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool) {
-    let x_margin = 50.0;
+    let x_margin = 0.0;
     let y_margin = 0.0;
     let origin = Point {
         x: (M + x_margin) * coordinate.i as f64,
@@ -425,26 +427,8 @@ impl RenderSvg {
         let mut row_path: Vec<Tile> = Vec::new();
         let mut row_wall: Vec<Tile> = Vec::new();
 
-        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L1 | TileFlags::T2);
-        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T2);
-        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L3 | TileFlags::T2);
-        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L3 | TileFlags::T2);
         let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::Y2 | TileFlags::T2);
         let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::Y2 | TileFlags::T2);
-
-        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L2 | TileFlags::T1);
-        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L2 | TileFlags::T1);
-        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L3 | TileFlags::T1);
-        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L3 | TileFlags::T1);
-        // let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::Y1 | TileFlags::T1);
-        // let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::Y1 | TileFlags::T1);
-
-        // let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L2 | TileFlags::T3);
-        // let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L2 | TileFlags::T3);
-        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L1 | TileFlags::T3);
-        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T3);
-        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::Y3 | TileFlags::T3);
-        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::Y3 | TileFlags::T3);
 
         row_path.push(path1);
         row_path.push(path2);
@@ -502,12 +486,52 @@ impl RenderSvg {
         self.height = (63 * 2) as f64 * (H + 00.0);
     }
 
+    pub fn display_random_grid(&mut self) {
+        let mut tile_index = 0;
+
+        let m = 9;
+        let n = 6;
+        for j in 0..n {
+            let mut row_path: Vec<Tile> = Vec::new();
+            let mut row_wall: Vec<Tile> = Vec::new();
+
+            //println!("");
+            for i in 0..m {
+                //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
+
+                let coord: Coordinate = Coordinate { i, j };
+
+                let mut tile: Option<&u32> = Some(&TileFlags::W1.bits());
+                if i == 0 && j == 0 {
+                    let possible_tiles = match_side_1(0);
+                    tile = possible_tiles.choose(&mut rand::thread_rng());
+                    if tile.is_some() {
+                        let path: Tile = Tile::new(
+                            coord,
+                            TileFlags::from_bits_truncate(*tile.unwrap_or(&TileFlags::W1.bits())),
+                        );
+                        row_path.push(path);
+                    }
+                }
+
+                let wall: Tile = Tile::new(coord, TileFlags::W1);
+
+                row_wall.push(wall);
+            }
+            self.tiles.push(row_path);
+            self.walls.push(row_wall);
+        }
+
+        self.width = (m + 1) as f64 * M;
+        self.height = (n) as f64 * H;
+    }
+
     // Path commands
     // https://github.com/bodoni/svg/blob/master/src/node/element/path/data.rs
     pub fn render(self, file_name: String) -> Result<(), Box<dyn Error>> {
         let mut svg = String::new();
 
-        let margin = 50.0;
+        let margin = 5.0;
         let w = self.width;
         let h = self.height;
 
