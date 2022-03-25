@@ -472,9 +472,9 @@ impl RenderSvg {
             let possible_tiles = match_side_1_2_3(j);
 
             let mut i = 0;
-            println!("");
+            //println!("");
             for tile in possible_tiles.iter() {
-                println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
+                //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
 
                 let coord1: Coordinate = Coordinate { i: i * 2, j: j * 2 };
                 let coord2: Coordinate = Coordinate {
