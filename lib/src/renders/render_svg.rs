@@ -59,7 +59,13 @@ impl Tile {
 
         if mask.contains(TileFlags::T1) {
             if flipped {
-                if mask.contains(TileFlags::L2) {
+                if mask.contains(TileFlags::Y1) {
+                    fsemi.push(T1_V + origin);
+                } else if mask.contains(TileFlags::L3) {
+                    farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 1 });
+                    farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 2 });
+                    arcs.push(T1_V_ARC + origin + SegmentOffset { offset: 3 });
+                } else if mask.contains(TileFlags::L2) {
                     farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 3 });
                     farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 2 });
                     arcs.push(T1_V_ARC + origin + SegmentOffset { offset: 1 });
@@ -67,7 +73,13 @@ impl Tile {
                     semi.push(T1_V + origin);
                 }
             } else {
-                if mask.contains(TileFlags::L2) {
+                if mask.contains(TileFlags::Y1) {
+                    fsemi.push(T1_A + origin);
+                } else if mask.contains(TileFlags::L3) {
+                    farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 6 });
+                    farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 5 });
+                    arcs.push(T1_A_ARC + origin + SegmentOffset { offset: 4 });
+                } else if mask.contains(TileFlags::L2) {
                     farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 4 });
                     farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 5 });
                     arcs.push(T1_A_ARC + origin + SegmentOffset { offset: 6 });
@@ -79,7 +91,13 @@ impl Tile {
 
         if mask.contains(TileFlags::T2) {
             if flipped {
-                if mask.contains(TileFlags::L1) {
+                if mask.contains(TileFlags::Y2) {
+                    fsemi.push(T2_V + origin);
+                } else if mask.contains(TileFlags::L3) {
+                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 5 });
+                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
+                    arcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
+                } else if mask.contains(TileFlags::L1) {
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
                     arcs.push(T2_ARC + origin + SegmentOffset { offset: 5 });
@@ -87,7 +105,13 @@ impl Tile {
                     semi.push(T2_V + origin);
                 }
             } else {
-                if mask.contains(TileFlags::L1) {
+                if mask.contains(TileFlags::Y2) {
+                    fsemi.push(T2_A + origin);
+                } else if mask.contains(TileFlags::L3) {
+                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
+                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 2 });
+                    arcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
+                } else if mask.contains(TileFlags::L1) {
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
                     arcs.push(T2_ARC + origin + SegmentOffset { offset: 2 });
@@ -401,18 +425,27 @@ impl RenderSvg {
         let mut row_path: Vec<Tile> = Vec::new();
         let mut row_wall: Vec<Tile> = Vec::new();
 
-        // let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L1 | TileFlags::T2);
-        // let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T2);
-        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L1 | TileFlags::T3);
-        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T3);
+        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L1 | TileFlags::T2);
+        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T2);
+        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L3 | TileFlags::T2);
+        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L3 | TileFlags::T2);
+        let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::Y2 | TileFlags::T2);
+        let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::Y2 | TileFlags::T2);
 
         //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L2 | TileFlags::T1);
         //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L2 | TileFlags::T1);
+        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L3 | TileFlags::T1);
+        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L3 | TileFlags::T1);
+        // let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::Y1 | TileFlags::T1);
+        // let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::Y1 | TileFlags::T1);
+
         // let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L2 | TileFlags::T3);
         // let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L2 | TileFlags::T3);
+        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L1 | TileFlags::T3);
+        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T3);
+        //let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::Y3 | TileFlags::T3);
+        //let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::Y3 | TileFlags::T3);
 
-        let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::Y3 | TileFlags::T3);
-        let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::Y3 | TileFlags::T3);
         row_path.push(path1);
         row_path.push(path2);
 
