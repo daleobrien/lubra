@@ -11,7 +11,7 @@ use crate::renders::constants::{
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, N1_A, N1_V, N2_A, N2_V, N3_A, N3_V, T1_A, T1_V, T2_A,
-    T2_ARC, T2_V, T3_A, T3_V, TRIANGLE_A, TRIANGLE_V,
+    T2_ARC, T2_V, T3_A, T3_ARC, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
 use crate::renders::svg_path::Path;
 use crate::renders::tile_subsets::match_side_1_2_3;
@@ -85,9 +85,21 @@ impl Tile {
 
         if mask.contains(TileFlags::T3) {
             if flipped {
-                semi.push(T3_V + origin);
+                if mask.contains(TileFlags::L1) {
+                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
+                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
+                    arcs.push(T3_ARC + origin + SegmentOffset { offset: 5 });
+                } else {
+                    semi.push(T3_V + origin);
+                }
             } else {
-                semi.push(T3_A + origin);
+                if mask.contains(TileFlags::L1) {
+                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
+                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
+                    arcs.push(T3_ARC + origin + SegmentOffset { offset: 2 });
+                } else {
+                    semi.push(T3_A + origin);
+                }
             }
         }
 
@@ -359,8 +371,11 @@ impl RenderSvg {
         let mut row_path: Vec<Tile> = Vec::new();
         let mut row_wall: Vec<Tile> = Vec::new();
 
-        let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::C1);
-        let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::C1);
+        // let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L1 | TileFlags::T2);
+        // let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T2);
+
+        let path1: Tile = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::L1 | TileFlags::T3);
+        let path2: Tile = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1 | TileFlags::T3);
 
         row_path.push(path1);
         row_path.push(path2);
