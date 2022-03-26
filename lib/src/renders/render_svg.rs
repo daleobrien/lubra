@@ -118,35 +118,52 @@ impl RenderSvg {
                     let path: Tile = Tile::new(coord, tile);
                     tiles[(j, i)] = tile;
                     row_path.push(path);
-
-                    // }
+                    println!("({i},{j}) {:?}", tile & TileFlags::GX);
                 } else if j == 0 {
                     let left_tile = get_nodes_from_mask(tiles[(j, i - 1)]);
-                    println!("({i},{j}) {}  {:08b}", i % 2, left_tile,);
 
-                    let side_mask = if i % 2 == 1 { 0b101 } else { 0b001 };
-                    let mut left_mask = 0b010_000;
+                    let mut side_mask = 0b001;
+                    let mut left_mask = 0b000_000;
                     if i % 2 == 1 {
+                        // inverted
+                        println!("V {:08b}", left_tile);
+                        side_mask |= 0b100;
                         if left_tile & 0b010_000 == 0b010_000 {
-                            left_mask &= 0b001_000;
+                            left_mask |= 0b001_000;
                         }
                         if left_tile & 0b000_100 == 0b000_000 {
-                            left_mask &= 0b000_100;
+                            left_mask |= 0b000_100;
                         }
+
+                        left_mask &= 0b011_001;
                     } else {
-                        left_mask = 0b110_100;
+                        println!("A {:08b}", left_tile);
+
+                        let prevous_left_tile = get_nodes_from_mask(tiles[(j, i - 2)]);
+                        left_mask = 0b0;
                         if left_tile & 0b010_000 == 0b010_000 {
-                            left_mask &= 0b001_000;
+                            left_mask |= 0b001_000;
                         }
-                        if left_tile & 0b000_001 == 0b000_000 {
-                            left_mask &= 0b000_010;
+                        if (left_tile & 0b000_001 == 0b000_000)
+                            && (prevous_left_tile & 0b000_100 == 0b000_000)
+                        {
+                            left_mask |= 0b000_010;
                         }
                     };
+
+                    if i == c - 1 {
+                        println!("last col");
+                        side_mask |= 0b010;
+                        left_mask &= 0b101_010; // clear the last edge
+                    }
+
+                    println!("searching {:08b} with sides {:05b}", left_mask, side_mask);
                     let tile = random_side(left_mask, side_mask);
-                    println!("({i},{j}) adding {:?}", tile);
+                    // println!("({i},{j}) adding {:?}", tile);
                     tiles[(j, i)] = tile;
                     let path: Tile = Tile::new(coord, tile);
                     row_path.push(path);
+                    println!("({i},{j}) {:?}", tile & TileFlags::GX);
                 }
 
                 let wall: Tile = Tile::new(coord, TileFlags::W1);
