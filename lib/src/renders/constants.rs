@@ -11,34 +11,34 @@ bitflags! {
     const Z1 = 0b00_000_000_000_000_000_000_000_000_000_000;
     const W1 = 0b00_000_000_001_000_000_000_000_000_000_000;
     //                          XXX
-    const X1 = 0b00_000_000_000_001_000_000_000_000_000_000;
-    const X2 = 0b00_000_000_000_010_000_000_000_000_000_000;
+    const X1 = 0b00_111_000_000_001_000_000_000_000_000_000;
+    const X2 = 0b00_111_111_000_010_000_000_000_000_000_000;
     //                              XXX
-    const Y1 = 0b00_000_000_000_000_010_000_000_000_100_000;
-    const Y2 = 0b00_000_000_000_000_100_000_000_000_001_000;
-    const Y3 = 0b00_000_000_000_000_001_000_000_000_010_000;
+    const Y1 = 0b00_011_110_000_000_010_000_000_000_100_000;
+    const Y2 = 0b00_101_101_000_000_100_000_000_000_001_000;
+    const Y3 = 0b00_110_011_000_000_001_000_000_000_010_000;
     //                                  XXX
-    const C1 = 0b00_000_000_000_000_000_001_000_000_000_001;
-    const C2 = 0b00_000_000_000_000_000_010_000_000_000_010;
-    const C3 = 0b00_000_000_000_000_000_100_000_000_000_100;
+    const C1 = 0b00_111_001_000_000_000_001_000_000_000_001;
+    const C2 = 0b00_111_010_000_000_000_010_000_000_000_010;
+    const C3 = 0b00_111_100_000_000_000_100_000_000_000_100;
     //                                      XXX
-    const T1 = 0b00_000_000_000_000_000_000_001_000_000_000;
-    const T2 = 0b00_000_000_000_000_000_000_010_000_000_000;
-    const T3 = 0b00_000_000_000_000_000_000_100_000_000_000;
+    const T1 = 0b00_100_000_000_000_000_000_001_000_000_000;
+    const T2 = 0b00_010_000_000_000_000_000_010_000_000_000;
+    const T3 = 0b00_001_000_000_000_000_000_100_000_000_000;
     //                                          XXX
-    const N1 = 0b00_000_000_000_000_000_000_000_001_000_000;
-    const N2 = 0b00_000_000_000_000_000_000_000_010_000_000;
-    const N3 = 0b00_000_000_000_000_000_000_000_100_000_000;
+    const N1 = 0b00_000_001_000_000_000_000_000_001_000_000;
+    const N2 = 0b00_000_010_000_000_000_000_000_010_000_000;
+    const N3 = 0b00_000_100_000_000_000_000_000_100_000_000;
     //                                              XXX
-    const L1 = 0b00_000_000_000_000_000_000_000_000_001_000;
-    const L2 = 0b00_000_000_000_000_000_000_000_000_010_000;
-    const L3 = 0b00_000_000_000_000_000_000_000_000_100_000;
-    const LX = 0b00_000_000_000_000_000_000_000_000_111_000;
+    const L1 = 0b00_100_001_000_000_000_000_000_000_001_000;
+    const L2 = 0b00_010_010_000_000_000_000_000_000_010_000;
+    const L3 = 0b00_001_100_000_000_000_000_000_000_100_000;
+    const LX = 0b00_111_111_000_000_000_000_000_000_111_000;
     //                                                  XXX
-    const A1 = 0b00_000_000_000_000_000_000_000_000_000_001;
-    const A2 = 0b00_000_000_000_000_000_000_000_000_000_010;
-    const A3 = 0b00_000_000_000_000_000_000_000_000_000_100;
-    const AX = 0b00_000_000_000_000_000_000_000_000_000_111;
+    const A1 = 0b00_011_000_000_000_000_000_000_000_000_001;
+    const A2 = 0b00_101_000_000_000_000_000_000_000_000_010;
+    const A3 = 0b00_110_000_000_000_000_000_000_000_000_100;
+    const AX = 0b00_111_000_000_000_000_000_000_000_000_111;
   }
 }
 
@@ -100,45 +100,45 @@ impl From<[u32; 3]> for TileFlags {
         // e.g if A1 and L1 then C1 and clear A1/L1
         // CXs
         if value & (TileFlags::A1 | TileFlags::L1) == (TileFlags::A1 | TileFlags::L1) {
-            value |= TileFlags::C1;
             value ^= TileFlags::L1;
+            value |= TileFlags::C1;
         }
         if value & (TileFlags::A2 | TileFlags::L2) == (TileFlags::A2 | TileFlags::L2) {
-            value |= TileFlags::C2;
             value ^= TileFlags::L2;
+            value |= TileFlags::C2;
         }
         if value & (TileFlags::A3 | TileFlags::L3) == (TileFlags::A3 | TileFlags::L3) {
-            value |= TileFlags::C3;
             value ^= TileFlags::L3;
+            value |= TileFlags::C3;
         }
 
         // X1
         if value & (TileFlags::AX) == (TileFlags::AX) {
-            value |= TileFlags::X1;
             value ^= TileFlags::AX;
+            value |= TileFlags::X1;
         }
 
         // X2
         if value & TileFlags::LX == TileFlags::LX {
-            value |= TileFlags::X2;
             value ^= TileFlags::L1;
             value ^= TileFlags::L2;
+            value |= TileFlags::X2;
             // L3 is solid
         } else {
             // Yxs
             if value & (TileFlags::L2 | TileFlags::L3) == (TileFlags::L2 | TileFlags::L3) {
-                value |= TileFlags::Y1;
                 value ^= TileFlags::L2;
+                value |= TileFlags::Y1;
                 // L3 is solid
             }
             if value & (TileFlags::L1 | TileFlags::L3) == (TileFlags::L1 | TileFlags::L3) {
-                value |= TileFlags::Y2;
                 value ^= TileFlags::L3;
+                value |= TileFlags::Y2;
                 // L1 is solid
             }
             if value & (TileFlags::L1 | TileFlags::L2) == (TileFlags::L1 | TileFlags::L2) {
-                value |= TileFlags::Y3;
                 value ^= TileFlags::L1;
+                value |= TileFlags::Y3;
                 // L2 is solid
             }
         }
