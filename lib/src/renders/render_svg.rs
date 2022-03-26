@@ -3,7 +3,7 @@ use std::fs;
 
 use array2d::Array2D;
 
-use crate::renders::constants::{TileFlags, H, M};
+use crate::renders::constants::{get_nodes_from_mask, TileFlags, H, M};
 use crate::renders::primatives::Coordinate;
 use crate::renders::render_tile::Tile;
 use crate::renders::svg_path::Path;
@@ -102,7 +102,7 @@ impl RenderSvg {
         let r: usize = 6;
 
         let graphs: Vec<(u32, u32, u8)> = vec![];
-        let tiles = Array2D::filled_with(TileFlags::Z1, r, c);
+        let mut tiles = Array2D::filled_with(TileFlags::Z1, r, c);
         for j in 0..r {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
@@ -114,17 +114,37 @@ impl RenderSvg {
                 let coord: Coordinate = Coordinate { i, j };
 
                 if i == 0 && j == 0 {
-                    // let possible_tiles = match_side_1(0);
-                    // tile = possible_tiles.choose(&mut rand::thread_rng());
-                    // if tile.is_some() {
-                    let path: Tile = Tile::new(coord, TileFlags::L3);
+                    let tile = TileFlags::L3;
+                    let path: Tile = Tile::new(coord, tile);
+                    tiles[(j, i)] = tile;
                     row_path.push(path);
+
                     // }
                 } else if j == 0 {
-                    println!("{i} {}", i % 2);
+                    let left_tile = get_nodes_from_mask(tiles[(j, i - 1)]);
+                    println!("({i},{j}) {}  {:08b}", i % 2, left_tile,);
 
                     let side_mask = if i % 2 == 1 { 0b101 } else { 0b001 };
-                    let tile = random_side(0b00_000, side_mask);
+                    let mut left_mask = 0b010_000;
+                    if i % 2 == 1 {
+                        if left_tile & 0b010_000 == 0b010_000 {
+                            left_mask &= 0b001_000;
+                        }
+                        if left_tile & 0b000_100 == 0b000_000 {
+                            left_mask &= 0b000_100;
+                        }
+                    } else {
+                        left_mask = 0b110_100;
+                        if left_tile & 0b010_000 == 0b010_000 {
+                            left_mask &= 0b001_000;
+                        }
+                        if left_tile & 0b000_001 == 0b000_000 {
+                            left_mask &= 0b000_010;
+                        }
+                    };
+                    let tile = random_side(left_mask, side_mask);
+                    println!("({i},{j}) adding {:?}", tile);
+                    tiles[(j, i)] = tile;
                     let path: Tile = Tile::new(coord, tile);
                     row_path.push(path);
                 }

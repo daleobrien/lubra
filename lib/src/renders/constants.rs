@@ -61,6 +61,10 @@ impl Serialize for TileFlags {
     }
 }
 
+pub fn get_nodes_from_mask(tile: TileFlags) -> u32 {
+    return (tile.bits() >> 24) & 0b111111;
+}
+
 impl From<[u32; 3]> for TileFlags {
     fn from(masks: [u32; 3]) -> TileFlags {
         let [point_mask, line_mask, curve_mask] = masks;
