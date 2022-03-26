@@ -123,7 +123,8 @@ impl RenderSvg {
                 } else if j == 0 {
                     println!("{i} {}", i % 2);
 
-                    let tile = random_side(0b00_100, 1);
+                    let side_mask = if i % 2 == 1 { 0b101 } else { 0b001 };
+                    let tile = random_side(0b00_000, side_mask);
                     let path: Tile = Tile::new(coord, tile);
                     row_path.push(path);
                 }
