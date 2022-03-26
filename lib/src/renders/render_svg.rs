@@ -1,13 +1,13 @@
 use std::error::Error;
 use std::fs;
 
-use rand::seq::SliceRandom;
+use array2d::Array2D;
 
 use crate::renders::constants::{TileFlags, H, M};
 use crate::renders::primatives::Coordinate;
 use crate::renders::render_tile::Tile;
 use crate::renders::svg_path::Path;
-use crate::renders::tile_subsets::{match_side_1, match_side_1_2_3, match_side_3};
+use crate::renders::tile_subsets::{match_side_1_2_3, random_side};
 
 pub struct RenderSvg {
     pub style: Option<String>,
@@ -68,10 +68,13 @@ impl RenderSvg {
             for tile in possible_tiles.iter() {
                 //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
 
-                let coord1: Coordinate = Coordinate { i: i * 2, j: j * 2 };
+                let coord1: Coordinate = Coordinate {
+                    i: i * 2,
+                    j: (j as usize) * 2,
+                };
                 let coord2: Coordinate = Coordinate {
                     i: i * 2 + 1,
-                    j: j * 2,
+                    j: (j as usize) * 2,
                 };
 
                 let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
@@ -95,41 +98,34 @@ impl RenderSvg {
     }
 
     pub fn display_random_grid(&mut self) {
-        let m = 9;
-        let n = 6;
-        for j in 0..n {
+        let c: usize = 9;
+        let r: usize = 6;
+
+        let graphs: Vec<(u32, u32, u8)> = vec![];
+        let tiles = Array2D::filled_with(TileFlags::Z1, r, c);
+        for j in 0..r {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
 
             //println!("");
-            for i in 0..m {
+            for i in 0..c {
                 //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
 
                 let coord: Coordinate = Coordinate { i, j };
 
-                let mut tile: Option<&u32> = Some(&TileFlags::W1.bits());
-
                 if i == 0 && j == 0 {
-                    let possible_tiles = match_side_1(0);
-                    tile = possible_tiles.choose(&mut rand::thread_rng());
-                    if tile.is_some() {
-                        let path: Tile = Tile::new(
-                            coord,
-                            TileFlags::from_bits_truncate(*tile.unwrap_or(&TileFlags::W1.bits())),
-                        );
-                        row_path.push(path);
-                    }
-                } else if j == 0 && i % 2 == 1 {
-                    println!("{i}");
-                    let possible_tiles = match_side_3(0);
-                    tile = possible_tiles.choose(&mut rand::thread_rng());
-                    if tile.is_some() {
-                        let path: Tile = Tile::new(
-                            coord,
-                            TileFlags::from_bits_truncate(*tile.unwrap_or(&TileFlags::W1.bits())),
-                        );
-                        row_path.push(path);
-                    }
+                    // let possible_tiles = match_side_1(0);
+                    // tile = possible_tiles.choose(&mut rand::thread_rng());
+                    // if tile.is_some() {
+                    let path: Tile = Tile::new(coord, TileFlags::L3);
+                    row_path.push(path);
+                    // }
+                } else if j == 0 {
+                    println!("{i} {}", i % 2);
+
+                    let tile = random_side(0b00_100, 1);
+                    let path: Tile = Tile::new(coord, tile);
+                    row_path.push(path);
                 }
 
                 let wall: Tile = Tile::new(coord, TileFlags::W1);
@@ -140,8 +136,8 @@ impl RenderSvg {
             self.walls.push(row_wall);
         }
 
-        self.width = (m + 1) as f64 * M;
-        self.height = (n) as f64 * H;
+        self.width = (c + 1) as f64 * M;
+        self.height = r as f64 * H;
     }
 
     // Path commands

@@ -1,9 +1,12 @@
-use itertools::Itertools;
-use lib::renders::constants::TileFlags;
 use std::collections::HashMap;
 use std::fs;
 use std::time::Instant;
+
+use itertools::Itertools;
 use tera::{Context, Tera};
+
+use lib::renders::constants::TileFlags;
+
 /*
        1
 [1]  4  5   [2]
@@ -49,6 +52,8 @@ impl Combinations {
 
         //
         for (key, tiles) in self.tiles_by_index.iter().sorted_by_key(|x| x.0) {
+            // TODO: Add Points ones too!, ... maybe don't need it, since apart from the first tile, they will all be edge constrained
+
             side_1
                 .entry(*key & 0b001_011)
                 .or_insert_with(Vec::new)

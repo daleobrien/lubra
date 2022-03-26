@@ -69,8 +69,8 @@ impl Sub<Point> for Line {
 
 #[derive(Clone, Copy)]
 pub struct Coordinate {
-    pub i: u32,
-    pub j: u32,
+    pub i: usize,
+    pub j: usize,
 }
 
 pub struct SegmentOffset {
