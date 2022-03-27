@@ -101,7 +101,8 @@ impl RenderSvg {
         let c: usize = 9;
         let r: usize = 6;
 
-        let graphs: Vec<(u32, u32, u8)> = vec![];
+        // let graphs: Vec<(u32, u32, u8)> = vec![];
+
         let mut tiles = Array2D::filled_with(TileFlags::Z2, r, c);
         for j in 0..r {
             let mut row_path: Vec<Tile> = Vec::new();

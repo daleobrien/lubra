@@ -72,8 +72,13 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     if i == 0 && j == 0 {
         return TileFlags::L3;
     }
-    let inverted = i + j % 2 == 1;
+    let inverted = (i + j) % 2 == 1;
     if inverted {
+        if i>0 {
+          let last_tile = tiles[(j,i-1)];
+          println!("inverted{:?}",last_tile);
+        }
+       
         // get surrounding tiles
         // add constraints
     } else {
