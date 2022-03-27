@@ -39,7 +39,7 @@ pub struct Tile {
 impl Tile {
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
-    pub fn new(coordinate: Coordinate, mask: TileFlags) -> Self {
+    pub fn new(coordinate: Coordinate, raw_mask: TileFlags) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let mut faint: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
@@ -49,7 +49,137 @@ impl Tile {
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
-        // let mask = TileFlags::from_bits_truncate(tile);
+        // Rotate tile, depending on position so it renders
+        let mut mask = TileFlags::Z1;
+        if raw_mask.contains(TileFlags::W1) {
+            mask |= TileFlags::W1;
+        }
+        if raw_mask.contains(TileFlags::X1) {
+            mask |= TileFlags::X1;
+        }
+        if raw_mask.contains(TileFlags::X2) {
+            mask |= TileFlags::X2;
+        }
+
+        let rotate_index = coordinate.i % 3;
+        match rotate_index {
+            1 => {
+                if raw_mask.contains(TileFlags::Y1) {
+                    mask |= TileFlags::Y2;
+                }
+                if raw_mask.contains(TileFlags::Y2) {
+                    mask |= TileFlags::Y3;
+                }
+                if raw_mask.contains(TileFlags::Y3) {
+                    mask |= TileFlags::Y1;
+                }
+                if raw_mask.contains(TileFlags::A1) {
+                    mask |= TileFlags::A2;
+                }
+                if raw_mask.contains(TileFlags::A2) {
+                    mask |= TileFlags::A3;
+                }
+                if raw_mask.contains(TileFlags::A3) {
+                    mask |= TileFlags::A1;
+                }
+                if raw_mask.contains(TileFlags::C1) {
+                    mask |= TileFlags::C2;
+                }
+                if raw_mask.contains(TileFlags::C2) {
+                    mask |= TileFlags::C3;
+                }
+                if raw_mask.contains(TileFlags::C3) {
+                    mask |= TileFlags::C1;
+                }
+                if raw_mask.contains(TileFlags::L1) {
+                    mask |= TileFlags::L2;
+                }
+                if raw_mask.contains(TileFlags::L2) {
+                    mask |= TileFlags::L3;
+                }
+                if raw_mask.contains(TileFlags::L3) {
+                    mask |= TileFlags::L1;
+                }
+                if raw_mask.contains(TileFlags::N1) {
+                    mask |= TileFlags::N2;
+                }
+                if raw_mask.contains(TileFlags::N2) {
+                    mask |= TileFlags::N3;
+                }
+                if raw_mask.contains(TileFlags::N3) {
+                    mask |= TileFlags::N1;
+                }
+                if raw_mask.contains(TileFlags::T1) {
+                    mask |= TileFlags::T2;
+                }
+                if raw_mask.contains(TileFlags::T2) {
+                    mask |= TileFlags::T3;
+                }
+                if raw_mask.contains(TileFlags::T3) {
+                    mask |= TileFlags::T1;
+                }
+            }
+            2 => {
+                if raw_mask.contains(TileFlags::Y1) {
+                    mask |= TileFlags::Y3;
+                }
+                if raw_mask.contains(TileFlags::Y2) {
+                    mask |= TileFlags::Y1;
+                }
+                if raw_mask.contains(TileFlags::Y3) {
+                    mask |= TileFlags::Y2;
+                }
+                if raw_mask.contains(TileFlags::A1) {
+                    mask |= TileFlags::A3;
+                }
+                if raw_mask.contains(TileFlags::A2) {
+                    mask |= TileFlags::A1;
+                }
+                if raw_mask.contains(TileFlags::A3) {
+                    mask |= TileFlags::A2;
+                }
+                if raw_mask.contains(TileFlags::C1) {
+                    mask |= TileFlags::C3;
+                }
+                if raw_mask.contains(TileFlags::C2) {
+                    mask |= TileFlags::C1;
+                }
+                if raw_mask.contains(TileFlags::C3) {
+                    mask |= TileFlags::C2;
+                }
+                if raw_mask.contains(TileFlags::L1) {
+                    mask |= TileFlags::L3;
+                }
+                if raw_mask.contains(TileFlags::L2) {
+                    mask |= TileFlags::L1;
+                }
+                if raw_mask.contains(TileFlags::L3) {
+                    mask |= TileFlags::L2;
+                }
+                if raw_mask.contains(TileFlags::N1) {
+                    mask |= TileFlags::N3;
+                }
+                if raw_mask.contains(TileFlags::N2) {
+                    mask |= TileFlags::N1;
+                }
+                if raw_mask.contains(TileFlags::N3) {
+                    mask |= TileFlags::N2;
+                }
+                if raw_mask.contains(TileFlags::T1) {
+                    mask |= TileFlags::T3;
+                }
+                if raw_mask.contains(TileFlags::T2) {
+                    mask |= TileFlags::T1;
+                }
+                if raw_mask.contains(TileFlags::T3) {
+                    mask |= TileFlags::T2;
+                }
+            }
+            _ => {
+                mask = raw_mask;
+            }
+        }
+
         if mask.contains(TileFlags::A1) {
             let arc = if flipped { A1_V } else { A1_A } + origin;
             arcs.push(arc + Radius { r: -W });

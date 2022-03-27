@@ -1,3 +1,4 @@
+use array2d::Array2D;
 use bitflags::bitflags;
 use serde::ser::{Serialize, SerializeMap, SerializeSeq, Serializer};
 use strum::IntoEnumIterator;
@@ -64,6 +65,17 @@ impl Serialize for TileFlags {
 
 pub fn get_nodes_from_mask(tile: TileFlags) -> u32 {
     return (tile.bits() >> 24) & 0b111111;
+}
+
+pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFlags {
+    if i == 0 && j == 0 {
+        return TileFlags::L3;
+    }
+    let inverted = i + j % 2 == 1;
+    if inverted {
+    } else {
+    }
+    return TileFlags::Z1;
 }
 
 impl From<[u32; 3]> for TileFlags {
