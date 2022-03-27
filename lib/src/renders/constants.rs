@@ -20,6 +20,7 @@ bitflags! {
 
     //                      XXX
     const Z1 = 0b00_000_000_000_000_000_000_000_000_000_000;
+    const Z2 = 0b00_000_000_010_000_000_000_000_000_000_000; // Doesn't draw, and consider not routed.
     const W1 = 0b00_000_000_001_000_000_000_000_000_000_000;
     //                          XXX
     const X1 = 0b00_111_000_000_001_000_000_000_000_000_000;
@@ -73,7 +74,10 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     }
     let inverted = i + j % 2 == 1;
     if inverted {
+        // get surrounding tiles
+        // add constraints
     } else {
+        //
     }
     return TileFlags::Z1;
 }

@@ -102,15 +102,12 @@ impl RenderSvg {
         let r: usize = 6;
 
         let graphs: Vec<(u32, u32, u8)> = vec![];
-        let mut tiles = Array2D::filled_with(TileFlags::Z1, r, c);
+        let mut tiles = Array2D::filled_with(TileFlags::Z2, r, c);
         for j in 0..r {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
 
-            //println!("");
             for i in 0..c {
-                //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
-
                 let coord: Coordinate = Coordinate { i, j };
 
                 let tile = get_random_tile(i, j, &tiles);
