@@ -1,7 +1,6 @@
 use array2d::Array2D;
 use bitflags::bitflags;
-use serde::ser::{Serialize, SerializeMap, SerializeSeq, Serializer};
-use strum::IntoEnumIterator;
+use serde::ser::{Serialize, Serializer};
 
 use crate::renders::primatives::{Line, Point};
 use crate::renders::tile_subsets::random_side;
@@ -76,15 +75,15 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     let pos = i % 6;
     let inverted = j % 2 == 0;
     if inverted {
-        if i > 0 {
-            let last_tile = tiles[(j, i - 1)];
-            // println!("inverted {:?}", last_tile.bits());
-        }
+        // if i > 0 {
+        //     //let last_tile = tiles[(j, i - 1)];
+        //     // println!("inverted {:?}", last_tile.bits());
+        // }
         if j == 0 {
             let last_tile = tiles[(j, i - 1)];
 
             let mut mask = 0;
-            let tile: TileFlags = match pos {
+            match pos {
                 0 => {
                     return random_side(mask, 0b001);
                 }
@@ -120,7 +119,6 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
                     return TileFlags::Z1;
                 }
             };
-            return tile;
         }
 
         // get surrounding tiles
