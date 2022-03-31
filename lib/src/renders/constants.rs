@@ -4,6 +4,7 @@ use serde::ser::{Serialize, SerializeMap, SerializeSeq, Serializer};
 use strum::IntoEnumIterator;
 
 use crate::renders::primatives::{Line, Point};
+use crate::renders::tile_subsets::random_side;
 
 bitflags! {
   #[derive(Default, serde::Deserialize)]
@@ -72,18 +73,64 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     if i == 0 && j == 0 {
         return TileFlags::L3;
     }
-    let inverted = (i + j) % 2 == 1;
+    let pos = i % 6;
+    let inverted = j % 2 == 0;
     if inverted {
-        if i>0 {
-          let last_tile = tiles[(j,i-1)];
-          println!("inverted{:?}",last_tile);
+        if i > 0 {
+            let last_tile = tiles[(j, i - 1)];
+            // println!("inverted {:?}", last_tile.bits());
         }
-       
+        if j == 0 {
+            let last_tile = tiles[(j, i - 1)];
+
+            let mut mask = 0;
+            let tile: TileFlags = match pos {
+                0 => {
+                    return random_side(mask, 0b001);
+                }
+                1 => {
+                    if !last_tile.contains(TileFlags::G3) {
+                        // have two masks to try
+                    }
+                    if !last_tile.contains(TileFlags::G1) {
+                        // have two masks to try
+                    }
+                    if last_tile.contains(TileFlags::G5) {
+                        mask |= 0b010_000;
+                    }
+                    return random_side(mask, 0b011);
+                }
+                2 => {
+                    return random_side(mask, 0b010);
+                }
+                3 => {
+                    if last_tile.contains(TileFlags::G5) {
+                        mask |= 0b010_000;
+                    }
+                    return random_side(mask, 0b101);
+                }
+                4 => {
+                    return random_side(mask, 0b010);
+                }
+                5 => {
+                    return random_side(mask, 0b010);
+                }
+                _ => {
+                    println!("Opps ({i},{j}) {pos}");
+                    return TileFlags::Z1;
+                }
+            };
+            return tile;
+        }
+
         // get surrounding tiles
         // add constraints
     } else {
         //
+        return TileFlags::Z1;
     }
+
+    //println!("Random ...({i},{j}) Z1");
     return TileFlags::Z1;
 }
 

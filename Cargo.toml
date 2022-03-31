@@ -1,2 +1,8 @@
 [workspace]
-members = ["lib", "cli", "generate"]
+members = [
+    "lib",
+    "cli",
+    "generate"
+]
+
+default-run = "lubra"

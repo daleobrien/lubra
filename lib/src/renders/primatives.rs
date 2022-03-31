@@ -67,7 +67,7 @@ impl Sub<Point> for Line {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Coordinate {
     pub i: usize,
     pub j: usize,

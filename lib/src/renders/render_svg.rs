@@ -42,7 +42,7 @@ impl RenderSvg {
             let mut row_wall: Vec<Tile> = Vec::new();
 
             for i in 0..c {
-                let path: Tile = Tile::new(Coordinate { i, j }, TileFlags::A3);
+                let path: Tile = Tile::new(Coordinate { i, j }, TileFlags::L1);
                 row_path.push(path);
 
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileFlags::W1);
@@ -114,9 +114,12 @@ impl RenderSvg {
                 let tile = get_random_tile(i, j, &tiles);
 
                 tiles[(j, i)] = tile;
+                // println!("added ({coord:?}) -> {:?}", tile);
                 let path: Tile = Tile::new(coord, tile);
                 row_path.push(path);
-                println!("({i},{j}) {:?}", tile & TileFlags::GX);
+                if j == 0 {
+                    println!("({i},{j}) {:?}", tile);
+                }
 
                 let wall: Tile = Tile::new(coord, TileFlags::W1);
 
