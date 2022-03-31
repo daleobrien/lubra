@@ -68,58 +68,78 @@ pub fn get_nodes_from_mask(tile: TileFlags) -> u32 {
     return (tile.bits() >> 24) & 0b111111;
 }
 
+pub fn get_tile_relative_postion(
+    pos: (usize, usize),
+    rel: (i32, i32),
+    tiles: &Array2D<TileFlags>,
+) -> TileFlags {
+    // If we are out of bounds return a empty cell
+    if pos.0 as i32 + rel.0 < 0
+        || pos.0 as i32 + rel.0 + 1 >= tiles.num_rows() as i32
+        || pos.1 as i32 + rel.1 < 0
+        || pos.1 as i32 + rel.1 + 1 >= tiles.num_columns() as i32
+    {
+        return TileFlags::Z1;
+    }
+    return tiles[(pos.1, pos.0)];
+}
+
 pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFlags {
     if i == 0 && j == 0 {
         return TileFlags::L3;
     }
+
+    let last_tile = get_tile_relative_postion((i, j), (-1, 0), tiles);
+
     let pos = i % 6;
     let inverted = j % 2 == 0;
+
+    // TODO: create a function to figure out which side to consider for each rel. position
+    // if inverted, we look below inside of above
+
     if inverted {
         // if i > 0 {
         //     //let last_tile = tiles[(j, i - 1)];
         //     // println!("inverted {:?}", last_tile.bits());
         // }
-        if j == 0 {
-            let last_tile = tiles[(j, i - 1)];
 
-            let mut mask = 0;
-            match pos {
-                0 => {
-                    return random_side(mask, 0b001);
+        let mut mask = 0;
+        match pos {
+            0 => {
+                return random_side(mask, 0b001);
+            }
+            1 => {
+                if !last_tile.contains(TileFlags::G3) {
+                    // have two masks to try
                 }
-                1 => {
-                    if !last_tile.contains(TileFlags::G3) {
-                        // have two masks to try
-                    }
-                    if !last_tile.contains(TileFlags::G1) {
-                        // have two masks to try
-                    }
-                    if last_tile.contains(TileFlags::G5) {
-                        mask |= 0b010_000;
-                    }
-                    return random_side(mask, 0b011);
+                if !last_tile.contains(TileFlags::G1) {
+                    // have two masks to try
                 }
-                2 => {
-                    return random_side(mask, 0b010);
+                if last_tile.contains(TileFlags::G5) {
+                    mask |= 0b010_000;
                 }
-                3 => {
-                    if last_tile.contains(TileFlags::G5) {
-                        mask |= 0b010_000;
-                    }
-                    return random_side(mask, 0b101);
+                return random_side(mask, 0b011);
+            }
+            2 => {
+                return random_side(mask, 0b010);
+            }
+            3 => {
+                if last_tile.contains(TileFlags::G5) {
+                    mask |= 0b010_000;
                 }
-                4 => {
-                    return random_side(mask, 0b010);
-                }
-                5 => {
-                    return random_side(mask, 0b010);
-                }
-                _ => {
-                    println!("Opps ({i},{j}) {pos}");
-                    return TileFlags::Z1;
-                }
-            };
-        }
+                return random_side(mask, 0b101);
+            }
+            4 => {
+                return random_side(mask, 0b010);
+            }
+            5 => {
+                return random_side(mask, 0b010);
+            }
+            _ => {
+                println!("Opps ({i},{j}) {pos}");
+                return TileFlags::Z1;
+            }
+        };
 
         // get surrounding tiles
         // add constraints
@@ -127,9 +147,6 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         //
         return TileFlags::Z1;
     }
-
-    //println!("Random ...({i},{j}) Z1");
-    return TileFlags::Z1;
 }
 
 impl From<[u32; 3]> for TileFlags {
