@@ -42,6 +42,8 @@ impl Combinations {
         //
         let mut side: HashMap<u32, Vec<TileFlags>> = HashMap::new();
 
+        let mut side_key_as_binary: HashMap<u32, String> = HashMap::new();
+
         for n in 0..64 {
             let mut dont_cares: u32 = 0;
             for j in 0..6 {
@@ -61,8 +63,9 @@ impl Combinations {
                         index |= b;
                     }
                 }
-                //println!("{n:06b} {dont_cares:012b} {index:012b}");
                 side.entry(index).or_insert_with(Vec::new).extend(tiles);
+                let s = format!("{index:012b}").to_string();
+                side_key_as_binary.entry(index).or_insert_with(||s);
             }
         }
 
@@ -82,6 +85,7 @@ impl Combinations {
         side_keys.sort_unstable();
 
         context.insert("side_keys", &side_keys);
+        context.insert("side_key_as_binary", &side_key_as_binary);
 
         let rendered = tera.render("tile_subsets.rs", &context);
 

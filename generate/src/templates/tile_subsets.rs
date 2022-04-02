@@ -7,7 +7,7 @@ use crate::renders::constants::TileFlags;
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn find_tiles (mask:u32) -> Vec<u32> {
 	match mask { {% for key in side_keys %}
-		{{key}} => vec!{{side[key]}}, {% endfor %}
+		0b{{side_key_as_binary[key]}} => vec!{{side[key]}}, {% endfor %}
 	   _ => vec!(),
   }
 }
