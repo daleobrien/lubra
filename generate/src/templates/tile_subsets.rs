@@ -20,13 +20,11 @@ pub fn random_side (matches:u32, dont_cares: u32) -> TileFlags {
   
   for i in 0..6 {
       let b:u32 = 1 << i;
-      let n:u32 = 1 << (i*2);
-      let m:u32 = 2 << (i*2);
-      if matches & b == b {
-        index |= n; 
-      }
+      
       if dont_cares & b == b {
-        index |= m; 
+        index |= 2 << (i*2); 
+      } else if matches & b == b {
+        index |= 1 << (i*2); 
       }
   }
     
