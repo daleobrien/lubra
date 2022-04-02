@@ -1,0 +1,3 @@
+{
+  "com.kilb.rust.lint-command" : "clippy"
+}

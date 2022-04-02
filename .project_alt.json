@@ -1,0 +1,8 @@
+{
+  "lib/src/*.rs": {
+    "alternate": "lib/test/test_{}.rs"
+  },
+  "lib/test/test_*.rs": {
+    "alternate": "lib/src/{}.rs"
+  }
+}
