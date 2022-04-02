@@ -5,71 +5,32 @@ use rand::seq::SliceRandom;
 use crate::renders::constants::TileFlags;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn match_side_1 (mask:u32) -> Vec<u32> {
-	match mask { {% for key in side_1_keys %}
-		{{key}} => vec!{{side_1[key]}}, {% endfor %}
+pub fn find_tiles (mask:u32) -> Vec<u32> {
+	match mask { {% for key in side_keys %}
+		{{key}} => vec!{{side[key]}}, {% endfor %}
 	   _ => vec!(),
   }
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn match_side_2 (mask:u32) -> Vec<u32> {
-	match mask { {% for key in side_2_keys %}
-		{{key}} => vec!{{side_2[key]}}, {% endfor %}
-		_ => vec!(),
-	}
-}
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn match_side_3 (mask:u32) -> Vec<u32> {
-	match mask { {% for key in side_3_keys %}
-		{{key}} => vec!{{side_3[key]}}, {% endfor %}
-		_ => vec!(),
-	}
-}
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn match_side_1_2 (mask:u32) -> Vec<u32> {
-	match mask { {% for key in side_1_2_keys %}
-		{{key}} => vec!{{side_1_2[key]}}, {% endfor %}
-		_ => vec!(),
-	}
-}
+pub fn random_side (matches:u32, dont_cares: u8) -> TileFlags {
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn match_side_2_3 (mask:u32) -> Vec<u32> {
-	match mask { {% for key in side_2_3_keys %}
-		{{key}} => vec!{{side_2_3[key]}}, {% endfor %}
-		_ => vec!(),
-	}
-}
-
-#[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn match_side_3_1 (mask:u32) -> Vec<u32> {
-	match mask { {% for key in side_3_1_keys %}
-		{{key}} => vec!{{side_3_1[key]}}, {% endfor %}
-		_ => vec!(),
-	}
-}
-
-#[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn match_side_1_2_3 (mask:u32) -> Vec<u32> {
-	match mask { {% for key in side_1_2_3_keys %}
-		{{key}} => vec!{{side_1_2_3[key]}}, {% endfor %}
-		_ => vec!(),
-	}
-}
-
-pub fn random_side (mask:u32, side_mask: u8) -> TileFlags {
-	let possible_tiles = match side_mask {
-		0b001 => match_side_1(mask),
-		0b010 => match_side_2(mask),
-		0b100 => match_side_3(mask),
-		0b011 => match_side_1_2(mask),
-		0b110 => match_side_2_3(mask),
-		0b101 => match_side_3_1(mask),
-		_ => match_side_1_2_3(mask)
-	};
+  let mut index:u32 = 0;
+  
+  for i in 0..6 {
+      let b:u32 = 1 << i;
+      let n:u32 = 1 << (i*2);
+      let m:u32 = 2 << (i*2);
+      if matches & b == b {
+        index |= n; 
+      }
+      if dont_cares & b == b {
+        index |= m; 
+      }
+  }
+    
+	let possible_tiles = find_tiles(index);
 	let tile = possible_tiles.choose(&mut rand::thread_rng());
 	return TileFlags::from_bits_truncate(*tile.unwrap_or(&TileFlags::Z1.bits()))
 }

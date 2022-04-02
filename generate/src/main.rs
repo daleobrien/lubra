@@ -40,48 +40,30 @@ impl Combinations {
 
     fn create_tile_subset_rust_files(&self) {
         //
-        let mut side_1: HashMap<u32, Vec<TileFlags>> = HashMap::new();
-        let mut side_2: HashMap<u32, Vec<TileFlags>> = HashMap::new();
-        let mut side_3: HashMap<u32, Vec<TileFlags>> = HashMap::new();
+        let mut side: HashMap<u32, Vec<TileFlags>> = HashMap::new();
 
-        let mut side_1_2: HashMap<u32, Vec<TileFlags>> = HashMap::new();
-        let mut side_2_3: HashMap<u32, Vec<TileFlags>> = HashMap::new();
-        let mut side_3_1: HashMap<u32, Vec<TileFlags>> = HashMap::new();
-
-        let mut side_1_2_3: HashMap<u32, Vec<TileFlags>> = HashMap::new();
-
-        //
-        for (key, tiles) in self.tiles_by_index.iter().sorted_by_key(|x| x.0) {
-            // TODO: Add Points ones too!, ... maybe don't need it, since apart from the first tile, they will all be edge constrained
-
-            side_1
-                .entry(*key & 0b001_011)
-                .or_insert_with(Vec::new)
-                .extend(tiles); // 142
-            side_2
-                .entry(*key & 0b010_101)
-                .or_insert_with(Vec::new)
-                .extend(tiles); // 153
-            side_3
-                .entry(*key & 0b100_110)
-                .or_insert_with(Vec::new)
-                .extend(tiles); // 236
-            side_1_2
-                .entry(*key & 0b011_111)
-                .or_insert_with(Vec::new)
-                .extend(tiles); // 12345
-            side_2_3
-                .entry(*key & 0b110_111)
-                .or_insert_with(Vec::new)
-                .extend(tiles); // 123 5
-            side_3_1
-                .entry(*key & 0b101_111)
-                .or_insert_with(Vec::new)
-                .extend(tiles); // 1234 6
-            side_1_2_3
-                .entry(*key & 0b111_111)
-                .or_insert_with(Vec::new)
-                .extend(tiles);
+        for n in 0..64 {
+            let mut dont_cares: u32 = 0;
+            for j in 0..6 {
+                let b: u32 = 2 << (2 * j);
+                if n & (1<<j) == (1<<j) {
+                    dont_cares |= b;
+                }
+            }
+            //
+            for (key, tiles) in self.tiles_by_index.iter() {
+                // matches / dont_cares
+                let mut index = dont_cares;
+                for i in 0..6 {
+                    let b: u32 = 1 << (2*i);
+                   
+                    if (*key & (1 << i)) == (1 << i) {
+                        index |= b;
+                    }
+                }
+                //println!("{n:06b} {dont_cares:012b} {index:012b}");
+                side.entry(index).or_insert_with(Vec::new).extend(tiles);
+            }
         }
 
         let tera = match Tera::new("src/templates/*.rs") {
@@ -93,37 +75,13 @@ impl Combinations {
         };
         let mut context = Context::new();
 
-        context.insert("side_1", &side_1);
-        context.insert("side_2", &side_2);
-        context.insert("side_3", &side_3);
-        context.insert("side_1_2", &side_1_2);
-        context.insert("side_2_3", &side_2_3);
-        context.insert("side_3_1", &side_3_1);
-        context.insert("side_1_2_3", &side_1_2_3);
+        context.insert("side", &side);
         //
-        let mut side_1_keys: Vec<u32> = side_1.into_keys().collect();
-        let mut side_2_keys: Vec<u32> = side_2.into_keys().collect();
-        let mut side_3_keys: Vec<u32> = side_3.into_keys().collect();
-        let mut side_1_2_keys: Vec<u32> = side_1_2.into_keys().collect();
-        let mut side_2_3_keys: Vec<u32> = side_2_3.into_keys().collect();
-        let mut side_3_1_keys: Vec<u32> = side_3_1.into_keys().collect();
-        let mut side_1_2_3_keys: Vec<u32> = side_1_2_3.into_keys().collect();
+        let mut side_keys: Vec<u32> = side.into_keys().collect();
         //
-        side_1_keys.sort_unstable();
-        side_2_keys.sort_unstable();
-        side_3_keys.sort_unstable();
-        side_1_2_keys.sort_unstable();
-        side_2_3_keys.sort_unstable();
-        side_3_1_keys.sort_unstable();
-        side_1_2_3_keys.sort_unstable();
+        side_keys.sort_unstable();
 
-        context.insert("side_1_keys", &side_1_keys);
-        context.insert("side_2_keys", &side_2_keys);
-        context.insert("side_3_keys", &side_3_keys);
-        context.insert("side_1_2_keys", &side_1_2_keys);
-        context.insert("side_2_3_keys", &side_2_3_keys);
-        context.insert("side_3_1_keys", &side_3_1_keys);
-        context.insert("side_1_2_3_keys", &side_1_2_3_keys);
+        context.insert("side_keys", &side_keys);
 
         let rendered = tera.render("tile_subsets.rs", &context);
 
