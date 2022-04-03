@@ -8,7 +8,29 @@ use crate::renders::tile_subsets::random_side;
 bitflags! {
   #[derive(Default, serde::Deserialize)]
   pub struct TileFlags: u32 {
-    // graph node
+    // Maybe alter these flags to be a mini-adjoint graph, so it will make it easier to use.
+    /*
+     0 0 0 0 0 0
+     0 0 0 0 0 0
+     0 0 0 0 0 0
+     0 0 0 0 0 0
+     0 0 0 0 0 0 
+     0 0 0 0 0 0  (36 bits), but not all are used,
+     
+     
+     0 0 0 0 0 0
+       0 0 0 0 0 
+         0 0 0 0 
+           0 0 0
+             0 0
+               0  (21 bits)
+               
+    Not all graphs are posible, so maybe could reduce more, I know I only have 193 distinct graphs, so could use 
+    8 bitsm but then it's all a lookup and would have to decode/enocde.       
+       
+    */
+    
+    // Graph node
     //              XXX XXX
     const G1 = 0b00_000_001_000_000_000_000_000_000_000_000;
     const G2 = 0b00_000_010_000_000_000_000_000_000_000_000;
