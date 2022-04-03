@@ -232,7 +232,9 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     }
     // Don't like Nx so much
   
-    for _ in 0..15 {
+    // TODO: stip out cells that only have Nx and Tx
+  
+    for _ in 0..45 {
       let first_tile = random_side(matches, dont_care);
       if !first_tile.contains(TileFlags::N1) && !first_tile.contains(TileFlags::N2) && !first_tile.contains(TileFlags::N3) {
         return first_tile;
