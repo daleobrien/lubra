@@ -38,30 +38,30 @@ impl Combinations {
         return mask;
     }
 
-    fn dont_care_to_trit (&self, bits:u32) -> u32 {
-       // 0b101 -> 0b10_00_10 
-       let mut trits: u32 = 0;
-       for j in 0..6 {
-           let b: u32 = 2 << (2 * j);
-           if bits & (1<<j) == (1<<j) {
-               trits |= b;
-           }
-       }
-       return trits;
-    }
-    
-    fn mask_to_trit (&self, bits:u32) -> u32 {
-       // 0b101 -> 0b01_00_01 
+    fn dont_care_to_trit(&self, bits: u32) -> u32 {
+        // 0b101 -> 0b10_00_10
         let mut trits: u32 = 0;
         for j in 0..6 {
-            let b: u32 = 1 << (2 * j);
-            if bits & (1<<j) == (1<<j) {
+            let b: u32 = 2 << (2 * j);
+            if bits & (1 << j) == (1 << j) {
                 trits |= b;
             }
         }
         return trits;
-     }
-     
+    }
+
+    fn mask_to_trit(&self, bits: u32) -> u32 {
+        // 0b101 -> 0b01_00_01
+        let mut trits: u32 = 0;
+        for j in 0..6 {
+            let b: u32 = 1 << (2 * j);
+            if bits & (1 << j) == (1 << j) {
+                trits |= b;
+            }
+        }
+        return trits;
+    }
+
     fn create_tile_subset_rust_files(&self) {
         //
         let mut side: HashMap<u32, Vec<TileFlags>> = HashMap::new();
@@ -69,15 +69,14 @@ impl Combinations {
         let mut side_key_as_binary: HashMap<u32, String> = HashMap::new();
 
         for n in 0..64 {
-            
             let dont_care = self.dont_care_to_trit(n);
             //
             for (key, tiles) in self.tiles_by_index.iter() {
                 let index = self.mask_to_trit(key & !n & 0b111_111) | dont_care;
-               
+
                 side.entry(index).or_insert_with(Vec::new).extend(tiles);
                 let s = format!("{index:012b}").to_string();
-                side_key_as_binary.entry(index).or_insert_with(||s);
+                side_key_as_binary.entry(index).or_insert_with(|| s);
             }
         }
 

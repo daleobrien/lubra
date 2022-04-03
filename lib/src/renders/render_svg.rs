@@ -55,46 +55,46 @@ impl RenderSvg {
         self.height = r as f64 * H;
     }
 
-//     pub fn display_all_tiles(&mut self) {
-//         for j in 0..63 {
-//             let mut row_path: Vec<Tile> = Vec::new();
-//             let mut row_wall: Vec<Tile> = Vec::new();
-// 
-//             let possible_tiles = match_side_1_2_3(j);
-// 
-//             let mut i = 0;
-//             //println!("");
-//             for tile in possible_tiles.iter() {
-//                 //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
-// 
-//                 let coord1: Coordinate = Coordinate {
-//                     i: i * 2,
-//                     j: (j as usize) * 2,
-//                 };
-//                 let coord2: Coordinate = Coordinate {
-//                     i: i * 2 + 1,
-//                     j: (j as usize) * 2,
-//                 };
-// 
-//                 let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
-//                 let wall1: Tile = Tile::new(coord1, TileFlags::W1);
-// 
-//                 let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile));
-//                 let wall2: Tile = Tile::new(coord2, TileFlags::W1);
-// 
-//                 row_path.push(path1);
-//                 row_wall.push(wall1);
-//                 row_path.push(path2);
-//                 row_wall.push(wall2);
-//                 i += 1;
-//             }
-//             self.tiles.push(row_path);
-//             self.walls.push(row_wall);
-//         }
-// 
-//         self.width = (10 * 2) as f64 * (M + 50.0);
-//         self.height = (63 * 2) as f64 * (H + 00.0);
-//     }
+    //     pub fn display_all_tiles(&mut self) {
+    //         for j in 0..63 {
+    //             let mut row_path: Vec<Tile> = Vec::new();
+    //             let mut row_wall: Vec<Tile> = Vec::new();
+    //
+    //             let possible_tiles = match_side_1_2_3(j);
+    //
+    //             let mut i = 0;
+    //             //println!("");
+    //             for tile in possible_tiles.iter() {
+    //                 //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
+    //
+    //                 let coord1: Coordinate = Coordinate {
+    //                     i: i * 2,
+    //                     j: (j as usize) * 2,
+    //                 };
+    //                 let coord2: Coordinate = Coordinate {
+    //                     i: i * 2 + 1,
+    //                     j: (j as usize) * 2,
+    //                 };
+    //
+    //                 let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
+    //                 let wall1: Tile = Tile::new(coord1, TileFlags::W1);
+    //
+    //                 let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile));
+    //                 let wall2: Tile = Tile::new(coord2, TileFlags::W1);
+    //
+    //                 row_path.push(path1);
+    //                 row_wall.push(wall1);
+    //                 row_path.push(path2);
+    //                 row_wall.push(wall2);
+    //                 i += 1;
+    //             }
+    //             self.tiles.push(row_path);
+    //             self.walls.push(row_wall);
+    //         }
+    //
+    //         self.width = (10 * 2) as f64 * (M + 50.0);
+    //         self.height = (63 * 2) as f64 * (H + 00.0);
+    //     }
 
     pub fn display_random_grid(&mut self) {
         let c: usize = 9;
@@ -113,12 +113,11 @@ impl RenderSvg {
                 let tile = get_random_tile(i, j, &tiles);
 
                 tiles[(j, i)] = tile;
-                // println!("added ({coord:?}) -> {:?}", tile);
                 let path: Tile = Tile::new(coord, tile);
                 row_path.push(path);
-                if j == 0 {
-                    println!("({i},{j}) {:?}", tile);
-                }
+                //if j == 0 {
+                //    println!("({i},{j}) {:?}", tile);
+                //}
 
                 let wall: Tile = Tile::new(coord, TileFlags::W1);
 

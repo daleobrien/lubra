@@ -14,7 +14,7 @@ fn main() {
     let result_f = f.render("test-random.svg".to_string());
 
     println!(
-        "{:?} {:?}",
+        "Finished {:?} {:?}",
         //result_h.unwrap(),
         result_g.unwrap(),
         result_f.unwrap()

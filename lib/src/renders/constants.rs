@@ -64,24 +64,72 @@ impl Serialize for TileFlags {
     }
 }
 
-pub fn get_nodes_from_mask(tile: TileFlags) -> u32 {
-    return (tile.bits() >> 24) & 0b111111;
+fn add(u: usize, i: i32) -> usize {
+    if i.is_negative() {
+        u - i.wrapping_abs() as u32 as usize
+    } else {
+        u + i as usize
+    }
 }
 
-pub fn get_tile_relative_postion(
+fn get_tile_relative_postion(
     pos: (usize, usize),
     rel: (i32, i32),
     tiles: &Array2D<TileFlags>,
 ) -> TileFlags {
-    // If we are out of bounds return a empty cell
-    if pos.0 as i32 + rel.0 < 0
-        || pos.0 as i32 + rel.0 + 1 >= tiles.num_rows() as i32
-        || pos.1 as i32 + rel.1 < 0
-        || pos.1 as i32 + rel.1 + 1 >= tiles.num_columns() as i32
-    {
-        return TileFlags::Z1;
+  
+    if pos.1 as i32 + rel.1 < 0 || pos.0 as i32 + rel.0 < 0 {
+      return TileFlags::Z1;
     }
-    return tiles[(pos.1, pos.0)];
+    
+    let x:usize = add(pos.0, rel.0);
+    let y:usize = add(pos.1, rel.1);
+    
+   let tile = tiles.get(y, x);
+   return match tile {
+     Some(t) => *t,
+     None => TileFlags::Z1
+   }
+}
+
+fn md_at(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize, is_top: bool, ) -> (bool, bool) {
+
+    let this_row = gathered_tiles[1];
+    let other_row = if is_top { gathered_tiles[2] } else { gathered_tiles[0] };
+    
+    let opposite_tile = other_row[4 - 2 * pos];
+
+    // println!("opposite_tile -> {opposite_tile:?}, is_top -> {is_top}, pos -> {pos} : {}  {:?}", 4 - 2 * pos, gathered_tiles);
+   //  0 1 <2> 3 4
+    if opposite_tile.contains(TileFlags::Z2) {
+        if pos == 0
+            && !this_row[3].contains(tile)
+            && !this_row[4].contains(tile)
+            && !other_row[2].contains(tile)
+            && !other_row[3].contains(tile)
+        {
+            return (false, true);
+        }
+        if pos == 1
+            && !this_row[1].contains(tile)
+            && !this_row[3].contains(tile)
+            && !other_row[1].contains(tile)
+            && !other_row[3].contains(tile)
+        {
+            return (false, true);
+        }
+        if pos == 2
+            && !this_row[0].contains(tile)
+            && !this_row[1].contains(tile)
+            && !other_row[1].contains(tile)
+            && !other_row[2].contains(tile)
+        {
+            return (false, true);
+        }
+    } else if opposite_tile.contains(tile) {
+        return (true, false);
+    }
+    (false, false)
 }
 
 pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFlags {
@@ -89,18 +137,83 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         return TileFlags::L3;
     }
 
-    let last_tile = get_tile_relative_postion((i, j), (-1, 0), tiles);
+    let mut dont_care = 0;
+    let mut matches = 0;
 
-    let pos = i % 6;
-    let inverted = j % 2 == 0;
 
-    // TODO: create a function to figure out which side to consider for each rel. position
-    // if inverted, we look below inside of above
 
-     // match_mask, dont_care_mask
-     return random_side(11, 0b001);
+    let pos1 = (4 + i + (3 * (j % 2))) % 6;
+    let pos2 = (2 + i + (3 * (j % 2))) % 6;
+    let pos3 = (0 + i + (3 * (j % 2))) % 6; // Alternates on each row , 1st row 0,1,2,3,4,5,0, ... 2nd row, 3,4,5,0,1,2,3,...
+
+    // println!("\n[{i},{j}] {pos3}");
     
+    let gathered_tiles = [
+        [
+            get_tile_relative_postion((i, j), (-2, -1), tiles),
+            get_tile_relative_postion((i, j), (-1, -1), tiles),
+            get_tile_relative_postion((i, j), (0, -1), tiles),
+            get_tile_relative_postion((i, j), (1, -1), tiles),
+            get_tile_relative_postion((i, j), (2, -1), tiles),
+        ],
+        [
+            get_tile_relative_postion((i, j), (-2, 0), tiles),
+            get_tile_relative_postion((i, j), (-1, 0), tiles),
+            TileFlags::Z2,
+            get_tile_relative_postion((i, j), (1, 0), tiles),
+            get_tile_relative_postion((i, j), (2, 0), tiles),
+        ],
+        [
+            get_tile_relative_postion((i, j), (-2, 1), tiles),
+            get_tile_relative_postion((i, j), (-1, 1), tiles),
+            get_tile_relative_postion((i, j), (0, 1), tiles),
+            get_tile_relative_postion((i, j), (1, 1), tiles),
+            get_tile_relative_postion((i, j), (2, 1), tiles),
+        ],
+    ];
+
+
+    // if j==1 && i == 2 {
+    //     println!("\nXXXXX  2nd row, 3rd column \n\n" );
+    // }
     
+    let (m, d) = md_at(gathered_tiles, TileFlags::G1, (1 + pos3) % 3, pos1 < 3);
+    if m {
+        matches |= 0b000_001;
+    }
+    if d {
+        dont_care |= 0b000_001;
+    }
+  
+
+    let (m, d) = md_at(gathered_tiles, TileFlags::G2, (2 + pos3) % 3, pos2 < 3);
+    if m {
+        matches |= 0b000_010;
+    }
+    if d {
+        dont_care |= 0b000_010;
+    }
+
+  // if j==1 && i == 2 {
+  //       println!("\nVert 3\n\n" );
+  //   }
+    
+    let (m, d) = md_at(gathered_tiles, TileFlags::G3, (3 + pos3) % 3, pos3 < 3);
+    if m {
+        matches |= 0b000_100;
+    }
+    if d {
+        dont_care |= 0b000_100;
+    }
+    
+    // if j==1 && i == 2 {
+    //     println!(":: {} {} -> m:{m} d:{d}", (1 + pos3) % 3, pos1 < 3 );
+    // }
+    // if j==1 && i == 2 {
+    //     println!("\nXXXXX\n\n" );
+    // }
+
+    return random_side(matches, dont_care);
 }
 
 impl From<[u32; 3]> for TileFlags {
