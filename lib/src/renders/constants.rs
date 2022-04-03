@@ -132,13 +132,12 @@ fn calc_vertex(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize,
 
 fn calc_side(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize, full_pos: usize) -> (bool, bool) {
   
-  let j = if pos == 2 { if full_pos % 1 == 0 { 2 } else { 0 } } else { 1 };
-  // println!("{full_pos} {pos} {j}");
+  let j = if pos == 1 { if full_pos % 2 == 1 { 0 } else { 2 } } else { 1 };
   
   let adjacent = gathered_tiles[j][pos+1];
   
   if adjacent.contains(TileFlags::Z2) {
-    return (true, false);
+    return (false, true);
   }
   if adjacent.contains(tile) {
       return (true, false);
