@@ -99,8 +99,6 @@ fn md_at(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize, is_to
     
     let opposite_tile = other_row[4 - 2 * pos];
 
-    // println!("opposite_tile -> {opposite_tile:?}, is_top -> {is_top}, pos -> {pos} : {}  {:?}", 4 - 2 * pos, gathered_tiles);
-   //  0 1 <2> 3 4
     if opposite_tile.contains(TileFlags::Z2) {
         if pos == 0
             && !this_row[3].contains(tile)
@@ -177,6 +175,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     //     println!("\nXXXXX  2nd row, 3rd column \n\n" );
     // }
     
+    // Figure out the vertexes
     let (m, d) = md_at(gathered_tiles, TileFlags::G1, (1 + pos3) % 3, pos1 < 3);
     if m {
         matches |= 0b000_001;
