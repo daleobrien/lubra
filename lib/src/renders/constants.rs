@@ -130,6 +130,22 @@ fn calc_vertex(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize,
     (false, false)
 }
 
+fn calc_side(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize, full_pos: usize) -> (bool, bool) {
+  
+  let j = if pos == 2 { if full_pos % 1 == 0 { 2 } else { 0 } } else { 1 };
+  // println!("{full_pos} {pos} {j}");
+  
+  let adjacent = gathered_tiles[j][pos+1];
+  
+  if adjacent.contains(TileFlags::Z2) {
+    return (true, false);
+  }
+  if adjacent.contains(tile) {
+      return (true, false);
+  }
+  (false, false)
+}
+
 pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFlags {
     if i == 0 && j == 0 {
         return TileFlags::L3;
@@ -191,7 +207,30 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     if d {
         dont_care |= 0b000_100;
     }
+    
+    let (m, d) = calc_side(gathered_tiles, TileFlags::G4, (3 + pos3) % 3, pos3);
+    if m {
+        matches |= 0b001_000;
+    }
+    if d {
+        dont_care |= 0b001_000;
+    }
 
+   let (m, d) = calc_side(gathered_tiles, TileFlags::G5, (3 + pos2) % 3, pos3);
+    if m {
+        matches |= 0b010_000;
+    }
+    if d {
+        dont_care |= 0b010_000;
+    }
+    
+    let (m, d) = calc_side(gathered_tiles, TileFlags::G6, (3 + pos1) % 3, pos3);
+    if m {
+        matches |= 0b100_000;
+    }
+    if d {
+        dont_care |= 0b100_000;
+    }
     return random_side(matches, dont_care);
 }
 
