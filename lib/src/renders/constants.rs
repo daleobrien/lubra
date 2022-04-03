@@ -28,6 +28,7 @@ bitflags! {
     Not all graphs are posible, so maybe could reduce more, I know I only have 193 distinct graphs, so could use 
     8 bitsm but then it's all a lookup and would have to decode/enocde.       
        
+    We only really have T,N,L & A, and even then we can't have all those at once, ... that's < 12 bits
     */
     
     // Graph node
