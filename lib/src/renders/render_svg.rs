@@ -100,8 +100,8 @@ impl RenderSvg {
         // let c: usize = 9;
         // let r: usize = 6;
 
-        let c: usize = 90;
-        let r: usize = 60;
+        let c: usize = 54;
+        let r: usize = 36;
         
         // let graphs: Vec<(u32, u32, u8)> = vec![];
 
@@ -163,11 +163,11 @@ impl RenderSvg {
                 tile.add_to_path(&mut path, &mut faint_path);
             }
         }
-        for row in &self.walls {
-            for tile in row {
-                tile.add_to_path(&mut wall, &mut faint_path)
-            }
-        }
+        // for row in &self.walls {
+        //     for tile in row {
+        //         tile.add_to_path(&mut wall, &mut faint_path)
+        //     }
+        // }
 
         svg.push_str(&faint_path.to_string());
         svg.push_str(&path.to_string());
