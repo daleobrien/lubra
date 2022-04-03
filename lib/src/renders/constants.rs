@@ -92,7 +92,7 @@ fn get_tile_relative_postion(
    }
 }
 
-fn md_at(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize, is_top: bool, ) -> (bool, bool) {
+fn calc_vertex(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize, is_top: bool, ) -> (bool, bool) {
 
     let this_row = gathered_tiles[1];
     let other_row = if is_top { gathered_tiles[2] } else { gathered_tiles[0] };
@@ -138,14 +138,10 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     let mut dont_care = 0;
     let mut matches = 0;
 
-
-
     let pos1 = (4 + i + (3 * (j % 2))) % 6;
     let pos2 = (2 + i + (3 * (j % 2))) % 6;
     let pos3 = (0 + i + (3 * (j % 2))) % 6; // Alternates on each row , 1st row 0,1,2,3,4,5,0, ... 2nd row, 3,4,5,0,1,2,3,...
 
-    // println!("\n[{i},{j}] {pos3}");
-    
     let gathered_tiles = [
         [
             get_tile_relative_postion((i, j), (-2, -1), tiles),
@@ -171,12 +167,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     ];
 
 
-    // if j==1 && i == 2 {
-    //     println!("\nXXXXX  2nd row, 3rd column \n\n" );
-    // }
-    
-    // Figure out the vertexes
-    let (m, d) = md_at(gathered_tiles, TileFlags::G1, (1 + pos3) % 3, pos1 < 3);
+    let (m, d) = calc_vertex(gathered_tiles, TileFlags::G1, (1 + pos3) % 3, pos1 < 3);
     if m {
         matches |= 0b000_001;
     }
@@ -185,7 +176,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     }
   
 
-    let (m, d) = md_at(gathered_tiles, TileFlags::G2, (2 + pos3) % 3, pos2 < 3);
+    let (m, d) = calc_vertex(gathered_tiles, TileFlags::G2, (2 + pos3) % 3, pos2 < 3);
     if m {
         matches |= 0b000_010;
     }
@@ -193,24 +184,13 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b000_010;
     }
 
-  // if j==1 && i == 2 {
-  //       println!("\nVert 3\n\n" );
-  //   }
-    
-    let (m, d) = md_at(gathered_tiles, TileFlags::G3, (3 + pos3) % 3, pos3 < 3);
+    let (m, d) = calc_vertex(gathered_tiles, TileFlags::G3, (3 + pos3) % 3, pos3 < 3);
     if m {
         matches |= 0b000_100;
     }
     if d {
         dont_care |= 0b000_100;
     }
-    
-    // if j==1 && i == 2 {
-    //     println!(":: {} {} -> m:{m} d:{d}", (1 + pos3) % 3, pos1 < 3 );
-    // }
-    // if j==1 && i == 2 {
-    //     println!("\nXXXXX\n\n" );
-    // }
 
     return random_side(matches, dont_care);
 }
