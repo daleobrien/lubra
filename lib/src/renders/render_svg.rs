@@ -97,9 +97,12 @@ impl RenderSvg {
     //     }
 
     pub fn display_random_grid(&mut self) {
-        let c: usize = 9;
-        let r: usize = 6;
+        // let c: usize = 9;
+        // let r: usize = 6;
 
+        let c: usize = 90;
+        let r: usize = 60;
+        
         // let graphs: Vec<(u32, u32, u8)> = vec![];
 
         let mut tiles = Array2D::filled_with(TileFlags::Z2, r, c);

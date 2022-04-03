@@ -230,6 +230,14 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     if d {
         dont_care |= 0b100_000;
     }
+    // Don't like Nx so much
+  
+    for _ in 0..15 {
+      let first_tile = random_side(matches, dont_care);
+      if !first_tile.contains(TileFlags::N1) && !first_tile.contains(TileFlags::N2) && !first_tile.contains(TileFlags::N3) {
+        return first_tile;
+      }
+    } 
     return random_side(matches, dont_care);
 }
 
