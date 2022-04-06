@@ -14,23 +14,23 @@ bitflags! {
      0 0 0 0 0 0
      0 0 0 0 0 0
      0 0 0 0 0 0
-     0 0 0 0 0 0 
-     0 0 0 0 0 0  (36 bits), but not all are used,
-     
-     
      0 0 0 0 0 0
-       0 0 0 0 0 
-         0 0 0 0 
+     0 0 0 0 0 0  (36 bits), but not all are used,
+
+
+     0 0 0 0 0 0
+       0 0 0 0 0
+         0 0 0 0
            0 0 0
              0 0
                0  (21 bits)
-               
-    Not all graphs are posible, so maybe could reduce more, I know I only have 193 distinct graphs, so could use 
-    8 bitsm but then it's all a lookup and would have to decode/enocde.       
-       
+
+    Not all graphs are posible, so maybe could reduce more, I know I only have 193 distinct graphs, so could use
+    8 bitsm but then it's all a lookup and would have to decode/enocde.
+
     We only really have T,N,L & A, and even then we can't have all those at once, ... that's < 12 bits
     */
-    
+
     // Graph node
     //              XXX XXX
     const G1 = 0b00_000_001_000_000_000_000_000_000_000_000;
@@ -100,26 +100,33 @@ fn get_tile_relative_postion(
     rel: (i32, i32),
     tiles: &Array2D<TileFlags>,
 ) -> TileFlags {
-  
     if pos.1 as i32 + rel.1 < 0 || pos.0 as i32 + rel.0 < 0 {
-      return TileFlags::Z1;
+        return TileFlags::Z1;
     }
-    
-    let x:usize = add(pos.0, rel.0);
-    let y:usize = add(pos.1, rel.1);
-    
-   let tile = tiles.get(y, x);
-   return match tile {
-     Some(t) => *t,
-     None => TileFlags::Z1
-   }
+
+    let x: usize = add(pos.0, rel.0);
+    let y: usize = add(pos.1, rel.1);
+
+    let tile = tiles.get(y, x);
+    return match tile {
+        Some(t) => *t,
+        None => TileFlags::Z1,
+    };
 }
 
-fn calc_vertex(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize, is_top: bool, ) -> (bool, bool) {
-
+fn calc_vertex(
+    gathered_tiles: [[TileFlags; 5]; 3],
+    tile: TileFlags,
+    pos: usize,
+    is_top: bool,
+) -> (bool, bool) {
     let this_row = gathered_tiles[1];
-    let other_row = if is_top { gathered_tiles[2] } else { gathered_tiles[0] };
-    
+    let other_row = if is_top {
+        gathered_tiles[2]
+    } else {
+        gathered_tiles[0]
+    };
+
     let opposite_tile = other_row[4 - 2 * pos];
 
     if opposite_tile.contains(TileFlags::Z2) {
@@ -153,19 +160,31 @@ fn calc_vertex(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize,
     (false, false)
 }
 
-fn calc_side(gathered_tiles: [[TileFlags; 5]; 3], tile: TileFlags, pos: usize, full_pos: usize) -> (bool, bool) {
-  
-  let j = if pos == 1 { if full_pos % 2 == 1 { 0 } else { 2 } } else { 1 };
-  
-  let adjacent = gathered_tiles[j][pos+1];
-  
-  if adjacent.contains(TileFlags::Z2) {
-    return (false, true);
-  }
-  if adjacent.contains(tile) {
-      return (true, false);
-  }
-  (false, false)
+fn calc_side(
+    gathered_tiles: [[TileFlags; 5]; 3],
+    tile: TileFlags,
+    pos: usize,
+    full_pos: usize,
+) -> (bool, bool) {
+    let j = if pos == 1 {
+        if full_pos % 2 == 1 {
+            0
+        } else {
+            2
+        }
+    } else {
+        1
+    };
+
+    let adjacent = gathered_tiles[j][pos + 1];
+
+    if adjacent.contains(TileFlags::Z2) {
+        return (false, true);
+    }
+    if adjacent.contains(tile) {
+        return (true, false);
+    }
+    (false, false)
 }
 
 pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFlags {
@@ -204,7 +223,6 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         ],
     ];
 
-
     let (m, d) = calc_vertex(gathered_tiles, TileFlags::G1, (1 + pos3) % 3, pos1 < 3);
     if m {
         matches |= 0b000_001;
@@ -212,7 +230,6 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     if d {
         dont_care |= 0b000_001;
     }
-  
 
     let (m, d) = calc_vertex(gathered_tiles, TileFlags::G2, (2 + pos3) % 3, pos2 < 3);
     if m {
@@ -229,7 +246,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     if d {
         dont_care |= 0b000_100;
     }
-    
+
     let (m, d) = calc_side(gathered_tiles, TileFlags::G4, (3 + pos3) % 3, pos3);
     if m {
         matches |= 0b001_000;
@@ -238,14 +255,14 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b001_000;
     }
 
-   let (m, d) = calc_side(gathered_tiles, TileFlags::G5, (3 + pos2) % 3, pos3);
+    let (m, d) = calc_side(gathered_tiles, TileFlags::G5, (3 + pos2) % 3, pos3);
     if m {
         matches |= 0b010_000;
     }
     if d {
         dont_care |= 0b010_000;
     }
-    
+
     let (m, d) = calc_side(gathered_tiles, TileFlags::G6, (3 + pos1) % 3, pos3);
     if m {
         matches |= 0b100_000;
@@ -254,15 +271,18 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b100_000;
     }
     // Don't like Nx so much
-  
+
     // TODO: stip out cells that only have Nx and Tx
-  
+
     for _ in 0..45 {
-      let first_tile = random_side(matches, dont_care);
-      if !first_tile.contains(TileFlags::N1) && !first_tile.contains(TileFlags::N2) && !first_tile.contains(TileFlags::N3) {
-        return first_tile;
-      }
-    } 
+        let first_tile = random_side(matches, dont_care);
+        if !first_tile.contains(TileFlags::N1)
+            && !first_tile.contains(TileFlags::N2)
+            && !first_tile.contains(TileFlags::N3)
+        {
+            return first_tile;
+        }
+    }
     return random_side(matches, dont_care);
 }
 

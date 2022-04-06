@@ -102,7 +102,7 @@ impl RenderSvg {
 
         // let c: usize = 54;
         // let r: usize = 36;
-        
+
         // let graphs: Vec<(u32, u32, u8)> = vec![];
 
         let mut tiles = Array2D::filled_with(TileFlags::Z2, r, c);
