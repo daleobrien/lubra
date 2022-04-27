@@ -1,8 +1,5 @@
-// 0.6.5
-
-use std::cmp::{max, min};
-
 use rand::Rng;
+use std::cmp::{max, min};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct IPoint {
@@ -14,13 +11,13 @@ fn distance(a: IPoint, b: IPoint) -> i32 {
     (a.x - b.x).abs() + (a.y - b.y).abs()
 }
 
-fn random_point_between(a: IPoint, b: IPoint, max_point: IPoint, exceed: i32) -> IPoint {
+fn random_point_between(a: IPoint, b: IPoint, max_point: IPoint, margin: i32) -> IPoint {
     let mut r = rand::thread_rng();
 
-    let x_min = min(a.x, b.x) - exceed;
-    let x_max = max(a.x, b.x) + exceed;
-    let y_min = min(a.y, b.y) - exceed;
-    let y_max = max(a.y, b.y) + exceed;
+    let x_min = min(a.x, b.x) - margin;
+    let x_max = max(a.x, b.x) + margin;
+    let y_min = min(a.y, b.y) - margin;
+    let y_max = max(a.y, b.y) + margin;
 
     let x = if x_min != x_max {
         r.gen_range(x_min..x_max)
@@ -33,11 +30,18 @@ fn random_point_between(a: IPoint, b: IPoint, max_point: IPoint, exceed: i32) ->
         y_min
     };
 
-    // Bound point to limits, can't exceed max_point
-    return IPoint {
+    let new_point = IPoint {
         x: min(max(x, 0), max_point.x),
         y: min(max(y, 0), max_point.y),
     };
+
+    return new_point;
+}
+
+pub fn colinear(a: IPoint, b: IPoint, c: IPoint) -> bool {
+    // triangle area -> (1/2) | [x1(y2 – y3) + x2(y3 – y1) + x3[y1 – y2]| = 0]
+    let area = a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y);
+    return area == 0;
 }
 
 // Split a segment into two segments
@@ -55,13 +59,23 @@ pub fn bisect_segment(segment: &mut Vec<IPoint>, index: usize, max_point: IPoint
     }
 
     if d > 25 {
-        segment.insert(index + 1, random_point_between(p0, p1, max_point, 3));
-        segment.insert(index + 1, random_point_between(p0, p1, max_point, 3));
-        segment.insert(index + 1, random_point_between(p0, p1, max_point, 3));
+        // Maybe prevent colinear points somehow
+        for _i in 0..3 {
+            let a = random_point_between(p0, p1, max_point, 4);
+            if !colinear(p0, p1, a) {
+                segment.insert(index + 1, a);
+            }
+        }
     } else if d > 10 {
-        segment.insert(index + 1, random_point_between(p0, p1, max_point, 2));
+        let a = random_point_between(p0, p1, max_point, 2);
+        if !colinear(p0, p1, a) {
+            segment.insert(index + 1, a);
+        }
     } else {
-        segment.insert(index + 1, random_point_between(p0, p1, max_point, 1));
+        let a = random_point_between(p0, p1, max_point, 1);
+        if !colinear(p0, p1, a) {
+            segment.insert(index + 1, a);
+        }
     }
 }
 
@@ -121,6 +135,34 @@ mod tests {
     }
 }
 
+pub fn delete_colinear_points(segment: &mut Vec<IPoint>) {
+    //   Iterate over and remove any 3 points that are co-linear
+    let l = segment.len();
+    // The length will change and get smaller as we loop, so iterator in reverse.
+    for i in (0..l - 2).rev() {
+        let p1 = segment[i];
+        let p2 = segment[i + 1];
+        let p3 = segment[i + 2];
+        // Check if these are all on a line
+        if colinear(p1, p2, p3) {
+            // Find the points that are furthest apart
+            let d1 = distance(p1, p1);
+            let d2 = distance(p1, p3);
+            let d3 = distance(p2, p3);
+
+            // ... and remove the other one that is shorter
+            let dx = max(max(d1, d2), d3);
+            if dx == d1 {
+                segment.remove(i + 2);
+            } else if dx == d2 {
+                segment.remove(i + 1);
+            } else {
+                segment.remove(i);
+            }
+        }
+    }
+}
+
 pub fn walk() {
     println!("Walk called");
 
@@ -137,15 +179,20 @@ pub fn walk() {
             bisect_segment(&mut segment, i, max_point);
             segment.dedup();
         }
-        if last_len == segment.len() {
+        delete_colinear_points(&mut segment);
+
+        if last_len == segment.len() && _j > 10 {
             // exit if nothing changed
             break;
         }
         last_len = segment.len();
-        // if last_len > 40 {
-        //    break;
-        // }
+        if last_len > 50 {
+            break;
+        }
     }
+    delete_colinear_points(&mut segment);
+
+    // TODO: Split segment up into single step
 
     // print out all the segments
     print!("pts = {{");
