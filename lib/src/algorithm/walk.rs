@@ -177,6 +177,7 @@ pub fn walk() {
         // The length will change and get bigger as we loop, so iterator in reverse.
         for i in (0..l - 1).rev() {
             bisect_segment(&mut segment, i, max_point);
+            // Remove any dupicate points that are in sequence
             segment.dedup();
         }
         delete_colinear_points(&mut segment);
