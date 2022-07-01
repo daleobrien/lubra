@@ -97,8 +97,8 @@ impl RenderSvg {
     //     }
 
     pub fn display_random_grid(&mut self) {
-        let c: usize = 9;
-        let r: usize = 6;
+        let c: usize = 90;
+        let r: usize = 60;
 
         // let c: usize = 54;
         // let r: usize = 36;
