@@ -36,7 +36,143 @@ pub struct Tile {
     fsemi: Vec<Segment>,
 }
 
+pub fn rotate(coordinate: Coordinate, raw_mask: TileFlags)-> TileFlags{
+    // Rotate tile, depending on position so it renders
+    let mut mask = TileFlags::Z1;
+    if raw_mask.contains(TileFlags::W1) {
+        mask |= TileFlags::W1;
+    }
+    if raw_mask.contains(TileFlags::X1) {
+        mask |= TileFlags::X1;
+    }
+    if raw_mask.contains(TileFlags::X2) {
+        mask |= TileFlags::X2;
+    }
+
+    let rotate_index = coordinate.i % 3;
+    match rotate_index {
+        1 => {
+            if raw_mask.contains(TileFlags::Y1) {
+                mask |= TileFlags::Y2;
+            }
+            if raw_mask.contains(TileFlags::Y2) {
+                mask |= TileFlags::Y3;
+            }
+            if raw_mask.contains(TileFlags::Y3) {
+                mask |= TileFlags::Y1;
+            }
+            if raw_mask.contains(TileFlags::A1) {
+                mask |= TileFlags::A2;
+            }
+            if raw_mask.contains(TileFlags::A2) {
+                mask |= TileFlags::A3;
+            }
+            if raw_mask.contains(TileFlags::A3) {
+                mask |= TileFlags::A1;
+            }
+            if raw_mask.contains(TileFlags::C1) {
+                mask |= TileFlags::C2;
+            }
+            if raw_mask.contains(TileFlags::C2) {
+                mask |= TileFlags::C3;
+            }
+            if raw_mask.contains(TileFlags::C3) {
+                mask |= TileFlags::C1;
+            }
+            if raw_mask.contains(TileFlags::L1) {
+                mask |= TileFlags::L2;
+            }
+            if raw_mask.contains(TileFlags::L2) {
+                mask |= TileFlags::L3;
+            }
+            if raw_mask.contains(TileFlags::L3) {
+                mask |= TileFlags::L1;
+            }
+            if raw_mask.contains(TileFlags::N1) {
+                mask |= TileFlags::N2;
+            }
+            if raw_mask.contains(TileFlags::N2) {
+                mask |= TileFlags::N3;
+            }
+            if raw_mask.contains(TileFlags::N3) {
+                mask |= TileFlags::N1;
+            }
+            if raw_mask.contains(TileFlags::T1) {
+                mask |= TileFlags::T2;
+            }
+            if raw_mask.contains(TileFlags::T2) {
+                mask |= TileFlags::T3;
+            }
+            if raw_mask.contains(TileFlags::T3) {
+                mask |= TileFlags::T1;
+            }
+        }
+        2 => {
+            if raw_mask.contains(TileFlags::Y1) {
+                mask |= TileFlags::Y3;
+            }
+            if raw_mask.contains(TileFlags::Y2) {
+                mask |= TileFlags::Y1;
+            }
+            if raw_mask.contains(TileFlags::Y3) {
+                mask |= TileFlags::Y2;
+            }
+            if raw_mask.contains(TileFlags::A1) {
+                mask |= TileFlags::A3;
+            }
+            if raw_mask.contains(TileFlags::A2) {
+                mask |= TileFlags::A1;
+            }
+            if raw_mask.contains(TileFlags::A3) {
+                mask |= TileFlags::A2;
+            }
+            if raw_mask.contains(TileFlags::C1) {
+                mask |= TileFlags::C3;
+            }
+            if raw_mask.contains(TileFlags::C2) {
+                mask |= TileFlags::C1;
+            }
+            if raw_mask.contains(TileFlags::C3) {
+                mask |= TileFlags::C2;
+            }
+            if raw_mask.contains(TileFlags::L1) {
+                mask |= TileFlags::L3;
+            }
+            if raw_mask.contains(TileFlags::L2) {
+                mask |= TileFlags::L1;
+            }
+            if raw_mask.contains(TileFlags::L3) {
+                mask |= TileFlags::L2;
+            }
+            if raw_mask.contains(TileFlags::N1) {
+                mask |= TileFlags::N3;
+            }
+            if raw_mask.contains(TileFlags::N2) {
+                mask |= TileFlags::N1;
+            }
+            if raw_mask.contains(TileFlags::N3) {
+                mask |= TileFlags::N2;
+            }
+            if raw_mask.contains(TileFlags::T1) {
+                mask |= TileFlags::T3;
+            }
+            if raw_mask.contains(TileFlags::T2) {
+                mask |= TileFlags::T1;
+            }
+            if raw_mask.contains(TileFlags::T3) {
+                mask |= TileFlags::T2;
+            }
+        }
+        _ => {
+            mask = raw_mask;
+        }
+    }
+    return mask
+}
+
 impl Tile {
+
+
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
     pub fn new(coordinate: Coordinate, raw_mask: TileFlags) -> Self {
@@ -49,136 +185,8 @@ impl Tile {
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
-        // Rotate tile, depending on position so it renders
-        let mut mask = TileFlags::Z1;
-        if raw_mask.contains(TileFlags::W1) {
-            mask |= TileFlags::W1;
-        }
-        if raw_mask.contains(TileFlags::X1) {
-            mask |= TileFlags::X1;
-        }
-        if raw_mask.contains(TileFlags::X2) {
-            mask |= TileFlags::X2;
-        }
-
-        let rotate_index = coordinate.i % 3;
-        match rotate_index {
-            1 => {
-                if raw_mask.contains(TileFlags::Y1) {
-                    mask |= TileFlags::Y2;
-                }
-                if raw_mask.contains(TileFlags::Y2) {
-                    mask |= TileFlags::Y3;
-                }
-                if raw_mask.contains(TileFlags::Y3) {
-                    mask |= TileFlags::Y1;
-                }
-                if raw_mask.contains(TileFlags::A1) {
-                    mask |= TileFlags::A2;
-                }
-                if raw_mask.contains(TileFlags::A2) {
-                    mask |= TileFlags::A3;
-                }
-                if raw_mask.contains(TileFlags::A3) {
-                    mask |= TileFlags::A1;
-                }
-                if raw_mask.contains(TileFlags::C1) {
-                    mask |= TileFlags::C2;
-                }
-                if raw_mask.contains(TileFlags::C2) {
-                    mask |= TileFlags::C3;
-                }
-                if raw_mask.contains(TileFlags::C3) {
-                    mask |= TileFlags::C1;
-                }
-                if raw_mask.contains(TileFlags::L1) {
-                    mask |= TileFlags::L2;
-                }
-                if raw_mask.contains(TileFlags::L2) {
-                    mask |= TileFlags::L3;
-                }
-                if raw_mask.contains(TileFlags::L3) {
-                    mask |= TileFlags::L1;
-                }
-                if raw_mask.contains(TileFlags::N1) {
-                    mask |= TileFlags::N2;
-                }
-                if raw_mask.contains(TileFlags::N2) {
-                    mask |= TileFlags::N3;
-                }
-                if raw_mask.contains(TileFlags::N3) {
-                    mask |= TileFlags::N1;
-                }
-                if raw_mask.contains(TileFlags::T1) {
-                    mask |= TileFlags::T2;
-                }
-                if raw_mask.contains(TileFlags::T2) {
-                    mask |= TileFlags::T3;
-                }
-                if raw_mask.contains(TileFlags::T3) {
-                    mask |= TileFlags::T1;
-                }
-            }
-            2 => {
-                if raw_mask.contains(TileFlags::Y1) {
-                    mask |= TileFlags::Y3;
-                }
-                if raw_mask.contains(TileFlags::Y2) {
-                    mask |= TileFlags::Y1;
-                }
-                if raw_mask.contains(TileFlags::Y3) {
-                    mask |= TileFlags::Y2;
-                }
-                if raw_mask.contains(TileFlags::A1) {
-                    mask |= TileFlags::A3;
-                }
-                if raw_mask.contains(TileFlags::A2) {
-                    mask |= TileFlags::A1;
-                }
-                if raw_mask.contains(TileFlags::A3) {
-                    mask |= TileFlags::A2;
-                }
-                if raw_mask.contains(TileFlags::C1) {
-                    mask |= TileFlags::C3;
-                }
-                if raw_mask.contains(TileFlags::C2) {
-                    mask |= TileFlags::C1;
-                }
-                if raw_mask.contains(TileFlags::C3) {
-                    mask |= TileFlags::C2;
-                }
-                if raw_mask.contains(TileFlags::L1) {
-                    mask |= TileFlags::L3;
-                }
-                if raw_mask.contains(TileFlags::L2) {
-                    mask |= TileFlags::L1;
-                }
-                if raw_mask.contains(TileFlags::L3) {
-                    mask |= TileFlags::L2;
-                }
-                if raw_mask.contains(TileFlags::N1) {
-                    mask |= TileFlags::N3;
-                }
-                if raw_mask.contains(TileFlags::N2) {
-                    mask |= TileFlags::N1;
-                }
-                if raw_mask.contains(TileFlags::N3) {
-                    mask |= TileFlags::N2;
-                }
-                if raw_mask.contains(TileFlags::T1) {
-                    mask |= TileFlags::T3;
-                }
-                if raw_mask.contains(TileFlags::T2) {
-                    mask |= TileFlags::T1;
-                }
-                if raw_mask.contains(TileFlags::T3) {
-                    mask |= TileFlags::T2;
-                }
-            }
-            _ => {
-                mask = raw_mask;
-            }
-        }
+        // Title can be rotated
+        let mask = rotate(coordinate, raw_mask) ;
 
         if mask.contains(TileFlags::A1) {
             let arc = if flipped { A1_V } else { A1_A } + origin;
@@ -317,28 +325,30 @@ impl Tile {
             }
         }
 
-        if mask.contains(TileFlags::L1) {
-            lines.push(L49 + origin);
-            lines.push(L52 + origin);
-        }
-
-        if mask.contains(TileFlags::L2) {
-            if flipped {
-                lines.push(L51 + origin);
-                lines.push(L54 + origin);
-            } else {
-                lines.push(L60 + origin);
-                lines.push(L57 + origin);
+        if !mask.contains(TileFlags::X2) {
+            if mask.contains(TileFlags::L1) {
+                lines.push(L49 + origin);
+                lines.push(L52 + origin);
             }
-        }
-
-        if mask.contains(TileFlags::L3) {
-            if flipped {
-                lines.push(L50 + origin);
-                lines.push(L53 + origin);
-            } else {
-                lines.push(L59 + origin);
-                lines.push(L56 + origin);
+    
+            if mask.contains(TileFlags::L2) {
+                if flipped {
+                    lines.push(L51 + origin);
+                    lines.push(L54 + origin);
+                } else {
+                    lines.push(L60 + origin);
+                    lines.push(L57 + origin);
+                }
+            }
+    
+            if mask.contains(TileFlags::L3) {
+                if flipped {
+                    lines.push(L50 + origin);
+                    lines.push(L53 + origin);
+                } else {
+                    lines.push(L59 + origin);
+                    lines.push(L56 + origin);
+                }
             }
         }
 
@@ -387,12 +397,14 @@ impl Tile {
                 lines.push(L32 + origin);
                 lines.push(L81 + origin);
                 lines.push(L69 + origin);
-
                 faint.push(L117 + origin);
                 faint.push(L99 + origin);
             }
         }
 
+        // TODO: For these and others, randomally change which line goes on top
+        // TODO: Add in some other variations too
+        // TODO: Use the upper 2 bits to specify the variation!
         if mask.contains(TileFlags::C1) {
             if flipped {
                 lines.push(L07 + origin);
@@ -451,7 +463,7 @@ impl Tile {
             arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
         }
         if mask.contains(TileFlags::X2) {
-            // TOO many lines here, some we get for free
+          
             if flipped {
                 lines.push(L50 + origin);
                 lines.push(L53 + origin);

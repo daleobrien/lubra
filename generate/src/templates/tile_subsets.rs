@@ -12,8 +12,6 @@ pub fn find_tiles (mask:u32) -> Vec<u32> {
   }
 }
 
-
-
 pub fn random_side (matches:u32, dont_cares: u32) -> TileFlags {
 
   let mut index:u32 = 0;

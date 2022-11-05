@@ -117,19 +117,27 @@ fn get_tile_relative_postion(
 fn calc_vertex(
     gathered_tiles: [[TileFlags; 5]; 3],
     tile: TileFlags,
-    pos: usize,
+    pos: usize, // 0..2
     is_top: bool,
 ) -> (bool, bool) {
+
+    /*
+                      /\   /\
+    this row -> .    /  \ /  \
+                     ---- ----
+    */
+
     let this_row = gathered_tiles[1];
+
     let other_row = if is_top {
         gathered_tiles[2]
     } else {
         gathered_tiles[0]
     };
 
-    let opposite_tile = other_row[4 - 2 * pos];
+    let opposite_tile = other_row[4 - 2 * pos]; // index 4, 2, 0
 
-    if opposite_tile.contains(TileFlags::Z2) {
+    if opposite_tile.contains(TileFlags::Z2) { // is not routed
         if pos == 0
             && !this_row[3].contains(tile)
             && !this_row[4].contains(tile)
@@ -155,8 +163,10 @@ fn calc_vertex(
             return (false, true);
         }
     } else if opposite_tile.contains(tile) {
+        // Must be 1
         return (true, false);
     }
+    // Must be 0
     (false, false)
 }
 
@@ -179,11 +189,14 @@ fn calc_side(
     let adjacent = gathered_tiles[j][pos + 1];
 
     if adjacent.contains(TileFlags::Z2) {
+        // Don't care
         return (false, true);
     }
     if adjacent.contains(tile) {
+        // Must match, on 1
         return (true, false);
     }
+    // Must match, on 0
     (false, false)
 }
 
@@ -223,6 +236,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         ],
     ];
 
+    // Node 1
     let (m, d) = calc_vertex(gathered_tiles, TileFlags::G1, (1 + pos3) % 3, pos1 < 3);
     if m {
         matches |= 0b000_001;
@@ -231,6 +245,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b000_001;
     }
 
+    // Node 2
     let (m, d) = calc_vertex(gathered_tiles, TileFlags::G2, (2 + pos3) % 3, pos2 < 3);
     if m {
         matches |= 0b000_010;
@@ -239,6 +254,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b000_010;
     }
 
+    // Node ...
     let (m, d) = calc_vertex(gathered_tiles, TileFlags::G3, (3 + pos3) % 3, pos3 < 3);
     if m {
         matches |= 0b000_100;
@@ -270,7 +286,6 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     if d {
         dont_care |= 0b100_000;
     }
-    // Don't like Nx so much
 
     // TODO: stip out cells that only have Nx and Tx
 

@@ -6,6 +6,7 @@ use array2d::Array2D;
 use crate::renders::constants::{get_random_tile, TileFlags, H, M};
 use crate::renders::primatives::Coordinate;
 use crate::renders::render_tile::Tile;
+use crate::renders::tile_subsets::find_tiles;
 use crate::renders::svg_path::Path;
 
 pub struct RenderSvg {
@@ -33,15 +34,16 @@ impl RenderSvg {
     }
 
     pub fn display_one_tile(&mut self) {
-        let c: usize = 9;
-        let r: usize = 6;
+        let c: usize = 1;//9;
+        let r: usize = 1;//6;
 
         for j in 0..r {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
 
             for i in 0..c {
-                let path: Tile = Tile::new(Coordinate { i, j }, TileFlags::L1);
+                let path: Tile = Tile::new(Coordinate { i, j }, TileFlags::X2);
+                //let path: Tile = Tile::new(Coordinate { i, j }, TileFlags::Y3);
                 row_path.push(path);
 
                 let wall: Tile = Tile::new(Coordinate { i, j }, TileFlags::W1);
@@ -55,53 +57,72 @@ impl RenderSvg {
         self.height = r as f64 * H;
     }
 
-    //     pub fn display_all_tiles(&mut self) {
-    //         for j in 0..63 {
-    //             let mut row_path: Vec<Tile> = Vec::new();
-    //             let mut row_wall: Vec<Tile> = Vec::new();
-    //
-    //             let possible_tiles = match_side_1_2_3(j);
-    //
-    //             let mut i = 0;
-    //             //println!("");
-    //             for tile in possible_tiles.iter() {
-    //                 //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
-    //
-    //                 let coord1: Coordinate = Coordinate {
-    //                     i: i * 2,
-    //                     j: (j as usize) * 2,
-    //                 };
-    //                 let coord2: Coordinate = Coordinate {
-    //                     i: i * 2 + 1,
-    //                     j: (j as usize) * 2,
-    //                 };
-    //
-    //                 let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
-    //                 let wall1: Tile = Tile::new(coord1, TileFlags::W1);
-    //
-    //                 let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile));
-    //                 let wall2: Tile = Tile::new(coord2, TileFlags::W1);
-    //
-    //                 row_path.push(path1);
-    //                 row_wall.push(wall1);
-    //                 row_path.push(path2);
-    //                 row_wall.push(wall2);
-    //                 i += 1;
-    //             }
-    //             self.tiles.push(row_path);
-    //             self.walls.push(row_wall);
-    //         }
-    //
-    //         self.width = (10 * 2) as f64 * (M + 50.0);
-    //         self.height = (63 * 2) as f64 * (H + 00.0);
-    //     }
+    pub fn display_all_tiles(&mut self) {
+
+        let possible_tiles = find_tiles(0b101010101010);
+
+        let mut row_path: Vec<Tile> = Vec::new();
+        let mut row_wall: Vec<Tile> = Vec::new();
+
+        let i = 0;
+        let mut j: usize = 0;
+
+        //println!("");
+        for tile in possible_tiles.iter() {
+            //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
+
+            let coord1: Coordinate = Coordinate {
+                i: i * 2,
+                j: j * 2,
+            };
+            let coord2: Coordinate = Coordinate {
+                i: i * 2 + 3,
+                j: j  * 2,
+            };
+
+            let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
+            let wall1: Tile = Tile::new(coord1, TileFlags::W1);
+
+            let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile));
+            let wall2: Tile = Tile::new(coord2, TileFlags::W1);
+
+            row_path.push(path1);
+            row_wall.push(wall1);
+            row_path.push(path2);
+            row_wall.push(wall2);
+            
+            let coord1: Coordinate = Coordinate {
+                i: i * 2+1,
+                j: j * 2+1,
+            };
+            let coord2: Coordinate = Coordinate {
+                i: i * 2 + 3+1,
+                j: j  * 2+1,
+            };
+
+            let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
+            let wall1: Tile = Tile::new(coord1, TileFlags::W1);
+
+            let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile));
+            let wall2: Tile = Tile::new(coord2, TileFlags::W1);
+
+            row_path.push(path1);
+            row_wall.push(wall1);
+            row_path.push(path2);
+            row_wall.push(wall2);
+
+            j += 2;
+        }
+        self.tiles.push(row_path);
+        self.walls.push(row_wall);
+
+        self.width = (10 * 1) as f64 * (M + 50.0);
+        self.height = (possible_tiles.len() * 3) as f64 * (H + 00.0);
+    }
 
     pub fn display_random_grid(&mut self) {
-        let c: usize = 9;
-        let r: usize = 6;
-
-        // let c: usize = 54;
-        // let r: usize = 36;
+        let c: usize = 54; // 9;
+        let r: usize = 36; // 6;
 
         // let graphs: Vec<(u32, u32, u8)> = vec![];
 
