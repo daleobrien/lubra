@@ -1,8 +1,9 @@
 use crate::renders::constants::{
-    TileFlags, L01, L02, L07, L08, L102, L103,L104, L106, L112,L11, L110, L116, L117, L12, L120, L123, L13,
-    L14, L15, L16, L17, L18, L19, L20, L21, L22, L23, L24, L25, L26,L29, L30,L31, L32, L35, L36, L37, L38,
-    L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59,
-    L60, L62, L63, L66, L67, L69, L72, L73, L74,L65, L76, L77, L80, L81, L83, L92, L96, L98, L99, M, U, W,
+    L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018, L019, L020, L021, L022, 
+    L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042, L043, L044, L045, L046, L047, L048, 
+    L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L062, L063, L065, L066, L067, L069, L072, L073, 
+    L074, L076, L077, L080, L081, L083, L085, L086, L087,L092, L096, L098, L099, L102, L103, L104, L106, 
+    M, TileFlags, U, W, 
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
 use crate::renders::shapes::{
@@ -188,6 +189,8 @@ impl Tile {
 
         let mut rng = rand::thread_rng();
 
+        let y_random = rng.gen_range(0..2); // 0,1
+
         // Title can be rotated
         let mask = rotate(coordinate, raw_mask) ;
 
@@ -329,79 +332,80 @@ impl Tile {
         }
 
         if !mask.contains(TileFlags::X2) {
+
             if mask.contains(TileFlags::L1) {
-                lines.push(L49 + origin);
-                lines.push(L52 + origin);
+                lines.push(L049 + origin);
+                lines.push(L052 + origin);
             }
     
             if mask.contains(TileFlags::L2) {
                 if flipped {
-                    lines.push(L51 + origin);
-                    lines.push(L54 + origin);
+                    lines.push(L051 + origin);
+                    lines.push(L054 + origin);
                 } else {
-                    lines.push(L60 + origin);
-                    lines.push(L57 + origin);
+                    lines.push(L060 + origin);
+                    lines.push(L057 + origin);
                 }
             }
     
             if mask.contains(TileFlags::L3) {
                 if flipped {
-                    lines.push(L50 + origin);
-                    lines.push(L53 + origin);
+                    lines.push(L050 + origin);
+                    lines.push(L053 + origin);
                 } else {
-                    lines.push(L59 + origin);
-                    lines.push(L56 + origin);
+                    lines.push(L059 + origin);
+                    lines.push(L056 + origin);
                 }
             }
         }
 
         if mask.contains(TileFlags::Y1) {
             if flipped {
-                lines.push(L74 + origin);
-                lines.push(L66 + origin);
-                lines.push(L02 + origin);
+                lines.push(L074 + origin);
+                lines.push(L066 + origin);
+                lines.push(L002 + origin);
 
-                faint.push(L92 + origin);
+                faint.push(L092 + origin);
                 faint.push(L103 + origin);
             } else {
-                lines.push(L80 + origin);
-                lines.push(L26 + origin);
-                lines.push(L72 + origin);
+                lines.push(L080 + origin);
+                lines.push(L026 + origin);
+                lines.push(L072 + origin);
                 //
                 faint.push(L102 + origin);
-                faint.push(L116 + origin);
+                faint.push(L087 + origin);
             }
         }
 
         if mask.contains(TileFlags::Y2) {
             if flipped {
-                lines.push(L62 + origin);
-                lines.push(L77 + origin);
-                lines.push(L12 + origin);
+                lines.push(L062 + origin);
+                lines.push(L077 + origin);
+                lines.push(L012 + origin);
 
                 faint.push(L106 + origin);
-                faint.push(L96 + origin);
+                faint.push(L096 + origin);
             } else {
-                lines.push(L67 + origin);
-                lines.push(L83 + origin);
-                lines.push(L36 + origin);
-                faint.push(L120 + origin);
-                faint.push(L98 + origin);
+                lines.push(L067 + origin);
+                lines.push(L083 + origin);
+                lines.push(L036 + origin);
+                faint.push(L106 + origin);
+                faint.push(L098 + origin);
             }
         }
         if mask.contains(TileFlags::Y3) {
             if flipped {
-                lines.push(L76 + origin);
-                lines.push(L63 + origin);
-                lines.push(L08 + origin);
-                faint.push(L123 + origin);
-                faint.push(L110 + origin);
+                lines.push(L076 + origin);
+                lines.push(L063 + origin);
+                lines.push(L008 + origin);
+                faint.push(L104 + origin);
+                faint.push(L092 + origin);
             } else {
-                lines.push(L32 + origin);
-                lines.push(L81 + origin);
-                lines.push(L69 + origin);
-                faint.push(L117 + origin);
-                faint.push(L99 + origin);
+                lines.push(L006 + origin);
+                lines.push(L081 + origin);
+                lines.push(L069 + origin);
+                faint.push(L085 + origin);
+                faint.push(L099 + origin);
             }
         }
 
@@ -410,53 +414,53 @@ impl Tile {
         // TODO: Use the upper 2 bits to specify the variation!
         if mask.contains(TileFlags::C1) {
             if flipped {
-                lines.push(L07 + origin);
-                lines.push(L08 + origin);
-                lines.push(L18 + origin);
-                lines.push(L17 + origin);
-                faint.push(L21 + origin);
-                faint.push(L22 + origin);
+                lines.push(L007 + origin);
+                lines.push(L008 + origin);
+                lines.push(L018 + origin);
+                lines.push(L017 + origin);
+                faint.push(L021 + origin);
+                faint.push(L022 + origin);
             } else {
-                lines.push(L31 + origin);
-                lines.push(L32 + origin);
-                lines.push(L42 + origin);
-                lines.push(L41 + origin);
-                faint.push(L45 + origin);
-                faint.push(L46 + origin);
+                lines.push(L005 + origin);
+                lines.push(L006 + origin);
+                lines.push(L042 + origin);
+                lines.push(L041 + origin);
+                faint.push(L045 + origin);
+                faint.push(L046 + origin);
             }
         }
         if mask.contains(TileFlags::C2) {
             if flipped {
-                lines.push(L01 + origin);
-                lines.push(L02 + origin);
-                lines.push(L15 + origin);
-                lines.push(L16 + origin);
-                faint.push(L19 + origin);
-                faint.push(L20 + origin);
+                lines.push(L001 + origin);
+                lines.push(L002 + origin);
+                lines.push(L015 + origin);
+                lines.push(L016 + origin);
+                faint.push(L019 + origin);
+                faint.push(L020 + origin);
             } else {
-                lines.push(L25 + origin);
-                lines.push(L26 + origin);
-                lines.push(L40 + origin);
-                lines.push(L39 + origin);
-                faint.push(L43 + origin);
-                faint.push(L44 + origin);
+                lines.push(L025 + origin);
+                lines.push(L026 + origin);
+                lines.push(L040 + origin);
+                lines.push(L039 + origin);
+                faint.push(L043 + origin);
+                faint.push(L044 + origin);
             }
         }
         if mask.contains(TileFlags::C3) {
             if flipped {
-                lines.push(L11 + origin);
-                lines.push(L12 + origin);
-                lines.push(L13 + origin);
-                lines.push(L14 + origin);
-                faint.push(L23 + origin);
-                faint.push(L24 + origin);
+                lines.push(L011 + origin);
+                lines.push(L012 + origin);
+                lines.push(L013 + origin);
+                lines.push(L014 + origin);
+                faint.push(L023 + origin);
+                faint.push(L024 + origin);
             } else {
-                lines.push(L35 + origin);
-                lines.push(L36 + origin);
-                lines.push(L37 + origin);
-                lines.push(L38 + origin);
-                faint.push(L47 + origin);
-                faint.push(L48 + origin);
+                lines.push(L035 + origin);
+                lines.push(L036 + origin);
+                lines.push(L037 + origin);
+                lines.push(L038 + origin);
+                faint.push(L047 + origin);
+                faint.push(L048 + origin);
             }
         }
 
@@ -471,18 +475,18 @@ impl Tile {
                 let x = rng.gen_range(0..2); // 0,1
                 match x {
                     0u32 => {
-                        for line in [L50,L53, L74,L66,L02, L08,L07] {
+                        for line in [L050,L053, L074,L066,L002, L008, L007] {
                             lines.push(line+origin);
                         }
-                        for line in [L103,L92] {
+                        for line in [L103,L092] {
                             faint.push(line+origin);
                         }
                     }
                     _ => {
-                        for line in [L51,L54, L65,L11,L73, L29,L30] {
+                        for line in [L051,L054, L065,L011,L073, L007,L008] {
                             lines.push(line+origin);
                         }
-                        for line in [L104,L112] {
+                        for line in [L104, L096] {
                             faint.push(line+origin);
                         }
                     }
@@ -490,10 +494,10 @@ impl Tile {
                
           
             } else {
-                for line in [L59,L56, L80,L26,L72, L31,L32] {
+                for line in [L059,L056, L080,L026,L072, L005,L006] {
                     lines.push(line+origin);
                 }
-                for line in [L102,L116] {
+                for line in [L102,L086] {
                     faint.push(line+origin);
                 }
             }
