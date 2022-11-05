@@ -1,8 +1,8 @@
 use crate::renders::constants::{
     L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018, L019, L020, L021, L022, 
     L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042, L043, L044, L045, L046, L047, L048, 
-    L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L062, L063, L065, L066, L067, L069, L072, L073, 
-    L074, L076, L077, L080, L081, L083, L085, L086, L087,L092, L096, L098, L099, L102, L103, L104, L106, 
+    L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L062, L063, L065, L066, L067, L069, L071, L072, L073, 
+    L074, L076, L077,L079, L080, L081, L083, L085, L086, L087, L088, L091, L092, L096, L098, L099, L101, L102, L103, L104, L106, 
     M, TileFlags, U, W, 
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
@@ -172,6 +172,32 @@ pub fn rotate(coordinate: Coordinate, raw_mask: TileFlags)-> TileFlags{
     return mask
 }
 
+
+fn paintL1( lines: &mut Vec<Line>, origin:Point)  {
+    lines.push(L049 + origin);
+    lines.push(L052 + origin);
+}
+
+fn paintL2( lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
+    if flipped {
+        lines.push(L051 + origin);
+        lines.push(L054 + origin);
+    } else {
+        lines.push(L060 + origin);
+        lines.push(L057 + origin);
+    }
+}
+
+fn paintL3( lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
+    if flipped {
+        lines.push(L050 + origin);
+        lines.push(L053 + origin);
+    } else {
+        lines.push(L059 + origin);
+        lines.push(L056 + origin);
+    }
+}
+
 impl Tile {
 
 
@@ -188,8 +214,6 @@ impl Tile {
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
         let mut rng = rand::thread_rng();
-
-        let y_random = rng.gen_range(0..2); // 0,1
 
         // Title can be rotated
         let mask = rotate(coordinate, raw_mask) ;
@@ -333,51 +357,65 @@ impl Tile {
 
         if !mask.contains(TileFlags::X2) {
 
-            if mask.contains(TileFlags::L1) {
-                lines.push(L049 + origin);
-                lines.push(L052 + origin);
+            if mask.contains(TileFlags::L1) && !mask.contains(TileFlags::Y2) {
+                paintL1(&mut lines, origin);
             }
     
-            if mask.contains(TileFlags::L2) {
-                if flipped {
-                    lines.push(L051 + origin);
-                    lines.push(L054 + origin);
-                } else {
-                    lines.push(L060 + origin);
-                    lines.push(L057 + origin);
-                }
+            if mask.contains(TileFlags::L2) && !mask.contains(TileFlags::Y3){
+                paintL2(&mut lines, origin, flipped);
             }
     
-            if mask.contains(TileFlags::L3) {
-                if flipped {
-                    lines.push(L050 + origin);
-                    lines.push(L053 + origin);
-                } else {
-                    lines.push(L059 + origin);
-                    lines.push(L056 + origin);
-                }
+            if mask.contains(TileFlags::L3) && !mask.contains(TileFlags::Y1) {
+                paintL3(&mut lines, origin, flipped);
             }
         }
 
         if mask.contains(TileFlags::Y1) {
-            if flipped {
-                lines.push(L074 + origin);
-                lines.push(L066 + origin);
-                lines.push(L002 + origin);
-
-                faint.push(L092 + origin);
-                faint.push(L103 + origin);
+            let x = rng.gen_range(0..2); // 0,1
+           
+            if x==0  {
+                paintL2(&mut lines, origin, flipped);
+                if flipped {
+                    lines.push(L073 + origin);
+                    lines.push(L065 + origin);
+                    lines.push(L011 + origin);
+    
+                    faint.push(L091 + origin);
+                    faint.push(L104 + origin);
+                } else {
+                    lines.push(L079 + origin);
+                    lines.push(L035 + origin);
+                    lines.push(L071 + origin); 
+                    //
+                    faint.push(L101 + origin);
+                    faint.push(L088 + origin);
+                }
             } else {
-                lines.push(L080 + origin);
-                lines.push(L026 + origin);
-                lines.push(L072 + origin);
-                //
-                faint.push(L102 + origin);
-                faint.push(L087 + origin);
+                paintL3(&mut lines, origin, flipped);
+                if flipped {
+                    lines.push(L074 + origin);
+                    lines.push(L066 + origin);
+                    lines.push(L002 + origin);
+    
+                    faint.push(L092 + origin);
+                    faint.push(L103 + origin);
+                } else {
+                    lines.push(L080 + origin);
+                    lines.push(L026 + origin);
+                    lines.push(L072 + origin);
+                    //
+                    faint.push(L102 + origin);
+                    faint.push(L087 + origin);
+                }
             }
+
+    
+
+
         }
 
         if mask.contains(TileFlags::Y2) {
+            paintL1(&mut lines, origin);
             if flipped {
                 lines.push(L062 + origin);
                 lines.push(L077 + origin);
@@ -394,6 +432,7 @@ impl Tile {
             }
         }
         if mask.contains(TileFlags::Y3) {
+            paintL2(&mut lines, origin, flipped);
             if flipped {
                 lines.push(L076 + origin);
                 lines.push(L063 + origin);
