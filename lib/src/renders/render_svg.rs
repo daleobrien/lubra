@@ -34,27 +34,21 @@ impl RenderSvg {
     }
 
     pub fn display_one_tile(&mut self) {
-        let c: usize = 1;//9;
-        let r: usize = 1;//6;
 
-        for j in 0..r {
-            let mut row_path: Vec<Tile> = Vec::new();
-            let mut row_wall: Vec<Tile> = Vec::new();
+        let mut row_path: Vec<Tile> = Vec::new();
+        let mut row_wall: Vec<Tile> = Vec::new();
 
-            for i in 0..c {
-                let path: Tile = Tile::new(Coordinate { i, j }, TileFlags::X2);
-                //let path: Tile = Tile::new(Coordinate { i, j }, TileFlags::Y3);
-                row_path.push(path);
+        row_path.push(Tile::new(Coordinate { i:0, j:0 }, TileFlags::X2));
+        row_path.push(Tile::new(Coordinate { i:3, j:0 }, TileFlags::X2));
 
-                let wall: Tile = Tile::new(Coordinate { i, j }, TileFlags::W1);
-                row_wall.push(wall);
-            }
-            self.tiles.push(row_path);
-            self.walls.push(row_wall);
-        }
+        row_wall.push(Tile::new(Coordinate { i:0, j:0 }, TileFlags::W1));
+        row_wall.push(Tile::new(Coordinate { i:3, j:0 }, TileFlags::W1));
 
-        self.width = (c + 1) as f64 * M;
-        self.height = r as f64 * H;
+        self.tiles.push(row_path);
+        self.walls.push(row_wall);
+
+        self.width = 5f64 * M;
+        self.height = 1f64 * H;
     }
 
     pub fn display_all_tiles(&mut self) {

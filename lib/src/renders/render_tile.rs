@@ -1,8 +1,8 @@
 use crate::renders::constants::{
-    TileFlags, L01, L02, L07, L08, L102, L103, L106, L11, L110, L116, L117, L12, L120, L123, L13,
-    L14, L15, L16, L17, L18, L19, L20, L21, L22, L23, L24, L25, L26, L31, L32, L35, L36, L37, L38,
+    TileFlags, L01, L02, L07, L08, L102, L103,L104, L106, L112,L11, L110, L116, L117, L12, L120, L123, L13,
+    L14, L15, L16, L17, L18, L19, L20, L21, L22, L23, L24, L25, L26,L29, L30,L31, L32, L35, L36, L37, L38,
     L39, L40, L41, L42, L43, L44, L45, L46, L47, L48, L49, L50, L51, L52, L53, L54, L56, L57, L59,
-    L60, L62, L63, L66, L67, L69, L72, L74, L76, L77, L80, L81, L83, L92, L96, L98, L99, M, U, W,
+    L60, L62, L63, L66, L67, L69, L72, L73, L74,L65, L76, L77, L80, L81, L83, L92, L96, L98, L99, M, U, W,
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
 use crate::renders::shapes::{
@@ -10,6 +10,7 @@ use crate::renders::shapes::{
     T1_V_ARC, T2_A, T2_ARC, T2_V, T3_A, T3_ARC, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
 use crate::renders::svg_path::Path;
+use rand::Rng;
 
 pub fn create_triangle(flipped: bool) -> [Line; 3] {
     return if flipped { TRIANGLE_V } else { TRIANGLE_A };
@@ -184,6 +185,8 @@ impl Tile {
         let mut fsemi: Vec<Segment> = Vec::new();
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
+
+        let mut rng = rand::thread_rng();
 
         // Title can be rotated
         let mask = rotate(coordinate, raw_mask) ;
@@ -463,36 +466,39 @@ impl Tile {
             arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
         }
         if mask.contains(TileFlags::X2) {
-          
+       
             if flipped {
-                lines.push(L50 + origin);
-                lines.push(L53 + origin);
-
-                lines.push(L74 + origin);
-                lines.push(L66 + origin);
-                lines.push(L02 + origin);
-
-                faint.push(L92 + origin);
-                faint.push(L103 + origin);
-
-                // faint.push(L63 + origin);
-                lines.push(L08 + origin);
-                lines.push(L07 + origin);
+                let x = rng.gen_range(0..2); // 0,1
+                match x {
+                    0u32 => {
+                        for line in [L50,L53, L74,L66,L02, L08,L07] {
+                            lines.push(line+origin);
+                        }
+                        for line in [L103,L92] {
+                            faint.push(line+origin);
+                        }
+                    }
+                    _ => {
+                        for line in [L51,L54, L65,L11,L73, L29,L30] {
+                            lines.push(line+origin);
+                        }
+                        for line in [L104,L112] {
+                            faint.push(line+origin);
+                        }
+                    }
+                };
+               
+          
             } else {
-                lines.push(L59 + origin);
-                lines.push(L56 + origin);
-                //
-                lines.push(L80 + origin);
-                lines.push(L26 + origin);
-                lines.push(L72 + origin);
-                //
-                faint.push(L102 + origin);
-                faint.push(L116 + origin);
-
-                lines.push(L31 + origin);
-                lines.push(L32 + origin);
-                //faint.push(L69 + origin);
+                for line in [L59,L56, L80,L26,L72, L31,L32] {
+                    lines.push(line+origin);
+                }
+                for line in [L102,L116] {
+                    faint.push(line+origin);
+                }
             }
+
+
         }
 
         if mask.contains(TileFlags::W1) {

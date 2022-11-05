@@ -542,6 +542,9 @@ pub const L26: Line = Line {
     },
 };
 
+pub const L29:Line = Line { start: Point {x: 40., y: 103.923}, delta: Point { x: 0., y: -34.641}};
+pub const L30:Line = Line { start: Point {x: 80., y: 103.923}, delta: Point { x: 0., y: -34.641}};
+
 pub const L31: Line = Line {
     start: Point { x: 40., y: 34.641 },
     delta: Point { x: 0., y: -34.641 },
@@ -707,6 +710,8 @@ pub const L63: Line = Line {
     delta: Point { x: 0., y: -23.094 },
 };
 
+pub const L65:Line = Line { start: Point {x: 60., y: 57.735}, delta: Point { x: -20., y: 11.547}};
+
 pub const L66: Line = Line {
     start: Point { x: 60., y: 57.735 },
     delta: Point { x: 20., y: 11.547 },
@@ -729,6 +734,7 @@ pub const L72: Line = Line {
     delta: Point { x: 20., y: -11.547 },
 };
 
+pub const L73:Line = Line { start: Point {x: 60., y: 11.547}, delta: Point { x: 50., y: -28.8675}};
 pub const L74: Line = Line {
     start: Point { x: 60., y: 11.547 },
     delta: Point {
@@ -791,11 +797,12 @@ pub const L102: Line = Line {
 };
 pub const L103: Line = Line {
     start: Point { x: 60., y: 57.735 },
-    delta: Point {
-        x: -40.,
-        y: -23.094,
-    },
+    delta: Point { x: -40., y: -23.094, },
 };
+
+pub const L104:Line = Line { 
+    start: Point {x: 60., y: 57.735},
+    delta: Point { x: 40., y: -23.094}};
 
 pub const L106: Line = Line {
     start: Point { x: 40., y: 23.094 },
@@ -805,6 +812,8 @@ pub const L110: Line = Line {
     start: Point { x: 40., y: 46.188 },
     delta: Point { x: 0., y: -46.188 },
 };
+pub const L112:Line = Line { start: Point {x: 60., y: 11.547}, delta: Point { x: -40., y: 23.094}};
+
 pub const L116: Line = Line {
     start: Point { x: 60., y: 92.376 },
     delta: Point { x: 40., y: -23.094 },
