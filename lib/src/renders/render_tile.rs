@@ -221,6 +221,78 @@ fn paint_l3( lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
     }
 }
 
+#[inline]
+fn paint_y1(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin:Point, flipped: bool)  {
+    let mut rng = rand::thread_rng();
+    if rng.gen_range(0..2)==0  {
+        paint_l2(lines, origin, flipped);
+        if flipped {
+            push3(lines, origin, L011, L065,L073);
+            push2(faint, origin, L091, L104);                    
+        } else {
+            push3(lines, origin, L035, L071,L079);
+            push2(faint, origin, L088, L101);                    
+        }
+    } else {
+        paint_l3(lines, origin, flipped);
+        if flipped {
+            push3(lines, origin, L002, L066,L074);
+            push2(faint, origin, L092, L103);                    
+        } else {
+            push3(lines, origin, L026, L072,L080);
+            push2(faint, origin, L087, L102);                    
+        }
+    }
+}
+
+#[inline]
+fn paint_y2(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin:Point, flipped: bool)  {
+    let mut rng = rand::thread_rng();
+    if rng.gen_range(0..2)==0 {
+        paint_l3(lines, origin, flipped);
+        if flipped {
+            push3(lines, origin, L007, L061,L078);
+            push2(faint, origin, L095, L105);
+        } else {
+            push3(lines, origin, L005, L068,L084);
+            push2(faint, origin, L078, L097);
+        }
+    } else {
+        paint_l1(lines, origin);
+        if flipped {
+            push3(lines, origin, L012, L062,L077);
+            push2(faint, origin, L096, L106);
+        } else {
+            push3(lines, origin, L036, L067,L083);
+            push2(faint, origin, L089, L098);
+        }
+    }
+}
+
+#[inline]
+fn paint_y3(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin:Point, flipped: bool)  {
+    let mut rng = rand::thread_rng();
+    if rng.gen_range(0..2)==0 {
+        paint_l1(lines, origin);
+        if flipped {
+            push3(lines, origin, L001, L064, L075);
+            push2(faint, origin, L094, L107 );
+        } else {
+            push3(lines, origin, L025, L070,L082);
+            push2(faint, origin, L085, L100);
+        }
+    }else{
+        paint_l2(lines, origin, flipped);
+        if flipped {
+            push3(lines, origin, L008, L063,L076);
+            push2(faint, origin, L093, L121);
+        } else {
+            push3(lines, origin, L006, L069,L081);
+            push2(faint, origin, L086, L099);
+        }
+    }
+}
+
 impl Tile {
 
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
@@ -378,85 +450,28 @@ impl Tile {
         }
 
         if !mask.contains(TileFlags::X2) {
-            if mask.contains(TileFlags::L1) && !mask.contains(TileFlags::Y2) {
+
+            if mask.contains(TileFlags::L1) && !mask.contains(TileFlags::Y2) && !mask.contains(TileFlags::Y3) {
                 paint_l1(&mut lines, origin);
             }
-            if mask.contains(TileFlags::L2) && !mask.contains(TileFlags::Y3){
+            if mask.contains(TileFlags::L2) && !mask.contains(TileFlags::Y1) && !mask.contains(TileFlags::Y3){
                 paint_l2(&mut lines, origin, flipped);
             }
-            if mask.contains(TileFlags::L3) && !mask.contains(TileFlags::Y1) {
+            if mask.contains(TileFlags::L3) && !mask.contains(TileFlags::Y1) && !mask.contains(TileFlags::Y2) {
                 paint_l3(&mut lines, origin, flipped);
             }
-        }
 
-        let zero_or_one = rng.gen_range(0..2); // 0,1
-
-        if mask.contains(TileFlags::Y1) {
-            if zero_or_one==0  {
-                paint_l2(&mut lines, origin, flipped);
-                if flipped {
-                    push3(&mut lines, origin, L011, L065,L073);
-                    push2(&mut faint, origin, L091, L104);                    
-                } else {
-                    push3(&mut lines, origin, L035, L071,L079);
-                    push2(&mut faint, origin, L088, L101);                    
-                }
-            } else {
-                paint_l3(&mut lines, origin, flipped);
-                if flipped {
-                    push3(&mut lines, origin, L002, L066,L074);
-                    push2(&mut faint, origin, L092, L103);                    
-                } else {
-                    push3(&mut lines, origin, L026, L072,L080);
-                    push2(&mut faint, origin, L087, L102);                    
-                }
+            if mask.contains(TileFlags::Y1) {
+                paint_y1(&mut lines, &mut faint, origin, flipped);
             }
-        }
-
-        if mask.contains(TileFlags::Y2) {
-            if zero_or_one==0 {
-                paint_l3(&mut lines, origin, flipped);
-                if flipped {
-                    push3(&mut lines, origin, L007, L061,L078);
-                    push2(&mut faint, origin, L095, L105);
-                } else {
-                    push3(&mut lines, origin, L005, L068,L084);
-                    push2(&mut faint, origin, L078, L097);
-                }
-            } else {
-                paint_l1(&mut lines, origin);
-                if flipped {
-                    push3(&mut lines, origin, L012, L062,L077);
-                    push2(&mut faint, origin, L096, L106);
-                } else {
-                    push3(&mut lines, origin, L036, L067,L083);
-                    push2(&mut faint, origin, L089, L098);
-                }
+    
+            if mask.contains(TileFlags::Y2) {
+                paint_y2(&mut lines, &mut faint, origin, flipped);
             }
-            
-        }
-        if mask.contains(TileFlags::Y3) {
-
-            if zero_or_one==0 {
-                paint_l1(&mut lines, origin);
-                if flipped {
-                    push3(&mut lines, origin, L001, L075,L064);
-                    push2(&mut faint, origin, L107, L094);
-                } else {
-                    push3(&mut lines, origin, L025, L070,L082);
-                    push2(&mut faint, origin, L085, L100);
-                }
-            }else{
-                paint_l2(&mut lines, origin, flipped);
-                if flipped {
-                    push3(&mut lines, origin, L008, L063,L076);
-                    push2(&mut faint, origin, L093, L121);
-                } else {
-                    push3(&mut lines, origin, L006, L069,L081);
-                    push2(&mut faint, origin, L086, L099);
-                }
+    
+            if mask.contains(TileFlags::Y3) {
+                paint_y3(&mut lines, &mut faint, origin, flipped);
             }
-           
         }
 
         // TODO: For these and others, randomally change which line goes on top
@@ -497,59 +512,33 @@ impl Tile {
         }
         if mask.contains(TileFlags::X2) {
        
-            if flipped {
-                match rng.gen_range(0..3) { // 0,1,2
-                    0 => {
-                        paint_l3(&mut lines, origin, flipped);
-                        // Could be even more random, 2 options here
-                        for line in [L074,L066,L002,L008,L007] {
-                            lines.push(line+origin);
-                        }
-                        push2(&mut faint, origin, L103, L092);
+            match rng.gen_range(0..3) { // 0,1,2
+                0 => {
+                    paint_y1(&mut lines, &mut faint, origin, flipped);
+                    if flipped {
+                        push2(&mut lines, origin, L007, L008);
+                    } else {
+                        push2(&mut lines, origin, L005, L006);
                     }
-                    1 => {
-                        paint_l2(&mut lines, origin, flipped);
-                        for line in [L065,L011,L073,L007,L008] {
-                            lines.push(line+origin);
-                        }
-                        push2(&mut faint, origin, L091, L104);
+                }
+                1 => {
+                    paint_y3(&mut lines, &mut faint, origin, flipped);
+                    if flipped {
+                        push2(&mut lines, origin, L011, L012);
+                    } else {
+                        push2(&mut lines, origin, L035, L036);
                     }
-                    _ => {
-                        paint_l1(&mut lines, origin);
-                        for line in [L012,L062,L077, L002,L001]{
-                            lines.push(line+origin);
-                        }
-                        push2(&mut faint, origin, L096, L106);
-                    }
-                };
-          
-            } else {
-                match rng.gen_range(0..3) { // 0,1,2
-                    0 => {
-                        paint_l3(&mut lines, origin, flipped);
-                        for line in [L080,L026,L072, L005,L006] {
-                            lines.push(line+origin);
-                        }
-                        push2(&mut faint, origin, L087, L102 );
-                    }
-                    1 => {
-                        paint_l2(&mut lines, origin, flipped);
-                        for line in [L006,L069,L081, L035,L036] {
-                            lines.push(line+origin);
-                        }
-                        push2(&mut faint, origin, L086, L099);
-                    }
-                    _ => {
-                        paint_l1(&mut lines, origin);
-                        for line in [L036,L067,L083, L025,L026] {
-                            lines.push(line+origin);
-                        }
-                        push2(&mut faint, origin, L089, L098);
+                }
+                _ => {
+                    paint_y2(&mut lines, &mut faint, origin, flipped);
+                    if flipped {
+                        push2(&mut lines, origin, L001, L002);
+                    } else {
+                       push2(&mut lines, origin, L025, L026);
                     }
                 }
             }
-
-
+          
         }
 
         if mask.contains(TileFlags::W1) {

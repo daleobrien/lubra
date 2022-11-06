@@ -38,17 +38,18 @@ impl RenderSvg {
         let mut row_path: Vec<Tile> = Vec::new();
         let mut row_wall: Vec<Tile> = Vec::new();
 
-        row_path.push(Tile::new(Coordinate { i:0, j:0 }, TileFlags::X2));
-        row_path.push(Tile::new(Coordinate { i:3, j:0 }, TileFlags::X2));
-
-        row_wall.push(Tile::new(Coordinate { i:0, j:0 }, TileFlags::W1));
-        row_wall.push(Tile::new(Coordinate { i:3, j:0 }, TileFlags::W1));
+        for i in [0,3,6,9,12,15]{
+            for j in [0,2,4,6,8,10]{
+            row_path.push(Tile::new(Coordinate { i:i, j:j }, TileFlags::X2));
+            row_wall.push(Tile::new(Coordinate { i:i, j:j }, TileFlags::W1));
+            }
+        }
 
         self.tiles.push(row_path);
         self.walls.push(row_wall);
 
-        self.width = 5f64 * M;
-        self.height = 1f64 * H;
+        self.width = 17f64 * M;
+        self.height = 12f64 * H;
     }
 
     pub fn display_all_tiles(&mut self) {
