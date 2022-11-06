@@ -32,10 +32,6 @@ impl Path {
                        opacity = opacity, w = w, colour = colour, d = d);
     }
 
-    // pub fn append(&mut self, path: &str) {
-    //     self.path.push_str(path);
-    // }
-
     fn polar(&self, x: f64, y: f64, radius: f64, angle: f64) -> (f64, f64) {
         let (a, b) = f64::sin_cos(angle);
         return (x + (radius * b), y + (radius * a));
