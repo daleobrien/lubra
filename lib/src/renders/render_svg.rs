@@ -143,7 +143,7 @@ impl RenderSvg {
                 row_wall.push(wall);
             }
             self.tiles.push(row_path);
-            self.walls.push(row_wall);
+            // self.walls.push(row_wall);
         }
 
         self.width = (c + 1) as f64 * M;

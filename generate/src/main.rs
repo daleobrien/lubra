@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap};
 use std::fs;
 use std::time::Instant;
 
@@ -134,12 +134,23 @@ impl Combinations {
                             let value: TileFlags =
                                 TileFlags::from([point_mask, line_mask, *curve_mask]);
 
-                            println!("{:?}", value);
-                            // Encode into better bit structure. Use bit enum!
-                            self.tiles_by_index
-                                .entry(key)
-                                .or_insert_with(Vec::new)
-                                .push(value);
+                            let mut factor = 1;
+                            if curve_mask.count_ones() != 0{
+                                factor *= curve_mask.count_ones() * 3;
+                            }
+                            if line_mask.count_ones() != 0 {
+                                factor *= line_mask.count_ones() * 2;
+                            }
+
+                            // TODO: Push some items more that once so they have better odds of being selected
+                            println!("TILE {:?} {:?}", factor, value);
+                            for _ in 0..factor{
+                                self.tiles_by_index
+                                    .entry(key)
+                                    .or_insert_with(Vec::new)
+                                    .push(value);
+
+                            }
                         }
                     }
                 }
