@@ -135,11 +135,13 @@ impl Combinations {
                                 TileFlags::from([point_mask, line_mask, *curve_mask]);
 
                             let mut factor = 1;
+
                             if curve_mask.count_ones() != 0{
-                                factor *= curve_mask.count_ones() * 3;
+                                factor *= curve_mask.count_ones() * 5;
                             }
+
                             if line_mask.count_ones() != 0 {
-                                factor *= line_mask.count_ones() * 2;
+                                factor *= line_mask.count_ones() * 4;
                             }
 
                             // TODO: Push some items more that once so they have better odds of being selected
