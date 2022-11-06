@@ -498,11 +498,10 @@ impl Tile {
         if mask.contains(TileFlags::X2) {
        
             if flipped {
-                let x = rng.gen_range(0..2); // 0,1
-                //let x = 2;
-                match x {
+                match rng.gen_range(0..3) { // 0,1,2
                     0 => {
                         paint_l3(&mut lines, origin, flipped);
+                        // Could be even more random, 2 options here
                         for line in [L074,L066,L002,L008,L007] {
                             lines.push(line+origin);
                         }
@@ -525,11 +524,29 @@ impl Tile {
                 };
           
             } else {
-                paint_l3(&mut lines, origin, flipped);
-                for line in [L080,L026,L072, L005,L006] {
-                    lines.push(line+origin);
+                match rng.gen_range(0..3) { // 0,1,2
+                    0 => {
+                        paint_l3(&mut lines, origin, flipped);
+                        for line in [L080,L026,L072, L005,L006] {
+                            lines.push(line+origin);
+                        }
+                        push2(&mut faint, origin, L087, L102 );
+                    }
+                    1 => {
+                        paint_l2(&mut lines, origin, flipped);
+                        for line in [L006,L069,L081, L035,L036] {
+                            lines.push(line+origin);
+                        }
+                        push2(&mut faint, origin, L086, L099);
+                    }
+                    _ => {
+                        paint_l1(&mut lines, origin);
+                        for line in [L036,L067,L083, L025,L026] {
+                            lines.push(line+origin);
+                        }
+                        push2(&mut faint, origin, L089, L098);
+                    }
                 }
-                push2(&mut faint, origin, L102, L087);
             }
 
 
