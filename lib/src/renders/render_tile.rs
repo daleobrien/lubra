@@ -177,34 +177,51 @@ pub fn rotate(coordinate: Coordinate, raw_mask: TileFlags)-> TileFlags{
     return mask
 }
 
-
-fn paintL1( lines: &mut Vec<Line>, origin:Point)  {
-    lines.push(L049 + origin);
-    lines.push(L052 + origin);
+#[inline]
+fn push2(lines: &mut Vec<Line>, origin:Point, line1: Line, line2: Line){
+    lines.push(line1 + origin);
+    lines.push(line2 + origin);
 }
 
-fn paintL2( lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
+#[inline]
+fn push3(lines: &mut Vec<Line>, origin:Point, line1: Line, line2: Line, line3: Line){
+    lines.push(line1 + origin);
+    lines.push(line2 + origin);
+    lines.push(line3 + origin);
+}
+
+#[inline]
+fn push4(lines: &mut Vec<Line>, origin:Point, line1: Line, line2: Line, line3: Line, line4: Line){
+    lines.push(line1 + origin);
+    lines.push(line2 + origin);
+    lines.push(line3 + origin);
+    lines.push(line4 + origin);
+}
+
+#[inline]
+fn paint_l1( lines: &mut Vec<Line>, origin:Point)  {
+    push2(lines, origin, L049, L052);
+ }
+
+ #[inline]
+fn paint_l2(lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
     if flipped {
-        lines.push(L051 + origin);
-        lines.push(L054 + origin);
+        push2(lines, origin, L051, L054);
     } else {
-        lines.push(L060 + origin);
-        lines.push(L057 + origin);
+        push2(lines, origin, L057, L060);
     }
 }
 
-fn paintL3( lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
+#[inline]
+fn paint_l3( lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
     if flipped {
-        lines.push(L050 + origin);
-        lines.push(L053 + origin);
+        push2(lines, origin, L050, L053);
     } else {
-        lines.push(L059 + origin);
-        lines.push(L056 + origin);
+        push2(lines, origin, L056, L059);
     }
 }
 
 impl Tile {
-
 
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
@@ -362,128 +379,81 @@ impl Tile {
 
         if !mask.contains(TileFlags::X2) {
             if mask.contains(TileFlags::L1) && !mask.contains(TileFlags::Y2) {
-                paintL1(&mut lines, origin);
+                paint_l1(&mut lines, origin);
             }
             if mask.contains(TileFlags::L2) && !mask.contains(TileFlags::Y3){
-                paintL2(&mut lines, origin, flipped);
+                paint_l2(&mut lines, origin, flipped);
             }
             if mask.contains(TileFlags::L3) && !mask.contains(TileFlags::Y1) {
-                paintL3(&mut lines, origin, flipped);
+                paint_l3(&mut lines, origin, flipped);
             }
         }
 
         let zero_or_one = rng.gen_range(0..2); // 0,1
 
         if mask.contains(TileFlags::Y1) {
-            
-           
             if zero_or_one==0  {
-                paintL2(&mut lines, origin, flipped);
+                paint_l2(&mut lines, origin, flipped);
                 if flipped {
-                    lines.push(L073 + origin);
-                    lines.push(L065 + origin);
-                    lines.push(L011 + origin);
-    
-                    faint.push(L091 + origin);
-                    faint.push(L104 + origin);
+                    push3(&mut lines, origin, L011, L065,L073);
+                    push2(&mut faint, origin, L091, L104);                    
                 } else {
-                    lines.push(L079 + origin);
-                    lines.push(L035 + origin);
-                    lines.push(L071 + origin); 
-                    //
-                    faint.push(L101 + origin);
-                    faint.push(L088 + origin);
+                    push3(&mut lines, origin, L035, L071,L079);
+                    push2(&mut faint, origin, L088, L101);                    
                 }
             } else {
-                paintL3(&mut lines, origin, flipped);
+                paint_l3(&mut lines, origin, flipped);
                 if flipped {
-                    lines.push(L074 + origin);
-                    lines.push(L066 + origin);
-                    lines.push(L002 + origin);
-    
-                    faint.push(L092 + origin);
-                    faint.push(L103 + origin);
+                    push3(&mut lines, origin, L002, L066,L074);
+                    push2(&mut faint, origin, L092, L103);                    
                 } else {
-                    lines.push(L080 + origin);
-                    lines.push(L026 + origin);
-                    lines.push(L072 + origin);
-                    //
-                    faint.push(L102 + origin);
-                    faint.push(L087 + origin);
+                    push3(&mut lines, origin, L026, L072,L080);
+                    push2(&mut faint, origin, L087, L102);                    
                 }
             }
         }
 
         if mask.contains(TileFlags::Y2) {
             if zero_or_one==0 {
-                paintL3(&mut lines, origin, flipped);
+                paint_l3(&mut lines, origin, flipped);
                 if flipped {
-                    lines.push(L061 + origin);
-                    lines.push(L078 + origin);
-                    lines.push(L007 + origin);
-
-                    faint.push(L105 + origin);
-                    faint.push(L095 + origin);
+                    push3(&mut lines, origin, L007, L061,L078);
+                    push2(&mut faint, origin, L095, L105);
                 } else {
-                    lines.push(L068 + origin);
-                    lines.push(L084 + origin);
-                    lines.push(L005 + origin);
-                    
-                    faint.push(L078 + origin);
-                    faint.push(L097 + origin); 
+                    push3(&mut lines, origin, L005, L068,L084);
+                    push2(&mut faint, origin, L078, L097);
                 }
             } else {
-                paintL1(&mut lines, origin);
+                paint_l1(&mut lines, origin);
                 if flipped {
-                    lines.push(L062 + origin);
-                    lines.push(L077 + origin);
-                    lines.push(L012 + origin);
-    
-                    faint.push(L096 + origin);
-                    faint.push(L106 + origin);
+                    push3(&mut lines, origin, L012, L062,L077);
+                    push2(&mut faint, origin, L096, L106);
                 } else {
-                    lines.push(L067 + origin);
-                    lines.push(L083 + origin);
-                    lines.push(L036 + origin);
-
-                    faint.push(L098 + origin);
-                    faint.push(L089 + origin);
+                    push3(&mut lines, origin, L036, L067,L083);
+                    push2(&mut faint, origin, L089, L098);
                 }
             }
             
         }
         if mask.contains(TileFlags::Y3) {
 
-            if(zero_or_one==0){
-                paintL1(&mut lines, origin);
+            if zero_or_one==0 {
+                paint_l1(&mut lines, origin);
                 if flipped {
-                    lines.push(L075 + origin);
-                    lines.push(L064 + origin);
-                    lines.push(L001 + origin);
-                    faint.push(L107 + origin);
-                    faint.push(L094 + origin);
+                    push3(&mut lines, origin, L001, L075,L064);
+                    push2(&mut faint, origin, L107, L094);
                 } else {
-                    lines.push(L025 + origin);
-                    lines.push(L082 + origin);
-                    lines.push(L070 + origin);
-                    faint.push(L085 + origin); 
-                    faint.push(L100 + origin);
+                    push3(&mut lines, origin, L025, L070,L082);
+                    push2(&mut faint, origin, L085, L100);
                 }
             }else{
-                paintL2(&mut lines, origin, flipped);
+                paint_l2(&mut lines, origin, flipped);
                 if flipped {
-                    lines.push(L076 + origin);
-                    lines.push(L063 + origin);
-                    lines.push(L008 + origin);
-                    faint.push(L121 + origin);
-                    faint.push(L093 + origin);
+                    push3(&mut lines, origin, L008, L063,L076);
+                    push2(&mut faint, origin, L093, L121);
                 } else {
-                    lines.push(L006 + origin);
-                    lines.push(L081 + origin);
-                    lines.push(L069 + origin);
-                    faint.push(L086 + origin);
-                    faint.push(L099 + origin);
-                    
+                    push3(&mut lines, origin, L006, L069,L081);
+                    push2(&mut faint, origin, L086, L099);
                 }
             }
            
@@ -494,53 +464,29 @@ impl Tile {
         // TODO: Use the upper 2 bits to specify the variation!
         if mask.contains(TileFlags::C1) {
             if flipped {
-                lines.push(L007 + origin);
-                lines.push(L008 + origin);
-                lines.push(L018 + origin);
-                lines.push(L017 + origin);
-                faint.push(L021 + origin);
-                faint.push(L022 + origin);
+                push4(&mut lines, origin, L007, L008, L017, L018);
+                push2(&mut faint, origin, L021, L022);
             } else {
-                lines.push(L005 + origin);
-                lines.push(L006 + origin);
-                lines.push(L042 + origin);
-                lines.push(L041 + origin);
-                faint.push(L045 + origin);
-                faint.push(L046 + origin);
+                push4(&mut lines, origin, L005, L006, L042, L041);
+                push2(&mut faint, origin, L045, L046);
             }
         }
         if mask.contains(TileFlags::C2) {
             if flipped {
-                lines.push(L001 + origin);
-                lines.push(L002 + origin);
-                lines.push(L015 + origin);
-                lines.push(L016 + origin);
-                faint.push(L019 + origin);
-                faint.push(L020 + origin);
+                push4(&mut lines, origin, L001, L002, L015, L016);
+                push2(&mut faint, origin, L019, L020);
             } else {
-                lines.push(L025 + origin);
-                lines.push(L026 + origin);
-                lines.push(L040 + origin);
-                lines.push(L039 + origin);
-                faint.push(L043 + origin);
-                faint.push(L044 + origin);
+                push4(&mut lines, origin, L025, L026, L040, L039);
+                push2(&mut faint, origin, L043, L044);
             }
         }
         if mask.contains(TileFlags::C3) {
             if flipped {
-                lines.push(L011 + origin);
-                lines.push(L012 + origin);
-                lines.push(L013 + origin);
-                lines.push(L014 + origin);
-                faint.push(L023 + origin);
-                faint.push(L024 + origin);
+                push4(&mut lines, origin, L011, L012, L013, L014);
+                push2(&mut faint, origin, L023, L024);
             } else {
-                lines.push(L035 + origin);
-                lines.push(L036 + origin);
-                lines.push(L037 + origin);
-                lines.push(L038 + origin);
-                faint.push(L047 + origin);
-                faint.push(L048 + origin);
+                push4(&mut lines, origin, L035, L036, L037, L038);
+                push2(&mut faint, origin, L047, L048);
             }
         }
 
@@ -553,33 +499,37 @@ impl Tile {
        
             if flipped {
                 let x = rng.gen_range(0..2); // 0,1
+                //let x = 2;
                 match x {
-                    0u32 => {
-                        for line in [L050,L053, L074,L066,L002, L008, L007] {
+                    0 => {
+                        paint_l3(&mut lines, origin, flipped);
+                        for line in [L074,L066,L002,L008,L007] {
                             lines.push(line+origin);
                         }
-                        for line in [L103,L092] {
-                            faint.push(line+origin);
+                        push2(&mut faint, origin, L103, L092);
+                    }
+                    1 => {
+                        paint_l2(&mut lines, origin, flipped);
+                        for line in [L065,L011,L073,L007,L008] {
+                            lines.push(line+origin);
                         }
+                        push2(&mut faint, origin, L091, L104);
                     }
                     _ => {
-                        for line in [L051,L054, L065,L011,L073, L007,L008] {
+                        paint_l1(&mut lines, origin);
+                        for line in [L012,L062,L077, L002,L001]{
                             lines.push(line+origin);
                         }
-                        for line in [L104, L096] {
-                            faint.push(line+origin);
-                        }
+                        push2(&mut faint, origin, L096, L106);
                     }
                 };
-               
           
             } else {
-                for line in [L059,L056, L080,L026,L072, L005,L006] {
+                paint_l3(&mut lines, origin, flipped);
+                for line in [L080,L026,L072, L005,L006] {
                     lines.push(line+origin);
                 }
-                for line in [L102,L086] {
-                    faint.push(line+origin);
-                }
+                push2(&mut faint, origin, L102, L087);
             }
 
 
