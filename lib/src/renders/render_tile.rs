@@ -1,10 +1,13 @@
 use crate::renders::constants::{
-    L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018, L019, L020, L021, L022, 
+    L001, L002, L003, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018, L019, L020, L021, L022, 
     L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042, L043, L044, L045, L046, L047, L048, 
-    L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L061, L062, L063, L065, L066, L067, L068,
-    L069, L071, L072, L073, 
-    L074, L076, L077,L078,L079, L080, L081, L083, L084, L085, L086, L087, L088, L089, L091, L092, L095, L096,L097, L098, L099, 
-    L100, L101, L102, L103, L104, L105, L106, 
+    L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L061, L062, L063, L064, L065, L066, L067, L068,
+    L069, L070, L071, L072, L073, 
+    L074, L075, L076, L077,L078,L079, L080, L081, L082, L083, L084, L085, L086, L087, L088, L089, 
+    L091, L092, L093, L094, L095, L096,
+    L097, L098, L099, 
+    L100, L101, L102, L103, L104, L105, L106, L107,
+    L121,
     M, TileFlags, U, W, 
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
@@ -450,20 +453,40 @@ impl Tile {
             
         }
         if mask.contains(TileFlags::Y3) {
-            paintL2(&mut lines, origin, flipped);
-            if flipped {
-                lines.push(L076 + origin);
-                lines.push(L063 + origin);
-                lines.push(L008 + origin);
-                faint.push(L104 + origin);
-                faint.push(L092 + origin);
-            } else {
-                lines.push(L006 + origin);
-                lines.push(L081 + origin);
-                lines.push(L069 + origin);
-                faint.push(L085 + origin);
-                faint.push(L099 + origin);
+
+            if(zero_or_one==0){
+                paintL1(&mut lines, origin);
+                if flipped {
+                    lines.push(L075 + origin);
+                    lines.push(L064 + origin);
+                    lines.push(L001 + origin);
+                    faint.push(L107 + origin);
+                    faint.push(L094 + origin);
+                } else {
+                    lines.push(L025 + origin);
+                    lines.push(L082 + origin);
+                    lines.push(L070 + origin);
+                    faint.push(L085 + origin); 
+                    faint.push(L100 + origin);
+                }
+            }else{
+                paintL2(&mut lines, origin, flipped);
+                if flipped {
+                    lines.push(L076 + origin);
+                    lines.push(L063 + origin);
+                    lines.push(L008 + origin);
+                    faint.push(L121 + origin);
+                    faint.push(L093 + origin);
+                } else {
+                    lines.push(L006 + origin);
+                    lines.push(L081 + origin);
+                    lines.push(L069 + origin);
+                    faint.push(L086 + origin);
+                    faint.push(L099 + origin);
+                    
+                }
             }
+           
         }
 
         // TODO: For these and others, randomally change which line goes on top
