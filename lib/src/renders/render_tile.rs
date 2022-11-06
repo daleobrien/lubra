@@ -1,8 +1,10 @@
 use crate::renders::constants::{
     L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018, L019, L020, L021, L022, 
     L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042, L043, L044, L045, L046, L047, L048, 
-    L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L062, L063, L065, L066, L067, L069, L071, L072, L073, 
-    L074, L076, L077,L079, L080, L081, L083, L085, L086, L087, L088, L091, L092, L096, L098, L099, L101, L102, L103, L104, L106, 
+    L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L061, L062, L063, L065, L066, L067, L068,
+    L069, L071, L072, L073, 
+    L074, L076, L077,L078,L079, L080, L081, L083, L084, L085, L086, L087, L088, L089, L091, L092, L095, L096,L097, L098, L099, 
+    L100, L101, L102, L103, L104, L105, L106, 
     M, TileFlags, U, W, 
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
@@ -356,24 +358,23 @@ impl Tile {
         }
 
         if !mask.contains(TileFlags::X2) {
-
             if mask.contains(TileFlags::L1) && !mask.contains(TileFlags::Y2) {
                 paintL1(&mut lines, origin);
             }
-    
             if mask.contains(TileFlags::L2) && !mask.contains(TileFlags::Y3){
                 paintL2(&mut lines, origin, flipped);
             }
-    
             if mask.contains(TileFlags::L3) && !mask.contains(TileFlags::Y1) {
                 paintL3(&mut lines, origin, flipped);
             }
         }
 
+        let zero_or_one = rng.gen_range(0..2); // 0,1
+
         if mask.contains(TileFlags::Y1) {
-            let x = rng.gen_range(0..2); // 0,1
+            
            
-            if x==0  {
+            if zero_or_one==0  {
                 paintL2(&mut lines, origin, flipped);
                 if flipped {
                     lines.push(L073 + origin);
@@ -408,28 +409,45 @@ impl Tile {
                     faint.push(L087 + origin);
                 }
             }
-
-    
-
-
         }
 
         if mask.contains(TileFlags::Y2) {
-            paintL1(&mut lines, origin);
-            if flipped {
-                lines.push(L062 + origin);
-                lines.push(L077 + origin);
-                lines.push(L012 + origin);
+            if zero_or_one==0 {
+                paintL3(&mut lines, origin, flipped);
+                if flipped {
+                    lines.push(L061 + origin);
+                    lines.push(L078 + origin);
+                    lines.push(L007 + origin);
 
-                faint.push(L106 + origin);
-                faint.push(L096 + origin);
+                    faint.push(L105 + origin);
+                    faint.push(L095 + origin);
+                } else {
+                    lines.push(L068 + origin);
+                    lines.push(L084 + origin);
+                    lines.push(L005 + origin);
+                    
+                    faint.push(L078 + origin);
+                    faint.push(L097 + origin); 
+                }
             } else {
-                lines.push(L067 + origin);
-                lines.push(L083 + origin);
-                lines.push(L036 + origin);
-                faint.push(L106 + origin);
-                faint.push(L098 + origin);
+                paintL1(&mut lines, origin);
+                if flipped {
+                    lines.push(L062 + origin);
+                    lines.push(L077 + origin);
+                    lines.push(L012 + origin);
+    
+                    faint.push(L096 + origin);
+                    faint.push(L106 + origin);
+                } else {
+                    lines.push(L067 + origin);
+                    lines.push(L083 + origin);
+                    lines.push(L036 + origin);
+
+                    faint.push(L098 + origin);
+                    faint.push(L089 + origin);
+                }
             }
+            
         }
         if mask.contains(TileFlags::Y3) {
             paintL2(&mut lines, origin, flipped);

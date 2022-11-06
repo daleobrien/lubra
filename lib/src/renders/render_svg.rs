@@ -38,8 +38,8 @@ impl RenderSvg {
         let mut row_path: Vec<Tile> = Vec::new();
         let mut row_wall: Vec<Tile> = Vec::new();
 
-        row_path.push(Tile::new(Coordinate { i:0, j:0 }, TileFlags::Y1));
-        row_path.push(Tile::new(Coordinate { i:3, j:0 }, TileFlags::Y1));
+        row_path.push(Tile::new(Coordinate { i:0, j:0 }, TileFlags::Y2));
+        row_path.push(Tile::new(Coordinate { i:3, j:0 }, TileFlags::Y2));
 
         row_wall.push(Tile::new(Coordinate { i:0, j:0 }, TileFlags::W1));
         row_wall.push(Tile::new(Coordinate { i:3, j:0 }, TileFlags::W1));
