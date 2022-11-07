@@ -74,14 +74,14 @@ pub struct Coordinate {
 }
 
 pub struct SegmentOffset {
-    pub offset: u64,
+    pub offset: usize,
 }
 
 #[derive(Clone, Copy)]
 pub struct Segment {
     pub centre: Point,
     pub radius: f64,
-    pub segment: u64, // Can be much smaller, but now this structure is aligned
+    pub segment: usize, 
 }
 
 impl Add<SegmentOffset> for Segment {

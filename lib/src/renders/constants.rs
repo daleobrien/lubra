@@ -397,6 +397,8 @@ impl From<[u32; 3]> for TileFlags {
     }
 }
 
+pub const SMALL_ANGLE: f64 = 0.2709185204562202f64;
+
 pub const U: f64 = 120.0;
 pub const Q1: f64 = 30.0;
 pub const Q3: f64 = 90.0;
@@ -406,7 +408,7 @@ pub const Z: f64 = 0.0;
 pub const W: f64 = 20.0;
 
 // U * f64::sqrt(3.0) / 2.0;
-pub const H: f64 = 103.92304845413263761;
+pub const H: f64 = 103.92304845413263761f64;
 
 // U * f64::sqrt(3.0) / 6.0;
 // pub const D: f64 = 34.641016151377545871;

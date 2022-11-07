@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::renders::primatives::{Line, Segment};
 
 pub struct Path {
@@ -8,6 +6,26 @@ pub struct Path {
     path: String,
     opacity: f64,
 }
+
+const PI_6:f64 = 2.0 * std::f64::consts::FRAC_PI_6;
+
+const SMALL_ANGLES_FROM_SEGMENT:[[f64; 2]; 7] = [
+   [0f64 ,0f64],
+   [0.0 * PI_6, 1.0 * PI_6],
+   [1.0 * PI_6, 2.0 * PI_6],
+   [2.0 * PI_6, 3.0 * PI_6],
+   [3.0 * PI_6, 4.0 * PI_6],
+   [4.0 * PI_6, 5.0 * PI_6],
+   [5.0 * PI_6, 6.0 * PI_6]];
+
+ const LARGE_ANGLES_FROM_SEGMENT:[[f64; 2]; 7] = [
+    [0f64 ,0f64],
+    [0.0 * PI_6, 3.0 * PI_6],
+    [1.0 * PI_6, 4.0 * PI_6],
+    [2.0 * PI_6, 5.0 * PI_6],
+    [3.0 * PI_6, 6.0 * PI_6],
+    [4.0 * PI_6, 7.0 * PI_6],
+    [5.0 * PI_6, 8.0 * PI_6]];
 
 impl Path {
     pub fn new(stroke: String, stroke_width: f64, opacity: f64) -> Path {
@@ -52,23 +70,10 @@ impl Path {
         let r = arc.radius;
         let segment = arc.segment;
 
-        let pi6 = 2.0 * std::f64::consts::FRAC_PI_6;
-        let angles_from_segment: HashMap<u64, (f64, f64)> = HashMap::from([
-            (1, (0.0 * pi6, 1.0 * pi6)),
-            (2, (1.0 * pi6, 2.0 * pi6)),
-            (3, (2.0 * pi6, 3.0 * pi6)),
-            (4, (3.0 * pi6, 4.0 * pi6)),
-            (5, (4.0 * pi6, 5.0 * pi6)),
-            (6, (5.0 * pi6, 6.0 * pi6)),
-        ]);
+        let [start, end] = SMALL_ANGLES_FROM_SEGMENT[segment % 7];
 
-        // assert!(segment <= 6 && segment > 0);
-
-        let (start, end) = angles_from_segment
-            .get(&(segment % 7))
-            .unwrap_or(&(0.0, 0.0));
-        let (a, b) = self.polar(x, y, r, *start);
-        let (c, d) = self.polar(x, y, r, *end);
+        let (a, b) = self.polar(x, y, r, start);
+        let (c, d) = self.polar(x, y, r, end);
         self.path.push_str(&format!(
             "M {a} {b} A {r} {r} 0 0 {ccw} {c} {d} ",
             a = a,
@@ -87,20 +92,11 @@ impl Path {
         let r = arc.radius;
         let segment = arc.segment;
 
-        let pi6 = 2.0 * std::f64::consts::FRAC_PI_6;
-        let angles_from_segment: HashMap<u64, (f64, f64)> = HashMap::from([
-            (1, (0.0 * pi6, 3.0 * pi6)),
-            (2, (1.0 * pi6, 4.0 * pi6)),
-            (3, (2.0 * pi6, 5.0 * pi6)),
-            (4, (3.0 * pi6, 6.0 * pi6)),
-            (5, (4.0 * pi6, 7.0 * pi6)),
-            (6, (5.0 * pi6, 8.0 * pi6)),
-        ]);
-
         assert!(segment <= 6 && segment > 0);
-        let (start, end) = angles_from_segment.get(&segment).unwrap_or(&(0.0, 0.0));
-        let (a, b) = self.polar(x, y, r, *start);
-        let (c, d) = self.polar(x, y, r, *end);
+
+        let [start, end] = LARGE_ANGLES_FROM_SEGMENT[&segment % 7];
+        let (a, b) = self.polar(x, y, r, start);
+        let (c, d) = self.polar(x, y, r, end);
         self.path.push_str(&format!(
             "M {a} {b} A {r} {r} 0 0 {ccw} {c} {d} ",
             a = a,

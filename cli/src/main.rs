@@ -1,4 +1,4 @@
-use lib::{algorithm::walk::walk, renders::render_svg::RenderSvg};
+use lib::{renders::render_svg::RenderSvg};
 
 fn main() {
     let mut g = RenderSvg::new();

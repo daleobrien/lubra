@@ -312,7 +312,7 @@ impl Tile {
         // Title can be rotated
         let mask = rotate(coordinate, raw_mask) ;
 
-        if mask.contains(TileFlags::A1) {
+        if mask.contains(TileFlags::A1) && !mask.contains(TileFlags::C1) {
             let arc = if flipped { A1_V } else { A1_A } + origin;
             arcs.push(arc + Radius { r: -W });
             arcs.push(arc + Radius { r: W });
@@ -478,6 +478,11 @@ impl Tile {
         // TODO: Add in some other variations too
         // TODO: Use the upper 2 bits to specify the variation!
         if mask.contains(TileFlags::C1) {
+            
+            let arc = if flipped { A1_V } else { A1_A } + origin;
+            arcs.push(arc + Radius { r: -W });
+            arcs.push(arc + Radius { r: W });
+
             if flipped {
                 push4(&mut lines, origin, L007, L008, L017, L018);
                 push2(&mut faint, origin, L021, L022);
