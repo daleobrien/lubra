@@ -1,4 +1,5 @@
 use crate::renders::primatives::{Line, Segment};
+use crate::renders::constants::{SMALL_ANGLE};
 
 pub struct Path {
     stroke: String,
@@ -9,14 +10,30 @@ pub struct Path {
 
 const PI_6:f64 = 2.0 * std::f64::consts::FRAC_PI_6;
 
-const SMALL_ANGLES_FROM_SEGMENT:[[f64; 2]; 7] = [
+const SMALL_ANGLES_FROM_SEGMENT:[[f64; 2]; 19] = [
    [0f64 ,0f64],
-   [0.0 * PI_6, 1.0 * PI_6],
-   [1.0 * PI_6, 2.0 * PI_6],
-   [2.0 * PI_6, 3.0 * PI_6],
-   [3.0 * PI_6, 4.0 * PI_6],
-   [4.0 * PI_6, 5.0 * PI_6],
-   [5.0 * PI_6, 6.0 * PI_6]];
+   [0.0 * PI_6, 1.0 * PI_6], //  1
+   [1.0 * PI_6, 2.0 * PI_6], //  2
+   [2.0 * PI_6, 3.0 * PI_6], //  3
+   [3.0 * PI_6, 4.0 * PI_6], //  4
+   [4.0 * PI_6, 5.0 * PI_6], //  5
+   [5.0 * PI_6, 6.0 * PI_6], //  6
+
+   [0.0 * PI_6, 1.0 * PI_6], //  7 
+   [1.0 * PI_6, 2.0 * PI_6], //
+   [2.0 * PI_6, 3.0 * PI_6], //
+   [3.0 * PI_6, 4.0 * PI_6], //
+   [4.0 * PI_6, 5.0 * PI_6], //
+   [5.0 * PI_6, 6.0 * PI_6], //
+  
+   [0.0 * PI_6, 1.0 * PI_6], // 13 
+   [1.0 * PI_6, 2.0 * PI_6], //
+   [2.0 * PI_6, 3.0 * PI_6], //
+   [3.0 * PI_6, 4.0 * PI_6], //
+   [4.0 * PI_6, 5.0 * PI_6], //
+   [5.0 * PI_6, 6.0 * PI_6], // 19
+
+   ];
 
  const LARGE_ANGLES_FROM_SEGMENT:[[f64; 2]; 7] = [
     [0f64 ,0f64],
@@ -70,19 +87,60 @@ impl Path {
         let r = arc.radius;
         let segment = arc.segment;
 
-        let [start, end] = SMALL_ANGLES_FROM_SEGMENT[segment % 7];
+        let [start, end] = SMALL_ANGLES_FROM_SEGMENT[segment % 19];
 
-        let (a, b) = self.polar(x, y, r, start);
-        let (c, d) = self.polar(x, y, r, end);
-        self.path.push_str(&format!(
-            "M {a} {b} A {r} {r} 0 0 {ccw} {c} {d} ",
-            a = a,
-            b = b,
-            c = c,
-            d = d,
-            r = r,
-            ccw = ccw,
-        ));
+        if segment > 12 {
+            // indicates two smaller arcs
+            let (a, b) = self.polar(x, y, r, start);
+            let (c, d) = self.polar(x, y, r, start + SMALL_ANGLE);
+            self.path.push_str(&format!(
+                "M {a} {b} A {r} {r} 0 0 {ccw} {c} {d} ",
+                a = a,
+                b = b,
+                c = c,
+                d = d,
+                r = r,
+                ccw = ccw,
+            ));
+
+            let (a, b) = self.polar(x, y, r, end - SMALL_ANGLE);
+            let (c, d) = self.polar(x, y, r, end);
+            self.path.push_str(&format!(
+                "M {a} {b} A {r} {r} 0 0 {ccw} {c} {d} ",
+                a = a,
+                b = b,
+                c = c,
+                d = d,
+                r = r,
+                ccw = ccw,
+            ));
+
+        } else if  segment > 6 {
+            // indicates a smaller arc centered with what would have been a full size 1/6th arc
+            let (a, b) = self.polar(x, y, r, start + SMALL_ANGLE);
+            let (c, d) = self.polar(x, y, r, end - SMALL_ANGLE);
+            self.path.push_str(&format!(
+                "M {a} {b} A {r} {r} 0 0 {ccw} {c} {d} ",
+                a = a,
+                b = b,
+                c = c,
+                d = d,
+                r = r,
+                ccw = ccw,
+            ));
+        } else {
+            let (a, b) = self.polar(x, y, r, start);
+            let (c, d) = self.polar(x, y, r, end);
+            self.path.push_str(&format!(
+                "M {a} {b} A {r} {r} 0 0 {ccw} {c} {d} ",
+                a = a,
+                b = b,
+                c = c,
+                d = d,
+                r = r,
+                ccw = ccw,
+            ));
+        }
     }
 
     pub fn semi(&mut self, arc: &Segment) {

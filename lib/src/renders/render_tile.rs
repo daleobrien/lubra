@@ -318,13 +318,13 @@ impl Tile {
             arcs.push(arc + Radius { r: W });
         }
 
-        if mask.contains(TileFlags::A2) {
+        if mask.contains(TileFlags::A2) && !mask.contains(TileFlags::C2){
             let arc = if flipped { A2_V } else { A2_A } + origin;
             arcs.push(arc + Radius { r: -W });
             arcs.push(arc + Radius { r: W });
         }
 
-        if mask.contains(TileFlags::A3) {
+        if mask.contains(TileFlags::A3) && !mask.contains(TileFlags::C3) {
             let arc = if flipped { A3_V } else { A3_A } + origin;
             arcs.push(arc + Radius { r: -W });
             arcs.push(arc + Radius { r: W });
@@ -474,40 +474,77 @@ impl Tile {
             }
         }
 
-        // TODO: For these and others, randomally change which line goes on top
-        // TODO: Add in some other variations too
-        // TODO: Use the upper 2 bits to specify the variation!
         if mask.contains(TileFlags::C1) {
             
             let arc = if flipped { A1_V } else { A1_A } + origin;
-            arcs.push(arc + Radius { r: -W });
-            arcs.push(arc + Radius { r: W });
 
-            if flipped {
-                push4(&mut lines, origin, L007, L008, L017, L018);
-                push2(&mut faint, origin, L021, L022);
+             if rng.gen_range(0..2) == 0 {
+                // Make the A1 go under the L1
+                arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
+
+                farcs.push(arc + Radius { r: -W });
+                farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
+
+                paint_l1(&mut lines, origin);
             } else {
-                push4(&mut lines, origin, L005, L006, L042, L041);
-                push2(&mut faint, origin, L045, L046);
+                // Make the A1 go over the L1
+                arcs.push(arc + Radius { r: -W });
+                arcs.push(arc + Radius { r: W });
+    
+                if flipped {
+                    push4(&mut lines, origin, L007, L008, L017, L018);
+                    push2(&mut faint, origin, L021, L022);
+                } else {
+                    push4(&mut lines, origin, L005, L006, L042, L041);
+                    push2(&mut faint, origin, L045, L046);
+                } 
             }
+          
         }
         if mask.contains(TileFlags::C2) {
-            if flipped {
-                push4(&mut lines, origin, L001, L002, L015, L016);
-                push2(&mut faint, origin, L019, L020);
+
+            let arc = if flipped { A2_V } else { A2_A } + origin;
+        
+            if rng.gen_range(0..2) == 0 {
+                arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
+                farcs.push(arc + Radius { r: -W });
+                farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
+                paint_l2(&mut lines, origin, flipped);
+
             } else {
-                push4(&mut lines, origin, L025, L026, L040, L039);
-                push2(&mut faint, origin, L043, L044);
+                arcs.push(arc + Radius { r: -W });
+                arcs.push(arc + Radius { r: W });
+    
+                if flipped {
+                    push4(&mut lines, origin, L001, L002, L015, L016);
+                    push2(&mut faint, origin, L019, L020);
+                } else {
+                    push4(&mut lines, origin, L025, L026, L040, L039);
+                    push2(&mut faint, origin, L043, L044);
+                }
             }
+       
         }
         if mask.contains(TileFlags::C3) {
-            if flipped {
-                push4(&mut lines, origin, L011, L012, L013, L014);
-                push2(&mut faint, origin, L023, L024);
+
+            let arc = if flipped { A3_V } else { A3_A } + origin;
+            if rng.gen_range(0..2) == 0 {
+                arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
+                farcs.push(arc + Radius { r: -W });
+                farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
+                paint_l3(&mut lines, origin, flipped); 
             } else {
-                push4(&mut lines, origin, L035, L036, L037, L038);
-                push2(&mut faint, origin, L047, L048);
+                arcs.push(arc + Radius { r: -W });
+                arcs.push(arc + Radius { r: W });
+                if flipped {
+                    push4(&mut lines, origin, L011, L012, L013, L014);
+                    push2(&mut faint, origin, L023, L024);
+                } else {
+                    push4(&mut lines, origin, L035, L036, L037, L038);
+                    push2(&mut faint, origin, L047, L048);
+                }
             }
+    
         }
 
         if mask.contains(TileFlags::X1) {

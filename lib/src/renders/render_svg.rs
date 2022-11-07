@@ -40,7 +40,7 @@ impl RenderSvg {
 
         for i in [0,3,6,9,12,15]{
             for j in [0,2,4,6,8,10]{
-            row_path.push(Tile::new(Coordinate { i:i, j:j }, TileFlags::C1));
+            row_path.push(Tile::new(Coordinate { i:i, j:j }, TileFlags::C3));
             row_wall.push(Tile::new(Coordinate { i:i, j:j }, TileFlags::W1));
             }
         }

@@ -5,6 +5,10 @@ fn main() {
     g.display_one_tile();
     let result_g = g.render("test-one-tile.svg".to_string());
 
+    // println!(
+    //     "Finished {:?}",
+    //     result_g.unwrap()
+    // );
     let mut h = RenderSvg::new();
     h.display_all_tiles();
     let result_h = h.render("test-all.svg".to_string());
