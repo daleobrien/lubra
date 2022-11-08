@@ -1,14 +1,11 @@
 use crate::renders::constants::{
-    L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018, L019, L020, L021, L022, 
-    L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042, L043, L044, L045, L046, L047, L048, 
-    L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L061, L062, L063, L064, L065, L066, L067, L068,
-    L069, L070, L071, L072, L073, 
-    L074, L075, L076, L077,L078,L079, L080, L081, L082, L083, L084, L085, L086, L087, L088, L089, 
-    L091, L092, L093, L094, L095, L096,
-    L097, L098, L099, 
-    L100, L101, L102, L103, L104, L105, L106, L107,
-    L121,
-    M, TileFlags, U, W, 
+    TileFlags, L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018,
+    L019, L020, L021, L022, L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042,
+    L043, L044, L045, L046, L047, L048, L049, L050, L051, L052, L053, L054, L056, L057, L059, L060,
+    L061, L062, L063, L064, L065, L066, L067, L068, L069, L070, L071, L072, L073, L074, L075, L076,
+    L077, L078, L079, L080, L081, L082, L083, L084, L085, L086, L087, L088, L089, L091, L092, L093,
+    L094, L095, L096, L097, L098, L099, L100, L101, L102, L103, L104, L105, L106, L107, L121, M, U,
+    W,
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
 use crate::renders::shapes::{
@@ -43,7 +40,7 @@ pub struct Tile {
     fsemi: Vec<Segment>,
 }
 
-pub fn rotate(coordinate: Coordinate, raw_mask: TileFlags)-> TileFlags{
+pub fn rotate(coordinate: Coordinate, raw_mask: TileFlags) -> TileFlags {
     // Rotate tile, depending on position so it renders
     let mut mask = TileFlags::Z1;
     if raw_mask.contains(TileFlags::W1) {
@@ -174,24 +171,24 @@ pub fn rotate(coordinate: Coordinate, raw_mask: TileFlags)-> TileFlags{
             mask = raw_mask;
         }
     }
-    return mask
+    return mask;
 }
 
 #[inline]
-fn push2(lines: &mut Vec<Line>, origin:Point, line1: Line, line2: Line){
+fn push2(lines: &mut Vec<Line>, origin: Point, line1: Line, line2: Line) {
     lines.push(line1 + origin);
     lines.push(line2 + origin);
 }
 
 #[inline]
-fn push3(lines: &mut Vec<Line>, origin:Point, line1: Line, line2: Line, line3: Line){
+fn push3(lines: &mut Vec<Line>, origin: Point, line1: Line, line2: Line, line3: Line) {
     lines.push(line1 + origin);
     lines.push(line2 + origin);
     lines.push(line3 + origin);
 }
 
 #[inline]
-fn push4(lines: &mut Vec<Line>, origin:Point, line1: Line, line2: Line, line3: Line, line4: Line){
+fn push4(lines: &mut Vec<Line>, origin: Point, line1: Line, line2: Line, line3: Line, line4: Line) {
     lines.push(line1 + origin);
     lines.push(line2 + origin);
     lines.push(line3 + origin);
@@ -199,12 +196,12 @@ fn push4(lines: &mut Vec<Line>, origin:Point, line1: Line, line2: Line, line3: L
 }
 
 #[inline]
-fn paint_l1( lines: &mut Vec<Line>, origin:Point)  {
+fn paint_l1(lines: &mut Vec<Line>, origin: Point) {
     push2(lines, origin, L049, L052);
- }
+}
 
- #[inline]
-fn paint_l2(lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
+#[inline]
+fn paint_l2(lines: &mut Vec<Line>, origin: Point, flipped: bool) {
     if flipped {
         push2(lines, origin, L051, L054);
     } else {
@@ -213,7 +210,7 @@ fn paint_l2(lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
 }
 
 #[inline]
-fn paint_l3( lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
+fn paint_l3(lines: &mut Vec<Line>, origin: Point, flipped: bool) {
     if flipped {
         push2(lines, origin, L050, L053);
     } else {
@@ -222,79 +219,78 @@ fn paint_l3( lines: &mut Vec<Line>, origin:Point, flipped: bool)  {
 }
 
 #[inline]
-fn paint_y1(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin:Point, flipped: bool)  {
+fn paint_y1(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin: Point, flipped: bool) {
     let mut rng = rand::thread_rng();
-    if rng.gen_range(0..2)==0  {
+    if rng.gen_range(0..2) == 0 {
         paint_l2(lines, origin, flipped);
         if flipped {
-            push3(lines, origin, L011, L065,L073);
-            push2(faint, origin, L091, L104);                    
+            push3(lines, origin, L011, L065, L073);
+            push2(faint, origin, L091, L104);
         } else {
-            push3(lines, origin, L035, L071,L079);
-            push2(faint, origin, L088, L101);                    
+            push3(lines, origin, L035, L071, L079);
+            push2(faint, origin, L088, L101);
         }
     } else {
         paint_l3(lines, origin, flipped);
         if flipped {
-            push3(lines, origin, L002, L066,L074);
-            push2(faint, origin, L092, L103);                    
+            push3(lines, origin, L002, L066, L074);
+            push2(faint, origin, L092, L103);
         } else {
-            push3(lines, origin, L026, L072,L080);
-            push2(faint, origin, L087, L102);                    
+            push3(lines, origin, L026, L072, L080);
+            push2(faint, origin, L087, L102);
         }
     }
 }
 
 #[inline]
-fn paint_y2(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin:Point, flipped: bool)  {
+fn paint_y2(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin: Point, flipped: bool) {
     let mut rng = rand::thread_rng();
-    if rng.gen_range(0..2)==0 {
+    if rng.gen_range(0..2) == 0 {
         paint_l3(lines, origin, flipped);
         if flipped {
-            push3(lines, origin, L007, L061,L078);
+            push3(lines, origin, L007, L061, L078);
             push2(faint, origin, L095, L105);
         } else {
-            push3(lines, origin, L005, L068,L084);
+            push3(lines, origin, L005, L068, L084);
             push2(faint, origin, L078, L097);
         }
     } else {
         paint_l1(lines, origin);
         if flipped {
-            push3(lines, origin, L012, L062,L077);
+            push3(lines, origin, L012, L062, L077);
             push2(faint, origin, L096, L106);
         } else {
-            push3(lines, origin, L036, L067,L083);
+            push3(lines, origin, L036, L067, L083);
             push2(faint, origin, L089, L098);
         }
     }
 }
 
 #[inline]
-fn paint_y3(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin:Point, flipped: bool)  {
+fn paint_y3(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin: Point, flipped: bool) {
     let mut rng = rand::thread_rng();
-    if rng.gen_range(0..2)==0 {
+    if rng.gen_range(0..2) == 0 {
         paint_l1(lines, origin);
         if flipped {
             push3(lines, origin, L001, L064, L075);
-            push2(faint, origin, L094, L107 );
+            push2(faint, origin, L094, L107);
         } else {
-            push3(lines, origin, L025, L070,L082);
+            push3(lines, origin, L025, L070, L082);
             push2(faint, origin, L085, L100);
         }
-    }else{
+    } else {
         paint_l2(lines, origin, flipped);
         if flipped {
-            push3(lines, origin, L008, L063,L076);
+            push3(lines, origin, L008, L063, L076);
             push2(faint, origin, L093, L121);
         } else {
-            push3(lines, origin, L006, L069,L081);
+            push3(lines, origin, L006, L069, L081);
             push2(faint, origin, L086, L099);
         }
     }
 }
 
 impl Tile {
-
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
     pub fn new(coordinate: Coordinate, raw_mask: TileFlags) -> Self {
@@ -310,7 +306,7 @@ impl Tile {
         let mut rng = rand::thread_rng();
 
         // Title can be rotated
-        let mask = rotate(coordinate, raw_mask) ;
+        let mask = rotate(coordinate, raw_mask);
 
         if mask.contains(TileFlags::A1) && !mask.contains(TileFlags::C1) {
             let arc = if flipped { A1_V } else { A1_A } + origin;
@@ -318,7 +314,7 @@ impl Tile {
             arcs.push(arc + Radius { r: W });
         }
 
-        if mask.contains(TileFlags::A2) && !mask.contains(TileFlags::C2){
+        if mask.contains(TileFlags::A2) && !mask.contains(TileFlags::C2) {
             let arc = if flipped { A2_V } else { A2_A } + origin;
             arcs.push(arc + Radius { r: -W });
             arcs.push(arc + Radius { r: W });
@@ -450,35 +446,42 @@ impl Tile {
         }
 
         if !mask.contains(TileFlags::X2) {
-
-            if mask.contains(TileFlags::L1) && !mask.contains(TileFlags::Y2) && !mask.contains(TileFlags::Y3) {
+            if mask.contains(TileFlags::L1)
+                && !mask.contains(TileFlags::Y2)
+                && !mask.contains(TileFlags::Y3)
+            {
                 paint_l1(&mut lines, origin);
             }
-            if mask.contains(TileFlags::L2) && !mask.contains(TileFlags::Y1) && !mask.contains(TileFlags::Y3){
+            if mask.contains(TileFlags::L2)
+                && !mask.contains(TileFlags::Y1)
+                && !mask.contains(TileFlags::Y3)
+            {
                 paint_l2(&mut lines, origin, flipped);
             }
-            if mask.contains(TileFlags::L3) && !mask.contains(TileFlags::Y1) && !mask.contains(TileFlags::Y2) {
+            if mask.contains(TileFlags::L3)
+                && !mask.contains(TileFlags::Y1)
+                && !mask.contains(TileFlags::Y2)
+            {
                 paint_l3(&mut lines, origin, flipped);
             }
 
             if mask.contains(TileFlags::Y1) {
                 paint_y1(&mut lines, &mut faint, origin, flipped);
             }
-    
+
             if mask.contains(TileFlags::Y2) {
                 paint_y2(&mut lines, &mut faint, origin, flipped);
             }
-    
+
             if mask.contains(TileFlags::Y3) {
                 paint_y3(&mut lines, &mut faint, origin, flipped);
             }
         }
 
         if mask.contains(TileFlags::C1) {
-            
             let arc = if flipped { A1_V } else { A1_A } + origin;
 
-             if rng.gen_range(0..2) == 0 {
+            if rng.gen_range(0..2) == 0 {
                 // Make the A1 go under the L1
                 arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
 
@@ -490,31 +493,28 @@ impl Tile {
                 // Make the A1 go over the L1
                 arcs.push(arc + Radius { r: -W });
                 arcs.push(arc + Radius { r: W });
-    
+
                 if flipped {
                     push4(&mut lines, origin, L007, L008, L017, L018);
                     push2(&mut faint, origin, L021, L022);
                 } else {
                     push4(&mut lines, origin, L005, L006, L042, L041);
                     push2(&mut faint, origin, L045, L046);
-                } 
+                }
             }
-          
         }
         if mask.contains(TileFlags::C2) {
-
             let arc = if flipped { A2_V } else { A2_A } + origin;
-        
+
             if rng.gen_range(0..2) == 0 {
                 arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
                 farcs.push(arc + Radius { r: -W });
                 farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
                 paint_l2(&mut lines, origin, flipped);
-
             } else {
                 arcs.push(arc + Radius { r: -W });
                 arcs.push(arc + Radius { r: W });
-    
+
                 if flipped {
                     push4(&mut lines, origin, L001, L002, L015, L016);
                     push2(&mut faint, origin, L019, L020);
@@ -523,16 +523,14 @@ impl Tile {
                     push2(&mut faint, origin, L043, L044);
                 }
             }
-       
         }
         if mask.contains(TileFlags::C3) {
-
             let arc = if flipped { A3_V } else { A3_A } + origin;
             if rng.gen_range(0..2) == 0 {
                 arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
                 farcs.push(arc + Radius { r: -W });
                 farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
-                paint_l3(&mut lines, origin, flipped); 
+                paint_l3(&mut lines, origin, flipped);
             } else {
                 arcs.push(arc + Radius { r: -W });
                 arcs.push(arc + Radius { r: W });
@@ -544,7 +542,6 @@ impl Tile {
                     push2(&mut faint, origin, L047, L048);
                 }
             }
-    
         }
 
         if mask.contains(TileFlags::X1) {
@@ -553,8 +550,8 @@ impl Tile {
             arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
         }
         if mask.contains(TileFlags::X2) {
-       
-            match rng.gen_range(0..3) { // 0,1,2
+            match rng.gen_range(0..3) {
+                // 0,1,2
                 0 => {
                     paint_y1(&mut lines, &mut faint, origin, flipped);
                     if flipped {
@@ -576,11 +573,10 @@ impl Tile {
                     if flipped {
                         push2(&mut lines, origin, L001, L002);
                     } else {
-                       push2(&mut lines, origin, L025, L026);
+                        push2(&mut lines, origin, L025, L026);
                     }
                 }
             }
-          
         }
 
         if mask.contains(TileFlags::W1) {

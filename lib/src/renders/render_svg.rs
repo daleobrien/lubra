@@ -6,8 +6,8 @@ use array2d::Array2D;
 use crate::renders::constants::{get_random_tile, TileFlags, H, M};
 use crate::renders::primatives::Coordinate;
 use crate::renders::render_tile::Tile;
-use crate::renders::tile_subsets::find_tiles;
 use crate::renders::svg_path::Path;
+use crate::renders::tile_subsets::find_tiles;
 
 pub struct RenderSvg {
     pub style: Option<String>,
@@ -34,14 +34,13 @@ impl RenderSvg {
     }
 
     pub fn display_one_tile(&mut self) {
-
         let mut row_path: Vec<Tile> = Vec::new();
         let mut row_wall: Vec<Tile> = Vec::new();
 
-        for i in [0,3,6,9,12,15]{
-            for j in [0,2,4,6,8,10]{
-            row_path.push(Tile::new(Coordinate { i:i, j:j }, TileFlags::C3));
-            row_wall.push(Tile::new(Coordinate { i:i, j:j }, TileFlags::W1));
+        for i in [0, 3, 6, 9, 12, 15] {
+            for j in [0, 2, 4, 6, 8, 10] {
+                row_path.push(Tile::new(Coordinate { i: i, j: j }, TileFlags::C3));
+                row_wall.push(Tile::new(Coordinate { i: i, j: j }, TileFlags::W1));
             }
         }
 
@@ -53,7 +52,6 @@ impl RenderSvg {
     }
 
     pub fn display_all_tiles(&mut self) {
-
         let possible_tiles = find_tiles(0b101010101010);
 
         let mut row_path: Vec<Tile> = Vec::new();
@@ -66,13 +64,10 @@ impl RenderSvg {
         for tile in possible_tiles.iter() {
             //println!("{j} {i} {:?}", TileFlags::from_bits_truncate(*tile));
 
-            let coord1: Coordinate = Coordinate {
-                i: i * 2,
-                j: j * 2,
-            };
+            let coord1: Coordinate = Coordinate { i: i * 2, j: j * 2 };
             let coord2: Coordinate = Coordinate {
                 i: i * 2 + 3,
-                j: j  * 2,
+                j: j * 2,
             };
 
             let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
@@ -85,14 +80,14 @@ impl RenderSvg {
             row_wall.push(wall1);
             row_path.push(path2);
             row_wall.push(wall2);
-            
+
             let coord1: Coordinate = Coordinate {
-                i: i * 2+1,
-                j: j * 2+1,
+                i: i * 2 + 1,
+                j: j * 2 + 1,
             };
             let coord2: Coordinate = Coordinate {
-                i: i * 2 + 3+1,
-                j: j  * 2+1,
+                i: i * 2 + 3 + 1,
+                j: j * 2 + 1,
             };
 
             let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
@@ -116,8 +111,8 @@ impl RenderSvg {
     }
 
     pub fn display_random_grid(&mut self) {
-        let c: usize = 54; // 9;
-        let r: usize = 36; // 6;
+        let c: usize = 9; // 9, 54;
+        let r: usize = 6; // 6, 36;
 
         // let graphs: Vec<(u32, u32, u8)> = vec![];
 

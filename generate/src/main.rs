@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 use std::fs;
 use std::time::Instant;
 
@@ -136,7 +136,7 @@ impl Combinations {
 
                             let mut factor = 1;
 
-                            if curve_mask.count_ones() != 0{
+                            if curve_mask.count_ones() != 0 {
                                 factor *= curve_mask.count_ones() * 5;
                             }
 
@@ -146,12 +146,11 @@ impl Combinations {
 
                             // TODO: Push some items more that once so they have better odds of being selected
                             println!("TILE {:?} {:?}", factor, value);
-                            for _ in 0..factor{
+                            for _ in 0..factor {
                                 self.tiles_by_index
                                     .entry(key)
                                     .or_insert_with(Vec::new)
                                     .push(value);
-
                             }
                         }
                     }
