@@ -1,5 +1,5 @@
+use crate::renders::constants::SMALL_ANGLE;
 use crate::renders::primatives::{Line, Segment};
-use crate::renders::constants::{SMALL_ANGLE};
 
 pub struct Path {
     stroke: String,
@@ -8,49 +8,47 @@ pub struct Path {
     opacity: f64,
 }
 
-const PI_6:f64 = 2.0 * std::f64::consts::FRAC_PI_6;
+const PI_6: f64 = 2.0 * std::f64::consts::FRAC_PI_6;
 
-const SMALL_ANGLES_FROM_SEGMENT:[[f64; 2]; 19] = [
-   [0f64 ,0f64],
-   [0.0 * PI_6, 1.0 * PI_6], //  1
-   [1.0 * PI_6, 2.0 * PI_6], //  2
-   [2.0 * PI_6, 3.0 * PI_6], //  3
-   [3.0 * PI_6, 4.0 * PI_6], //  4
-   [4.0 * PI_6, 5.0 * PI_6], //  5
-   [5.0 * PI_6, 6.0 * PI_6], //  6
+const SMALL_ANGLES_FROM_SEGMENT: [[f64; 2]; 19] = [
+    [0f64, 0f64],
+    [0.0 * PI_6, 1.0 * PI_6], //  1
+    [1.0 * PI_6, 2.0 * PI_6], //  2
+    [2.0 * PI_6, 3.0 * PI_6], //  3
+    [3.0 * PI_6, 4.0 * PI_6], //  4
+    [4.0 * PI_6, 5.0 * PI_6], //  5
+    [5.0 * PI_6, 6.0 * PI_6], //  6
+    [0.0 * PI_6, 1.0 * PI_6], //  7
+    [1.0 * PI_6, 2.0 * PI_6], //
+    [2.0 * PI_6, 3.0 * PI_6], //
+    [3.0 * PI_6, 4.0 * PI_6], //
+    [4.0 * PI_6, 5.0 * PI_6], //
+    [5.0 * PI_6, 6.0 * PI_6], //
+    [0.0 * PI_6, 1.0 * PI_6], // 13
+    [1.0 * PI_6, 2.0 * PI_6], //
+    [2.0 * PI_6, 3.0 * PI_6], //
+    [3.0 * PI_6, 4.0 * PI_6], //
+    [4.0 * PI_6, 5.0 * PI_6], //
+    [5.0 * PI_6, 6.0 * PI_6], // 19
+];
 
-   [0.0 * PI_6, 1.0 * PI_6], //  7 
-   [1.0 * PI_6, 2.0 * PI_6], //
-   [2.0 * PI_6, 3.0 * PI_6], //
-   [3.0 * PI_6, 4.0 * PI_6], //
-   [4.0 * PI_6, 5.0 * PI_6], //
-   [5.0 * PI_6, 6.0 * PI_6], //
-  
-   [0.0 * PI_6, 1.0 * PI_6], // 13 
-   [1.0 * PI_6, 2.0 * PI_6], //
-   [2.0 * PI_6, 3.0 * PI_6], //
-   [3.0 * PI_6, 4.0 * PI_6], //
-   [4.0 * PI_6, 5.0 * PI_6], //
-   [5.0 * PI_6, 6.0 * PI_6], // 19
-
-   ];
-
- const LARGE_ANGLES_FROM_SEGMENT:[[f64; 2]; 7] = [
-    [0f64 ,0f64],
+const LARGE_ANGLES_FROM_SEGMENT: [[f64; 2]; 7] = [
+    [0f64, 0f64],
     [0.0 * PI_6, 3.0 * PI_6],
     [1.0 * PI_6, 4.0 * PI_6],
     [2.0 * PI_6, 5.0 * PI_6],
     [3.0 * PI_6, 6.0 * PI_6],
     [4.0 * PI_6, 7.0 * PI_6],
-    [5.0 * PI_6, 8.0 * PI_6]];
+    [5.0 * PI_6, 8.0 * PI_6],
+];
 
 impl Path {
     pub fn new(stroke: String, stroke_width: f64, opacity: f64) -> Path {
         Path {
-            stroke: stroke,
-            stroke_width: stroke_width,
+            stroke,
+            stroke_width,
             path: String::new(),
-            opacity: opacity,
+            opacity,
         }
     }
 
@@ -114,8 +112,7 @@ impl Path {
                 r = r,
                 ccw = ccw,
             ));
-
-        } else if  segment > 6 {
+        } else if segment > 6 {
             // indicates a smaller arc centered with what would have been a full size 1/6th arc
             let (a, b) = self.polar(x, y, r, start + SMALL_ANGLE);
             let (c, d) = self.polar(x, y, r, end - SMALL_ANGLE);

@@ -39,8 +39,8 @@ impl RenderSvg {
 
         for i in [0, 3, 6, 9, 12, 15] {
             for j in [0, 2, 4, 6, 8, 10] {
-                row_path.push(Tile::new(Coordinate { i: i, j: j }, TileFlags::C3));
-                row_wall.push(Tile::new(Coordinate { i: i, j: j }, TileFlags::W1));
+                row_path.push(Tile::new(Coordinate { i, j }, TileFlags::C3));
+                row_wall.push(Tile::new(Coordinate { i, j }, TileFlags::W1));
             }
         }
 
@@ -111,10 +111,10 @@ impl RenderSvg {
     }
 
     pub fn display_random_grid(&mut self) {
-        let c: usize = 9; // 9, 54;
-        let r: usize = 6; // 6, 36;
-
-        // let graphs: Vec<(u32, u32, u8)> = vec![];
+        // let c: usize = 9; // 9, 54;
+        // let r: usize = 6; // 6, 36;
+        let c: usize = 54; // 9, 54;
+        let r: usize = 36; // 6, 36;
 
         let mut tiles = Array2D::filled_with(TileFlags::Z2, r, c);
         for j in 0..r {
@@ -129,16 +129,13 @@ impl RenderSvg {
                 tiles[(j, i)] = tile;
                 let path: Tile = Tile::new(coord, tile);
                 row_path.push(path);
-                //if j == 0 {
-                //    println!("({i},{j}) {:?}", tile);
-                //}
 
                 let wall: Tile = Tile::new(coord, TileFlags::W1);
 
                 row_wall.push(wall);
             }
             self.tiles.push(row_path);
-            // self.walls.push(row_wall);
+            self.walls.push(row_wall);
         }
 
         self.width = (c + 1) as f64 * M;
