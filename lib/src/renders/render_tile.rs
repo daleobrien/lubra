@@ -40,12 +40,12 @@ pub struct Tile {
     fsemi: Vec<Segment>,
 }
 
-pub fn rotate(coordinate: Coordinate, raw_mask: TileFlags) -> TileFlags {
+pub fn rotate(coordinate: Coordinate, tile: TileFlags) -> TileFlags {
     // Rotate tile, depending on position so it renders
     return match coordinate.i % 3 {
-        1 => raw_mask.rotate_cw(),
-        2 => raw_mask.rotate_ccw(),
-        _ => raw_mask,
+        1 => tile.rotate_cw(),
+        2 => tile.rotate_ccw(),
+        _ => tile,
     };
 }
 

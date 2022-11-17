@@ -80,16 +80,16 @@ bitflags! {
 
 impl TileFlags {
     pub fn rotate_cw(&self) -> TileFlags {
-        let mut mask = Self::Z1;
+        let mut tile = Self::Z1;
 
         if self.contains(Self::W1) {
-            mask |= Self::W1;
+            tile |= Self::W1;
         }
         if self.contains(Self::X1) {
-            mask |= Self::X1;
+            tile |= Self::X1;
         }
         if self.contains(Self::X2) {
-            mask |= Self::X2;
+            tile |= Self::X2;
         }
 
         for (a, b) in [
@@ -113,22 +113,22 @@ impl TileFlags {
             (Self::T3, Self::T1),
         ] {
             if self.contains(a) {
-                mask |= b;
+                tile |= b;
             }
         }
-        return mask;
+        return tile;
     }
     pub fn rotate_ccw(&self) -> TileFlags {
-        let mut mask = Self::Z1;
+        let mut tile = Self::Z1;
 
         if self.contains(Self::W1) {
-            mask |= Self::W1;
+            tile |= Self::W1;
         }
         if self.contains(Self::X1) {
-            mask |= Self::X1;
+            tile |= Self::X1;
         }
         if self.contains(Self::X2) {
-            mask |= Self::X2;
+            tile |= Self::X2;
         }
         for (a, b) in [
             (Self::Y1, Self::Y3),
@@ -151,10 +151,10 @@ impl TileFlags {
             (Self::T3, Self::T2),
         ] {
             if self.contains(a) {
-                mask |= b;
+                tile |= b;
             }
         }
-        return mask;
+        return tile;
     }
 }
 impl Serialize for TileFlags {
