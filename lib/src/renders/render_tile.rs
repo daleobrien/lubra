@@ -40,73 +40,13 @@ pub struct Tile {
     fsemi: Vec<Segment>,
 }
 
-macro_rules! mask{
-    // macth like arm for macro
-       ($a:expr,$b:expr,$c:expr)=>{
-    // macro expand to this code
-           {
-              if $b {
-                $a |= $c; 
-              }
-           }
-       }
-   }
-   
 pub fn rotate(coordinate: Coordinate, raw_mask: TileFlags) -> TileFlags {
     // Rotate tile, depending on position so it renders
-    let mut mask = TileFlags::Z1;
-
-    mask!(mask, raw_mask.contains(TileFlags::W1), TileFlags::W1);
-    mask!(mask, raw_mask.contains(TileFlags::X1), TileFlags::X1);
-    mask!(mask, raw_mask.contains(TileFlags::X2), TileFlags::X2);
- 
-    let rotate_index = coordinate.i % 3;
-    match rotate_index {
-        1 => {
-            mask!(mask, raw_mask.contains(TileFlags::Y1), TileFlags::Y2);
-            mask!(mask, raw_mask.contains(TileFlags::Y2), TileFlags::Y3);
-            mask!(mask, raw_mask.contains(TileFlags::Y3), TileFlags::Y1);
-            mask!(mask, raw_mask.contains(TileFlags::A1), TileFlags::A2);
-            mask!(mask, raw_mask.contains(TileFlags::A2), TileFlags::A3);
-            mask!(mask, raw_mask.contains(TileFlags::A3), TileFlags::A1);
-            mask!(mask, raw_mask.contains(TileFlags::C1), TileFlags::C2);
-            mask!(mask, raw_mask.contains(TileFlags::C2), TileFlags::C3);
-            mask!(mask, raw_mask.contains(TileFlags::C3), TileFlags::C1);
-            mask!(mask, raw_mask.contains(TileFlags::L1), TileFlags::L2);
-            mask!(mask, raw_mask.contains(TileFlags::L2), TileFlags::L3);
-            mask!(mask, raw_mask.contains(TileFlags::L3), TileFlags::L1);
-            mask!(mask, raw_mask.contains(TileFlags::N1), TileFlags::N2);
-            mask!(mask, raw_mask.contains(TileFlags::N2), TileFlags::N3);
-            mask!(mask, raw_mask.contains(TileFlags::N3), TileFlags::N1);
-            mask!(mask, raw_mask.contains(TileFlags::T1), TileFlags::T2);
-            mask!(mask, raw_mask.contains(TileFlags::T2), TileFlags::T3);
-            mask!(mask, raw_mask.contains(TileFlags::T3), TileFlags::T1);
-        }
-        2 => {
-            mask!(mask, raw_mask.contains(TileFlags::Y1), TileFlags::Y3);
-            mask!(mask, raw_mask.contains(TileFlags::Y2), TileFlags::Y1);
-            mask!(mask, raw_mask.contains(TileFlags::Y3), TileFlags::Y2);
-            mask!(mask, raw_mask.contains(TileFlags::A1), TileFlags::A3);
-            mask!(mask, raw_mask.contains(TileFlags::A2), TileFlags::A1);
-            mask!(mask, raw_mask.contains(TileFlags::A3), TileFlags::A2);
-            mask!(mask, raw_mask.contains(TileFlags::C1), TileFlags::C3);
-            mask!(mask, raw_mask.contains(TileFlags::C2), TileFlags::C1);
-            mask!(mask, raw_mask.contains(TileFlags::C3), TileFlags::C2);
-            mask!(mask, raw_mask.contains(TileFlags::L1), TileFlags::L3);
-            mask!(mask, raw_mask.contains(TileFlags::L2), TileFlags::L1);
-            mask!(mask, raw_mask.contains(TileFlags::L3), TileFlags::L2);
-            mask!(mask, raw_mask.contains(TileFlags::N1), TileFlags::N3);
-            mask!(mask, raw_mask.contains(TileFlags::N2), TileFlags::N1);
-            mask!(mask, raw_mask.contains(TileFlags::N3), TileFlags::N2);
-            mask!(mask, raw_mask.contains(TileFlags::T1), TileFlags::T3);
-            mask!(mask, raw_mask.contains(TileFlags::T2), TileFlags::T1);
-            mask!(mask, raw_mask.contains(TileFlags::T3), TileFlags::T2);
-        }
-        _ => {
-            mask = raw_mask;
-        }
-    }
-    return mask;
+    return match coordinate.i % 3 {
+        1 => raw_mask.rotate_cw(),
+        2 => raw_mask.rotate_ccw(),
+        _ => raw_mask,
+    };
 }
 
 #[inline]
