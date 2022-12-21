@@ -1,8 +1,8 @@
+use crate::renders::primatives::{Line, Point};
 use array2d::Array2D;
 use bitflags::bitflags;
 use serde::ser::{Serialize, Serializer};
 
-use crate::renders::primatives::{Line, Point};
 use crate::renders::tile_subsets::random_side;
 
 bitflags! {
@@ -29,6 +29,20 @@ bitflags! {
     8 bitsm but then it's all a lookup and would have to decode/enocde.
 
     We only really have T,N,L & A, and even then we can't have all those at once, ... that's < 12 bits
+
+
+TODO: Would a grid be better now? (adj matrix)
+
+  0 1 0 0 0 0
+  1 0 0 0 0 0
+  0 0 1 0 1 0
+  0 0 0 0 0 0
+  0 0 1 0 0 0
+  0 0 0 0 0 0
+
+-> 36 bits  ( many bits are redant, unless I consider directional mazes, could be interestings)
+
+
     */
 
     // Graph node
@@ -200,10 +214,13 @@ fn calc_vertex(
     is_top: bool,
 ) -> (bool, bool) {
     /*
-                      /\   /\
-    this row -> .    /  \ /  \
-                     ---- ----
-    */
+                         ____ ____ ____
+                             /\   /\
+           this row -> .    /  \ /  \
+                            ---- ----
+
+    The other row dependson there the tile is pointing up or down
+        */
 
     let this_row = gathered_tiles[1];
 
@@ -272,10 +289,10 @@ fn calc_side(
         return (false, true);
     }
     if adjacent.contains(tile) {
-        // Must match, on 1
+        // Must match, on a one
         return (true, false);
     }
-    // Must match, on 0
+    // Must match, on a zero
     (false, false)
 }
 
@@ -333,7 +350,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b000_010;
     }
 
-    // Node ...
+    // Node3
     let (m, d) = calc_vertex(gathered_tiles, TileFlags::G3, (3 + pos3) % 3, pos3 < 3);
     if m {
         matches |= 0b000_100;

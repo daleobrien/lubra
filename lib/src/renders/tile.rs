@@ -31,15 +31,6 @@ pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool
     return (origin, flipped);
 }
 
-pub struct Tile {
-    lines: Vec<Line>,
-    faint: Vec<Line>,
-    arcs: Vec<Segment>,
-    farcs: Vec<Segment>,
-    semi: Vec<Segment>,
-    fsemi: Vec<Segment>,
-}
-
 pub fn rotate(coordinate: Coordinate, tile: TileFlags) -> TileFlags {
     // Rotate tile, depending on position so it renders
     return match coordinate.i % 3 {
@@ -164,21 +155,33 @@ fn paint_y3(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin: Point, flipped
         }
     }
 }
+pub struct Tile {
+    lines: Vec<Line>,
+    faint: Vec<Line>,
+    arcs: Vec<Segment>,
+    farcs: Vec<Segment>,
+    semi: Vec<Segment>,
+    fsemi: Vec<Segment>,
+    nets: [u32; 6],
+}
 
 impl Tile {
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
-    pub fn new(coordinate: Coordinate, raw_mask: TileFlags) -> Self {
+    pub fn new(coordinate: Coordinate, raw_mask: TileFlags, last_free_net: u32) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let mut faint: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
         let mut farcs: Vec<Segment> = Vec::new();
         let mut semi: Vec<Segment> = Vec::new();
         let mut fsemi: Vec<Segment> = Vec::new();
+        let mut nets: [u32; 6] = [0, 0, 0, 0, 0, 0];
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
         let mut rng = rand::thread_rng();
+
+        // TODO: Figure out how to allocated new last_free_net values!
 
         // Title can be rotated
         let mask = rotate(coordinate, raw_mask);
@@ -465,7 +468,12 @@ impl Tile {
             semi,
             fsemi,
             farcs,
+            nets,
         };
+    }
+
+    pub fn max(&self) -> u32 {
+        return self.nets.into_iter().max().unwrap_or_default();
     }
 
     pub fn add_to_path(&self, path: &mut Path, faint_path: &mut Path) {

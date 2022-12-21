@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
@@ -5,14 +6,16 @@ use array2d::Array2D;
 
 use crate::renders::constants::{get_random_tile, TileFlags, H, M};
 use crate::renders::primatives::Coordinate;
-use crate::renders::render_tile::Tile;
 use crate::renders::svg_path::Path;
+use crate::renders::tile::Tile;
 use crate::renders::tile_subsets::find_tiles;
 
 pub struct RenderSvg {
     pub style: Option<String>,
     tiles: Vec<Vec<Tile>>,
     walls: Vec<Vec<Tile>>,
+    nets: HashSet<Vec<[u32; 3]>>,
+    last_free_net_id: u32,
     width: f64,
     height: f64,
 }
@@ -21,6 +24,7 @@ impl RenderSvg {
     pub fn new() -> Self {
         let tiles: Vec<Vec<Tile>> = Vec::new();
         let walls: Vec<Vec<Tile>> = Vec::new();
+        let nets = HashSet::new();
 
         let obj = Self {
             style: None,
@@ -28,6 +32,8 @@ impl RenderSvg {
             walls,
             width: 0f64,
             height: 0f64,
+            nets,
+            last_free_net_id: 0u32,
         };
 
         return obj;
@@ -39,8 +45,8 @@ impl RenderSvg {
 
         for i in [0, 3, 6, 9, 12, 15] {
             for j in [0, 2, 4, 6, 8, 10] {
-                row_path.push(Tile::new(Coordinate { i, j }, TileFlags::C3));
-                row_wall.push(Tile::new(Coordinate { i, j }, TileFlags::W1));
+                row_path.push(Tile::new(Coordinate { i, j }, TileFlags::C3, 0));
+                row_wall.push(Tile::new(Coordinate { i, j }, TileFlags::W1, 0));
             }
         }
 
@@ -70,11 +76,11 @@ impl RenderSvg {
                 j: j * 2,
             };
 
-            let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
-            let wall1: Tile = Tile::new(coord1, TileFlags::W1);
+            let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile), 0);
+            let wall1: Tile = Tile::new(coord1, TileFlags::W1, 0);
 
-            let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile));
-            let wall2: Tile = Tile::new(coord2, TileFlags::W1);
+            let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile), 0);
+            let wall2: Tile = Tile::new(coord2, TileFlags::W1, 0);
 
             row_path.push(path1);
             row_wall.push(wall1);
@@ -90,11 +96,11 @@ impl RenderSvg {
                 j: j * 2 + 1,
             };
 
-            let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile));
-            let wall1: Tile = Tile::new(coord1, TileFlags::W1);
+            let path1: Tile = Tile::new(coord1, TileFlags::from_bits_truncate(*tile), 0);
+            let wall1: Tile = Tile::new(coord1, TileFlags::W1, 0);
 
-            let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile));
-            let wall2: Tile = Tile::new(coord2, TileFlags::W1);
+            let path2: Tile = Tile::new(coord2, TileFlags::from_bits_truncate(*tile), 0);
+            let wall2: Tile = Tile::new(coord2, TileFlags::W1, 0);
 
             row_path.push(path1);
             row_wall.push(wall1);
@@ -113,8 +119,8 @@ impl RenderSvg {
     pub fn display_random_grid(&mut self) {
         // let c: usize = 9; // 9, 54;
         // let r: usize = 6; // 6, 36;
-        let c: usize = 54; // 9, 54;
-        let r: usize = 36; // 6, 36;
+        const c: usize = 9; // 9, 54;
+        const r: usize = 6; // 6, 36;
 
         let mut tiles = Array2D::filled_with(TileFlags::Z2, r, c);
         for j in 0..r {
@@ -127,10 +133,13 @@ impl RenderSvg {
                 let tile = get_random_tile(i, j, &tiles);
 
                 tiles[(j, i)] = tile;
-                let path: Tile = Tile::new(coord, tile);
+                let path: Tile = Tile::new(coord, tile, self.last_free_net_id);
+                self.last_free_net_id = path.max();
                 row_path.push(path);
 
-                let wall: Tile = Tile::new(coord, TileFlags::W1);
+                println!("{}", self.last_free_net_id);
+
+                let wall: Tile = Tile::new(coord, TileFlags::W1, self.last_free_net_id);
 
                 row_wall.push(wall);
             }
