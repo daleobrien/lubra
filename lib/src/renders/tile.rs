@@ -182,6 +182,22 @@ impl Tile {
         let mut rng = rand::thread_rng();
 
         // TODO: Figure out how to allocated new last_free_net values!
+        let node_masks = vec![
+            TileFlags::G1,
+            TileFlags::G2,
+            TileFlags::G3,
+            TileFlags::G4,
+            TileFlags::G5,
+            TileFlags::G6,
+        ];
+        let mut last_free_net_max = last_free_net + 1;
+
+        for (i, mask) in node_masks.iter().enumerate() {
+            if raw_mask & *mask == *mask {
+                nets[i] = last_free_net_max;
+                last_free_net_max += 1;
+            }
+        }
 
         // Title can be rotated
         let mask = rotate(coordinate, raw_mask);

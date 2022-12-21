@@ -1,3 +1,4 @@
+use std::cmp::max;
 use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
@@ -117,8 +118,6 @@ impl RenderSvg {
     }
 
     pub fn display_random_grid(&mut self) {
-        // let c: usize = 9; // 9, 54;
-        // let r: usize = 6; // 6, 36;
         const c: usize = 9; // 9, 54;
         const r: usize = 6; // 6, 36;
 
@@ -134,10 +133,10 @@ impl RenderSvg {
 
                 tiles[(j, i)] = tile;
                 let path: Tile = Tile::new(coord, tile, self.last_free_net_id);
-                self.last_free_net_id = path.max();
+                self.last_free_net_id = max(path.max(), self.last_free_net_id);
                 row_path.push(path);
 
-                println!("{}", self.last_free_net_id);
+                println!("last_free_net_id  ({i},{j}) -> {}", self.last_free_net_id);
 
                 let wall: Tile = Tile::new(coord, TileFlags::W1, self.last_free_net_id);
 
