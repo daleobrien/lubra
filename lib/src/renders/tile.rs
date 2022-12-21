@@ -162,7 +162,46 @@ pub struct Tile {
     farcs: Vec<Segment>,
     semi: Vec<Segment>,
     fsemi: Vec<Segment>,
-    nets: [u32; 6],
+    pub nets: [u32; 6],
+}
+
+// ----
+
+static node_masks: [TileFlags; 8] = [
+    TileFlags::X1,
+    TileFlags::X2,
+    TileFlags::A1,
+    TileFlags::A2,
+    TileFlags::A3,
+    TileFlags::L1,
+    TileFlags::L2,
+    TileFlags::L3,
+];
+
+fn get_nets(flag: TileFlags) -> Vec<Vec<usize>> {
+    let mut nodes = Vec::new();
+    match flag {
+        TileFlags::X1 => nodes.push(vec![4, 5, 6]),
+        TileFlags::X2 => {
+            nodes.push(vec![1, 6]);
+            nodes.push(vec![2, 5]);
+            nodes.push(vec![3, 4]);
+        }
+        TileFlags::A1 => nodes.push(vec![4, 5]),
+        TileFlags::A2 => nodes.push(vec![4, 6]),
+        TileFlags::A3 => nodes.push(vec![5, 6]),
+        TileFlags::L1 => nodes.push(vec![1, 6]),
+        TileFlags::L2 => nodes.push(vec![2, 5]),
+        TileFlags::L3 => nodes.push(vec![3, 4]),
+        TileFlags::N1 => nodes.push(vec![1]),
+        TileFlags::N2 => nodes.push(vec![2]),
+        TileFlags::N3 => nodes.push(vec![3]),
+        TileFlags::T1 => nodes.push(vec![6]),
+        TileFlags::T2 => nodes.push(vec![5]),
+        TileFlags::T3 => nodes.push(vec![4]),
+        _ => {}
+    }
+    return nodes;
 }
 
 impl Tile {
@@ -175,33 +214,29 @@ impl Tile {
         let mut farcs: Vec<Segment> = Vec::new();
         let mut semi: Vec<Segment> = Vec::new();
         let mut fsemi: Vec<Segment> = Vec::new();
-        let mut nets: [u32; 6] = [0, 0, 0, 0, 0, 0];
+        let mut nets: [u32; 6] = [0; 6];
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
         let mut rng = rand::thread_rng();
 
-        // TODO: Figure out how to allocated new last_free_net values!
-        let node_masks = vec![
-            TileFlags::G1,
-            TileFlags::G2,
-            TileFlags::G3,
-            TileFlags::G4,
-            TileFlags::G5,
-            TileFlags::G6,
-        ];
-        let mut last_free_net_max = last_free_net + 1;
-
-        for (i, mask) in node_masks.iter().enumerate() {
-            if raw_mask & *mask == *mask {
-                nets[i] = last_free_net_max;
-                last_free_net_max += 1;
-            }
-        }
-
         // Title can be rotated
         let mask = rotate(coordinate, raw_mask);
 
+        // Add in the Net ids
+        let mut last_free_net_max = last_free_net;
+
+        for tile_primative in node_masks.iter() {
+            for node_groups in get_nets(*tile_primative) {
+                last_free_net_max += 1;
+                for index in node_groups.iter() {
+                    nets[*index - 1] = last_free_net_max;
+                }
+            }
+        }
+        //println!("{:?} nets -> {:?}", coordinate, nets);
+
+        //
         if mask.contains(TileFlags::A1) && !mask.contains(TileFlags::C1) {
             let arc = if flipped { A1_V } else { A1_A } + origin;
             arcs.push(arc + Radius { r: -W });

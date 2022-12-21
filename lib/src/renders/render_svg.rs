@@ -134,11 +134,17 @@ impl RenderSvg {
                 tiles[(j, i)] = tile;
                 let path: Tile = Tile::new(coord, tile, self.last_free_net_id);
                 self.last_free_net_id = max(path.max(), self.last_free_net_id);
+                // TODO: updated self.nets too, so I can find which tiles have a given net id.
+                // TODO: Why are we skipping 8 counts!
+
+                println!(
+                    ":->  ({i},{j}) -> {} {:?}",
+                    self.last_free_net_id, path.nets
+                );
+
                 row_path.push(path);
 
-                println!("last_free_net_id  ({i},{j}) -> {}", self.last_free_net_id);
-
-                let wall: Tile = Tile::new(coord, TileFlags::W1, self.last_free_net_id);
+                let wall: Tile = Tile::new(coord, TileFlags::W1, 0);
 
                 row_wall.push(wall);
             }
