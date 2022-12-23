@@ -118,15 +118,15 @@ impl RenderSvg {
     }
 
     pub fn display_random_grid(&mut self) {
-        const c: usize = 9; // 9, 54;
-        const r: usize = 6; // 6, 36;
+        const C: usize = 54; // 9, 54;
+        const R: usize = 36; // 6, 36;
 
-        let mut tiles = Array2D::filled_with(TileFlags::Z2, r, c);
-        for j in 0..r {
+        let mut tiles = Array2D::filled_with(TileFlags::Z2, R, C);
+        for j in 0..R {
             let mut row_path: Vec<Tile> = Vec::new();
             let mut row_wall: Vec<Tile> = Vec::new();
 
-            for i in 0..c {
+            for i in 0..C {
                 let coord: Coordinate = Coordinate { i, j };
 
                 let tile = get_random_tile(i, j, &tiles);
@@ -152,8 +152,8 @@ impl RenderSvg {
             self.walls.push(row_wall);
         }
 
-        self.width = (c + 1) as f64 * M;
-        self.height = r as f64 * H;
+        self.width = (C + 1) as f64 * M;
+        self.height = R as f64 * H;
     }
 
     // Path commands
