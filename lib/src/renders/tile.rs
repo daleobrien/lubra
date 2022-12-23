@@ -581,8 +581,8 @@ mod tests {
 
     #[test]
     fn A1_L2_nets() {
-        let title = Tile::new(Coordinate { i: 1, j: 1 }, TileFlags::A1 | TileFlags::L2, 0);
-        assert_eq!(title.nets, [0u32, 2u32, 0u32, 1u32, 2u32, 0u32]);
-        assert_eq!(title.max(), 3u32);
+        let title = Tile::new(Coordinate { i: 1, j: 1 }, TileFlags::A1 | TileFlags::L1, 0);
+        assert_eq!(title.nets, [2u32, 0u32, 0u32, 1u32, 1u32, 2u32]);
+        assert_eq!(title.max(), 2u32);
     }
 }
