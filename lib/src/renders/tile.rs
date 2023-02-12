@@ -167,7 +167,7 @@ pub struct Tile {
 
 // ----
 
-static node_masks: [TileFlags; 8] = [
+static NODE_MASKS: [TileFlags; 8] = [
     TileFlags::X1,
     TileFlags::X2,
     TileFlags::A1,
@@ -226,7 +226,7 @@ impl Tile {
         // Add in the Net ids
         let mut last_free_net_max = last_free_net;
 
-        for tile_primative in node_masks.iter() {
+        for tile_primative in NODE_MASKS.iter() {
             for node_groups in get_nets(*tile_primative & raw_mask) {
                 last_free_net_max += 1;
                 for index in node_groups.iter() {
@@ -566,21 +566,21 @@ mod tests {
     }
 
     #[test]
-    fn A1_nets() {
+    fn a1_nets() {
         let title = Tile::new(Coordinate { i: 1, j: 1 }, TileFlags::A1, 0);
         assert_eq!(title.nets, [0u32, 0u32, 0u32, 1u32, 1u32, 0u32]);
         assert_eq!(title.max(), 1u32);
     }
 
     #[test]
-    fn X2_nets() {
+    fn x2_nets() {
         let title = Tile::new(Coordinate { i: 1, j: 1 }, TileFlags::X2, 0);
         assert_eq!(title.nets, [1u32, 2u32, 3u32, 3u32, 2u32, 1u32]);
         assert_eq!(title.max(), 3u32);
     }
 
     #[test]
-    fn A1_L2_nets() {
+    fn a1_l2_nets() {
         let title = Tile::new(Coordinate { i: 1, j: 1 }, TileFlags::A1 | TileFlags::L1, 0);
         assert_eq!(title.nets, [2u32, 0u32, 0u32, 1u32, 1u32, 2u32]);
         assert_eq!(title.max(), 2u32);
