@@ -55,6 +55,8 @@ impl Maze {
                 // I'm going to join the net later though, so some changing of nodes
                 // Also, I think I need a container to hold the maze
                 // Keep the SVG apart from the Nets and so on.
+                // This could be done in the algorithm folder ...
+
                 let tile = get_random_tile(i, j, &tiles);
 
                 tiles[(j, i)] = tile;
@@ -80,6 +82,8 @@ impl Maze {
         self.width = (number_of_columns + 1) as f64 * M;
         self.height = number_of_rows as f64 * H;
     }
+
+    // TODO:Added debug only method to create the grid outlines, aka the walls
 
     pub fn create_one_tile_grid(&mut self) {
         let mut row_path: Vec<Tile> = Vec::new();
