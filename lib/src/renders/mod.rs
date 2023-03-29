@@ -1,7 +1,6 @@
 pub mod constants;
-mod primatives;
-pub mod render_svg;
+pub mod primatives;
 mod shapes;
-mod svg_path;
-mod tile;
-mod tile_subsets;
+pub mod svg_path;
+pub mod tile;
+pub mod tile_subsets;

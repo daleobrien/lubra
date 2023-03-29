@@ -11,7 +11,7 @@ use crate::renders::svg_path::Path;
 use crate::renders::tile::Tile;
 use crate::renders::tile_subsets::find_tiles;
 
-pub struct RenderSvg {
+pub struct Maze {
     pub style: Option<String>,
     tiles: Vec<Vec<Tile>>,
     walls: Vec<Vec<Tile>>,
@@ -21,13 +21,15 @@ pub struct RenderSvg {
     height: f64,
 }
 
-impl RenderSvg {
-    pub fn new() -> Self {
+impl Maze {
+    pub fn new(number_of_columns: usize, number_of_rows: usize) -> Self {
+        // User Maze object somehow
+
         let tiles: Vec<Vec<Tile>> = Vec::new();
         let walls: Vec<Vec<Tile>> = Vec::new();
         let nets = HashSet::new();
 
-        let obj = Self {
+        let mut obj = Self {
             style: None,
             tiles,
             walls,
@@ -37,10 +39,49 @@ impl RenderSvg {
             last_free_net_id: 0u32,
         };
 
+        Self::create_random_grid(&mut obj, number_of_columns, number_of_rows);
         return obj;
     }
+    pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
+        let mut tiles = Array2D::filled_with(TileFlags::Z2, number_of_rows, number_of_columns);
+        for j in 0..number_of_rows {
+            let mut row_path: Vec<Tile> = Vec::new();
+            let mut row_wall: Vec<Tile> = Vec::new();
 
-    pub fn display_one_tile(&mut self) {
+            for i in 0..number_of_columns {
+                let coord: Coordinate = Coordinate { i, j };
+
+                // TODO: get_random knows about it's neighbours, could built nets as we go ...
+                // I'm going to join the net later though, so some changing of nodes
+                // Also, I think I need a container to hold the maze
+                // Keep the SVG apart from the Nets and so on.
+                let tile = get_random_tile(i, j, &tiles);
+
+                tiles[(j, i)] = tile;
+                let path: Tile = Tile::new(coord, tile, self.last_free_net_id);
+                self.last_free_net_id = max(path.max(), self.last_free_net_id);
+                // TODO: updated self.nets too, so I can find which tiles have a given net id.
+
+                println!(
+                    ":->  ({i},{j}) -> {} {:?}",
+                    self.last_free_net_id, path.nets
+                );
+
+                row_path.push(path);
+
+                let wall: Tile = Tile::new(coord, TileFlags::W1, 0);
+
+                row_wall.push(wall);
+            }
+            self.tiles.push(row_path);
+            self.walls.push(row_wall);
+        }
+
+        self.width = (number_of_columns + 1) as f64 * M;
+        self.height = number_of_rows as f64 * H;
+    }
+
+    pub fn create_one_tile_grid(&mut self) {
         let mut row_path: Vec<Tile> = Vec::new();
         let mut row_wall: Vec<Tile> = Vec::new();
 
@@ -58,7 +99,7 @@ impl RenderSvg {
         self.height = 12f64 * H;
     }
 
-    pub fn display_all_tiles(&mut self) {
+    pub fn create_all_title_in_grid(&mut self) {
         let possible_tiles = find_tiles(0b101010101010);
 
         let mut row_path: Vec<Tile> = Vec::new();
@@ -115,45 +156,6 @@ impl RenderSvg {
 
         self.width = (10 * 1) as f64 * (M + 50.0);
         self.height = (possible_tiles.len() * 3) as f64 * (H + 00.0);
-    }
-
-    pub fn display_random_grid(&mut self) {
-        const C: usize = 54; // 9, 54;
-        const R: usize = 36; // 6, 36;
-
-        let mut tiles = Array2D::filled_with(TileFlags::Z2, R, C);
-        for j in 0..R {
-            let mut row_path: Vec<Tile> = Vec::new();
-            let mut row_wall: Vec<Tile> = Vec::new();
-
-            for i in 0..C {
-                let coord: Coordinate = Coordinate { i, j };
-
-                let tile = get_random_tile(i, j, &tiles);
-
-                tiles[(j, i)] = tile;
-                let path: Tile = Tile::new(coord, tile, self.last_free_net_id);
-                self.last_free_net_id = max(path.max(), self.last_free_net_id);
-                // TODO: updated self.nets too, so I can find which tiles have a given net id.
-                // TODO: Why are we skipping 8 counts!
-
-                println!(
-                    ":->  ({i},{j}) -> {} {:?}",
-                    self.last_free_net_id, path.nets
-                );
-
-                row_path.push(path);
-
-                let wall: Tile = Tile::new(coord, TileFlags::W1, 0);
-
-                row_wall.push(wall);
-            }
-            self.tiles.push(row_path);
-            self.walls.push(row_wall);
-        }
-
-        self.width = (C + 1) as f64 * M;
-        self.height = R as f64 * H;
     }
 
     // Path commands

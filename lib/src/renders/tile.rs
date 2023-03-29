@@ -181,9 +181,9 @@ static NODE_MASKS: [TileFlags; 8] = [
 fn get_nets(flag: TileFlags) -> Vec<Vec<usize>> {
     let mut nodes = Vec::new();
     match flag {
-        TileFlags::X1 => nodes.push(vec![4, 5, 6]),
+        TileFlags::X1 => nodes.push(vec![4, 5, 6]), // All edges connect to each other
         TileFlags::X2 => {
-            nodes.push(vec![1, 6]);
+            nodes.push(vec![1, 6]); // Each edge and it's oposite point connect to each other
             nodes.push(vec![2, 5]);
             nodes.push(vec![3, 4]);
         }
@@ -551,6 +551,12 @@ impl Tile {
         }
     }
 }
+
+// how smoosh nets ?
+//   smoosh two tiles, ... or rather two sets
+//   need a set to tile look up process
+
+// then figure out to change a tile to join nets
 
 #[cfg(test)]
 mod tests {
