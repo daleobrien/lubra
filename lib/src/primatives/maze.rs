@@ -22,7 +22,7 @@ pub struct Maze {
 }
 
 impl Maze {
-    pub fn new(number_of_columns: usize, number_of_rows: usize) -> Self {
+    pub fn new(number_of_columns: usize, number_of_rows: usize, randomise: bool) -> Self {
         // User Maze object somehow
 
         let tiles: Vec<Vec<Tile>> = Vec::new();
@@ -39,7 +39,9 @@ impl Maze {
             last_free_net_id: 0u32,
         };
 
-        Self::create_random_grid(&mut obj, number_of_columns, number_of_rows);
+        if randomise {
+            Self::create_random_grid(&mut obj, number_of_columns, number_of_rows);
+        }
         return obj;
     }
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
@@ -50,12 +52,6 @@ impl Maze {
 
             for i in 0..number_of_columns {
                 let coord: Coordinate = Coordinate { i, j };
-
-                // TODO: get_random knows about it's neighbours, could built nets as we go ...
-                // I'm going to join the net later though, so some changing of nodes
-                // Also, I think I need a container to hold the maze
-                // Keep the SVG apart from the Nets and so on.
-                // This could be done in the algorithm folder ...
 
                 let tile = get_random_tile(i, j, &tiles);
 
@@ -83,7 +79,33 @@ impl Maze {
         self.height = number_of_rows as f64 * H;
     }
 
+    pub fn add_row(&mut self, row: Vec<Tile>) {
+        self.tiles.push(row);
+
+        // Get the max number of rows within any one Row
+        // NOTE: This assumes all items are continous from 0 to n with now skipped cells
+        // TODO: Titles don't really need i.j postions
+        let number_of_columns = self
+            .tiles
+            .iter()
+            .map(|row| row.len())
+            .max()
+            .unwrap_or_default();
+
+        let number_of_rows = self.tiles.len();
+
+        self.width = (number_of_columns + 1) as f64 * M;
+        self.height = number_of_rows as f64 * H;
+    }
     // TODO:Added debug only method to create the grid outlines, aka the walls
+    pub fn smoosh(&mut self) {
+        for row in self.tiles.iter() {
+            for tile in row {
+                // TODO: get neighbours and so on ...
+                println!("{:?}", tile.nets);
+            }
+        }
+    }
 
     pub fn create_one_tile_grid(&mut self) {
         let mut row_path: Vec<Tile> = Vec::new();
@@ -204,5 +226,39 @@ impl Maze {
 
         fs::write(file_name, svg.as_bytes())?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::primatives::maze::Maze;
+    use crate::renders::constants::TileFlags;
+    use crate::renders::primatives::Coordinate;
+    use crate::renders::tile::Tile;
+
+    #[test]
+    fn very_small_net() {
+        let mut maze = Maze::new(2, 1, false);
+        let mut row_path_1: Vec<Tile> = Vec::new();
+        let mut row_path_2: Vec<Tile> = Vec::new();
+
+        let title1 = Tile::new(Coordinate { i: 0, j: 0 }, TileFlags::C2, 0);
+        let title2 = Tile::new(Coordinate { i: 1, j: 0 }, TileFlags::L1, 0);
+        row_path_1.push(title1);
+        row_path_1.push(title2);
+
+        let title3 = Tile::new(Coordinate { i: 0, j: 1 }, TileFlags::C2, 0);
+        let title4 = Tile::new(Coordinate { i: 1, j: 1 }, TileFlags::L1, 0);
+        row_path_2.push(title3);
+        row_path_2.push(title4);
+
+        maze.add_row(row_path_1);
+        maze.add_row(row_path_2);
+
+        maze.smoosh();
+
+        let result_f = maze.render("../test-smoosh.svg".to_string());
+
+        println!("Finished {:?}", result_f.unwrap());
     }
 }

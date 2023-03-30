@@ -552,12 +552,6 @@ impl Tile {
     }
 }
 
-// how smoosh nets ?
-//   smoosh two tiles, ... or rather two sets
-//   need a set to tile look up process
-
-// then figure out to change a tile to join nets
-
 #[cfg(test)]
 mod tests {
     use crate::renders::constants::TileFlags;
