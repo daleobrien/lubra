@@ -97,6 +97,7 @@ impl Maze {
         self.width = (number_of_columns + 1) as f64 * M;
         self.height = number_of_rows as f64 * H;
     }
+
     // TODO:Added debug only method to create the grid outlines, aka the walls
     pub fn smoosh(&mut self) {
         for row in self.tiles.iter() {

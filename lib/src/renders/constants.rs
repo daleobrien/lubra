@@ -219,7 +219,7 @@ fn calc_vertex(
            this row -> .    /  \ /  \
                             ---- ----
 
-    The other row dependson there the tile is pointing up or down
+    The other row depends on where the tile is pointing up or down
         */
 
     let this_row = gathered_tiles[1];
@@ -383,7 +383,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b100_000;
     }
 
-    // TODO: stip out cells that only have Nx and Tx
+    // TODO: strip out cells that only have Nx and Tx
 
     for _ in 0..45 {
         let first_tile = random_side(matches, dont_care);

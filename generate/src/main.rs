@@ -18,7 +18,7 @@ use lib::renders::constants::TileFlags;
 // TODO: Rename, they are graph nodes
 const POINT_GRAPH: [u32; 6] = [0b000001, 0b000010, 0b000100, 0b001000, 0b010000, 0b100000];
 const LINE_GRAPH: [u32; 3] = [0b100001, 0b010010, 0b001100];
-const CURVE_COMINATION_GRAPH: [u32; 5] = [0b000_000, 0b011_000, 0b110_000, 0b101_000, 0b111_000];
+const CURVE_COMBINATION_GRAPH: [u32; 5] = [0b000_000, 0b011_000, 0b110_000, 0b101_000, 0b111_000];
 
 struct Combinations {
     tiles_by_index: HashMap<u32, Vec<TileFlags>>,
@@ -122,7 +122,7 @@ impl Combinations {
                             continue;
                         }
 
-                        for curve_mask in CURVE_COMINATION_GRAPH.iter() {
+                        for curve_mask in CURVE_COMBINATION_GRAPH.iter() {
                             // Check they don't intersect
                             if curve_mask & point_mask != 0 || curve_mask & line_mask != 0 {
                                 continue;
