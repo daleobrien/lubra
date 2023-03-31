@@ -191,7 +191,7 @@ fn add(u: usize, i: i32) -> usize {
 fn get_tile_relative_postion(
     pos: (usize, usize),
     rel: (i32, i32),
-    tiles: &Array2D<TileFlags>,
+    tiles: &Array2D<TileFlags>, // Flip to Maze, od move this function into Maze
 ) -> TileFlags {
     if pos.1 as i32 + rel.1 < 0 || pos.0 as i32 + rel.0 < 0 {
         return TileFlags::Z1;
@@ -296,18 +296,11 @@ fn calc_side(
     (false, false)
 }
 
-pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFlags {
-    if i == 0 && j == 0 {
-        return TileFlags::L3;
-    }
-
-    let mut dont_care = 0;
-    let mut matches = 0;
-
-    let pos1 = (4 + i + (3 * (j % 2))) % 6;
-    let pos2 = (2 + i + (3 * (j % 2))) % 6;
-    let pos3 = (0 + i + (3 * (j % 2))) % 6; // Alternates on each row , 1st row 0,1,2,3,4,5,0, ... 2nd row, 3,4,5,0,1,2,3,...
-
+pub fn get_surrounding_tiles(
+    i: usize,
+    j: usize,
+    tiles: &Array2D<TileFlags>,
+) -> [[TileFlags; 5]; 3] {
     let gathered_tiles = [
         [
             get_tile_relative_postion((i, j), (-2, -1), tiles),
@@ -331,9 +324,25 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
             get_tile_relative_postion((i, j), (2, 1), tiles),
         ],
     ];
+    return gathered_tiles;
+}
+
+pub fn get_surrounding_tile_connections(
+    i: usize,
+    j: usize,
+    tiles: &Array2D<TileFlags>,
+) -> (u32, u32) {
+    let surrounding_tiles = get_surrounding_tiles(i, j, tiles);
+
+    let mut dont_care = 0u32;
+    let mut matches = 0u32;
+
+    let pos1 = (4 + i + (3 * (j % 2))) % 6;
+    let pos2 = (2 + i + (3 * (j % 2))) % 6;
+    let pos3 = (0 + i + (3 * (j % 2))) % 6; // Alternates on each row , 1st row 0,1,2,3,4,5,0, ... 2nd row, 3,4,5,0,1,2,3,...
 
     // Node 1
-    let (m, d) = calc_vertex(gathered_tiles, TileFlags::G1, (1 + pos3) % 3, pos1 < 3);
+    let (m, d) = calc_vertex(surrounding_tiles, TileFlags::G1, (1 + pos3) % 3, pos1 < 3);
     if m {
         matches |= 0b000_001;
     }
@@ -342,7 +351,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     }
 
     // Node 2
-    let (m, d) = calc_vertex(gathered_tiles, TileFlags::G2, (2 + pos3) % 3, pos2 < 3);
+    let (m, d) = calc_vertex(surrounding_tiles, TileFlags::G2, (2 + pos3) % 3, pos2 < 3);
     if m {
         matches |= 0b000_010;
     }
@@ -351,7 +360,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     }
 
     // Node3
-    let (m, d) = calc_vertex(gathered_tiles, TileFlags::G3, (3 + pos3) % 3, pos3 < 3);
+    let (m, d) = calc_vertex(surrounding_tiles, TileFlags::G3, (3 + pos3) % 3, pos3 < 3);
     if m {
         matches |= 0b000_100;
     }
@@ -359,7 +368,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b000_100;
     }
 
-    let (m, d) = calc_side(gathered_tiles, TileFlags::G4, (3 + pos3) % 3, pos3);
+    let (m, d) = calc_side(surrounding_tiles, TileFlags::G4, (3 + pos3) % 3, pos3);
     if m {
         matches |= 0b001_000;
     }
@@ -367,7 +376,7 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b001_000;
     }
 
-    let (m, d) = calc_side(gathered_tiles, TileFlags::G5, (3 + pos2) % 3, pos3);
+    let (m, d) = calc_side(surrounding_tiles, TileFlags::G5, (3 + pos2) % 3, pos3);
     if m {
         matches |= 0b010_000;
     }
@@ -375,16 +384,24 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
         dont_care |= 0b010_000;
     }
 
-    let (m, d) = calc_side(gathered_tiles, TileFlags::G6, (3 + pos1) % 3, pos3);
+    let (m, d) = calc_side(surrounding_tiles, TileFlags::G6, (3 + pos1) % 3, pos3);
     if m {
         matches |= 0b100_000;
     }
     if d {
         dont_care |= 0b100_000;
     }
+    return (dont_care, matches);
+}
+
+pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFlags {
+    if i == 0 && j == 0 {
+        return TileFlags::L3;
+    }
+
+    let (dont_care, matches) = get_surrounding_tile_connections(i, j, tiles);
 
     // TODO: strip out cells that only have Nx and Tx
-
     for _ in 0..45 {
         let first_tile = random_side(matches, dont_care);
         if !first_tile.contains(TileFlags::N1)
