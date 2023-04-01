@@ -5,7 +5,7 @@ use std::time::Instant;
 use itertools::Itertools;
 use tera::{Context, Tera};
 
-use lib::maze::constants::TileGlyph;
+use lib::maze::tile::Tile;
 
 /*
        1
@@ -21,7 +21,7 @@ const LINE_GRAPH: [u32; 3] = [0b100001, 0b010010, 0b001100];
 const CURVE_COMBINATION_GRAPH: [u32; 5] = [0b000_000, 0b011_000, 0b110_000, 0b101_000, 0b111_000];
 
 struct Combinations {
-    tiles_by_index: HashMap<u32, Vec<TileGlyph>>,
+    tiles_by_index: HashMap<u32, Vec<Tile>>,
 }
 
 impl Combinations {
@@ -64,7 +64,7 @@ impl Combinations {
 
     fn create_tile_subset_rust_files(&self) {
         //
-        let mut side: HashMap<u32, Vec<TileGlyph>> = HashMap::new();
+        let mut side: HashMap<u32, Vec<Tile>> = HashMap::new();
 
         let mut side_key_as_binary: HashMap<u32, String> = HashMap::new();
 
@@ -131,8 +131,7 @@ impl Combinations {
                             count += 1;
                             let key = point_mask | line_mask | curve_mask;
 
-                            let value: TileGlyph =
-                                TileGlyph::from([point_mask, line_mask, *curve_mask]);
+                            let value: Tile = Tile::from([point_mask, line_mask, *curve_mask]);
 
                             let mut factor = 1;
 

@@ -1,2 +1,2 @@
-pub mod constants;
 pub mod maze;
+pub mod tile;

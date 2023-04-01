@@ -1,18 +1,17 @@
-use crate::maze::constants::{
-    TileGlyph, L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018,
-    L019, L020, L021, L022, L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042,
-    L043, L044, L045, L046, L047, L048, L049, L050, L051, L052, L053, L054, L056, L057, L059, L060,
-    L061, L062, L063, L064, L065, L066, L067, L068, L069, L070, L071, L072, L073, L074, L075, L076,
-    L077, L078, L079, L080, L081, L082, L083, L084, L085, L086, L087, L088, L089, L091, L092, L093,
-    L094, L095, L096, L097, L098, L099, L100, L101, L102, L103, L104, L105, L106, L107, L121, M, U,
-    W,
+use crate::maze::tile::{
+    Tile, L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018, L019,
+    L020, L021, L022, L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042, L043,
+    L044, L045, L046, L047, L048, L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L061,
+    L062, L063, L064, L065, L066, L067, L068, L069, L070, L071, L072, L073, L074, L075, L076, L077,
+    L078, L079, L080, L081, L082, L083, L084, L085, L086, L087, L088, L089, L091, L092, L093, L094,
+    L095, L096, L097, L098, L099, L100, L101, L102, L103, L104, L105, L106, L107, L121, M, U, W,
 };
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, N1_A, N1_V, N2_A, N2_V, N3_A, N3_V, T1_A, T1_A_ARC, T1_V,
     T1_V_ARC, T2_A, T2_ARC, T2_V, T3_A, T3_ARC, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
-use crate::renders::svg_path::Path;
+use crate::renders::svg::Path;
 use rand::Rng;
 
 pub fn create_triangle(flipped: bool) -> [Line; 3] {
@@ -31,7 +30,7 @@ pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool
     return (origin, flipped);
 }
 
-pub fn rotate(coordinate: Coordinate, tile: TileGlyph) -> TileGlyph {
+pub fn rotate(coordinate: Coordinate, tile: Tile) -> Tile {
     // Rotate tile, depending on position so it renders
     return match coordinate.i % 3 {
         1 => tile.rotate_cw(),
@@ -167,38 +166,38 @@ pub struct Glyph {
 
 // ----
 
-static NODE_MASKS: [TileGlyph; 8] = [
-    TileGlyph::X1,
-    TileGlyph::X2,
-    TileGlyph::A1,
-    TileGlyph::A2,
-    TileGlyph::A3,
-    TileGlyph::L1,
-    TileGlyph::L2,
-    TileGlyph::L3,
+static NODE_MASKS: [Tile; 8] = [
+    Tile::X1,
+    Tile::X2,
+    Tile::A1,
+    Tile::A2,
+    Tile::A3,
+    Tile::L1,
+    Tile::L2,
+    Tile::L3,
 ];
 
-fn get_nets(flag: TileGlyph) -> Vec<Vec<usize>> {
+fn get_nets(flag: Tile) -> Vec<Vec<usize>> {
     let mut nodes = Vec::new();
     match flag {
-        TileGlyph::X1 => nodes.push(vec![4, 5, 6]), // All edges connect to each other
-        TileGlyph::X2 => {
+        Tile::X1 => nodes.push(vec![4, 5, 6]), // All edges connect to each other
+        Tile::X2 => {
             nodes.push(vec![1, 6]); // Each edge and it's oposite point connect to each other
             nodes.push(vec![2, 5]);
             nodes.push(vec![3, 4]);
         }
-        TileGlyph::A1 => nodes.push(vec![4, 5]),
-        TileGlyph::A2 => nodes.push(vec![4, 6]),
-        TileGlyph::A3 => nodes.push(vec![5, 6]),
-        TileGlyph::L1 => nodes.push(vec![1, 6]),
-        TileGlyph::L2 => nodes.push(vec![2, 5]),
-        TileGlyph::L3 => nodes.push(vec![3, 4]),
-        TileGlyph::N1 => nodes.push(vec![1]),
-        TileGlyph::N2 => nodes.push(vec![2]),
-        TileGlyph::N3 => nodes.push(vec![3]),
-        TileGlyph::T1 => nodes.push(vec![6]),
-        TileGlyph::T2 => nodes.push(vec![5]),
-        TileGlyph::T3 => nodes.push(vec![4]),
+        Tile::A1 => nodes.push(vec![4, 5]),
+        Tile::A2 => nodes.push(vec![4, 6]),
+        Tile::A3 => nodes.push(vec![5, 6]),
+        Tile::L1 => nodes.push(vec![1, 6]),
+        Tile::L2 => nodes.push(vec![2, 5]),
+        Tile::L3 => nodes.push(vec![3, 4]),
+        Tile::N1 => nodes.push(vec![1]),
+        Tile::N2 => nodes.push(vec![2]),
+        Tile::N3 => nodes.push(vec![3]),
+        Tile::T1 => nodes.push(vec![6]),
+        Tile::T2 => nodes.push(vec![5]),
+        Tile::T3 => nodes.push(vec![4]),
         _ => {}
     }
     return nodes;
@@ -207,7 +206,7 @@ fn get_nets(flag: TileGlyph) -> Vec<Vec<usize>> {
 impl Glyph {
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
-    pub fn new(coordinate: Coordinate, raw_mask: TileGlyph, last_free_net: u32) -> Self {
+    pub fn new(coordinate: Coordinate, raw_mask: Tile, last_free_net: u32) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let mut faint: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
@@ -237,33 +236,33 @@ impl Glyph {
         //println!("{:?} nets -> {:?}", coordinate, nets);
 
         //
-        if mask.contains(TileGlyph::A1) && !mask.contains(TileGlyph::C1) {
+        if mask.contains(Tile::A1) && !mask.contains(Tile::C1) {
             let arc = if flipped { A1_V } else { A1_A } + origin;
             arcs.push(arc + Radius { r: -W });
             arcs.push(arc + Radius { r: W });
         }
 
-        if mask.contains(TileGlyph::A2) && !mask.contains(TileGlyph::C2) {
+        if mask.contains(Tile::A2) && !mask.contains(Tile::C2) {
             let arc = if flipped { A2_V } else { A2_A } + origin;
             arcs.push(arc + Radius { r: -W });
             arcs.push(arc + Radius { r: W });
         }
 
-        if mask.contains(TileGlyph::A3) && !mask.contains(TileGlyph::C3) {
+        if mask.contains(Tile::A3) && !mask.contains(Tile::C3) {
             let arc = if flipped { A3_V } else { A3_A } + origin;
             arcs.push(arc + Radius { r: -W });
             arcs.push(arc + Radius { r: W });
         }
 
-        if mask.contains(TileGlyph::T1) {
+        if mask.contains(Tile::T1) {
             if flipped {
-                if mask.contains(TileGlyph::Y1) {
+                if mask.contains(Tile::Y1) {
                     fsemi.push(T1_V + origin);
-                } else if mask.contains(TileGlyph::L3) {
+                } else if mask.contains(Tile::L3) {
                     farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 1 });
                     farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 2 });
                     arcs.push(T1_V_ARC + origin + SegmentOffset { offset: 3 });
-                } else if mask.contains(TileGlyph::L2) {
+                } else if mask.contains(Tile::L2) {
                     farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 3 });
                     farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 2 });
                     arcs.push(T1_V_ARC + origin + SegmentOffset { offset: 1 });
@@ -271,13 +270,13 @@ impl Glyph {
                     semi.push(T1_V + origin);
                 }
             } else {
-                if mask.contains(TileGlyph::Y1) {
+                if mask.contains(Tile::Y1) {
                     fsemi.push(T1_A + origin);
-                } else if mask.contains(TileGlyph::L3) {
+                } else if mask.contains(Tile::L3) {
                     farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 6 });
                     farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 5 });
                     arcs.push(T1_A_ARC + origin + SegmentOffset { offset: 4 });
-                } else if mask.contains(TileGlyph::L2) {
+                } else if mask.contains(Tile::L2) {
                     farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 4 });
                     farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 5 });
                     arcs.push(T1_A_ARC + origin + SegmentOffset { offset: 6 });
@@ -287,15 +286,15 @@ impl Glyph {
             }
         }
 
-        if mask.contains(TileGlyph::T2) {
+        if mask.contains(Tile::T2) {
             if flipped {
-                if mask.contains(TileGlyph::Y2) {
+                if mask.contains(Tile::Y2) {
                     fsemi.push(T2_V + origin);
-                } else if mask.contains(TileGlyph::L3) {
+                } else if mask.contains(Tile::L3) {
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 5 });
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
                     arcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
-                } else if mask.contains(TileGlyph::L1) {
+                } else if mask.contains(Tile::L1) {
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
                     arcs.push(T2_ARC + origin + SegmentOffset { offset: 5 });
@@ -303,13 +302,13 @@ impl Glyph {
                     semi.push(T2_V + origin);
                 }
             } else {
-                if mask.contains(TileGlyph::Y2) {
+                if mask.contains(Tile::Y2) {
                     fsemi.push(T2_A + origin);
-                } else if mask.contains(TileGlyph::L3) {
+                } else if mask.contains(Tile::L3) {
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 2 });
                     arcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
-                } else if mask.contains(TileGlyph::L1) {
+                } else if mask.contains(Tile::L1) {
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
                     farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
                     arcs.push(T2_ARC + origin + SegmentOffset { offset: 2 });
@@ -319,15 +318,15 @@ impl Glyph {
             }
         }
 
-        if mask.contains(TileGlyph::T3) {
+        if mask.contains(Tile::T3) {
             if flipped {
-                if mask.contains(TileGlyph::Y3) {
+                if mask.contains(Tile::Y3) {
                     fsemi.push(T3_V + origin);
-                } else if mask.contains(TileGlyph::L2) {
+                } else if mask.contains(Tile::L2) {
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 5 });
                     arcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
-                } else if mask.contains(TileGlyph::L1) {
+                } else if mask.contains(Tile::L1) {
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
                     arcs.push(T3_ARC + origin + SegmentOffset { offset: 5 });
@@ -335,13 +334,13 @@ impl Glyph {
                     semi.push(T3_V + origin);
                 }
             } else {
-                if mask.contains(TileGlyph::Y3) {
+                if mask.contains(Tile::Y3) {
                     fsemi.push(T3_A + origin);
-                } else if mask.contains(TileGlyph::L2) {
+                } else if mask.contains(Tile::L2) {
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 2 });
                     arcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
-                } else if mask.contains(TileGlyph::L1) {
+                } else if mask.contains(Tile::L1) {
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
                     farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
                     arcs.push(T3_ARC + origin + SegmentOffset { offset: 2 });
@@ -351,14 +350,14 @@ impl Glyph {
             }
         }
 
-        if mask.contains(TileGlyph::N1) {
+        if mask.contains(Tile::N1) {
             if flipped {
                 semi.push(N1_V + origin);
             } else {
                 semi.push(N1_A + origin);
             }
         }
-        if mask.contains(TileGlyph::N2) {
+        if mask.contains(Tile::N2) {
             if flipped {
                 semi.push(N2_V + origin);
             } else {
@@ -366,7 +365,7 @@ impl Glyph {
             }
         }
 
-        if mask.contains(TileGlyph::N3) {
+        if mask.contains(Tile::N3) {
             if flipped {
                 semi.push(N3_V + origin);
             } else {
@@ -374,40 +373,31 @@ impl Glyph {
             }
         }
 
-        if !mask.contains(TileGlyph::X2) {
-            if mask.contains(TileGlyph::L1)
-                && !mask.contains(TileGlyph::Y2)
-                && !mask.contains(TileGlyph::Y3)
-            {
+        if !mask.contains(Tile::X2) {
+            if mask.contains(Tile::L1) && !mask.contains(Tile::Y2) && !mask.contains(Tile::Y3) {
                 paint_l1(&mut lines, origin);
             }
-            if mask.contains(TileGlyph::L2)
-                && !mask.contains(TileGlyph::Y1)
-                && !mask.contains(TileGlyph::Y3)
-            {
+            if mask.contains(Tile::L2) && !mask.contains(Tile::Y1) && !mask.contains(Tile::Y3) {
                 paint_l2(&mut lines, origin, flipped);
             }
-            if mask.contains(TileGlyph::L3)
-                && !mask.contains(TileGlyph::Y1)
-                && !mask.contains(TileGlyph::Y2)
-            {
+            if mask.contains(Tile::L3) && !mask.contains(Tile::Y1) && !mask.contains(Tile::Y2) {
                 paint_l3(&mut lines, origin, flipped);
             }
 
-            if mask.contains(TileGlyph::Y1) {
+            if mask.contains(Tile::Y1) {
                 paint_y1(&mut lines, &mut faint, origin, flipped);
             }
 
-            if mask.contains(TileGlyph::Y2) {
+            if mask.contains(Tile::Y2) {
                 paint_y2(&mut lines, &mut faint, origin, flipped);
             }
 
-            if mask.contains(TileGlyph::Y3) {
+            if mask.contains(Tile::Y3) {
                 paint_y3(&mut lines, &mut faint, origin, flipped);
             }
         }
 
-        if mask.contains(TileGlyph::C1) {
+        if mask.contains(Tile::C1) {
             let arc = if flipped { A1_V } else { A1_A } + origin;
 
             if rng.gen_range(0..2) == 0 {
@@ -432,7 +422,7 @@ impl Glyph {
                 }
             }
         }
-        if mask.contains(TileGlyph::C2) {
+        if mask.contains(Tile::C2) {
             let arc = if flipped { A2_V } else { A2_A } + origin;
 
             if rng.gen_range(0..2) == 0 {
@@ -453,7 +443,7 @@ impl Glyph {
                 }
             }
         }
-        if mask.contains(TileGlyph::C3) {
+        if mask.contains(Tile::C3) {
             let arc = if flipped { A3_V } else { A3_A } + origin;
             if rng.gen_range(0..2) == 0 {
                 arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
@@ -473,12 +463,12 @@ impl Glyph {
             }
         }
 
-        if mask.contains(TileGlyph::X1) {
+        if mask.contains(Tile::X1) {
             arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
             arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
             arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
         }
-        if mask.contains(TileGlyph::X2) {
+        if mask.contains(Tile::X2) {
             match rng.gen_range(0..3) {
                 // 0,1,2
                 0 => {
@@ -508,7 +498,7 @@ impl Glyph {
             }
         }
 
-        if mask.contains(TileGlyph::W1) {
+        if mask.contains(Tile::W1) {
             create_triangle(flipped).map(|line| lines.push(line + origin));
         }
 
@@ -554,34 +544,34 @@ impl Glyph {
 
 #[cfg(test)]
 mod tests {
-    use crate::maze::constants::TileGlyph;
+    use crate::maze::tile::Tile;
     use crate::renders::glyph::Glyph;
     use crate::renders::primatives::Coordinate;
 
     #[test]
     fn zero_nets() {
-        let title = Glyph::new(Coordinate { i: 1, j: 1 }, TileGlyph::W1, 0);
+        let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::W1, 0);
         assert_eq!(title.nets, [0u32, 0u32, 0u32, 0u32, 0u32, 0u32]);
         assert_eq!(title.max(), 0u32);
     }
 
     #[test]
     fn a1_nets() {
-        let title = Glyph::new(Coordinate { i: 1, j: 1 }, TileGlyph::A1, 0);
+        let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1, 0);
         assert_eq!(title.nets, [0u32, 0u32, 0u32, 1u32, 1u32, 0u32]);
         assert_eq!(title.max(), 1u32);
     }
 
     #[test]
     fn x2_nets() {
-        let title = Glyph::new(Coordinate { i: 1, j: 1 }, TileGlyph::X2, 0);
+        let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::X2, 0);
         assert_eq!(title.nets, [1u32, 2u32, 3u32, 3u32, 2u32, 1u32]);
         assert_eq!(title.max(), 3u32);
     }
 
     #[test]
     fn a1_l2_nets() {
-        let title = Glyph::new(Coordinate { i: 1, j: 1 }, TileGlyph::A1 | TileGlyph::L1, 0);
+        let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1 | Tile::L1, 0);
         assert_eq!(title.nets, [2u32, 0u32, 0u32, 1u32, 1u32, 2u32]);
         assert_eq!(title.max(), 2u32);
     }

@@ -1,5 +1,5 @@
 pub mod glyph;
 pub mod primatives;
 mod shapes;
-pub mod svg_path;
+pub mod svg;
 pub mod tile_subsets;

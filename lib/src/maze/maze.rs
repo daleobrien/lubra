@@ -5,10 +5,10 @@ use std::fs;
 
 use array2d::Array2D;
 
-use crate::maze::constants::{get_random_tile, TileGlyph, H, M};
+use crate::maze::tile::{get_random_tile, Tile, H, M};
 use crate::renders::glyph::Glyph;
 use crate::renders::primatives::Coordinate;
-use crate::renders::svg_path::Path;
+use crate::renders::svg::Path;
 use crate::renders::tile_subsets::find_tiles;
 
 pub struct Maze {
@@ -45,7 +45,7 @@ impl Maze {
         return obj;
     }
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
-        let mut tiles = Array2D::filled_with(TileGlyph::Z2, number_of_rows, number_of_columns);
+        let mut tiles = Array2D::filled_with(Tile::Z2, number_of_rows, number_of_columns);
         for j in 0..number_of_rows {
             let mut row_path: Vec<Glyph> = Vec::new();
             let mut row_wall: Vec<Glyph> = Vec::new();
@@ -67,7 +67,7 @@ impl Maze {
 
                 row_path.push(path);
 
-                let wall: Glyph = Glyph::new(coord, TileGlyph::W1, 0);
+                let wall: Glyph = Glyph::new(coord, Tile::W1, 0);
 
                 row_wall.push(wall);
             }
@@ -116,8 +116,8 @@ impl Maze {
 
         for i in [0, 3, 6, 9, 12, 15] {
             for j in [0, 2, 4, 6, 8, 10] {
-                row_path.push(Glyph::new(Coordinate { i, j }, TileGlyph::C3, 0));
-                row_wall.push(Glyph::new(Coordinate { i, j }, TileGlyph::W1, 0));
+                row_path.push(Glyph::new(Coordinate { i, j }, Tile::C3, 0));
+                row_wall.push(Glyph::new(Coordinate { i, j }, Tile::W1, 0));
             }
         }
 
@@ -139,7 +139,7 @@ impl Maze {
 
         //println!("");
         for tile in possible_tiles.iter() {
-            //println!("{j} {i} {:?}", TileGlyph::from_bits_truncate(*tile));
+            //println!("{j} {i} {:?}", Tile::from_bits_truncate(*tile));
 
             let coord1: Coordinate = Coordinate { i: i * 2, j: j * 2 };
             let coord2: Coordinate = Coordinate {
@@ -147,11 +147,11 @@ impl Maze {
                 j: j * 2,
             };
 
-            let path1: Glyph = Glyph::new(coord1, TileGlyph::from_bits_truncate(*tile), 0);
-            let wall1: Glyph = Glyph::new(coord1, TileGlyph::W1, 0);
+            let path1: Glyph = Glyph::new(coord1, Tile::from_bits_truncate(*tile), 0);
+            let wall1: Glyph = Glyph::new(coord1, Tile::W1, 0);
 
-            let path2: Glyph = Glyph::new(coord2, TileGlyph::from_bits_truncate(*tile), 0);
-            let wall2: Glyph = Glyph::new(coord2, TileGlyph::W1, 0);
+            let path2: Glyph = Glyph::new(coord2, Tile::from_bits_truncate(*tile), 0);
+            let wall2: Glyph = Glyph::new(coord2, Tile::W1, 0);
 
             row_path.push(path1);
             row_wall.push(wall1);
@@ -167,11 +167,11 @@ impl Maze {
                 j: j * 2 + 1,
             };
 
-            let path1: Glyph = Glyph::new(coord1, TileGlyph::from_bits_truncate(*tile), 0);
-            let wall1: Glyph = Glyph::new(coord1, TileGlyph::W1, 0);
+            let path1: Glyph = Glyph::new(coord1, Tile::from_bits_truncate(*tile), 0);
+            let wall1: Glyph = Glyph::new(coord1, Tile::W1, 0);
 
-            let path2: Glyph = Glyph::new(coord2, TileGlyph::from_bits_truncate(*tile), 0);
-            let wall2: Glyph = Glyph::new(coord2, TileGlyph::W1, 0);
+            let path2: Glyph = Glyph::new(coord2, Tile::from_bits_truncate(*tile), 0);
+            let wall2: Glyph = Glyph::new(coord2, Tile::W1, 0);
 
             row_path.push(path1);
             row_wall.push(wall1);
@@ -234,8 +234,8 @@ impl Maze {
 
 #[cfg(test)]
 mod tests {
-    use crate::maze::constants::TileGlyph;
     use crate::maze::maze::Maze;
+    use crate::maze::tile::Tile;
     use crate::renders::glyph::Glyph;
     use crate::renders::primatives::Coordinate;
 
@@ -245,13 +245,13 @@ mod tests {
         let mut row_path_1: Vec<Glyph> = Vec::new();
         let mut row_path_2: Vec<Glyph> = Vec::new();
 
-        let title1 = Glyph::new(Coordinate { i: 0, j: 0 }, TileGlyph::C2, 0);
-        let title2 = Glyph::new(Coordinate { i: 1, j: 0 }, TileGlyph::L1, 0);
+        let title1 = Glyph::new(Coordinate { i: 0, j: 0 }, Tile::C2, 0);
+        let title2 = Glyph::new(Coordinate { i: 1, j: 0 }, Tile::L1, 0);
         row_path_1.push(title1);
         row_path_1.push(title2);
 
-        let title3 = Glyph::new(Coordinate { i: 0, j: 1 }, TileGlyph::C2, 0);
-        let title4 = Glyph::new(Coordinate { i: 1, j: 1 }, TileGlyph::L1, 0);
+        let title3 = Glyph::new(Coordinate { i: 0, j: 1 }, Tile::C2, 0);
+        let title4 = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::L1, 0);
         row_path_2.push(title3);
         row_path_2.push(title4);
 
