@@ -1,5 +1,5 @@
-use crate::maze::tile::{H, M, Q1, Q3, U, W, Z};
 use crate::renders::primatives::{Line, Point, Segment};
+use crate::renders::strokes::{H, M, Q1, Q3, U, W, Z};
 
 pub const TRIANGLE_A: [Line; 3] = [
     Line {

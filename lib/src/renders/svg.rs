@@ -1,5 +1,5 @@
-use crate::maze::tile::SMALL_ANGLE;
 use crate::renders::primatives::{Line, Segment};
+use crate::renders::strokes::SMALL_ANGLE;
 
 pub struct Path {
     stroke: String,

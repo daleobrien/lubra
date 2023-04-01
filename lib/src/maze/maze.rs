@@ -5,9 +5,11 @@ use std::fs;
 
 use array2d::Array2D;
 
-use crate::maze::tile::{get_random_tile, Tile, H, M};
+use crate::maze::tile::{get_random_tile, Tile};
 use crate::renders::glyph::Glyph;
 use crate::renders::primatives::Coordinate;
+use crate::renders::strokes::{H, M};
+
 use crate::renders::svg::Path;
 use crate::renders::tile_subsets::find_tiles;
 
