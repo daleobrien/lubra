@@ -84,7 +84,6 @@ impl Maze {
 
         // Get the max number of rows within any one Row
         // NOTE: This assumes all items are continous from 0 to n with now skipped cells
-        // TODO: Titles don't really need i.j postions
         let number_of_columns = self
             .tiles
             .iter()

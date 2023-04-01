@@ -188,7 +188,7 @@ fn add(u: usize, i: i32) -> usize {
     }
 }
 
-fn get_tile_relative_postion(
+fn get_tile_relative_position(
     pos: (usize, usize),
     rel: (i32, i32),
     tiles: &Array2D<Tile>, // Flip to Maze, od move this function into Maze
@@ -299,25 +299,25 @@ fn calc_side(
 pub fn get_surrounding_tiles(i: usize, j: usize, tiles: &Array2D<Tile>) -> [[Tile; 5]; 3] {
     let gathered_tiles = [
         [
-            get_tile_relative_postion((i, j), (-2, -1), tiles),
-            get_tile_relative_postion((i, j), (-1, -1), tiles),
-            get_tile_relative_postion((i, j), (0, -1), tiles),
-            get_tile_relative_postion((i, j), (1, -1), tiles),
-            get_tile_relative_postion((i, j), (2, -1), tiles),
+            get_tile_relative_position((i, j), (-2, -1), tiles),
+            get_tile_relative_position((i, j), (-1, -1), tiles),
+            get_tile_relative_position((i, j), (0, -1), tiles),
+            get_tile_relative_position((i, j), (1, -1), tiles),
+            get_tile_relative_position((i, j), (2, -1), tiles),
         ],
         [
-            get_tile_relative_postion((i, j), (-2, 0), tiles),
-            get_tile_relative_postion((i, j), (-1, 0), tiles),
+            get_tile_relative_position((i, j), (-2, 0), tiles),
+            get_tile_relative_position((i, j), (-1, 0), tiles),
             Tile::Z2,
-            get_tile_relative_postion((i, j), (1, 0), tiles),
-            get_tile_relative_postion((i, j), (2, 0), tiles),
+            get_tile_relative_position((i, j), (1, 0), tiles),
+            get_tile_relative_position((i, j), (2, 0), tiles),
         ],
         [
-            get_tile_relative_postion((i, j), (-2, 1), tiles),
-            get_tile_relative_postion((i, j), (-1, 1), tiles),
-            get_tile_relative_postion((i, j), (0, 1), tiles),
-            get_tile_relative_postion((i, j), (1, 1), tiles),
-            get_tile_relative_postion((i, j), (2, 1), tiles),
+            get_tile_relative_position((i, j), (-2, 1), tiles),
+            get_tile_relative_position((i, j), (-1, 1), tiles),
+            get_tile_relative_position((i, j), (0, 1), tiles),
+            get_tile_relative_position((i, j), (1, 1), tiles),
+            get_tile_relative_position((i, j), (2, 1), tiles),
         ],
     ];
     return gathered_tiles;
