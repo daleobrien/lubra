@@ -155,7 +155,7 @@ fn paint_y3(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin: Point, flipped
         }
     }
 }
-pub struct Tile {
+pub struct Glyph {
     lines: Vec<Line>,
     faint: Vec<Line>,
     arcs: Vec<Segment>,
@@ -204,7 +204,7 @@ fn get_nets(flag: TileGlyph) -> Vec<Vec<usize>> {
     return nodes;
 }
 
-impl Tile {
+impl Glyph {
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
     pub fn new(coordinate: Coordinate, raw_mask: TileGlyph, last_free_net: u32) -> Self {
@@ -512,7 +512,7 @@ impl Tile {
             create_triangle(flipped).map(|line| lines.push(line + origin));
         }
 
-        return Tile {
+        return Glyph {
             lines,
             faint,
             arcs,
@@ -555,33 +555,33 @@ impl Tile {
 #[cfg(test)]
 mod tests {
     use crate::maze::constants::TileGlyph;
+    use crate::renders::glyph::Glyph;
     use crate::renders::primatives::Coordinate;
-    use crate::renders::tile::Tile;
 
     #[test]
     fn zero_nets() {
-        let title = Tile::new(Coordinate { i: 1, j: 1 }, TileGlyph::W1, 0);
+        let title = Glyph::new(Coordinate { i: 1, j: 1 }, TileGlyph::W1, 0);
         assert_eq!(title.nets, [0u32, 0u32, 0u32, 0u32, 0u32, 0u32]);
         assert_eq!(title.max(), 0u32);
     }
 
     #[test]
     fn a1_nets() {
-        let title = Tile::new(Coordinate { i: 1, j: 1 }, TileGlyph::A1, 0);
+        let title = Glyph::new(Coordinate { i: 1, j: 1 }, TileGlyph::A1, 0);
         assert_eq!(title.nets, [0u32, 0u32, 0u32, 1u32, 1u32, 0u32]);
         assert_eq!(title.max(), 1u32);
     }
 
     #[test]
     fn x2_nets() {
-        let title = Tile::new(Coordinate { i: 1, j: 1 }, TileGlyph::X2, 0);
+        let title = Glyph::new(Coordinate { i: 1, j: 1 }, TileGlyph::X2, 0);
         assert_eq!(title.nets, [1u32, 2u32, 3u32, 3u32, 2u32, 1u32]);
         assert_eq!(title.max(), 3u32);
     }
 
     #[test]
     fn a1_l2_nets() {
-        let title = Tile::new(Coordinate { i: 1, j: 1 }, TileGlyph::A1 | TileGlyph::L1, 0);
+        let title = Glyph::new(Coordinate { i: 1, j: 1 }, TileGlyph::A1 | TileGlyph::L1, 0);
         assert_eq!(title.nets, [2u32, 0u32, 0u32, 1u32, 1u32, 2u32]);
         assert_eq!(title.max(), 2u32);
     }
