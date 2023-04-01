@@ -1,18 +1,18 @@
+use crate::maze::tile::Tile;
 use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, N1_A, N1_V, N2_A, N2_V, N3_A, N3_V, T1_A, T1_A_ARC, T1_V,
     T1_V_ARC, T2_A, T2_ARC, T2_V, T3_A, T3_ARC, T3_V, TRIANGLE_A, TRIANGLE_V,
 };
 use crate::renders::strokes::{
-    L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018, L019,
-    L020, L021, L022, L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042, L043,
-    L044, L045, L046, L047, L048, L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L061,
-    L062, L063, L064, L065, L066, L067, L068, L069, L070, L071, L072, L073, L074, L075, L076, L077,
-    L078, L079, L080, L081, L082, L083, L084, L085, L086, L087, L088, L089, L091, L092, L093, L094,
-    L095, L096, L097, L098, L099, L100, L101, L102, L103, L104, L105, L106, L107, L121, M, U, W,
+    L001, L002, L005, L006, L007, L008, L011, L012, L013, L014, L015, L016, L017, L018, L019, L020,
+    L021, L022, L023, L024, L025, L026, L035, L036, L037, L038, L039, L040, L041, L042, L043, L044,
+    L045, L046, L047, L048, L049, L050, L051, L052, L053, L054, L056, L057, L059, L060, L061, L062,
+    L063, L064, L065, L066, L067, L068, L069, L070, L071, L072, L073, L074, L075, L076, L077, L078,
+    L079, L080, L081, L082, L083, L084, L085, L086, L087, L088, L089, L091, L092, L093, L094, L095,
+    L096, L097, L098, L099, L100, L101, L102, L103, L104, L105, L106, L107, L121, M, U, W,
 };
 use crate::renders::svg::Path;
-use crate::maze::tile::Tile;
 
 use rand::Rng;
 
@@ -179,32 +179,6 @@ static NODE_MASKS: [Tile; 8] = [
     Tile::L3,
 ];
 
-fn get_nets(flag: Tile) -> Vec<Vec<usize>> {
-    let mut nodes = Vec::new();
-    match flag {
-        Tile::X1 => nodes.push(vec![4, 5, 6]), // All edges connect to each other
-        Tile::X2 => {
-            nodes.push(vec![1, 6]); // Each edge and it's oposite point connect to each other
-            nodes.push(vec![2, 5]);
-            nodes.push(vec![3, 4]);
-        }
-        Tile::A1 => nodes.push(vec![4, 5]),
-        Tile::A2 => nodes.push(vec![4, 6]),
-        Tile::A3 => nodes.push(vec![5, 6]),
-        Tile::L1 => nodes.push(vec![1, 6]),
-        Tile::L2 => nodes.push(vec![2, 5]),
-        Tile::L3 => nodes.push(vec![3, 4]),
-        Tile::N1 => nodes.push(vec![1]),
-        Tile::N2 => nodes.push(vec![2]),
-        Tile::N3 => nodes.push(vec![3]),
-        Tile::T1 => nodes.push(vec![6]),
-        Tile::T2 => nodes.push(vec![5]),
-        Tile::T3 => nodes.push(vec![4]),
-        _ => {}
-    }
-    return nodes;
-}
-
 impl Glyph {
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
@@ -228,7 +202,7 @@ impl Glyph {
         let mut last_free_net_max = last_free_net;
 
         for tile_primative in NODE_MASKS.iter() {
-            for node_groups in get_nets(*tile_primative & raw_mask) {
+            for node_groups in (*tile_primative & raw_mask).get_nets() {
                 last_free_net_max += 1;
                 for index in node_groups.iter() {
                     nets[*index - 1] = last_free_net_max;

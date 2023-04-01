@@ -8,44 +8,7 @@ use crate::renders::tile_subsets::random_side;
 bitflags! {
   #[derive(Default, serde::Deserialize)]
   pub struct Tile: u32 {
-    // Maybe alter these flags to be a mini-adjoint graph, so it will make it easier to use.
-    /*
-     0 0 0 0 0 0
-     0 0 0 0 0 0
-     0 0 0 0 0 0
-     0 0 0 0 0 0
-     0 0 0 0 0 0
-     0 0 0 0 0 0  (36 bits), but not all are used,
 
-
-     0 0 0 0 0 0
-       0 0 0 0 0
-         0 0 0 0
-           0 0 0
-             0 0
-               0  (21 bits)
-
-    Not all graphs are posible, so maybe could reduce more, I know I only have 193 distinct graphs, so could use
-    8 bitsm but then it's all a lookup and would have to decode/enocde.
-
-    We only really have T,N,L & A, and even then we can't have all those at once, ... that's < 12 bits
-
-
-TODO: Would a grid be better now? (adj matrix)
-
-  0 1 0 0 0 0
-  1 0 0 0 0 0
-  0 0 1 0 1 0
-  0 0 0 0 0 0
-  0 0 1 0 0 0
-  0 0 0 0 0 0
-
--> 36 bits  ( many bits are redant, unless I consider directional mazes, could be interestings)
-
-
-    */
-
-    // Graph node
     //              XXX XXX
     const G1 = 0b00_000_001_000_000_000_000_000_000_000_000;
     const G2 = 0b00_000_010_000_000_000_000_000_000_000_000;
@@ -57,7 +20,7 @@ TODO: Would a grid be better now? (adj matrix)
 
     //                      XXX
     const Z1 = 0b00_000_000_000_000_000_000_000_000_000_000; // Empty
-    const Z2 = 0b00_000_000_010_000_000_000_000_000_000_000; // Considered not routed.
+    const Z2 = 0b00_000_000_010_000_000_000_000_000_000_000; // Not routed
     const W1 = 0b00_000_000_001_000_000_000_000_000_000_000; // Walls only, used to show the grid
     //                          XXX
     const X1 = 0b00_111_000_000_001_000_000_000_000_000_000;
@@ -92,18 +55,58 @@ TODO: Would a grid be better now? (adj matrix)
   }
 }
 
+/*
+ 36 bit adjoint matrix
+
+ 0 0 0 0 0 0
+ 0 0 0 0 0 0
+ 0 0 0 0 0 0
+ 0 0 0 0 0 0
+ 0 0 0 0 0 0
+ 0 0 0 0 0 0
+
+ I'm kind of doubling up on representation, we have nodes below, and bits above.
+
+*/
+
 impl Tile {
+    pub fn get_nets(&self) -> Vec<Vec<usize>> {
+        let mut nodes = Vec::new();
+        match *self {
+            Tile::X1 => nodes.push(vec![4, 5, 6]), // All edges connect to each other
+            Tile::X2 => {
+                nodes.push(vec![1, 6]); // Each edge and it's opposite point connect to each other
+                nodes.push(vec![2, 5]);
+                nodes.push(vec![3, 4]);
+            }
+            Tile::A1 => nodes.push(vec![4, 5]),
+            Tile::A2 => nodes.push(vec![4, 6]),
+            Tile::A3 => nodes.push(vec![5, 6]),
+            Tile::L1 => nodes.push(vec![1, 6]),
+            Tile::L2 => nodes.push(vec![2, 5]),
+            Tile::L3 => nodes.push(vec![3, 4]),
+            Tile::N1 => nodes.push(vec![1]),
+            Tile::N2 => nodes.push(vec![2]),
+            Tile::N3 => nodes.push(vec![3]),
+            Tile::T1 => nodes.push(vec![6]),
+            Tile::T2 => nodes.push(vec![5]),
+            Tile::T3 => nodes.push(vec![4]),
+            _ => {}
+        }
+        return nodes;
+    }
+
     pub fn rotate_cw(&self) -> Tile {
-        let mut tile = Self::Z1;
+        let mut rotated_tile = Self::Z1;
 
         if self.contains(Self::W1) {
-            tile |= Self::W1;
+            rotated_tile |= Self::W1;
         }
         if self.contains(Self::X1) {
-            tile |= Self::X1;
+            rotated_tile |= Self::X1;
         }
         if self.contains(Self::X2) {
-            tile |= Self::X2;
+            rotated_tile |= Self::X2;
         }
 
         for (a, b) in [
@@ -127,22 +130,22 @@ impl Tile {
             (Self::T3, Self::T1),
         ] {
             if self.contains(a) {
-                tile |= b;
+                rotated_tile |= b;
             }
         }
-        return tile;
+        return rotated_tile;
     }
     pub fn rotate_ccw(&self) -> Tile {
-        let mut tile = Self::Z1;
+        let mut rotated_tile = Self::Z1;
 
         if self.contains(Self::W1) {
-            tile |= Self::W1;
+            rotated_tile |= Self::W1;
         }
         if self.contains(Self::X1) {
-            tile |= Self::X1;
+            rotated_tile |= Self::X1;
         }
         if self.contains(Self::X2) {
-            tile |= Self::X2;
+            rotated_tile |= Self::X2;
         }
         for (a, b) in [
             (Self::Y1, Self::Y3),
@@ -165,10 +168,10 @@ impl Tile {
             (Self::T3, Self::T2),
         ] {
             if self.contains(a) {
-                tile |= b;
+                rotated_tile |= b;
             }
         }
-        return tile;
+        return rotated_tile;
     }
 }
 impl Serialize for Tile {
@@ -180,230 +183,12 @@ impl Serialize for Tile {
     }
 }
 
-fn add(u: usize, i: i32) -> usize {
+pub fn add(u: usize, i: i32) -> usize {
     if i.is_negative() {
         u - i.wrapping_abs() as u32 as usize
     } else {
         u + i as usize
     }
-}
-
-fn get_tile_relative_position(
-    pos: (usize, usize),
-    rel: (i32, i32),
-    tiles: &Array2D<Tile>, // Flip to Maze, od move this function into Maze
-) -> Tile {
-    if pos.1 as i32 + rel.1 < 0 || pos.0 as i32 + rel.0 < 0 {
-        return Tile::Z1;
-    }
-
-    let x: usize = add(pos.0, rel.0);
-    let y: usize = add(pos.1, rel.1);
-
-    let tile = tiles.get(y, x);
-    return match tile {
-        Some(t) => *t,
-        None => Tile::Z1,
-    };
-}
-
-fn calc_vertex(
-    gathered_tiles: [[Tile; 5]; 3],
-    tile: Tile,
-    pos: usize, // 0..2
-    is_top: bool,
-) -> (bool, bool) {
-    /*
-                         ____ ____ ____
-                             /\   /\
-           this row -> .    /  \ /  \
-                            ---- ----
-
-    The other row depends on where the tile is pointing up or down
-    */
-
-    let this_row = gathered_tiles[1];
-
-    let other_row = if is_top {
-        gathered_tiles[2]
-    } else {
-        gathered_tiles[0]
-    };
-
-    let opposite_tile = other_row[4 - 2 * pos]; // index 4, 2, 0
-
-    if opposite_tile.contains(Tile::Z2) {
-        // is not routed
-        if pos == 0
-            && !this_row[3].contains(tile)
-            && !this_row[4].contains(tile)
-            && !other_row[2].contains(tile)
-            && !other_row[3].contains(tile)
-        {
-            return (false, true);
-        }
-        if pos == 1
-            && !this_row[1].contains(tile)
-            && !this_row[3].contains(tile)
-            && !other_row[1].contains(tile)
-            && !other_row[3].contains(tile)
-        {
-            return (false, true);
-        }
-        if pos == 2
-            && !this_row[0].contains(tile)
-            && !this_row[1].contains(tile)
-            && !other_row[1].contains(tile)
-            && !other_row[2].contains(tile)
-        {
-            return (false, true);
-        }
-    } else if opposite_tile.contains(tile) {
-        // Must be 1
-        return (true, false);
-    }
-    // Must be 0
-    (false, false)
-}
-
-fn calc_side(
-    gathered_tiles: [[Tile; 5]; 3],
-    tile: Tile,
-    pos: usize,
-    full_pos: usize,
-) -> (bool, bool) {
-    let j = if pos == 1 {
-        if full_pos % 2 == 1 {
-            0
-        } else {
-            2
-        }
-    } else {
-        1
-    };
-
-    let adjacent = gathered_tiles[j][pos + 1];
-
-    if adjacent.contains(Tile::Z2) {
-        // Don't care
-        return (false, true);
-    }
-    if adjacent.contains(tile) {
-        // Must match, on a one
-        return (true, false);
-    }
-    // Must match, on a zero
-    (false, false)
-}
-
-pub fn get_surrounding_tiles(i: usize, j: usize, tiles: &Array2D<Tile>) -> [[Tile; 5]; 3] {
-    let gathered_tiles = [
-        [
-            get_tile_relative_position((i, j), (-2, -1), tiles),
-            get_tile_relative_position((i, j), (-1, -1), tiles),
-            get_tile_relative_position((i, j), (0, -1), tiles),
-            get_tile_relative_position((i, j), (1, -1), tiles),
-            get_tile_relative_position((i, j), (2, -1), tiles),
-        ],
-        [
-            get_tile_relative_position((i, j), (-2, 0), tiles),
-            get_tile_relative_position((i, j), (-1, 0), tiles),
-            Tile::Z2,
-            get_tile_relative_position((i, j), (1, 0), tiles),
-            get_tile_relative_position((i, j), (2, 0), tiles),
-        ],
-        [
-            get_tile_relative_position((i, j), (-2, 1), tiles),
-            get_tile_relative_position((i, j), (-1, 1), tiles),
-            get_tile_relative_position((i, j), (0, 1), tiles),
-            get_tile_relative_position((i, j), (1, 1), tiles),
-            get_tile_relative_position((i, j), (2, 1), tiles),
-        ],
-    ];
-    return gathered_tiles;
-}
-
-pub fn get_surrounding_tile_connections(i: usize, j: usize, tiles: &Array2D<Tile>) -> (u32, u32) {
-    let surrounding_tiles = get_surrounding_tiles(i, j, tiles);
-
-    let mut dont_care = 0u32;
-    let mut matches = 0u32;
-
-    let pos1 = (4 + i + (3 * (j % 2))) % 6;
-    let pos2 = (2 + i + (3 * (j % 2))) % 6;
-    let pos3 = (0 + i + (3 * (j % 2))) % 6; // Alternates on each row , 1st row 0,1,2,3,4,5,0, ... 2nd row, 3,4,5,0,1,2,3,...
-
-    // Node 1
-    let (m, d) = calc_vertex(surrounding_tiles, Tile::G1, (1 + pos3) % 3, pos1 < 3);
-    if m {
-        matches |= 0b000_001;
-    }
-    if d {
-        dont_care |= 0b000_001;
-    }
-
-    // Node 2
-    let (m, d) = calc_vertex(surrounding_tiles, Tile::G2, (2 + pos3) % 3, pos2 < 3);
-    if m {
-        matches |= 0b000_010;
-    }
-    if d {
-        dont_care |= 0b000_010;
-    }
-
-    // Node3
-    let (m, d) = calc_vertex(surrounding_tiles, Tile::G3, (3 + pos3) % 3, pos3 < 3);
-    if m {
-        matches |= 0b000_100;
-    }
-    if d {
-        dont_care |= 0b000_100;
-    }
-
-    let (m, d) = calc_side(surrounding_tiles, Tile::G4, (3 + pos3) % 3, pos3);
-    if m {
-        matches |= 0b001_000;
-    }
-    if d {
-        dont_care |= 0b001_000;
-    }
-
-    let (m, d) = calc_side(surrounding_tiles, Tile::G5, (3 + pos2) % 3, pos3);
-    if m {
-        matches |= 0b010_000;
-    }
-    if d {
-        dont_care |= 0b010_000;
-    }
-
-    let (m, d) = calc_side(surrounding_tiles, Tile::G6, (3 + pos1) % 3, pos3);
-    if m {
-        matches |= 0b100_000;
-    }
-    if d {
-        dont_care |= 0b100_000;
-    }
-    return (dont_care, matches);
-}
-
-pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<Tile>) -> Tile {
-    if i == 0 && j == 0 {
-        return Tile::L3;
-    }
-
-    let (dont_care, matches) = get_surrounding_tile_connections(i, j, tiles);
-
-    // TODO: strip out cells that only have Nx and Tx
-    for _ in 0..45 {
-        let first_tile = random_side(matches, dont_care);
-        if !first_tile.contains(Tile::N1)
-            && !first_tile.contains(Tile::N2)
-            && !first_tile.contains(Tile::N3)
-        {
-            return first_tile;
-        }
-    }
-    return random_side(matches, dont_care);
 }
 
 impl From<[u32; 3]> for Tile {

@@ -5,13 +5,13 @@ use std::fs;
 
 use array2d::Array2D;
 
-use crate::maze::tile::{get_random_tile, Tile};
+use crate::maze::tile::{add, Tile};
 use crate::renders::glyph::Glyph;
 use crate::renders::primatives::Coordinate;
 use crate::renders::strokes::{H, M};
 
 use crate::renders::svg::Path;
-use crate::renders::tile_subsets::find_tiles;
+use crate::renders::tile_subsets::{find_tiles, random_side};
 
 pub struct Maze {
     pub style: Option<String>,
@@ -55,7 +55,7 @@ impl Maze {
             for i in 0..number_of_columns {
                 let coord: Coordinate = Coordinate { i, j };
 
-                let tile = get_random_tile(i, j, &tiles);
+                let tile = self.get_random_tile(i, j, &tiles);
 
                 tiles[(j, i)] = tile;
                 let path: Glyph = Glyph::new(coord, tile, self.last_free_net_id);
@@ -99,8 +99,6 @@ impl Maze {
         self.height = number_of_rows as f64 * H;
     }
 
-    pub fn get_surrounding_tiles(&mut self, i: usize, j: usize) {}
-
     // TODO:Added debug only method to create the grid outlines, aka the walls
     pub fn smoosh(&mut self) {
         for row in self.tiles.iter() {
@@ -127,6 +125,232 @@ impl Maze {
 
         self.width = 17f64 * M;
         self.height = 12f64 * H;
+    }
+
+    fn get_tile_relative_position(
+        &self,
+        pos: (usize, usize),
+        rel: (i32, i32),
+        tiles: &Array2D<Tile>, // Flip to Maze, or move this function into Maze
+    ) -> Tile {
+        if pos.1 as i32 + rel.1 < 0 || pos.0 as i32 + rel.0 < 0 {
+            return Tile::Z1;
+        }
+
+        let x: usize = add(pos.0, rel.0);
+        let y: usize = add(pos.1, rel.1);
+
+        let tile = tiles.get(y, x);
+        return match tile {
+            Some(t) => *t,
+            None => Tile::Z1,
+        };
+    }
+
+    fn calc_vertex(
+        &self,
+        gathered_tiles: [[Tile; 5]; 3],
+        tile: Tile,
+        pos: usize, // 0..2
+        is_top: bool,
+    ) -> (bool, bool) {
+        /*
+                             ____ ____ ____
+                                 /\   /\
+               this row -> .    /  \ /  \
+                                ---- ----
+
+        The other row depends on where the tile is pointing up or down
+        */
+
+        let this_row = gathered_tiles[1];
+
+        let other_row = if is_top {
+            gathered_tiles[2]
+        } else {
+            gathered_tiles[0]
+        };
+
+        let opposite_tile = other_row[4 - 2 * pos]; // index 4, 2, 0
+
+        if opposite_tile.contains(Tile::Z2) {
+            // is not routed
+            if pos == 0
+                && !this_row[3].contains(tile)
+                && !this_row[4].contains(tile)
+                && !other_row[2].contains(tile)
+                && !other_row[3].contains(tile)
+            {
+                return (false, true);
+            }
+            if pos == 1
+                && !this_row[1].contains(tile)
+                && !this_row[3].contains(tile)
+                && !other_row[1].contains(tile)
+                && !other_row[3].contains(tile)
+            {
+                return (false, true);
+            }
+            if pos == 2
+                && !this_row[0].contains(tile)
+                && !this_row[1].contains(tile)
+                && !other_row[1].contains(tile)
+                && !other_row[2].contains(tile)
+            {
+                return (false, true);
+            }
+        } else if opposite_tile.contains(tile) {
+            // Must be 1
+            return (true, false);
+        }
+        // Must be 0
+        (false, false)
+    }
+
+    fn calc_side(
+        &self,
+        gathered_tiles: [[Tile; 5]; 3],
+        tile: Tile,
+        pos: usize,
+        full_pos: usize,
+    ) -> (bool, bool) {
+        let j = if pos == 1 {
+            if full_pos % 2 == 1 {
+                0
+            } else {
+                2
+            }
+        } else {
+            1
+        };
+
+        let adjacent = gathered_tiles[j][pos + 1];
+
+        if adjacent.contains(Tile::Z2) {
+            // Don't care
+            return (false, true);
+        }
+        if adjacent.contains(tile) {
+            // Must match, on a one
+            return (true, false);
+        }
+        // Must match, on a zero
+        (false, false)
+    }
+
+    fn get_surrounding_tiles(&self, i: usize, j: usize, tiles: &Array2D<Tile>) -> [[Tile; 5]; 3] {
+        let gathered_tiles = [
+            [
+                self.get_tile_relative_position((i, j), (-2, -1), tiles),
+                self.get_tile_relative_position((i, j), (-1, -1), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
+                self.get_tile_relative_position((i, j), (2, -1), tiles),
+            ],
+            [
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                Tile::Z2,
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (2, 0), tiles),
+            ],
+            [
+                self.get_tile_relative_position((i, j), (-2, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 1), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
+                self.get_tile_relative_position((i, j), (2, 1), tiles),
+            ],
+        ];
+        return gathered_tiles;
+    }
+
+    pub fn get_surrounding_tile_connections(
+        &self,
+        i: usize,
+        j: usize,
+        tiles: &Array2D<Tile>,
+    ) -> (u32, u32) {
+        let surrounding_tiles = self.get_surrounding_tiles(i, j, tiles);
+
+        let mut dont_care = 0u32;
+        let mut matches = 0u32;
+
+        let pos1 = (4 + i + (3 * (j % 2))) % 6;
+        let pos2 = (2 + i + (3 * (j % 2))) % 6;
+        let pos3 = (0 + i + (3 * (j % 2))) % 6; // Alternates on each row , 1st row 0,1,2,3,4,5,0, ... 2nd row, 3,4,5,0,1,2,3,...
+
+        // Node 1
+        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G1, (1 + pos3) % 3, pos1 < 3);
+        if m {
+            matches |= 0b000_001;
+        }
+        if d {
+            dont_care |= 0b000_001;
+        }
+
+        // Node 2
+        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G2, (2 + pos3) % 3, pos2 < 3);
+        if m {
+            matches |= 0b000_010;
+        }
+        if d {
+            dont_care |= 0b000_010;
+        }
+
+        // Node3
+        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G3, (3 + pos3) % 3, pos3 < 3);
+        if m {
+            matches |= 0b000_100;
+        }
+        if d {
+            dont_care |= 0b000_100;
+        }
+
+        let (m, d) = self.calc_side(surrounding_tiles, Tile::G4, (3 + pos3) % 3, pos3);
+        if m {
+            matches |= 0b001_000;
+        }
+        if d {
+            dont_care |= 0b001_000;
+        }
+
+        let (m, d) = self.calc_side(surrounding_tiles, Tile::G5, (3 + pos2) % 3, pos3);
+        if m {
+            matches |= 0b010_000;
+        }
+        if d {
+            dont_care |= 0b010_000;
+        }
+
+        let (m, d) = self.calc_side(surrounding_tiles, Tile::G6, (3 + pos1) % 3, pos3);
+        if m {
+            matches |= 0b100_000;
+        }
+        if d {
+            dont_care |= 0b100_000;
+        }
+        return (dont_care, matches);
+    }
+
+    fn get_random_tile(&self, i: usize, j: usize, tiles: &Array2D<Tile>) -> Tile {
+        if i == 0 && j == 0 {
+            return Tile::L3;
+        }
+
+        let (dont_care, matches) = self.get_surrounding_tile_connections(i, j, tiles);
+
+        // TODO: strip out cells that only have Nx and Tx
+        for _ in 0..45 {
+            let first_tile = random_side(matches, dont_care);
+            if !first_tile.contains(Tile::N1)
+                && !first_tile.contains(Tile::N2)
+                && !first_tile.contains(Tile::N3)
+            {
+                return first_tile;
+            }
+        }
+        return random_side(matches, dont_care);
     }
 
     pub fn create_all_title_in_grid(&mut self) {
