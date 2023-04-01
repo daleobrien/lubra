@@ -23,6 +23,16 @@ pub struct Maze {
     height: f64,
 }
 
+/*
+
+Problem,
+
+Glyph has nets, strokes and so on,
+while Tile just has a bit mask !
+
+
+*/
+
 impl Maze {
     pub fn new(number_of_columns: usize, number_of_rows: usize, randomise: bool) -> Self {
         // User Maze object somehow
@@ -58,9 +68,13 @@ impl Maze {
                 let tile = self.get_random_tile(i, j, &tiles);
 
                 tiles[(j, i)] = tile;
+
                 let path: Glyph = Glyph::new(coord, tile, self.last_free_net_id);
+
                 self.last_free_net_id = max(path.max(), self.last_free_net_id);
+
                 // TODO: updated self.nets too, so I can find which tiles have a given net id.
+                // Where to I move the net list too, maybe it should go with then maze itself
 
                 println!(
                     ":->  ({i},{j}) -> {} {:?}",
@@ -131,7 +145,7 @@ impl Maze {
         &self,
         pos: (usize, usize),
         rel: (i32, i32),
-        tiles: &Array2D<Tile>, // Flip to Maze, or move this function into Maze
+        tiles: &Array2D<Tile>,
     ) -> Tile {
         if pos.1 as i32 + rel.1 < 0 || pos.0 as i32 + rel.0 < 0 {
             return Tile::Z1;

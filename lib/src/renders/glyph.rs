@@ -189,6 +189,8 @@ impl Glyph {
         let mut farcs: Vec<Segment> = Vec::new();
         let mut semi: Vec<Segment> = Vec::new();
         let mut fsemi: Vec<Segment> = Vec::new();
+
+        // Move to Maze!
         let mut nets: [u32; 6] = [0; 6];
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);

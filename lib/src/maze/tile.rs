@@ -55,20 +55,6 @@ bitflags! {
   }
 }
 
-/*
- 36 bit adjoint matrix
-
- 0 0 0 0 0 0
- 0 0 0 0 0 0
- 0 0 0 0 0 0
- 0 0 0 0 0 0
- 0 0 0 0 0 0
- 0 0 0 0 0 0
-
- I'm kind of doubling up on representation, we have nodes below, and bits above.
-
-*/
-
 impl Tile {
     pub fn get_nets(&self) -> Vec<Vec<usize>> {
         let mut nodes = Vec::new();
