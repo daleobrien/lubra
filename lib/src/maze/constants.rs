@@ -7,7 +7,7 @@ use crate::renders::tile_subsets::random_side;
 
 bitflags! {
   #[derive(Default, serde::Deserialize)]
-  pub struct TileFlags: u32 {
+  pub struct TileGlyph: u32 {
     // Maybe alter these flags to be a mini-adjoint graph, so it will make it easier to use.
     /*
      0 0 0 0 0 0
@@ -92,8 +92,8 @@ TODO: Would a grid be better now? (adj matrix)
   }
 }
 
-impl TileFlags {
-    pub fn rotate_cw(&self) -> TileFlags {
+impl TileGlyph {
+    pub fn rotate_cw(&self) -> TileGlyph {
         let mut tile = Self::Z1;
 
         if self.contains(Self::W1) {
@@ -132,7 +132,7 @@ impl TileFlags {
         }
         return tile;
     }
-    pub fn rotate_ccw(&self) -> TileFlags {
+    pub fn rotate_ccw(&self) -> TileGlyph {
         let mut tile = Self::Z1;
 
         if self.contains(Self::W1) {
@@ -171,7 +171,7 @@ impl TileFlags {
         return tile;
     }
 }
-impl Serialize for TileFlags {
+impl Serialize for TileGlyph {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -191,10 +191,10 @@ fn add(u: usize, i: i32) -> usize {
 fn get_tile_relative_postion(
     pos: (usize, usize),
     rel: (i32, i32),
-    tiles: &Array2D<TileFlags>, // Flip to Maze, od move this function into Maze
-) -> TileFlags {
+    tiles: &Array2D<TileGlyph>, // Flip to Maze, od move this function into Maze
+) -> TileGlyph {
     if pos.1 as i32 + rel.1 < 0 || pos.0 as i32 + rel.0 < 0 {
-        return TileFlags::Z1;
+        return TileGlyph::Z1;
     }
 
     let x: usize = add(pos.0, rel.0);
@@ -203,13 +203,13 @@ fn get_tile_relative_postion(
     let tile = tiles.get(y, x);
     return match tile {
         Some(t) => *t,
-        None => TileFlags::Z1,
+        None => TileGlyph::Z1,
     };
 }
 
 fn calc_vertex(
-    gathered_tiles: [[TileFlags; 5]; 3],
-    tile: TileFlags,
+    gathered_tiles: [[TileGlyph; 5]; 3],
+    tile: TileGlyph,
     pos: usize, // 0..2
     is_top: bool,
 ) -> (bool, bool) {
@@ -232,7 +232,7 @@ fn calc_vertex(
 
     let opposite_tile = other_row[4 - 2 * pos]; // index 4, 2, 0
 
-    if opposite_tile.contains(TileFlags::Z2) {
+    if opposite_tile.contains(TileGlyph::Z2) {
         // is not routed
         if pos == 0
             && !this_row[3].contains(tile)
@@ -267,8 +267,8 @@ fn calc_vertex(
 }
 
 fn calc_side(
-    gathered_tiles: [[TileFlags; 5]; 3],
-    tile: TileFlags,
+    gathered_tiles: [[TileGlyph; 5]; 3],
+    tile: TileGlyph,
     pos: usize,
     full_pos: usize,
 ) -> (bool, bool) {
@@ -284,7 +284,7 @@ fn calc_side(
 
     let adjacent = gathered_tiles[j][pos + 1];
 
-    if adjacent.contains(TileFlags::Z2) {
+    if adjacent.contains(TileGlyph::Z2) {
         // Don't care
         return (false, true);
     }
@@ -299,8 +299,8 @@ fn calc_side(
 pub fn get_surrounding_tiles(
     i: usize,
     j: usize,
-    tiles: &Array2D<TileFlags>,
-) -> [[TileFlags; 5]; 3] {
+    tiles: &Array2D<TileGlyph>,
+) -> [[TileGlyph; 5]; 3] {
     let gathered_tiles = [
         [
             get_tile_relative_postion((i, j), (-2, -1), tiles),
@@ -312,7 +312,7 @@ pub fn get_surrounding_tiles(
         [
             get_tile_relative_postion((i, j), (-2, 0), tiles),
             get_tile_relative_postion((i, j), (-1, 0), tiles),
-            TileFlags::Z2,
+            TileGlyph::Z2,
             get_tile_relative_postion((i, j), (1, 0), tiles),
             get_tile_relative_postion((i, j), (2, 0), tiles),
         ],
@@ -330,7 +330,7 @@ pub fn get_surrounding_tiles(
 pub fn get_surrounding_tile_connections(
     i: usize,
     j: usize,
-    tiles: &Array2D<TileFlags>,
+    tiles: &Array2D<TileGlyph>,
 ) -> (u32, u32) {
     let surrounding_tiles = get_surrounding_tiles(i, j, tiles);
 
@@ -342,7 +342,7 @@ pub fn get_surrounding_tile_connections(
     let pos3 = (0 + i + (3 * (j % 2))) % 6; // Alternates on each row , 1st row 0,1,2,3,4,5,0, ... 2nd row, 3,4,5,0,1,2,3,...
 
     // Node 1
-    let (m, d) = calc_vertex(surrounding_tiles, TileFlags::G1, (1 + pos3) % 3, pos1 < 3);
+    let (m, d) = calc_vertex(surrounding_tiles, TileGlyph::G1, (1 + pos3) % 3, pos1 < 3);
     if m {
         matches |= 0b000_001;
     }
@@ -351,7 +351,7 @@ pub fn get_surrounding_tile_connections(
     }
 
     // Node 2
-    let (m, d) = calc_vertex(surrounding_tiles, TileFlags::G2, (2 + pos3) % 3, pos2 < 3);
+    let (m, d) = calc_vertex(surrounding_tiles, TileGlyph::G2, (2 + pos3) % 3, pos2 < 3);
     if m {
         matches |= 0b000_010;
     }
@@ -360,7 +360,7 @@ pub fn get_surrounding_tile_connections(
     }
 
     // Node3
-    let (m, d) = calc_vertex(surrounding_tiles, TileFlags::G3, (3 + pos3) % 3, pos3 < 3);
+    let (m, d) = calc_vertex(surrounding_tiles, TileGlyph::G3, (3 + pos3) % 3, pos3 < 3);
     if m {
         matches |= 0b000_100;
     }
@@ -368,7 +368,7 @@ pub fn get_surrounding_tile_connections(
         dont_care |= 0b000_100;
     }
 
-    let (m, d) = calc_side(surrounding_tiles, TileFlags::G4, (3 + pos3) % 3, pos3);
+    let (m, d) = calc_side(surrounding_tiles, TileGlyph::G4, (3 + pos3) % 3, pos3);
     if m {
         matches |= 0b001_000;
     }
@@ -376,7 +376,7 @@ pub fn get_surrounding_tile_connections(
         dont_care |= 0b001_000;
     }
 
-    let (m, d) = calc_side(surrounding_tiles, TileFlags::G5, (3 + pos2) % 3, pos3);
+    let (m, d) = calc_side(surrounding_tiles, TileGlyph::G5, (3 + pos2) % 3, pos3);
     if m {
         matches |= 0b010_000;
     }
@@ -384,7 +384,7 @@ pub fn get_surrounding_tile_connections(
         dont_care |= 0b010_000;
     }
 
-    let (m, d) = calc_side(surrounding_tiles, TileFlags::G6, (3 + pos1) % 3, pos3);
+    let (m, d) = calc_side(surrounding_tiles, TileGlyph::G6, (3 + pos1) % 3, pos3);
     if m {
         matches |= 0b100_000;
     }
@@ -394,9 +394,9 @@ pub fn get_surrounding_tile_connections(
     return (dont_care, matches);
 }
 
-pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFlags {
+pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileGlyph>) -> TileGlyph {
     if i == 0 && j == 0 {
-        return TileFlags::L3;
+        return TileGlyph::L3;
     }
 
     let (dont_care, matches) = get_surrounding_tile_connections(i, j, tiles);
@@ -404,9 +404,9 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     // TODO: strip out cells that only have Nx and Tx
     for _ in 0..45 {
         let first_tile = random_side(matches, dont_care);
-        if !first_tile.contains(TileFlags::N1)
-            && !first_tile.contains(TileFlags::N2)
-            && !first_tile.contains(TileFlags::N3)
+        if !first_tile.contains(TileGlyph::N1)
+            && !first_tile.contains(TileGlyph::N2)
+            && !first_tile.contains(TileGlyph::N3)
         {
             return first_tile;
         }
@@ -414,94 +414,94 @@ pub fn get_random_tile(i: usize, j: usize, tiles: &Array2D<TileFlags>) -> TileFl
     return random_side(matches, dont_care);
 }
 
-impl From<[u32; 3]> for TileFlags {
-    fn from(masks: [u32; 3]) -> TileFlags {
+impl From<[u32; 3]> for TileGlyph {
+    fn from(masks: [u32; 3]) -> TileGlyph {
         let [point_mask, line_mask, curve_mask] = masks;
 
         // Nx and Tx
-        let mut value = TileFlags::from_bits_truncate(0);
+        let mut value = TileGlyph::from_bits_truncate(0);
 
         if point_mask & 0b000_001 == 0b000_001 {
-            value |= TileFlags::N1;
+            value |= TileGlyph::N1;
         };
         if point_mask & 0b000_010 == 0b000_010 {
-            value |= TileFlags::N2;
+            value |= TileGlyph::N2;
         };
         if point_mask & 0b000_100 == 0b000_100 {
-            value |= TileFlags::N3;
+            value |= TileGlyph::N3;
         };
 
         if point_mask & 0b100_000 == 0b100_000 {
-            value |= TileFlags::T1;
+            value |= TileGlyph::T1;
         };
         if point_mask & 0b010_000 == 0b010_000 {
-            value |= TileFlags::T2;
+            value |= TileGlyph::T2;
         };
         if point_mask & 0b001_000 == 0b001_000 {
-            value |= TileFlags::T3;
+            value |= TileGlyph::T3;
         };
 
         if curve_mask & 0b011_000 == 0b011_000 {
-            value |= TileFlags::A1;
+            value |= TileGlyph::A1;
         };
         if curve_mask & 0b101_000 == 0b101_000 {
-            value |= TileFlags::A2;
+            value |= TileGlyph::A2;
         };
         if curve_mask & 0b110_000 == 0b110_000 {
-            value |= TileFlags::A3;
+            value |= TileGlyph::A3;
         };
         if line_mask & 0b001 == 0b001 {
-            value |= TileFlags::L1;
+            value |= TileGlyph::L1;
         };
         if line_mask & 0b010 == 0b010 {
-            value |= TileFlags::L2;
+            value |= TileGlyph::L2;
         };
         if line_mask & 0b100 == 0b100 {
-            value |= TileFlags::L3;
+            value |= TileGlyph::L3;
         };
 
         // e.g if A1 and L1 then C1 and clear A1/L1
         // CXs
-        if value & (TileFlags::A1 | TileFlags::L1) == (TileFlags::A1 | TileFlags::L1) {
-            value ^= TileFlags::L1;
-            value |= TileFlags::C1;
+        if value & (TileGlyph::A1 | TileGlyph::L1) == (TileGlyph::A1 | TileGlyph::L1) {
+            value ^= TileGlyph::L1;
+            value |= TileGlyph::C1;
         }
-        if value & (TileFlags::A2 | TileFlags::L2) == (TileFlags::A2 | TileFlags::L2) {
-            value ^= TileFlags::L2;
-            value |= TileFlags::C2;
+        if value & (TileGlyph::A2 | TileGlyph::L2) == (TileGlyph::A2 | TileGlyph::L2) {
+            value ^= TileGlyph::L2;
+            value |= TileGlyph::C2;
         }
-        if value & (TileFlags::A3 | TileFlags::L3) == (TileFlags::A3 | TileFlags::L3) {
-            value ^= TileFlags::L3;
-            value |= TileFlags::C3;
+        if value & (TileGlyph::A3 | TileGlyph::L3) == (TileGlyph::A3 | TileGlyph::L3) {
+            value ^= TileGlyph::L3;
+            value |= TileGlyph::C3;
         }
 
         // X1
-        if value & (TileFlags::AX) == (TileFlags::AX) {
-            value ^= TileFlags::AX;
-            value |= TileFlags::X1;
+        if value & (TileGlyph::AX) == (TileGlyph::AX) {
+            value ^= TileGlyph::AX;
+            value |= TileGlyph::X1;
         }
 
         // X2
-        if value & TileFlags::LX == TileFlags::LX {
-            value ^= TileFlags::L1;
-            value ^= TileFlags::L2;
-            value |= TileFlags::X2;
+        if value & TileGlyph::LX == TileGlyph::LX {
+            value ^= TileGlyph::L1;
+            value ^= TileGlyph::L2;
+            value |= TileGlyph::X2;
             // L3 is solid
         } else {
             // Yxs
-            if value & (TileFlags::L2 | TileFlags::L3) == (TileFlags::L2 | TileFlags::L3) {
-                value ^= TileFlags::L2;
-                value |= TileFlags::Y1;
+            if value & (TileGlyph::L2 | TileGlyph::L3) == (TileGlyph::L2 | TileGlyph::L3) {
+                value ^= TileGlyph::L2;
+                value |= TileGlyph::Y1;
                 // L3 is solid
             }
-            if value & (TileFlags::L1 | TileFlags::L3) == (TileFlags::L1 | TileFlags::L3) {
-                value ^= TileFlags::L3;
-                value |= TileFlags::Y2;
+            if value & (TileGlyph::L1 | TileGlyph::L3) == (TileGlyph::L1 | TileGlyph::L3) {
+                value ^= TileGlyph::L3;
+                value |= TileGlyph::Y2;
                 // L1 is solid
             }
-            if value & (TileFlags::L1 | TileFlags::L2) == (TileFlags::L1 | TileFlags::L2) {
-                value ^= TileFlags::L1;
-                value |= TileFlags::Y3;
+            if value & (TileGlyph::L1 | TileGlyph::L2) == (TileGlyph::L1 | TileGlyph::L2) {
+                value ^= TileGlyph::L1;
+                value |= TileGlyph::Y3;
                 // L2 is solid
             }
         }

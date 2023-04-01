@@ -1,4 +1,3 @@
-pub mod constants;
 pub mod primatives;
 mod shapes;
 pub mod svg_path;

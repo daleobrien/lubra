@@ -2,7 +2,7 @@
  This file is generated from a template, ... edit the template instead.
 */
 use rand::seq::SliceRandom;
-use crate::renders::constants::TileFlags;
+use crate::maze::constants::TileGlyph;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn find_tiles (mask:u32) -> Vec<u32> {
@@ -12,17 +12,17 @@ pub fn find_tiles (mask:u32) -> Vec<u32> {
   }
 }
 
-pub fn random_side (matches:u32, dont_cares: u32) -> TileFlags {
+pub fn random_side (matches:u32, dont_cares: u32) -> TileGlyph {
   let mut index:u32 = 0;
   for i in 0..6 {
       let b:u32 = 1 << i;
       if dont_cares & b == b {
-        index |= 2 << (i*2); 
+        index |= 2 << (i*2);
       } else if matches & b == b {
-        index |= 1 << (i*2); 
+        index |= 1 << (i*2);
       }
   }
 	let possible_tiles = find_tiles(index);
 	let tile = possible_tiles.choose(&mut rand::thread_rng());
-	return TileFlags::from_bits_truncate(*tile.unwrap_or(&TileFlags::Z1.bits()))
+	return TileGlyph::from_bits_truncate(*tile.unwrap_or(&TileGlyph::Z1.bits()))
 }

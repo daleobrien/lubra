@@ -1,4 +1,4 @@
-use lib::primatives::maze::Maze;
+use lib::maze::maze::Maze;
 
 fn main() {
     // let mut g = Maze::new();

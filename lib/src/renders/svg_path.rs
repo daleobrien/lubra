@@ -1,4 +1,4 @@
-use crate::renders::constants::SMALL_ANGLE;
+use crate::maze::constants::SMALL_ANGLE;
 use crate::renders::primatives::{Line, Segment};
 
 pub struct Path {
