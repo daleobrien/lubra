@@ -1,9 +1,7 @@
-use crate::renders::primatives::{Line, Point};
-use array2d::Array2D;
+// use crate::renders::primatives::{Line, Point};
+// use array2d::Array2D;
 use bitflags::bitflags;
 use serde::ser::{Serialize, Serializer};
-
-use crate::renders::tile_subsets::random_side;
 
 bitflags! {
   #[derive(Default, serde::Deserialize)]
@@ -66,7 +64,7 @@ static NODE_MASKS: [Tile; 6] = [
 ];
 
 fn net_for_single_mask(tile: Tile) -> [u32; 6] {
-    let mut last_free_net_max = 1;
+    //let mut last_free_net_max = 1;
 
     let mut nets: [u32; 6] = [0; 6];
 
