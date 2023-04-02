@@ -88,8 +88,11 @@ impl Combinations {
             //
             for (key, tiles) in self.tiles_by_index.iter() {
                 let index = self.mask_to_trit(key & !n & 0b111_111) | dont_care;
-
-                side.entry(index).or_insert_with(Vec::new).extend(tiles);
+                let mut sorted_tiles = tiles.clone();
+                sorted_tiles.sort_unstable();
+                side.entry(index)
+                    .or_insert_with(Vec::new)
+                    .extend(sorted_tiles);
                 let s = format!("{index:012b}").to_string();
                 side_key_as_binary.entry(index).or_insert_with(|| s);
             }
