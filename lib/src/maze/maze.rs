@@ -71,15 +71,20 @@ impl Maze {
 
                 let path: Glyph = Glyph::new(coord, tile, self.last_free_net_id);
 
-                self.last_free_net_id = max(path.max(), self.last_free_net_id);
+                // ..
+                //let this_net = tile.get_nets();
+
+                // self.last_free_net_id = max(path.max(), self.last_free_net_id);
 
                 // TODO: updated self.nets too, so I can find which tiles have a given net id.
                 // Where to I move the net list too, maybe it should go with then maze itself
+                // nets[net_id] = [{i,j,1}, {i,j,2}, ... ]
+                //
 
-                println!(
-                    ":->  ({i},{j}) -> {} {:?}",
-                    self.last_free_net_id, path.nets
-                );
+                // println!(
+                //     ":->  ({i},{j}) -> {} {:?}",
+                //     self.last_free_net_id, path.nets
+                // );
 
                 row_path.push(path);
 
@@ -118,7 +123,7 @@ impl Maze {
         for row in self.tiles.iter() {
             for tile in row {
                 // TODO: get neighbours and so on ...
-                println!("{:?}", tile.nets);
+                //println!("{:?}", tile.nets);
             }
         }
     }

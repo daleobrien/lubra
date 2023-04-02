@@ -55,31 +55,70 @@ bitflags! {
   }
 }
 
+// These are the onlu kind of connections we care about from a net point of view
+static NODE_MASKS: [Tile; 6] = [
+    Tile::A1, // [0, 0, 0, 1, 1, 0]
+    Tile::A2, // [0, 0, 0, 1, 0, 1]
+    Tile::A3, // [0, 0, 0, 0, 1, 1]
+    Tile::L1, // [1, 0, 0, 0, 0, 1]
+    Tile::L2, // [0, 1, 0, 0, 1, 0]
+    Tile::L3, // [0, 0, 1, 1, 0, 0]
+];
+
+fn net_for_single_mask(tile: Tile) -> [u32; 6] {
+    let mut last_free_net_max = 1;
+
+    let mut nets: [u32; 6] = [0; 6];
+
+    // for tile_primative in NODE_MASKS.iter() {
+    //     for node_groups in net(*tile_primative & tile) {
+    //         last_free_net_max += 1;
+    //         for index in node_groups.iter() {
+    //             nets[*index - 1] = last_free_net_max;
+    //         }
+    //     }
+    // }
+    return nets;
+}
+
 impl Tile {
+    pub fn max(&self) -> u32 {
+        // return self.nets.into_iter().max().unwrap_or_default();
+        return 0;
+    }
+
     pub fn get_nets(&self) -> Vec<Vec<usize>> {
         let mut nodes = Vec::new();
-        match *self {
-            Tile::X1 => nodes.push(vec![4, 5, 6]), // All edges connect to each other
-            Tile::X2 => {
-                nodes.push(vec![1, 6]); // Each edge and it's opposite point connect to each other
-                nodes.push(vec![2, 5]);
-                nodes.push(vec![3, 4]);
-            }
-            Tile::A1 => nodes.push(vec![4, 5]),
-            Tile::A2 => nodes.push(vec![4, 6]),
-            Tile::A3 => nodes.push(vec![5, 6]),
-            Tile::L1 => nodes.push(vec![1, 6]),
-            Tile::L2 => nodes.push(vec![2, 5]),
-            Tile::L3 => nodes.push(vec![3, 4]),
-            Tile::N1 => nodes.push(vec![1]),
-            Tile::N2 => nodes.push(vec![2]),
-            Tile::N3 => nodes.push(vec![3]),
-            Tile::T1 => nodes.push(vec![6]),
-            Tile::T2 => nodes.push(vec![5]),
-            Tile::T3 => nodes.push(vec![4]),
-            _ => {}
-        }
+        //
+        // let mut last_free_net_max = 1; // last_free_net;
+        //
+        // // This isn't right, since we can have, say A1 and A2
+        // let nodes = match *self { // TODO: Just create a lookup from via code
+        //     Tile::X1 =>  [0, 0, 0, 1, 1, 1], // All edges connect to each other
+        //     Tile::X2 => [1, 2, 3, 3, 2, 1],
+        //     Tile::A1 => [0, 0, 0, 1, 1, 0], // maybe an LX too?
+        //     Tile::A2 => [0, 0, 0, 1, 0, 1],
+        //     Tile::A3 => [0, 0, 0, 0, 1, 1],
+        //     _ => {
+        //         for tile_primative in NODE_MASKS.iter() {
+        //
+        //         }
+        //     }
+        // }
         return nodes;
+
+        // // Add in the Net ids
+        // let mut last_free_net_max = last_free_net;
+        //
+        // for tile_primative in NODE_MASKS.iter() {
+        //     for node_groups in (*tile_primative & raw_mask).get_nets() {
+        //         last_free_net_max += 1;
+        //         for index in node_groups.iter() {
+        //             nets[*index - 1] = last_free_net_max;
+        //         }
+        //     }
+        // }
+        //println!("{:?} nets -> {:?}", coordinate, nets);
     }
 
     pub fn rotate_cw(&self) -> Tile {
@@ -177,6 +216,7 @@ pub fn add(u: usize, i: i32) -> usize {
     }
 }
 
+// TODO: dO I need this?
 impl From<[u32; 3]> for Tile {
     fn from(masks: [u32; 3]) -> Tile {
         let [point_mask, line_mask, curve_mask] = masks;

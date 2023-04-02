@@ -163,21 +163,7 @@ pub struct Glyph {
     farcs: Vec<Segment>,
     semi: Vec<Segment>,
     fsemi: Vec<Segment>,
-    pub nets: [u32; 6],
 }
-
-// ----
-
-static NODE_MASKS: [Tile; 8] = [
-    Tile::X1,
-    Tile::X2,
-    Tile::A1,
-    Tile::A2,
-    Tile::A3,
-    Tile::L1,
-    Tile::L2,
-    Tile::L3,
-];
 
 impl Glyph {
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
@@ -190,28 +176,12 @@ impl Glyph {
         let mut semi: Vec<Segment> = Vec::new();
         let mut fsemi: Vec<Segment> = Vec::new();
 
-        // Move to Maze!
-        let mut nets: [u32; 6] = [0; 6];
-
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
         let mut rng = rand::thread_rng();
 
         // Title can be rotated
         let mask = rotate(coordinate, raw_mask);
-
-        // Add in the Net ids
-        let mut last_free_net_max = last_free_net;
-
-        for tile_primative in NODE_MASKS.iter() {
-            for node_groups in (*tile_primative & raw_mask).get_nets() {
-                last_free_net_max += 1;
-                for index in node_groups.iter() {
-                    nets[*index - 1] = last_free_net_max;
-                }
-            }
-        }
-        //println!("{:?} nets -> {:?}", coordinate, nets);
 
         //
         if mask.contains(Tile::A1) && !mask.contains(Tile::C1) {
@@ -487,12 +457,7 @@ impl Glyph {
             semi,
             fsemi,
             farcs,
-            nets,
         };
-    }
-
-    pub fn max(&self) -> u32 {
-        return self.nets.into_iter().max().unwrap_or_default();
     }
 
     pub fn add_to_path(&self, path: &mut Path, faint_path: &mut Path) {
@@ -520,37 +485,37 @@ impl Glyph {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::maze::tile::Tile;
-    use crate::renders::glyph::Glyph;
-    use crate::renders::primatives::Coordinate;
-
-    #[test]
-    fn zero_nets() {
-        let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::W1, 0);
-        assert_eq!(title.nets, [0u32, 0u32, 0u32, 0u32, 0u32, 0u32]);
-        assert_eq!(title.max(), 0u32);
-    }
-
-    #[test]
-    fn a1_nets() {
-        let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1, 0);
-        assert_eq!(title.nets, [0u32, 0u32, 0u32, 1u32, 1u32, 0u32]);
-        assert_eq!(title.max(), 1u32);
-    }
-
-    #[test]
-    fn x2_nets() {
-        let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::X2, 0);
-        assert_eq!(title.nets, [1u32, 2u32, 3u32, 3u32, 2u32, 1u32]);
-        assert_eq!(title.max(), 3u32);
-    }
-
-    #[test]
-    fn a1_l2_nets() {
-        let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1 | Tile::L1, 0);
-        assert_eq!(title.nets, [2u32, 0u32, 0u32, 1u32, 1u32, 2u32]);
-        assert_eq!(title.max(), 2u32);
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use crate::maze::tile::Tile;
+//     use crate::renders::glyph::Glyph;
+//     use crate::renders::primatives::Coordinate;
+//
+//     #[test]
+//     fn zero_nets() {
+//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::W1, 0);
+//         assert_eq!(title.nets, [0u32, 0u32, 0u32, 0u32, 0u32, 0u32]);
+//         assert_eq!(title.max(), 0u32);
+//     }
+//
+//     #[test]
+//     fn a1_nets() {
+//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1, 0);
+//         assert_eq!(title.nets, [0u32, 0u32, 0u32, 1u32, 1u32, 0u32]);
+//         assert_eq!(title.max(), 1u32);
+//     }
+//
+//     #[test]
+//     fn x2_nets() {
+//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::X2, 0);
+//         assert_eq!(title.nets, [1u32, 2u32, 3u32, 3u32, 2u32, 1u32]);
+//         assert_eq!(title.max(), 3u32);
+//     }
+//
+//     #[test]
+//     fn a1_l2_nets() {
+//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1 | Tile::L1, 0);
+//         assert_eq!(title.nets, [2u32, 0u32, 0u32, 1u32, 1u32, 2u32]);
+//         assert_eq!(title.max(), 2u32);
+//     }
+// }

@@ -5,6 +5,7 @@ use std::time::Instant;
 use itertools::Itertools;
 use tera::{Context, Tera};
 
+// TODO: Ssould remove the Tile depend.
 use lib::maze::tile::Tile;
 
 /*
@@ -22,12 +23,14 @@ const CURVE_COMBINATION_GRAPH: [u32; 5] = [0b000_000, 0b011_000, 0b110_000, 0b10
 
 struct Combinations {
     tiles_by_index: HashMap<u32, Vec<Tile>>,
+    tiles_by_value: Vec<Tile>,
 }
 
 impl Combinations {
     pub fn new() -> Self {
         return Self {
             tiles_by_index: HashMap::new(),
+            tiles_by_value: Vec::new(),
         };
     }
     fn mask_from_list_of_masks(&self, list_of_mask: Vec<&u32>) -> u32 {
@@ -62,6 +65,18 @@ impl Combinations {
         return trits;
     }
 
+    fn create_tile_net_rust_file(&self) {
+        let mut context = Context::new();
+
+        context.insert("tiles", &self.tiles_by_value);
+
+        let template =
+            fs::read_to_string("src/templates/tile_net.rs").expect("Unable to read file");
+        let rendered = Tera::one_off(template.as_str(), &context, true);
+
+        fs::write("../lib/src/maze/net.rs", rendered.unwrap()).expect("Unable to write file");
+    }
+
     fn create_tile_subset_rust_files(&self) {
         //
         let mut side: HashMap<u32, Vec<Tile>> = HashMap::new();
@@ -80,13 +95,6 @@ impl Combinations {
             }
         }
 
-        let tera = match Tera::new("src/templates/*.rs") {
-            Ok(t) => t,
-            Err(e) => {
-                println!("Parsing error(s): {}", e);
-                ::std::process::exit(1);
-            }
-        };
         let mut context = Context::new();
 
         context.insert("side", &side);
@@ -98,12 +106,12 @@ impl Combinations {
         context.insert("side_keys", &side_keys);
         context.insert("side_key_as_binary", &side_key_as_binary);
 
-        let rendered = tera.render("tile_subsets.rs", &context);
+        let template =
+            fs::read_to_string("src/templates/tile_subsets.rs").expect("Unable to read file");
+        let rendered = Tera::one_off(template.as_str(), &context, true);
 
         fs::write("../lib/src/renders/tile_subsets.rs", rendered.unwrap())
             .expect("Unable to write file");
-
-        println!("Created 'lib/src/renders/tile_subsets.rs'");
     }
 
     fn build_all_posible_tiles(&mut self) {
@@ -143,8 +151,12 @@ impl Combinations {
                                 factor *= line_mask.count_ones() * 4;
                             }
 
+                            //println!("TILE {:?} {:#032b}", count, value);
+                            //let s = format!("{index:032b}").to_string();
+                            // TODO: generate look up for tile to net vector [0,0,0,1,0,1]
+                            self.tiles_by_value.push(value);
+
                             // TODO: Push some items more that once so they have better odds of being selected
-                            println!("TILE {:?} {:?}", factor, value);
                             for _ in 0..factor {
                                 self.tiles_by_index
                                     .entry(key)
@@ -167,6 +179,7 @@ fn main() {
     let mut combinations = Combinations::new();
     combinations.build_all_posible_tiles();
     combinations.create_tile_subset_rust_files();
+    combinations.create_tile_net_rust_file();
 
     let elapsed_time = now.elapsed();
     println!(
