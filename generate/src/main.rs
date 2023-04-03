@@ -100,10 +100,9 @@ impl Combinations {
 
         let mut context = Context::new();
 
-        // TODO: sort side
-        for (k, v) in side.iter_mut() {
+        // Sort the Values
+        for (_k, v) in side.iter_mut() {
             v.sort_unstable();
-            //side[&k].sort_unstable();
         }
 
         context.insert("side", &side);
