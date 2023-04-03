@@ -100,6 +100,12 @@ impl Combinations {
 
         let mut context = Context::new();
 
+        // TODO: sort side
+        for (k, v) in side.iter_mut() {
+            v.sort_unstable();
+            //side[&k].sort_unstable();
+        }
+
         context.insert("side", &side);
         //
         let mut side_keys: Vec<u32> = side.into_keys().collect();
