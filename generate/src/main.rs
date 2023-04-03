@@ -8,6 +8,7 @@ use tera::{Context, Tera};
 // TODO: Ssould remove the Tile depend.
 use lib::maze::tile::Tile;
 
+
 /*
        1
 [1]  4  5   [2]
@@ -33,6 +34,10 @@ impl Combinations {
             tiles_by_value: Vec::new(),
         };
     }
+
+
+
+
     fn mask_from_list_of_masks(&self, list_of_mask: Vec<&u32>) -> u32 {
         let mask: u32 = list_of_mask.iter().fold(0b0, |mut sum, &x| {
             sum = sum | x;
@@ -65,10 +70,33 @@ impl Combinations {
         return trits;
     }
 
+    fn create_nets(&self, tile: &Tile) -> [u32; 6]  {
+        let mut nets:  [u32;6]  = [0,0,0,0,0,0];
+    
+        // for i in 0..6 {
+        //     let mut net = tile.clone();
+        // }
+    
+        return nets;
+    }
+
     fn create_tile_net_rust_file(&self) {
         let mut context = Context::new();
 
-        context.insert("tiles", &self.tiles_by_value);
+        let mut tiles: HashMap<Tile, [u32; 6]> = HashMap::new();
+        for tile in self.tiles_by_value.iter() {
+            let nets = self.create_nets(tile);
+            tiles.insert(*tile, nets);
+
+        }
+   
+        let keys = tiles.keys().collect::<Vec<&Tile>>();
+
+for key in keys.iter() {
+  print!("{:?} {:?}\n", key.bits(), tiles[key])
+}
+        context.insert("tiles", &tiles);
+        context.insert("keys", &keys);
 
         let template =
             fs::read_to_string("src/templates/tile_net.rs").expect("Unable to read file");
