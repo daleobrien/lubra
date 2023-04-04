@@ -118,6 +118,17 @@ impl Maze {
         self.height = number_of_rows as f64 * H;
     }
 
+    /*
+    
+    net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
+    net_2 = [[i,j,k], [i,j,k], <m>]
+
+    Take the shortest net, and iterate over it looking for the first ajacent tile that is not part of the net.
+    Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
+
+    Repeat until we only have one net.
+     */
+    
     // TODO:Added debug only method to create the grid outlines, aka the walls
     pub fn smoosh(&mut self) {
         for row in self.tiles.iter() {
