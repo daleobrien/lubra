@@ -324,25 +324,13 @@ impl Glyph {
         }
 
         if !mask.contains(Tile::LX) {
-            if mask.contains(Tile::L1)
-                && !mask.contains(Tile::C1)
-                && !mask.contains(Tile::Y2)
-                && !mask.contains(Tile::Y3)
-            {
+            if mask.contains(Tile::L1) && !mask.intersects(Tile::l1) {
                 paint_l1(&mut lines, origin);
             }
-            if mask.contains(Tile::L2)
-                && !mask.contains(Tile::C2)
-                && !mask.contains(Tile::Y1)
-                && !mask.contains(Tile::Y3)
-            {
+            if mask.contains(Tile::L2) && !mask.intersects(Tile::l2) {
                 paint_l2(&mut lines, origin, flipped);
             }
-            if mask.contains(Tile::L3)
-                && !mask.contains(Tile::C3)
-                && !mask.contains(Tile::Y1)
-                && !mask.contains(Tile::Y2)
-            {
+            if mask.contains(Tile::L3) && !mask.intersects(Tile::l3) {
                 paint_l3(&mut lines, origin, flipped);
             }
 

@@ -31,6 +31,10 @@ bitflags! {
     const L3 = 0b00_000000_000_100;
     const LX = 0b00_000000_000_111; // all Lines (any line mask)
 
+    const l1 = 0b00_000000_111_110;
+    const l2 = 0b00_000000_111_101;
+    const l3 = 0b00_000000_111_011;
+
     const A1 = 0b00_000000_001_000; // Arcs
     const A2 = 0b00_000000_010_000;
     const A3 = 0b00_000000_100_000;
