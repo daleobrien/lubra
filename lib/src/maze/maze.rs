@@ -10,8 +10,8 @@ use crate::renders::glyph::Glyph;
 use crate::renders::primatives::Coordinate;
 use crate::renders::strokes::{H, M};
 
+use crate::renders::lookup::{find_tiles, random_side};
 use crate::renders::svg::Path;
-use crate::renders::tile_subsets::{find_tiles, random_side};
 
 pub struct Maze {
     pub style: Option<String>,
@@ -119,7 +119,7 @@ impl Maze {
     }
 
     /*
-    
+
     net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
     net_2 = [[i,j,k], [i,j,k], <m>]
 
@@ -128,7 +128,7 @@ impl Maze {
 
     Repeat until we only have one net.
      */
-    
+
     // TODO:Added debug only method to create the grid outlines, aka the walls
     pub fn smoosh(&mut self) {
         for row in self.tiles.iter() {

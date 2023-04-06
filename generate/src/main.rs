@@ -174,11 +174,10 @@ impl Combinations {
         context.insert("side_key_as_binary", &side_key_as_binary);
 
         let template =
-            fs::read_to_string("src/templates/tile_subsets.rs").expect("Unable to read file");
+            fs::read_to_string("src/templates/tile_lookup.rs").expect("Unable to read file");
         let rendered = Tera::one_off(template.as_str(), &context, true);
 
-        fs::write("../lib/src/renders/tile_subsets.rs", rendered.unwrap())
-            .expect("Unable to write file");
+        fs::write("../lib/src/renders/lookup.rs", rendered.unwrap()).expect("Unable to write file");
     }
 
     fn build_all_posible_tiles(&mut self) {
