@@ -69,6 +69,8 @@ impl Combinations {
     fn create_nets(&self, point_mask: u32, line_mask: u32, curve_mask: u32) -> Vec<Vec<u32>> {
         let mut nets: Vec<Vec<u32>> = Vec::new();
 
+        // TODO: 0 based ?
+
         // Points
         for i in 0..6 {
             let mut net = Vec::new();
@@ -78,7 +80,7 @@ impl Combinations {
             }
         }
 
-        // Lines, 2 lines never join!
+        // Lines, 2 lines never join together, rather they pass over each other
         if line_mask & 0b100001 == 0b100001 {
             nets.push(vec![1, 6]);
         }
@@ -116,7 +118,7 @@ impl Combinations {
             tiles.insert(*tile, nets.clone());
             // 0b000000000000
             let v = tile.bits();
-            let s = format!("{v:032b}").to_string();
+            let s = format!("{v:014b}").to_string();
             side_key_as_binary.entry(tile.bits()).or_insert_with(|| s);
         }
 
@@ -136,7 +138,7 @@ impl Combinations {
         fs::write("../lib/src/maze/net.rs", rendered.unwrap()).expect("Unable to write file");
     }
 
-    fn create_tile_subset_rust_files(&self) {
+    fn create_lookup_rust_files(&self) {
         //
         let mut side: HashMap<u32, Vec<Tile>> = HashMap::new();
 
@@ -217,9 +219,6 @@ impl Combinations {
                                 factor *= line_mask.count_ones() * 4;
                             }
 
-                            //println!("TILE {:?} {:#032b}", count, value);
-                            //let s = format!("{index:032b}").to_string();
-                            // TODO: generate look up for tile to net vector [0,0,0,1,0,1]
                             let nets = self.create_nets(point_mask, line_mask, *curve_mask);
                             for net in nets {
                                 self.tiles_by_value
@@ -250,7 +249,7 @@ fn main() {
 
     let mut combinations = Combinations::new();
     combinations.build_all_posible_tiles();
-    combinations.create_tile_subset_rust_files();
+    combinations.create_lookup_rust_files();
     combinations.create_tile_net_rust_file();
 
     let elapsed_time = now.elapsed();

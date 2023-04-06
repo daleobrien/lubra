@@ -7,48 +7,51 @@ bitflags! {
   #[derive(Default, serde::Deserialize)]
   pub struct Tile: u32 {
 
-    //              XXX XXX
-    const G1 = 0b00_000_001_000_000_000_000_000_000_000_000;
-    const G2 = 0b00_000_010_000_000_000_000_000_000_000_000;
-    const G3 = 0b00_000_100_000_000_000_000_000_000_000_000;
-    const G4 = 0b00_001_000_000_000_000_000_000_000_000_000;
-    const G5 = 0b00_010_000_000_000_000_000_000_000_000_000;
-    const G6 = 0b00_100_000_000_000_000_000_000_000_000_000;
-    const GX = 0b00_111_111_000_000_000_000_000_000_000_000;
+  /*
+        There are only 3 curves and 3 lines, 6 points
+                               points  curves lines
+        thus, 12  bits!  -> 0b_000_000__000__000;
+        Plu3 2 more for empty, unrouted and so on
+  */
 
-    //                      XXX
-    const Z1 = 0b00_000_000_000_000_000_000_000_000_000_000; // Empty
-    const Z2 = 0b00_000_000_010_000_000_000_000_000_000_000; // Not routed
-    const W1 = 0b00_000_000_001_000_000_000_000_000_000_000; // Walls only, used to show the grid
-    //                          XXX
-    const X1 = 0b00_111_000_000_001_000_000_000_000_000_000;
-    const X2 = 0b00_111_111_000_010_000_000_000_000_000_000;
-    //                              XXX
-    const Y1 = 0b00_011_110_000_000_010_000_000_000_100_000;
-    const Y2 = 0b00_101_101_000_000_100_000_000_000_001_000;
-    const Y3 = 0b00_110_011_000_000_001_000_000_000_010_000;
-    //                                  XXX             XXX
-    const C1 = 0b00_111_001_000_000_000_001_000_000_000_001;
-    const C2 = 0b00_111_010_000_000_000_010_000_000_000_010;
-    const C3 = 0b00_111_100_000_000_000_100_000_000_000_100;
-    //                                      XXX
-    const T1 = 0b00_100_000_000_000_000_000_001_000_000_000;
-    const T2 = 0b00_010_000_000_000_000_000_010_000_000_000;
-    const T3 = 0b00_001_000_000_000_000_000_100_000_000_000;
-    //                                          XXX
-    const N1 = 0b00_000_001_000_000_000_000_000_001_000_000;
-    const N2 = 0b00_000_010_000_000_000_000_000_010_000_000;
-    const N3 = 0b00_000_100_000_000_000_000_000_100_000_000;
-    //                                              XXX
-    const L1 = 0b00_100_001_000_000_000_000_000_000_001_000;
-    const L2 = 0b00_010_010_000_000_000_000_000_000_010_000;
-    const L3 = 0b00_001_100_000_000_000_000_000_000_100_000;
-    const LX = 0b00_111_111_000_000_000_000_000_000_111_000;
-    //                                                  XXX
-    const A1 = 0b00_011_000_000_000_000_000_000_000_000_001;
-    const A2 = 0b00_101_000_000_000_000_000_000_000_000_010;
-    const A3 = 0b00_110_000_000_000_000_000_000_000_000_100;
-    const AX = 0b00_111_000_000_000_000_000_000_000_000_111;
+    const G1 = 0b00_000001_000_001;
+    const G2 = 0b00_000010_000_010;
+    const G3 = 0b00_000100_000_100;
+    const G4 = 0b00_001000_011_100;
+    const G5 = 0b00_010000_101_010;
+    const G6 = 0b00_100000_110_001;
+
+    const Z1 = 0b00_000000_000_000; // Empty
+    const Z2 = 0b10_000000_000_000; // Not routed
+    const W1 = 0b01_000000_000_000; // Walls only, used to show the grid
+
+
+    const L1 = 0b00_000000_000_001; // Simple lines
+    const L2 = 0b00_000000_000_010;
+    const L3 = 0b00_000000_000_100;
+    const LX = 0b00_000000_000_111; // all Lines (any line mask)
+
+    const A1 = 0b00_000000_001_000; // Arcs
+    const A2 = 0b00_000000_010_000;
+    const A3 = 0b00_000000_100_000;
+    const AX = 0b00_000000_111_000;
+
+    const Y1 = 0b00_000000_000_110; // Combinations of 2 lines
+    const Y2 = 0b00_000000_000_101;
+    const Y3 = 0b00_000000_000_011;
+
+    const C1 = 0b00_000000_001_001; // Combination of 1 arc and 1 line
+    const C2 = 0b00_000000_010_010;
+    const C3 = 0b00_000000_100_100;
+
+    const T1 = 0b00_100000_000_000; // Points on the edge
+    const T2 = 0b00_010000_000_000;
+    const T3 = 0b00_001000_000_000;
+
+    const N1 = 0b00_000001_000_000; // Points on the vertices
+    const N2 = 0b00_000010_000_000;
+    const N3 = 0b00_000100_000_000;
+
 
   }
 }
@@ -66,8 +69,8 @@ impl Tile {
         //
         // // This isn't right, since we can have, say A1 and A2
         // let nodes = match *self { // TODO: Just create a lookup from via code
-        //     Tile::X1 =>  [0, 0, 0, 1, 1, 1], // All edges connect to each other
-        //     Tile::X2 => [1, 2, 3, 3, 2, 1],
+        //     Tile::AX =>  [0, 0, 0, 1, 1, 1], // All edges connect to each other
+        //     Tile::LX => [1, 2, 3, 3, 2, 1],
         //     Tile::A1 => [0, 0, 0, 1, 1, 0], // maybe an LX too?
         //     Tile::A2 => [0, 0, 0, 1, 0, 1],
         //     Tile::A3 => [0, 0, 0, 0, 1, 1],
@@ -99,11 +102,11 @@ impl Tile {
         if self.contains(Self::W1) {
             rotated_tile |= Self::W1;
         }
-        if self.contains(Self::X1) {
-            rotated_tile |= Self::X1;
+        if self.contains(Self::AX) {
+            rotated_tile |= Self::AX;
         }
-        if self.contains(Self::X2) {
-            rotated_tile |= Self::X2;
+        if self.contains(Self::LX) {
+            rotated_tile |= Self::LX;
         }
 
         for (a, b) in [
@@ -138,11 +141,11 @@ impl Tile {
         if self.contains(Self::W1) {
             rotated_tile |= Self::W1;
         }
-        if self.contains(Self::X1) {
-            rotated_tile |= Self::X1;
+        if self.contains(Self::AX) {
+            rotated_tile |= Self::AX;
         }
-        if self.contains(Self::X2) {
-            rotated_tile |= Self::X2;
+        if self.contains(Self::LX) {
+            rotated_tile |= Self::LX;
         }
         for (a, b) in [
             (Self::Y1, Self::Y3),
@@ -250,17 +253,17 @@ impl From<[u32; 3]> for Tile {
             value |= Tile::C3;
         }
 
-        // X1
+        // AX
         if value & (Tile::AX) == (Tile::AX) {
             value ^= Tile::AX;
-            value |= Tile::X1;
+            value |= Tile::AX;
         }
 
-        // X2
+        // LX
         if value & Tile::LX == Tile::LX {
             value ^= Tile::L1;
             value ^= Tile::L2;
-            value |= Tile::X2;
+            value |= Tile::LX;
             // L3 is solid
         } else {
             // Yxs

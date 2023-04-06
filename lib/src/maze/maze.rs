@@ -1,4 +1,3 @@
-use std::cmp::max;
 use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
@@ -25,11 +24,10 @@ pub struct Maze {
 
 /*
 
-Problem,
+TODO: Problem,
 
 Glyph has nets, strokes and so on,
 while Tile just has a bit mask !
-
 
 */
 
@@ -72,7 +70,8 @@ impl Maze {
                 let path: Glyph = Glyph::new(coord, tile, self.last_free_net_id);
 
                 // ..
-                //let this_net = tile.get_nets();
+                let nets = find_tiles(tile.bits());
+                println!("{:?}", nets);
 
                 // self.last_free_net_id = max(path.max(), self.last_free_net_id);
 
@@ -203,33 +202,33 @@ impl Maze {
 
         let opposite_tile = other_row[4 - 2 * pos]; // index 4, 2, 0
 
+        // is not routed
         if opposite_tile.contains(Tile::Z2) {
-            // is not routed
             if pos == 0
-                && !this_row[3].contains(tile)
-                && !this_row[4].contains(tile)
-                && !other_row[2].contains(tile)
-                && !other_row[3].contains(tile)
+                && !this_row[3].intersects(tile)
+                && !this_row[4].intersects(tile)
+                && !other_row[2].intersects(tile)
+                && !other_row[3].intersects(tile)
             {
                 return (false, true);
             }
             if pos == 1
-                && !this_row[1].contains(tile)
-                && !this_row[3].contains(tile)
-                && !other_row[1].contains(tile)
-                && !other_row[3].contains(tile)
+                && !this_row[1].intersects(tile)
+                && !this_row[3].intersects(tile)
+                && !other_row[1].intersects(tile)
+                && !other_row[3].intersects(tile)
             {
                 return (false, true);
             }
             if pos == 2
-                && !this_row[0].contains(tile)
-                && !this_row[1].contains(tile)
-                && !other_row[1].contains(tile)
-                && !other_row[2].contains(tile)
+                && !this_row[0].intersects(tile)
+                && !this_row[1].intersects(tile)
+                && !other_row[1].intersects(tile)
+                && !other_row[2].intersects(tile)
             {
                 return (false, true);
             }
-        } else if opposite_tile.contains(tile) {
+        } else if opposite_tile.intersects(tile) {
             // Must be 1
             return (true, false);
         }
@@ -260,7 +259,7 @@ impl Maze {
             // Don't care
             return (false, true);
         }
-        if adjacent.contains(tile) {
+        if adjacent.intersects(tile) {
             // Must match, on a one
             return (true, false);
         }
@@ -373,9 +372,9 @@ impl Maze {
         // TODO: strip out cells that only have Nx and Tx
         for _ in 0..45 {
             let first_tile = random_side(matches, dont_care);
-            if !first_tile.contains(Tile::N1)
-                && !first_tile.contains(Tile::N2)
-                && !first_tile.contains(Tile::N3)
+            if !first_tile.intersects(Tile::N1)
+                && !first_tile.intersects(Tile::N2)
+                && !first_tile.intersects(Tile::N3)
             {
                 return first_tile;
             }

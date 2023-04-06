@@ -1,7 +1,6 @@
 /*
  This file is generated from a template, ... edit the template instead.
 */
-use crate::maze::tile::Tile;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn find_tiles (tile:u32) -> Vec<Vec<u32>> {

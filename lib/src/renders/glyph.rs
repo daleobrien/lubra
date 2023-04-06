@@ -184,22 +184,24 @@ impl Glyph {
         let mask = rotate(coordinate, raw_mask);
 
         //
-        if mask.contains(Tile::A1) && !mask.contains(Tile::C1) {
-            let arc = if flipped { A1_V } else { A1_A } + origin;
-            arcs.push(arc + Radius { r: -W });
-            arcs.push(arc + Radius { r: W });
-        }
+        if !mask.contains(Tile::AX) {
+            if mask.contains(Tile::A1) && !mask.contains(Tile::C1) {
+                let arc = if flipped { A1_V } else { A1_A } + origin;
+                arcs.push(arc + Radius { r: -W });
+                arcs.push(arc + Radius { r: W });
+            }
 
-        if mask.contains(Tile::A2) && !mask.contains(Tile::C2) {
-            let arc = if flipped { A2_V } else { A2_A } + origin;
-            arcs.push(arc + Radius { r: -W });
-            arcs.push(arc + Radius { r: W });
-        }
+            if mask.contains(Tile::A2) && !mask.contains(Tile::C2) {
+                let arc = if flipped { A2_V } else { A2_A } + origin;
+                arcs.push(arc + Radius { r: -W });
+                arcs.push(arc + Radius { r: W });
+            }
 
-        if mask.contains(Tile::A3) && !mask.contains(Tile::C3) {
-            let arc = if flipped { A3_V } else { A3_A } + origin;
-            arcs.push(arc + Radius { r: -W });
-            arcs.push(arc + Radius { r: W });
+            if mask.contains(Tile::A3) && !mask.contains(Tile::C3) {
+                let arc = if flipped { A3_V } else { A3_A } + origin;
+                arcs.push(arc + Radius { r: -W });
+                arcs.push(arc + Radius { r: W });
+            }
         }
 
         if mask.contains(Tile::T1) {
@@ -321,14 +323,26 @@ impl Glyph {
             }
         }
 
-        if !mask.contains(Tile::X2) {
-            if mask.contains(Tile::L1) && !mask.contains(Tile::Y2) && !mask.contains(Tile::Y3) {
+        if !mask.contains(Tile::LX) {
+            if mask.contains(Tile::L1)
+                && !mask.contains(Tile::C1)
+                && !mask.contains(Tile::Y2)
+                && !mask.contains(Tile::Y3)
+            {
                 paint_l1(&mut lines, origin);
             }
-            if mask.contains(Tile::L2) && !mask.contains(Tile::Y1) && !mask.contains(Tile::Y3) {
+            if mask.contains(Tile::L2)
+                && !mask.contains(Tile::C2)
+                && !mask.contains(Tile::Y1)
+                && !mask.contains(Tile::Y3)
+            {
                 paint_l2(&mut lines, origin, flipped);
             }
-            if mask.contains(Tile::L3) && !mask.contains(Tile::Y1) && !mask.contains(Tile::Y2) {
+            if mask.contains(Tile::L3)
+                && !mask.contains(Tile::C3)
+                && !mask.contains(Tile::Y1)
+                && !mask.contains(Tile::Y2)
+            {
                 paint_l3(&mut lines, origin, flipped);
             }
 
@@ -411,12 +425,12 @@ impl Glyph {
             }
         }
 
-        if mask.contains(Tile::X1) {
+        if mask.contains(Tile::AX) {
             arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
             arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
             arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
         }
-        if mask.contains(Tile::X2) {
+        if mask.contains(Tile::LX) {
             match rng.gen_range(0..3) {
                 // 0,1,2
                 0 => {
@@ -507,7 +521,7 @@ impl Glyph {
 //
 //     #[test]
 //     fn x2_nets() {
-//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::X2, 0);
+//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::LX, 0);
 //         assert_eq!(title.nets, [1u32, 2u32, 3u32, 3u32, 2u32, 1u32]);
 //         assert_eq!(title.max(), 3u32);
 //     }
