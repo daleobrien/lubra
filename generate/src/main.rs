@@ -69,40 +69,40 @@ impl Combinations {
     fn create_nets(&self, point_mask: u32, line_mask: u32, curve_mask: u32) -> Vec<Vec<u32>> {
         let mut nets: Vec<Vec<u32>> = Vec::new();
 
-        // TODO: 0 based ?
+        // 0 based indexes
 
         // Points
         for i in 0..6 {
             let mut net = Vec::new();
             if point_mask & (1 << i) == (1 << i) {
-                net.push(i + 1);
+                net.push(i);
                 nets.push(net);
             }
         }
 
         // Lines, 2 lines never join together, rather they pass over each other
         if line_mask & 0b100001 == 0b100001 {
-            nets.push(vec![1, 6]);
+            nets.push(vec![0, 5]);
         }
         if line_mask & 0b010010 == 0b010010 {
-            nets.push(vec![2, 5]);
+            nets.push(vec![1, 4]);
         }
         if line_mask & 0b001100 == 0b001100 {
-            nets.push(vec![3, 4]);
+            nets.push(vec![2, 3]);
         }
 
         // Curves, sometimes we join 3 points together
         if curve_mask & 0b111000 == 0b111000 {
-            nets.push(vec![4, 5, 6]);
+            nets.push(vec![3, 4, 5]);
         } else {
             if curve_mask & 0b011000 == 0b011000 {
-                nets.push(vec![4, 5]);
+                nets.push(vec![3, 3]);
             }
             if curve_mask & 0b110000 == 0b110000 {
-                nets.push(vec![5, 6]);
+                nets.push(vec![4, 5]);
             }
             if curve_mask & 0b101000 == 0b101000 {
-                nets.push(vec![4, 6]);
+                nets.push(vec![3, 5]);
             }
         }
 

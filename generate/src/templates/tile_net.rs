@@ -1,5 +1,7 @@
 /*
  This file is generated from a template, ... edit the template instead.
+
+ Note, vertex indexes are zero based.
 */
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
