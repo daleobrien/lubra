@@ -8,7 +8,6 @@ use tera::{Context, Tera};
 // TODO: Ssould remove the Tile depend.
 use lib::maze::tile::Tile;
 
-
 /*
        1
 [1]  4  5   [2]
@@ -24,19 +23,16 @@ const CURVE_COMBINATION_GRAPH: [u32; 5] = [0b000_000, 0b011_000, 0b110_000, 0b10
 
 struct Combinations {
     tiles_by_index: HashMap<u32, Vec<Tile>>,
-    tiles_by_value: Vec<Tile>,
+    tiles_by_value: HashMap<Tile, Vec<Vec<u32>>>, //
 }
 
 impl Combinations {
     pub fn new() -> Self {
         return Self {
             tiles_by_index: HashMap::new(),
-            tiles_by_value: Vec::new(),
+            tiles_by_value: HashMap::new(),
         };
     }
-
-
-
 
     fn mask_from_list_of_masks(&self, list_of_mask: Vec<&u32>) -> u32 {
         let mask: u32 = list_of_mask.iter().fold(0b0, |mut sum, &x| {
@@ -70,33 +66,68 @@ impl Combinations {
         return trits;
     }
 
-    fn create_nets(&self, tile: &Tile) -> [u32; 6]  {
-        let mut nets:  [u32;6]  = [0,0,0,0,0,0];
-    
-        // for i in 0..6 {
-        //     let mut net = tile.clone();
-        // }
-    
+    fn create_nets(&self, point_mask: u32, line_mask: u32, curve_mask: u32) -> Vec<Vec<u32>> {
+        let mut nets: Vec<Vec<u32>> = Vec::new();
+
+        // Points
+        for i in 0..6 {
+            let mut net = Vec::new();
+            if point_mask & (1 << i) == (1 << i) {
+                net.push(i + 1);
+                nets.push(net);
+            }
+        }
+
+        // Lines, 2 lines never join!
+        if line_mask & 0b100001 == 0b100001 {
+            nets.push(vec![1, 6]);
+        }
+        if line_mask & 0b010010 == 0b010010 {
+            nets.push(vec![2, 5]);
+        }
+        if line_mask & 0b001100 == 0b001100 {
+            nets.push(vec![3, 4]);
+        }
+
+        // Curves, sometimes we join 3 points together
+        if curve_mask & 0b111000 == 0b111000 {
+            nets.push(vec![4, 5, 6]);
+        } else {
+            if curve_mask & 0b011000 == 0b011000 {
+                nets.push(vec![4, 5]);
+            }
+            if curve_mask & 0b110000 == 0b110000 {
+                nets.push(vec![5, 6]);
+            }
+            if curve_mask & 0b101000 == 0b101000 {
+                nets.push(vec![4, 6]);
+            }
+        }
+
         return nets;
     }
 
     fn create_tile_net_rust_file(&self) {
         let mut context = Context::new();
+        let mut side_key_as_binary: HashMap<u32, String> = HashMap::new();
 
-        let mut tiles: HashMap<Tile, [u32; 6]> = HashMap::new();
-        for tile in self.tiles_by_value.iter() {
-            let nets = self.create_nets(tile);
-            tiles.insert(*tile, nets);
-
+        let mut tiles: HashMap<Tile, Vec<Vec<u32>>> = HashMap::new();
+        for (tile, nets) in self.tiles_by_value.iter() {
+            tiles.insert(*tile, nets.clone());
+            // 0b000000000000
+            let v = tile.bits();
+            let s = format!("{v:032b}").to_string();
+            side_key_as_binary.entry(tile.bits()).or_insert_with(|| s);
         }
-   
-        let keys = tiles.keys().collect::<Vec<&Tile>>();
 
-for key in keys.iter() {
-  print!("{:?} {:?}\n", key.bits(), tiles[key])
-}
+        let mut keys = self.tiles_by_value.keys().collect::<Vec<&Tile>>();
+        keys.sort_unstable();
+        // for key in keys.iter() {
+        //     print!("{:?} {:?}\n", key.bits(), tiles[key])
+        // }
         context.insert("tiles", &tiles);
         context.insert("keys", &keys);
+        context.insert("side_key_as_binary", &side_key_as_binary);
 
         let template =
             fs::read_to_string("src/templates/tile_net.rs").expect("Unable to read file");
@@ -190,7 +221,13 @@ for key in keys.iter() {
                             //println!("TILE {:?} {:#032b}", count, value);
                             //let s = format!("{index:032b}").to_string();
                             // TODO: generate look up for tile to net vector [0,0,0,1,0,1]
-                            self.tiles_by_value.push(value);
+                            let nets = self.create_nets(point_mask, line_mask, *curve_mask);
+                            for net in nets {
+                                self.tiles_by_value
+                                    .entry(value)
+                                    .or_insert_with(Vec::new)
+                                    .push(net);
+                            }
 
                             // TODO: Push some items more that once so they have better odds of being selected
                             for _ in 0..factor {

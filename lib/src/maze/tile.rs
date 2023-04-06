@@ -53,32 +53,6 @@ bitflags! {
   }
 }
 
-// These are the onlu kind of connections we care about from a net point of view
-static NODE_MASKS: [Tile; 6] = [
-    Tile::A1, // [0, 0, 0, 1, 1, 0]
-    Tile::A2, // [0, 0, 0, 1, 0, 1]
-    Tile::A3, // [0, 0, 0, 0, 1, 1]
-    Tile::L1, // [1, 0, 0, 0, 0, 1]
-    Tile::L2, // [0, 1, 0, 0, 1, 0]
-    Tile::L3, // [0, 0, 1, 1, 0, 0]
-];
-
-fn net_for_single_mask(tile: Tile) -> [u32; 6] {
-    //let mut last_free_net_max = 1;
-
-    let mut nets: [u32; 6] = [0; 6];
-
-    // for tile_primative in NODE_MASKS.iter() {
-    //     for node_groups in net(*tile_primative & tile) {
-    //         last_free_net_max += 1;
-    //         for index in node_groups.iter() {
-    //             nets[*index - 1] = last_free_net_max;
-    //         }
-    //     }
-    // }
-    return nets;
-}
-
 impl Tile {
     pub fn max(&self) -> u32 {
         // return self.nets.into_iter().max().unwrap_or_default();
