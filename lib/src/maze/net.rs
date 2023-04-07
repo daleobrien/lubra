@@ -5,7 +5,7 @@
 */
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn find_tiles (tile:u32) -> Vec<Vec<u32>> {
+pub fn calculate_nets (tile:u32) -> Vec<Vec<u32>> {
 	match tile { 
 	   0b00000000000001 => vec![ vec![0, 5] ],
 	   0b00000000000010 => vec![ vec![1, 4] ],

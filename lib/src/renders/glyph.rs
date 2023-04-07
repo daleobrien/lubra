@@ -163,12 +163,13 @@ pub struct Glyph {
     farcs: Vec<Segment>,
     semi: Vec<Segment>,
     fsemi: Vec<Segment>,
+    pub tile: Tile,
 }
 
 impl Glyph {
     // Change to a list of TileTypes, Could be a fixed length, since it can't be londer than 0
     // Just fill the remaining with X3
-    pub fn new(coordinate: Coordinate, raw_mask: Tile, last_free_net: u32) -> Self {
+    pub fn new(coordinate: Coordinate, tile: Tile) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let mut faint: Vec<Line> = Vec::new();
         let mut arcs: Vec<Segment> = Vec::new();
@@ -181,7 +182,7 @@ impl Glyph {
         let mut rng = rand::thread_rng();
 
         // Title can be rotated
-        let mask = rotate(coordinate, raw_mask);
+        let mask = rotate(coordinate, tile);
 
         //
         if !mask.contains(Tile::AX) {
@@ -459,6 +460,7 @@ impl Glyph {
             semi,
             fsemi,
             farcs,
+            tile,
         };
     }
 
@@ -495,28 +497,28 @@ impl Glyph {
 //
 //     #[test]
 //     fn zero_nets() {
-//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::W1, 0);
+//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::W1);
 //         assert_eq!(title.nets, [0u32, 0u32, 0u32, 0u32, 0u32, 0u32]);
 //         assert_eq!(title.max(), 0u32);
 //     }
 //
 //     #[test]
 //     fn a1_nets() {
-//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1, 0);
+//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1);
 //         assert_eq!(title.nets, [0u32, 0u32, 0u32, 1u32, 1u32, 0u32]);
 //         assert_eq!(title.max(), 1u32);
 //     }
 //
 //     #[test]
 //     fn x2_nets() {
-//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::LX, 0);
+//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::LX);
 //         assert_eq!(title.nets, [1u32, 2u32, 3u32, 3u32, 2u32, 1u32]);
 //         assert_eq!(title.max(), 3u32);
 //     }
 //
 //     #[test]
 //     fn a1_l2_nets() {
-//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1 | Tile::L1, 0);
+//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1 | Tile::L1);
 //         assert_eq!(title.nets, [2u32, 0u32, 0u32, 1u32, 1u32, 2u32]);
 //         assert_eq!(title.max(), 2u32);
 //     }

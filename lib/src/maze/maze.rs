@@ -2,19 +2,19 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
+use crate::maze::net::calculate_nets;
 use array2d::Array2D;
 
 use crate::maze::tile::{add, Tile};
 use crate::renders::glyph::Glyph;
+use crate::renders::lookup::{find_tiles, random_side};
 use crate::renders::primatives::Coordinate;
 use crate::renders::strokes::{H, M};
-
-use crate::renders::lookup::{find_tiles, random_side};
 use crate::renders::svg::Path;
 
 pub struct Maze {
     pub style: Option<String>,
-    tiles: Vec<Vec<Glyph>>,
+    glyphs: Vec<Vec<Glyph>>,
     walls: Vec<Vec<Glyph>>,
     nets: HashSet<Vec<[u32; 3]>>,
     last_free_net_id: u32,
@@ -35,13 +35,13 @@ impl Maze {
     pub fn new(number_of_columns: usize, number_of_rows: usize, randomise: bool) -> Self {
         // User Maze object somehow
 
-        let tiles: Vec<Vec<Glyph>> = Vec::new();
+        let glyphs: Vec<Vec<Glyph>> = Vec::new();
         let walls: Vec<Vec<Glyph>> = Vec::new();
         let nets = HashSet::new();
 
         let mut obj = Self {
             style: None,
-            tiles,
+            glyphs,
             walls,
             width: 0f64,
             height: 0f64,
@@ -67,7 +67,7 @@ impl Maze {
 
                 tiles[(j, i)] = tile;
 
-                let path: Glyph = Glyph::new(coord, tile, self.last_free_net_id);
+                let path: Glyph = Glyph::new(coord, tile);
 
                 // ..
                 let nets = find_tiles(tile.bits());
@@ -87,11 +87,11 @@ impl Maze {
 
                 row_path.push(path);
 
-                let wall: Glyph = Glyph::new(coord, Tile::W1, 0);
+                let wall: Glyph = Glyph::new(coord, Tile::W1);
 
                 row_wall.push(wall);
             }
-            self.tiles.push(row_path);
+            self.glyphs.push(row_path);
             self.walls.push(row_wall);
         }
 
@@ -100,18 +100,18 @@ impl Maze {
     }
 
     pub fn add_row(&mut self, row: Vec<Glyph>) {
-        self.tiles.push(row);
+        self.glyphs.push(row);
 
         // Get the max number of rows within any one Row
         // NOTE: This assumes all items are continous from 0 to n with now skipped cells
         let number_of_columns = self
-            .tiles
+            .glyphs
             .iter()
             .map(|row| row.len())
             .max()
             .unwrap_or_default();
 
-        let number_of_rows = self.tiles.len();
+        let number_of_rows = self.glyphs.len();
 
         self.width = (number_of_columns + 1) as f64 * M;
         self.height = number_of_rows as f64 * H;
@@ -130,12 +130,19 @@ impl Maze {
 
     // TODO:Added debug only method to create the grid outlines, aka the walls
     pub fn smoosh(&mut self) {
-        for row in self.tiles.iter() {
-            for tile in row {
+        println!("Smooshing ...\n");
+        for row in self.glyphs.iter() {
+            for glyph in row {
                 // TODO: get neighbours and so on ...
-                //println!("{:?}", tile.nets);
+                println!(
+                    "{:?} -> {:?}",
+                    glyph.tile,
+                    calculate_nets(glyph.tile.bits())
+                );
             }
         }
+
+        println!("\nDone Smooshing.\n");
     }
 
     pub fn create_one_tile_grid(&mut self) {
@@ -144,12 +151,12 @@ impl Maze {
 
         for i in [0, 3, 6, 9, 12, 15] {
             for j in [0, 2, 4, 6, 8, 10] {
-                row_path.push(Glyph::new(Coordinate { i, j }, Tile::C3, 0));
-                row_wall.push(Glyph::new(Coordinate { i, j }, Tile::W1, 0));
+                row_path.push(Glyph::new(Coordinate { i, j }, Tile::C3));
+                row_wall.push(Glyph::new(Coordinate { i, j }, Tile::W1));
             }
         }
 
-        self.tiles.push(row_path);
+        self.glyphs.push(row_path);
         self.walls.push(row_wall);
 
         self.width = 17f64 * M;
@@ -176,6 +183,14 @@ impl Maze {
         };
     }
 
+    fn adjacent_vertex(
+        &self,
+        other_row: [Tile; 5],
+        pos: usize, // 0..2
+    ) -> Tile {
+        return other_row[4 - 2 * pos]; // index 4, 2, 0
+    }
+
     fn calc_vertex(
         &self,
         gathered_tiles: [[Tile; 5]; 3],
@@ -184,26 +199,20 @@ impl Maze {
         is_top: bool,
     ) -> (bool, bool) {
         /*
-                             ____ ____ ____
-                                 /\   /\
-               this row -> .    /  \ /  \
-                                ---- ----
-
         The other row depends on where the tile is pointing up or down
         */
-
-        let this_row = gathered_tiles[1];
-
         let other_row = if is_top {
             gathered_tiles[2]
         } else {
             gathered_tiles[0]
         };
 
-        let opposite_tile = other_row[4 - 2 * pos]; // index 4, 2, 0
+        let opposite_tile = self.adjacent_vertex(other_row, pos);
 
         // is not routed
         if opposite_tile.contains(Tile::Z2) {
+            let this_row = gathered_tiles[1];
+
             if pos == 0
                 && !this_row[3].intersects(tile)
                 && !this_row[4].intersects(tile)
@@ -305,12 +314,13 @@ impl Maze {
         let mut dont_care = 0u32;
         let mut matches = 0u32;
 
-        let pos1 = (4 + i + (3 * (j % 2))) % 6;
-        let pos2 = (2 + i + (3 * (j % 2))) % 6;
-        let pos3 = (0 + i + (3 * (j % 2))) % 6; // Alternates on each row , 1st row 0,1,2,3,4,5,0, ... 2nd row, 3,4,5,0,1,2,3,...
+        // Calculate the relative positions of the surrounding tiles
+        let k = i + (3 * (j % 2));
+        let pos = [(4 + k) % 6, (2 + k) % 6, (0 + k) % 6];
 
         // Node 1
-        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G1, (1 + pos3) % 3, pos1 < 3);
+        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G1, (1 + i) % 3, pos[0] < 3);
+
         if m {
             matches |= 0b000_001;
         }
@@ -319,7 +329,7 @@ impl Maze {
         }
 
         // Node 2
-        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G2, (2 + pos3) % 3, pos2 < 3);
+        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G2, (2 + i) % 3, pos[1] < 3);
         if m {
             matches |= 0b000_010;
         }
@@ -328,7 +338,7 @@ impl Maze {
         }
 
         // Node3
-        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G3, (3 + pos3) % 3, pos3 < 3);
+        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G3, (0 + i) % 3, pos[2] < 3);
         if m {
             matches |= 0b000_100;
         }
@@ -336,7 +346,7 @@ impl Maze {
             dont_care |= 0b000_100;
         }
 
-        let (m, d) = self.calc_side(surrounding_tiles, Tile::G4, (3 + pos3) % 3, pos3);
+        let (m, d) = self.calc_side(surrounding_tiles, Tile::G4, (0 + i) % 3, pos[2]);
         if m {
             matches |= 0b001_000;
         }
@@ -344,7 +354,7 @@ impl Maze {
             dont_care |= 0b001_000;
         }
 
-        let (m, d) = self.calc_side(surrounding_tiles, Tile::G5, (3 + pos2) % 3, pos3);
+        let (m, d) = self.calc_side(surrounding_tiles, Tile::G5, (2 + i) % 3, pos[2]);
         if m {
             matches |= 0b010_000;
         }
@@ -352,7 +362,7 @@ impl Maze {
             dont_care |= 0b010_000;
         }
 
-        let (m, d) = self.calc_side(surrounding_tiles, Tile::G6, (3 + pos1) % 3, pos3);
+        let (m, d) = self.calc_side(surrounding_tiles, Tile::G6, (1 + i) % 3, pos[2]);
         if m {
             matches |= 0b100_000;
         }
@@ -401,11 +411,11 @@ impl Maze {
                 j: j * 2,
             };
 
-            let path1: Glyph = Glyph::new(coord1, Tile::from_bits_truncate(*tile), 0);
-            let wall1: Glyph = Glyph::new(coord1, Tile::W1, 0);
+            let path1: Glyph = Glyph::new(coord1, Tile::from_bits_truncate(*tile));
+            let wall1: Glyph = Glyph::new(coord1, Tile::W1);
 
-            let path2: Glyph = Glyph::new(coord2, Tile::from_bits_truncate(*tile), 0);
-            let wall2: Glyph = Glyph::new(coord2, Tile::W1, 0);
+            let path2: Glyph = Glyph::new(coord2, Tile::from_bits_truncate(*tile));
+            let wall2: Glyph = Glyph::new(coord2, Tile::W1);
 
             row_path.push(path1);
             row_wall.push(wall1);
@@ -421,11 +431,11 @@ impl Maze {
                 j: j * 2 + 1,
             };
 
-            let path1: Glyph = Glyph::new(coord1, Tile::from_bits_truncate(*tile), 0);
-            let wall1: Glyph = Glyph::new(coord1, Tile::W1, 0);
+            let path1: Glyph = Glyph::new(coord1, Tile::from_bits_truncate(*tile));
+            let wall1: Glyph = Glyph::new(coord1, Tile::W1);
 
-            let path2: Glyph = Glyph::new(coord2, Tile::from_bits_truncate(*tile), 0);
-            let wall2: Glyph = Glyph::new(coord2, Tile::W1, 0);
+            let path2: Glyph = Glyph::new(coord2, Tile::from_bits_truncate(*tile));
+            let wall2: Glyph = Glyph::new(coord2, Tile::W1);
 
             row_path.push(path1);
             row_wall.push(wall1);
@@ -434,7 +444,7 @@ impl Maze {
 
             j += 2;
         }
-        self.tiles.push(row_path);
+        self.glyphs.push(row_path);
         self.walls.push(row_wall);
 
         self.width = (10 * 1) as f64 * (M + 50.0);
@@ -465,7 +475,7 @@ impl Maze {
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
         let mut wall = Path::new("brown".to_string(), 3.0, 0.3);
 
-        for row in &self.tiles {
+        for row in &self.glyphs {
             for tile in row {
                 tile.add_to_path(&mut path, &mut faint_path);
             }
@@ -499,13 +509,13 @@ mod tests {
         let mut row_path_1: Vec<Glyph> = Vec::new();
         let mut row_path_2: Vec<Glyph> = Vec::new();
 
-        let title1 = Glyph::new(Coordinate { i: 0, j: 0 }, Tile::C2, 0);
-        let title2 = Glyph::new(Coordinate { i: 1, j: 0 }, Tile::L1, 0);
+        let title1 = Glyph::new(Coordinate { i: 0, j: 0 }, Tile::C2);
+        let title2 = Glyph::new(Coordinate { i: 1, j: 0 }, Tile::L1);
         row_path_1.push(title1);
         row_path_1.push(title2);
 
-        let title3 = Glyph::new(Coordinate { i: 0, j: 1 }, Tile::C2, 0);
-        let title4 = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::L1, 0);
+        let title3 = Glyph::new(Coordinate { i: 0, j: 1 }, Tile::C2);
+        let title4 = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::L1);
         row_path_2.push(title3);
         row_path_2.push(title4);
 
