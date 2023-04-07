@@ -100,7 +100,7 @@ impl Maze {
     Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
 
     Repeat until we only have one net.
-     */
+    */
 
     // TODO:Added debug only method to create the grid outlines, aka the walls
     pub fn smoosh(&mut self) {
@@ -130,11 +130,6 @@ impl Maze {
                     //     self.nets.insert(key);
                     // }
                 }
-                // println!(
-                //     "({i},{j}): {:?} \n  -> {:?}\n",
-                //     glyph.tile,
-                //     calculate_nets(glyph.tile.bits())
-                // );
             }
         }
 
@@ -165,18 +160,15 @@ impl Maze {
         rel: (i32, i32),
         tiles: &Array2D<Tile>,
     ) -> Tile {
-        if pos.1 as i32 + rel.1 < 0 || pos.0 as i32 + rel.0 < 0 {
+        // Out of bounds
+        if pos.0 as i32 + rel.0 < 0 || pos.1 as i32 + rel.1 < 0 {
             return Tile::Z1;
         }
 
         let x: usize = add(pos.0, rel.0);
         let y: usize = add(pos.1, rel.1);
 
-        let tile = tiles.get(y, x);
-        return match tile {
-            Some(t) => *t,
-            None => Tile::Z1,
-        };
+        return *tiles.get(y, x).unwrap_or(&Tile::Z1);
     }
 
     fn adjacent_vertex(
@@ -197,11 +189,7 @@ impl Maze {
         /*
         The other row depends on where the tile is pointing up or down
         */
-        let other_row = if is_top {
-            gathered_tiles[2]
-        } else {
-            gathered_tiles[0]
-        };
+        let other_row = gathered_tiles[if is_top { 2 } else { 0 }];
 
         let opposite_tile = self.adjacent_vertex(other_row, pos);
 
@@ -273,6 +261,7 @@ impl Maze {
     }
 
     fn get_surrounding_tiles(&self, i: usize, j: usize, tiles: &Array2D<Tile>) -> [[Tile; 5]; 3] {
+        // TODO: I can do better here, only get the tiles I need
         let gathered_tiles = [
             [
                 self.get_tile_relative_position((i, j), (-2, -1), tiles),
