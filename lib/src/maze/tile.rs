@@ -8,10 +8,9 @@ bitflags! {
   pub struct Tile: u32 {
 
   /*
-        There are only 3 curves and 3 lines, 6 points
-                               points  curves lines
-        thus, 12  bits!  -> 0b_000_000__000__000;
-        Plu3 2 more for empty, unrouted and so on
+    There are only 3 curves and 3 lines, 6 points
+                     [meta,points,curves,lines]
+    thus, 14  bits!  -> 0b00_000000_000_000
   */
 
     const G1 = 0b00_000001_000_001;
@@ -24,7 +23,6 @@ bitflags! {
     const Z1 = 0b00_000000_000_000; // Empty
     const Z2 = 0b10_000000_000_000; // Not routed
     const W1 = 0b01_000000_000_000; // Walls only, used to show the grid
-
 
     const L1 = 0b00_000000_000_001; // Simple lines
     const L2 = 0b00_000000_000_010;
