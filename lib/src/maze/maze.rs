@@ -323,8 +323,7 @@ impl Maze {
 
         if m {
             matches |= 0b000_001;
-        }
-        if d {
+        } else if d {
             dont_care |= 0b000_001;
         }
 
@@ -332,8 +331,7 @@ impl Maze {
         let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G2, (2 + i) % 3, pos[1] < 3);
         if m {
             matches |= 0b000_010;
-        }
-        if d {
+        } else if d {
             dont_care |= 0b000_010;
         }
 
@@ -341,32 +339,28 @@ impl Maze {
         let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G3, (0 + i) % 3, pos[2] < 3);
         if m {
             matches |= 0b000_100;
-        }
-        if d {
+        } else if d {
             dont_care |= 0b000_100;
         }
 
         let (m, d) = self.calc_side(surrounding_tiles, Tile::G4, (0 + i) % 3, pos[2]);
         if m {
             matches |= 0b001_000;
-        }
-        if d {
+        } else if d {
             dont_care |= 0b001_000;
         }
 
         let (m, d) = self.calc_side(surrounding_tiles, Tile::G5, (2 + i) % 3, pos[2]);
         if m {
             matches |= 0b010_000;
-        }
-        if d {
+        } else if d {
             dont_care |= 0b010_000;
         }
 
         let (m, d) = self.calc_side(surrounding_tiles, Tile::G6, (1 + i) % 3, pos[2]);
         if m {
             matches |= 0b100_000;
-        }
-        if d {
+        } else if d {
             dont_care |= 0b100_000;
         }
         return (dont_care, matches);
