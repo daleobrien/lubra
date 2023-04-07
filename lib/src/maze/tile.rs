@@ -56,7 +56,6 @@ bitflags! {
     const N2 = 0b00_000010_000_000;
     const N3 = 0b00_000100_000_000;
 
-
   }
 }
 
@@ -64,40 +63,6 @@ impl Tile {
     pub fn max(&self) -> u32 {
         // return self.nets.into_iter().max().unwrap_or_default();
         return 0;
-    }
-
-    pub fn get_nets(&self) -> Vec<Vec<usize>> {
-        let mut nodes = Vec::new();
-        //
-        // let mut last_free_net_max = 1; // last_free_net;
-        //
-        // // This isn't right, since we can have, say A1 and A2
-        // let nodes = match *self { // TODO: Just create a lookup from via code
-        //     Tile::AX =>  [0, 0, 0, 1, 1, 1], // All edges connect to each other
-        //     Tile::LX => [1, 2, 3, 3, 2, 1],
-        //     Tile::A1 => [0, 0, 0, 1, 1, 0], // maybe an LX too?
-        //     Tile::A2 => [0, 0, 0, 1, 0, 1],
-        //     Tile::A3 => [0, 0, 0, 0, 1, 1],
-        //     _ => {
-        //         for tile_primative in NODE_MASKS.iter() {
-        //
-        //         }
-        //     }
-        // }
-        return nodes;
-
-        // // Add in the Net ids
-        // let mut last_free_net_max = last_free_net;
-        //
-        // for tile_primative in NODE_MASKS.iter() {
-        //     for node_groups in (*tile_primative & raw_mask).get_nets() {
-        //         last_free_net_max += 1;
-        //         for index in node_groups.iter() {
-        //             nets[*index - 1] = last_free_net_max;
-        //         }
-        //     }
-        // }
-        //println!("{:?} nets -> {:?}", coordinate, nets);
     }
 
     pub fn rotate_cw(&self) -> Tile {

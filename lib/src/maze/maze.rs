@@ -4,6 +4,7 @@ use std::fs;
 
 use crate::maze::net::calculate_nets;
 use array2d::Array2D;
+use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
 use crate::renders::glyph::Glyph;
@@ -16,20 +17,10 @@ pub struct Maze {
     pub style: Option<String>,
     glyphs: Vec<Vec<Glyph>>,
     walls: Vec<Vec<Glyph>>,
-    nets: HashSet<Vec<[u32; 3]>>,
-    last_free_net_id: u32,
+    nets: HashSet<Vec<[usize; 3]>>,
     width: f64,
     height: f64,
 }
-
-/*
-
-TODO: Problem,
-
-Glyph has nets, strokes and so on,
-while Tile just has a bit mask !
-
-*/
 
 impl Maze {
     pub fn new(number_of_columns: usize, number_of_rows: usize, randomise: bool) -> Self {
@@ -46,7 +37,6 @@ impl Maze {
             width: 0f64,
             height: 0f64,
             nets,
-            last_free_net_id: 0u32,
         };
 
         if randomise {
@@ -69,22 +59,6 @@ impl Maze {
 
                 let path: Glyph = Glyph::new(coord, tile);
 
-                // ..
-                let nets = find_tiles(tile.bits());
-                println!("{:?}", nets);
-
-                // self.last_free_net_id = max(path.max(), self.last_free_net_id);
-
-                // TODO: updated self.nets too, so I can find which tiles have a given net id.
-                // Where to I move the net list too, maybe it should go with then maze itself
-                // nets[net_id] = [{i,j,1}, {i,j,2}, ... ]
-                //
-
-                // println!(
-                //     ":->  ({i},{j}) -> {} {:?}",
-                //     self.last_free_net_id, path.nets
-                // );
-
                 row_path.push(path);
 
                 let wall: Glyph = Glyph::new(coord, Tile::W1);
@@ -103,7 +77,7 @@ impl Maze {
         self.glyphs.push(row);
 
         // Get the max number of rows within any one Row
-        // NOTE: This assumes all items are continous from 0 to n with now skipped cells
+        // NOTE: This assumes all items are continuous from 0 to n with now skipped cells
         let number_of_columns = self
             .glyphs
             .iter()
@@ -131,14 +105,36 @@ impl Maze {
     // TODO:Added debug only method to create the grid outlines, aka the walls
     pub fn smoosh(&mut self) {
         println!("Smooshing ...\n");
-        for row in self.glyphs.iter() {
-            for glyph in row {
+        for (j, row) in self.glyphs.iter().enumerate() {
+            for (i, glyph) in row.iter().enumerate() {
                 // TODO: get neighbours and so on ...
-                println!(
-                    "{:?} -> {:?}",
-                    glyph.tile,
-                    calculate_nets(glyph.tile.bits())
-                );
+                // Then check each node to see if it is part of an existing net, otherwise add it to a new net.
+
+                // And build up a list of matching nets ??? of the surrounding nets
+
+                // Get the nets for the current tile
+                let nets = calculate_nets(glyph.tile.bits());
+
+                for net in nets {
+                    println!("({i},{j}): {:?}", net);
+                    let key: [usize; 3] = [i, j, net[0].to_usize().unwrap_or_default()];
+
+                    //
+                    for existing_nets in self.nets.iter() {
+                        if existing_nets.contains(&key) {
+                            println!("Found {i},{j},{:}", net[0]);
+                        }
+                    }
+                    // if !self.nets.contains(&key) {
+                    //     println!("Adding {i},{j},{:}", net[0]);
+                    //     self.nets.insert(key);
+                    // }
+                }
+                // println!(
+                //     "({i},{j}): {:?} \n  -> {:?}\n",
+                //     glyph.tile,
+                //     calculate_nets(glyph.tile.bits())
+                // );
             }
         }
 
