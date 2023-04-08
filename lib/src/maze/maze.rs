@@ -452,7 +452,7 @@ impl Maze {
 
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
-        let mut wall = Path::new("brown".to_string(), 3.0, 0.3);
+        let mut wall = Path::new("brown".to_string(), 3.0, 0.1);
 
         for row in &self.glyphs {
             for tile in row {
