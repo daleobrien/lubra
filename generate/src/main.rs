@@ -227,7 +227,7 @@ impl Combinations {
                                     .push(net);
                             }
 
-                            // TODO: Push some items more that once so they have better odds of being selected
+                            // Push some items more that once so they have better odds of being selected
                             for _ in 0..factor {
                                 self.tiles_by_index
                                     .entry(key)

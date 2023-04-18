@@ -96,24 +96,81 @@ impl Maze {
     net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
     net_2 = [[i,j,k], [i,j,k], <m>]
 
-    Take the shortest net, and iterate over it looking for the first ajacent tile that is not part of the net.
+    Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
     Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
 
     Repeat until we only have one net.
     */
 
+    fn get_adjacent_tile(
+        &self,
+        surrounding_tiles: [[Tile; 5]; 3],
+        i: usize,
+        j: usize,
+        k: usize,
+    ) -> Tile {
+        let z = i + (3 * (j % 2));
+
+        match k {
+            1 => {
+                let pos = (4 + z) % 6 < 3;
+                let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
+                return self.adjacent_vertex(other_row, (1 + i) % 3);
+            }
+            2 => {
+                let pos = (2 + z) % 6 < 3;
+                let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
+                return self.adjacent_vertex(other_row, (2 + i) % 3);
+            }
+            3 => {
+                let pos = (0 + z) % 6 < 3;
+                let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
+                return self.adjacent_vertex(other_row, (0 + i) % 3);
+            }
+            4 => {
+                let pos = (4 + k) % 6;
+                return return Tile::Z1;
+            }
+            5 => {
+                let pos = (0 + k) % 6;
+                return return Tile::Z1;
+            }
+            6 => {
+                let pos = (2 + k) % 6;
+                return return Tile::Z1;
+            }
+            _ => return Tile::Z1,
+        }
+    }
+
     // TODO:Added debug only method to create the grid outlines, aka the walls
     pub fn smoosh(&mut self) {
         println!("Smooshing ...\n");
+        let number_of_rows = self.glyphs.len();
+        let number_of_columns = self.glyphs[0].len();
+
+        // Convert to 2D array of tiles
+        let mut tiles = Array2D::filled_with(Tile::Z2, number_of_rows, number_of_columns);
         for (j, row) in self.glyphs.iter().enumerate() {
             for (i, glyph) in row.iter().enumerate() {
-                // TODO: get neighbours and so on ...
-                // Then check each node to see if it is part of an existing net, otherwise add it to a new net.
+                tiles[(j, i)] = glyph.tile;
+            }
+        }
+
+        for j in 0..number_of_rows {
+            for i in 0..number_of_columns {
+                let tile = tiles[(j, i)];
 
                 // And build up a list of matching nets ??? of the surrounding nets
+                let surrounding_tiles = self.get_surrounding_tiles(i, j, &tiles);
 
                 // Get the nets for the current tile
-                let nets = calculate_nets(glyph.tile.bits());
+                let nets = calculate_nets(tile.bits());
+
+                // Get tiles for surrounding tiles
+                let adjancent_tile_1 = self.get_adjacent_tile(surrounding_tiles, i, j, 1);
+                let adjancent_tile_2 = self.get_adjacent_tile(surrounding_tiles, i, j, 2);
+                let adjancent_tile_3 = self.get_adjacent_tile(surrounding_tiles, i, j, 3);
 
                 for net in nets {
                     println!("({i},{j}): {:?}", net);
@@ -294,6 +351,7 @@ impl Maze {
         j: usize,
         tiles: &Array2D<Tile>,
     ) -> (u32, u32) {
+        // Get the surrounding tiles
         let surrounding_tiles = self.get_surrounding_tiles(i, j, tiles);
 
         let mut dont_care = 0u32;
