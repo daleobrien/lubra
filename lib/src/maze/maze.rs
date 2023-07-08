@@ -3,6 +3,7 @@ use std::error::Error;
 use std::fs;
 
 use crate::maze::net::calculate_nets;
+
 use array2d::Array2D;
 use rand_distr::num_traits::ToPrimitive;
 
@@ -93,57 +94,82 @@ impl Maze {
 
     /*
 
-    net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
-    net_2 = [[i,j,k], [i,j,k], <m>]
+        net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
+        net_2 = [[i,j,k], [i,j,k], <m>]
 
-    Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
-    Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
+        Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
+        Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
 
-    Repeat until we only have one net.
-    */
+        Repeat until we only have one net.
+    F
+         The surrounding_tiles are of the form:
 
+                1
+               ╱ ╲
+              4   5
+             ╱     ╲
+            2 ━ 6 ━ 3
+
+           ▽△▽△▽      △▽△▽△
+           △▽▲▽△  or  ▽△▼△▽
+           ▽△▽△▽      △▽△▽△
+
+        */
     fn get_adjacent_tile(
         &self,
         surrounding_tiles: [[Tile; 5]; 3],
         i: usize,
         j: usize,
-        k: usize,
+        k: usize, // the node within a tile
     ) -> Tile {
         let z = i + (3 * (j % 2));
 
+        /*
+
+         🜂🜄🜂🜄🜂  <- 1st row
+         🜄🜂🜄🜂🜄  <- 2nd row
+         🜂🜄🜂🜄🜂  <- 3rd row
+
+         Thus the tile points if the position is (i+j) % 2 == 0
+
+        */
+
         match k {
             1 => {
+                // Find the triange vertex the lines up with the top vertex
                 let pos = (4 + z) % 6 < 3;
                 let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
                 return self.adjacent_vertex(other_row, (1 + i) % 3);
             }
             2 => {
+                // Find the triange vertex the lines up with the bottom left vertex
                 let pos = (2 + z) % 6 < 3;
                 let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
                 return self.adjacent_vertex(other_row, (2 + i) % 3);
             }
             3 => {
+                // Find the triange vertex the lines up with the bottom right vertex
                 let pos = (0 + z) % 6 < 3;
                 let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
                 return self.adjacent_vertex(other_row, (0 + i) % 3);
             }
             4 => {
-                let pos = (4 + k) % 6;
-                return return Tile::Z1;
+                // The tile to the left
+                return surrounding_tiles[1][2];
             }
             5 => {
-                let pos = (0 + k) % 6;
-                return return Tile::Z1;
+                // The tile to the right
+                return surrounding_tiles[1][4];
             }
             6 => {
-                let pos = (2 + k) % 6;
-                return return Tile::Z1;
+                let pos = (i + j) % 2;
+                return surrounding_tiles[pos][3];
             }
             _ => return Tile::Z1,
         }
     }
 
-    // TODO:Added debug only method to create the grid outlines, aka the walls
+    // TODO: Added debug only method to create the grid outlines, aka the walls
     pub fn smoosh(&mut self) {
         println!("Smooshing ...\n");
         let number_of_rows = self.glyphs.len();
@@ -171,6 +197,18 @@ impl Maze {
                 let adjancent_tile_1 = self.get_adjacent_tile(surrounding_tiles, i, j, 1);
                 let adjancent_tile_2 = self.get_adjacent_tile(surrounding_tiles, i, j, 2);
                 let adjancent_tile_3 = self.get_adjacent_tile(surrounding_tiles, i, j, 3);
+                let adjancent_tile_4 = self.get_adjacent_tile(surrounding_tiles, i, j, 4);
+                let adjancent_tile_5 = self.get_adjacent_tile(surrounding_tiles, i, j, 5);
+                let adjancent_tile_6 = self.get_adjacent_tile(surrounding_tiles, i, j, 6);
+                println!(
+                    "\n<{i},{j}>: {:?} {:?} {:?} {:?} {:?} {:?}",
+                    adjancent_tile_1,
+                    adjancent_tile_2,
+                    adjancent_tile_3,
+                    adjancent_tile_4,
+                    adjancent_tile_5,
+                    adjancent_tile_6
+                );
 
                 for net in nets {
                     println!("({i},{j}): {:?}", net);

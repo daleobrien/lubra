@@ -5,14 +5,17 @@ use std::time::Instant;
 use itertools::Itertools;
 use tera::{Context, Tera};
 
-// TODO: Ssould remove the Tile depend.
+// TODO: Should remove the Tile depend.
 use lib::maze::tile::Tile;
 
 /*
        1
-[1]  4  5   [2]
-   2  6  3
-     [3]
+      ╱ ╲
+ [1] 4   5  [2]
+    ╱     ╲
+   2 ━ 6 ━ 3
+      [3]
+
 */
 
 // This a way to represent tiles to help with rendering
