@@ -601,7 +601,7 @@ mod tests {
 
     #[test]
     fn very_small_net() {
-        let mut maze = Maze::new(3, 3, true, Some(34u64));
+        let mut maze = Maze::new(3, 3, true, Some(37u64));
         // let mut row_path_1: Vec<Glyph> = Vec::new();
         // let mut row_path_2: Vec<Glyph> = Vec::new();
         //
