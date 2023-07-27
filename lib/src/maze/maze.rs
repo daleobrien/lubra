@@ -21,10 +21,16 @@ pub struct Maze {
     nets: HashSet<Vec<[usize; 3]>>,
     width: f64,
     height: f64,
+    seed: Option<u64>,
 }
 
 impl Maze {
-    pub fn new(number_of_columns: usize, number_of_rows: usize, randomise: bool) -> Self {
+    pub fn new(
+        number_of_columns: usize,
+        number_of_rows: usize,
+        randomise: bool,
+        seed: Option<u64>,
+    ) -> Self {
         // User Maze object somehow
 
         let glyphs: Vec<Vec<Glyph>> = Vec::new();
@@ -38,6 +44,7 @@ impl Maze {
             width: 0f64,
             height: 0f64,
             nets,
+            seed,
         };
 
         if randomise {
@@ -58,13 +65,13 @@ impl Maze {
 
                 tiles[(j, i)] = tile;
 
-                let path: Glyph = Glyph::new(coord, tile);
+                let glyph: Glyph = Glyph::new(coord, tile);
 
-                row_path.push(path);
+                row_path.push(glyph);
 
-                let wall: Glyph = Glyph::new(coord, Tile::W1);
+                let glyph: Glyph = Glyph::new(coord, Tile::W1);
 
-                row_wall.push(wall);
+                row_wall.push(glyph);
             }
             self.glyphs.push(row_path);
             self.walls.push(row_wall);
@@ -192,6 +199,11 @@ impl Maze {
 
                 // Get the nets for the current tile
                 let nets = calculate_nets(tile.bits());
+                println!("Tile ({i},{j}) -> {:?} : {:?}", tile, nets);
+                println!("Surrounding tiles:\n");
+                for s in surrounding_tiles.iter() {
+                    println!("  {:?}", s);
+                }
 
                 // Get tiles for surrounding tiles
                 let adjancent_tile_1 = self.get_adjacent_tile(surrounding_tiles, i, j, 1);
@@ -201,7 +213,7 @@ impl Maze {
                 let adjancent_tile_5 = self.get_adjacent_tile(surrounding_tiles, i, j, 5);
                 let adjancent_tile_6 = self.get_adjacent_tile(surrounding_tiles, i, j, 6);
                 println!(
-                    "\n<{i},{j}>: {:?} {:?} {:?} {:?} {:?} {:?}",
+                    "adjs: {:?} {:?} {:?} {:?} {:?} {:?}",
                     adjancent_tile_1,
                     adjancent_tile_2,
                     adjancent_tile_3,
@@ -402,6 +414,15 @@ impl Maze {
         // Node 1
         let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G1, (1 + i) % 3, pos[0] < 3);
 
+        // TODO: at this point I can update the network?
+        // ...
+        println!(
+            "get_surrounding_tile_connections: Surrounding {i},{j},{m},{d}",
+            i = i,
+            j = j,
+            m = m,
+            d = d
+        );
         if m {
             matches |= 0b000_001;
         } else if d {
@@ -456,7 +477,7 @@ impl Maze {
 
         // TODO: strip out cells that only have Nx and Tx
         for _ in 0..45 {
-            let first_tile = random_side(matches, dont_care);
+            let first_tile = random_side(matches, dont_care, self.seed);
             if !first_tile.intersects(Tile::N1)
                 && !first_tile.intersects(Tile::N2)
                 && !first_tile.intersects(Tile::N3)
@@ -464,7 +485,7 @@ impl Maze {
                 return first_tile;
             }
         }
-        return random_side(matches, dont_care);
+        return random_side(matches, dont_care, self.seed);
     }
 
     pub fn create_all_title_in_grid(&mut self) {
@@ -548,7 +569,7 @@ impl Maze {
 
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
-        let mut wall = Path::new("brown".to_string(), 3.0, 0.1);
+        let mut wall = Path::new("red".to_string(), 3.0, 0.1);
 
         for row in &self.glyphs {
             for tile in row {
@@ -580,24 +601,32 @@ mod tests {
 
     #[test]
     fn very_small_net() {
-        let mut maze = Maze::new(2, 1, false);
-        let mut row_path_1: Vec<Glyph> = Vec::new();
-        let mut row_path_2: Vec<Glyph> = Vec::new();
+        let mut maze = Maze::new(3, 3, true, Some(34u64));
+        // let mut row_path_1: Vec<Glyph> = Vec::new();
+        // let mut row_path_2: Vec<Glyph> = Vec::new();
+        //
+        // let title1 = Glyph::new(Coordinate { i: 0, j: 0 }, Tile::C2);
+        // let title2 = Glyph::new(Coordinate { i: 1, j: 0 }, Tile::C1);
+        // row_path_1.push(title1);
+        // row_path_1.push(title2);
+        //
+        // let title3 = Glyph::new(Coordinate { i: 0, j: 1 }, Tile::A2);
+        // let title4 = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::L1);
+        // row_path_2.push(title3);
+        // row_path_2.push(title4);
+        //
+        // maze.add_row(row_path_1);
+        // maze.add_row(row_path_2);
+        //
+        // for i in [0, 1] {
+        //     let mut row_wall: Vec<Glyph> = Vec::new();
+        //     for j in [0, 1] {
+        //         row_wall.push(Glyph::new(Coordinate { i, j }, Tile::W1));
+        //     }
+        //     maze.walls.push(row_wall);
+        // }
 
-        let title1 = Glyph::new(Coordinate { i: 0, j: 0 }, Tile::C2);
-        let title2 = Glyph::new(Coordinate { i: 1, j: 0 }, Tile::L1);
-        row_path_1.push(title1);
-        row_path_1.push(title2);
-
-        let title3 = Glyph::new(Coordinate { i: 0, j: 1 }, Tile::C2);
-        let title4 = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::L1);
-        row_path_2.push(title3);
-        row_path_2.push(title4);
-
-        maze.add_row(row_path_1);
-        maze.add_row(row_path_2);
-
-        maze.smoosh();
+        // maze.smoosh();
 
         let result_f = maze.render("../test-smoosh.svg".to_string());
 

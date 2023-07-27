@@ -16,7 +16,7 @@ fn main() {
     // const C: usize = 54; // 9, 54;
     // const R: usize = 36; // 6, 36;
 
-    let maze = Maze::new(9, 6, true);
+    let maze = Maze::new(9, 6, true, None);
     let result_f = maze.render("test-random.svg".to_string());
 
     println!("Finished creating Random maze {:?}", result_f.unwrap());
