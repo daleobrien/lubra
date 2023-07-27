@@ -63,6 +63,11 @@ impl Maze {
 
                 let tile = self.get_random_tile(i, j, &tiles);
 
+                // TODO: Have tile, add to network!
+                println!("Tile: ({},{}),{:?}", i, j, tile);
+                // At this stage, only need to get the tiles that are above and or, to the left
+                // TODO: Think about the mapping, since we treat all tiles the same, but render then by rotating and flipping them
+
                 tiles[(j, i)] = tile;
 
                 let glyph: Glyph = Glyph::new(coord, tile);
@@ -414,15 +419,6 @@ impl Maze {
         // Node 1
         let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G1, (1 + i) % 3, pos[0] < 3);
 
-        // TODO: at this point I can update the network?
-        // ...
-        println!(
-            "get_surrounding_tile_connections: Surrounding {i},{j},{m},{d}",
-            i = i,
-            j = j,
-            m = m,
-            d = d
-        );
         if m {
             matches |= 0b000_001;
         } else if d {
@@ -465,6 +461,7 @@ impl Maze {
         } else if d {
             dont_care |= 0b100_000;
         }
+
         return (dont_care, matches);
     }
 
@@ -497,10 +494,7 @@ impl Maze {
         let i = 0;
         let mut j: usize = 0;
 
-        //println!("");
         for tile in possible_tiles.iter() {
-            //println!("{j} {i} {:?}", Tile::from_bits_truncate(*tile));
-
             let coord1: Coordinate = Coordinate { i: i * 2, j: j * 2 };
             let coord2: Coordinate = Coordinate {
                 i: i * 2 + 3,
@@ -601,7 +595,7 @@ mod tests {
 
     #[test]
     fn very_small_net() {
-        let mut maze = Maze::new(3, 3, true, Some(37u64));
+        let maze = Maze::new(3, 3, true, Some(37u64));
         // let mut row_path_1: Vec<Glyph> = Vec::new();
         // let mut row_path_2: Vec<Glyph> = Vec::new();
         //
