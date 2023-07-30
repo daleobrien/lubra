@@ -21,6 +21,8 @@ pub struct Maze {
     nets: HashSet<Vec<[usize; 3]>>,
     width: f64,
     height: f64,
+    number_of_columns: usize,
+    number_of_rows: usize,
     seed: Option<u64>,
 }
 
@@ -44,6 +46,8 @@ impl Maze {
             width: 0f64,
             height: 0f64,
             nets,
+            number_of_columns,
+            number_of_rows,
             seed,
         };
 
@@ -61,13 +65,36 @@ impl Maze {
             for i in 0..number_of_columns {
                 let coord: Coordinate = Coordinate { i, j };
 
-                let tile = self.get_random_tile(i, j, &tiles);
+                let surrounding_tiles = self.get_surrounding_tiles(i, j, &tiles);
 
+                let tile = self.get_random_tile(i, j, &tiles, &surrounding_tiles);
+
+                // TODO: At this stage, only need to get the tiles that are above and or to the left
                 // TODO: Have tile, add to network!
-                println!("Tile: ({},{}),{:?}", i, j, tile);
-                // At this stage, only need to get the tiles that are above and or, to the left
-                // TODO: Think about the mapping, since we treat all tiles the same, but render then by rotating and flipping them
+                let nets = calculate_nets(tile.bits());
+                println!("Tile ({i},{j}) -> {:?} : {:?}", tile, nets);
+                let adjancent_tile_1 =
+                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 1).bits());
+                let adjancent_tile_2 =
+                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 2).bits());
+                let adjancent_tile_3 =
+                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 3).bits());
+                let adjancent_tile_4 =
+                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 4).bits());
+                let adjancent_tile_5 =
+                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 5).bits());
+                let adjancent_tile_6 =
+                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 6).bits());
 
+                println!(
+                    "{:?}, {:?}, {:?}, {:?}, {:?}, {:?} ",
+                    adjancent_tile_1,
+                    adjancent_tile_2,
+                    adjancent_tile_3,
+                    adjancent_tile_4,
+                    adjancent_tile_5,
+                    adjancent_tile_6
+                );
                 tiles[(j, i)] = tile;
 
                 let glyph: Glyph = Glyph::new(coord, tile);
@@ -280,6 +307,7 @@ impl Maze {
         let x: usize = add(pos.0, rel.0);
         let y: usize = add(pos.1, rel.1);
 
+        // It must be a valid tile.
         return *tiles.get(y, x).unwrap_or(&Tile::Z1);
     }
 
@@ -373,7 +401,12 @@ impl Maze {
     }
 
     fn get_surrounding_tiles(&self, i: usize, j: usize, tiles: &Array2D<Tile>) -> [[Tile; 5]; 3] {
-        // TODO: I can do better here, only get the tiles I need
+        // TODO: Can reduce lookups a even more
+        // Pointing up, only need to look up 4
+        // and down, 7
+        // TODO: It will be faster to return different gathered_tiles in one go depending on mask, i, j
+        // I don't think it will be must faster to pass it down
+
         let gathered_tiles = [
             [
                 self.get_tile_relative_position((i, j), (-2, -1), tiles),
@@ -405,9 +438,9 @@ impl Maze {
         i: usize,
         j: usize,
         tiles: &Array2D<Tile>,
+        surrounding_tiles: &[[Tile; 5]; 3],
     ) -> (u32, u32) {
         // Get the surrounding tiles
-        let surrounding_tiles = self.get_surrounding_tiles(i, j, tiles);
 
         let mut dont_care = 0u32;
         let mut matches = 0u32;
@@ -417,7 +450,7 @@ impl Maze {
         let pos = [(4 + k) % 6, (2 + k) % 6, (0 + k) % 6];
 
         // Node 1
-        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G1, (1 + i) % 3, pos[0] < 3);
+        let (m, d) = self.calc_vertex(*surrounding_tiles, Tile::G1, (1 + i) % 3, pos[0] < 3);
 
         if m {
             matches |= 0b000_001;
@@ -426,7 +459,7 @@ impl Maze {
         }
 
         // Node 2
-        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G2, (2 + i) % 3, pos[1] < 3);
+        let (m, d) = self.calc_vertex(*surrounding_tiles, Tile::G2, (2 + i) % 3, pos[1] < 3);
         if m {
             matches |= 0b000_010;
         } else if d {
@@ -434,28 +467,28 @@ impl Maze {
         }
 
         // Node3
-        let (m, d) = self.calc_vertex(surrounding_tiles, Tile::G3, (0 + i) % 3, pos[2] < 3);
+        let (m, d) = self.calc_vertex(*surrounding_tiles, Tile::G3, (0 + i) % 3, pos[2] < 3);
         if m {
             matches |= 0b000_100;
         } else if d {
             dont_care |= 0b000_100;
         }
 
-        let (m, d) = self.calc_side(surrounding_tiles, Tile::G4, (0 + i) % 3, pos[2]);
+        let (m, d) = self.calc_side(*surrounding_tiles, Tile::G4, (0 + i) % 3, pos[2]);
         if m {
             matches |= 0b001_000;
         } else if d {
             dont_care |= 0b001_000;
         }
 
-        let (m, d) = self.calc_side(surrounding_tiles, Tile::G5, (2 + i) % 3, pos[2]);
+        let (m, d) = self.calc_side(*surrounding_tiles, Tile::G5, (2 + i) % 3, pos[2]);
         if m {
             matches |= 0b010_000;
         } else if d {
             dont_care |= 0b010_000;
         }
 
-        let (m, d) = self.calc_side(surrounding_tiles, Tile::G6, (1 + i) % 3, pos[2]);
+        let (m, d) = self.calc_side(*surrounding_tiles, Tile::G6, (1 + i) % 3, pos[2]);
         if m {
             matches |= 0b100_000;
         } else if d {
@@ -465,12 +498,19 @@ impl Maze {
         return (dont_care, matches);
     }
 
-    fn get_random_tile(&self, i: usize, j: usize, tiles: &Array2D<Tile>) -> Tile {
+    fn get_random_tile(
+        &self,
+        i: usize,
+        j: usize,
+        tiles: &Array2D<Tile>,
+        surrounding_tiles: &[[Tile; 5]; 3],
+    ) -> Tile {
         if i == 0 && j == 0 {
             return Tile::L3;
         }
 
-        let (dont_care, matches) = self.get_surrounding_tile_connections(i, j, tiles);
+        let (dont_care, matches) =
+            self.get_surrounding_tile_connections(i, j, tiles, surrounding_tiles);
 
         // TODO: strip out cells that only have Nx and Tx
         for _ in 0..45 {
@@ -592,10 +632,11 @@ mod tests {
     use crate::maze::tile::Tile;
     use crate::renders::glyph::Glyph;
     use crate::renders::primatives::Coordinate;
+    use std::println;
 
     #[test]
     fn very_small_net() {
-        let maze = Maze::new(3, 3, true, Some(37u64));
+        let maze = Maze::new(3, 2, true, Some(37u64));
         // let mut row_path_1: Vec<Glyph> = Vec::new();
         // let mut row_path_2: Vec<Glyph> = Vec::new();
         //
