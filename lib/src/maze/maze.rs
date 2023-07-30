@@ -56,6 +56,7 @@ impl Maze {
         }
         return obj;
     }
+
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         let mut tiles = Array2D::filled_with(Tile::Z2, number_of_rows, number_of_columns);
         for j in 0..number_of_rows {
@@ -72,31 +73,14 @@ impl Maze {
                 // TODO: At this stage, only need to get the tiles that are above and or to the left
                 // TODO: Have tile, add to network!
                 let nets = calculate_nets(tile.bits());
-                println!("Tile ({i},{j}) -> {:?} : {:?}", tile, nets);
-                let adjancent_tile_1 =
-                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 1).bits());
-                let adjancent_tile_2 =
-                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 2).bits());
-                let adjancent_tile_3 =
-                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 3).bits());
-                let adjancent_tile_4 =
-                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 4).bits());
-                let adjancent_tile_5 =
-                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 5).bits());
-                let adjancent_tile_6 =
-                    calculate_nets(self.get_adjacent_tile(surrounding_tiles, i, j, 6).bits());
+                println!("Tile ({i},{j}) -> {:?}", nets);
+                for k in 1..6 {
+                    self.update_network(surrounding_tiles, i, j, k, tile);
+                }
 
-                println!(
-                    "{:?}, {:?}, {:?}, {:?}, {:?}, {:?} ",
-                    adjancent_tile_1,
-                    adjancent_tile_2,
-                    adjancent_tile_3,
-                    adjancent_tile_4,
-                    adjancent_tile_5,
-                    adjancent_tile_6
-                );
                 tiles[(j, i)] = tile;
 
+                println!("");
                 let glyph: Glyph = Glyph::new(coord, tile);
 
                 row_path.push(glyph);
@@ -111,6 +95,11 @@ impl Maze {
 
         self.width = (number_of_columns + 1) as f64 * M;
         self.height = number_of_rows as f64 * H;
+
+        println!("\nNets are now:");
+        for (n, nets) in self.nets.iter().enumerate() {
+            println!("{n}-> {:?}", nets);
+        }
     }
 
     pub fn add_row(&mut self, row: Vec<Glyph>) {
@@ -154,13 +143,14 @@ impl Maze {
            ▽△▽△▽      △▽△▽△
 
         */
-    fn get_adjacent_tile(
+    fn update_network(
         &self,
         surrounding_tiles: [[Tile; 5]; 3],
         i: usize,
         j: usize,
-        k: usize, // the node within a tile
-    ) -> Tile {
+        k: usize,
+        tile: Tile,
+    ) {
         let z = i + (3 * (j % 2));
 
         /*
@@ -173,106 +163,69 @@ impl Maze {
 
         */
 
-        match k {
+        let connected_tile = match k {
             1 => {
                 // Find the triange vertex the lines up with the top vertex
                 let pos = (4 + z) % 6 < 3;
                 let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
-                return self.adjacent_vertex(other_row, (1 + i) % 3);
+                self.adjacent_vertex(other_row, (1 + i) % 3).bits()
             }
             2 => {
                 // Find the triange vertex the lines up with the bottom left vertex
                 let pos = (2 + z) % 6 < 3;
                 let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
-                return self.adjacent_vertex(other_row, (2 + i) % 3);
+                self.adjacent_vertex(other_row, (2 + i) % 3).bits()
             }
             3 => {
                 // Find the triange vertex the lines up with the bottom right vertex
                 let pos = (0 + z) % 6 < 3;
                 let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
-                return self.adjacent_vertex(other_row, (0 + i) % 3);
+                self.adjacent_vertex(other_row, (0 + i) % 3).bits()
             }
             4 => {
                 // The tile to the left
-                return surrounding_tiles[1][2];
+                surrounding_tiles[1][2].bits()
             }
             5 => {
                 // The tile to the right
-                return surrounding_tiles[1][4];
+                surrounding_tiles[1][4].bits()
             }
             6 => {
                 let pos = (i + j) % 2;
-                return surrounding_tiles[pos][3];
+                surrounding_tiles[pos][3].bits()
             }
-            _ => return Tile::Z1,
-        }
-    }
+            _ => Tile::Z1.bits(),
+        };
 
-    // TODO: Added debug only method to create the grid outlines, aka the walls
-    pub fn smoosh(&mut self) {
-        println!("Smooshing ...\n");
-        let number_of_rows = self.glyphs.len();
-        let number_of_columns = self.glyphs[0].len();
-
-        // Convert to 2D array of tiles
-        let mut tiles = Array2D::filled_with(Tile::Z2, number_of_rows, number_of_columns);
-        for (j, row) in self.glyphs.iter().enumerate() {
-            for (i, glyph) in row.iter().enumerate() {
-                tiles[(j, i)] = glyph.tile;
-            }
+        let tile_nets = calculate_nets(tile.bits());
+        if tile_nets.is_empty() {
+            return;
         }
 
-        for j in 0..number_of_rows {
-            for i in 0..number_of_columns {
-                let tile = tiles[(j, i)];
+        // TODO: Do I even care about the other nets ?
+        let connected_nets = calculate_nets(connected_tile);
+        println!(" >> {:?}", connected_nets);
 
-                // And build up a list of matching nets ??? of the surrounding nets
-                let surrounding_tiles = self.get_surrounding_tiles(i, j, &tiles);
+        for net in tile_nets {
+            println!("  > ({i},{j}): {:?}", net);
 
-                // Get the nets for the current tile
-                let nets = calculate_nets(tile.bits());
-                println!("Tile ({i},{j}) -> {:?} : {:?}", tile, nets);
-                println!("Surrounding tiles:\n");
-                for s in surrounding_tiles.iter() {
-                    println!("  {:?}", s);
-                }
+            for node in net {
+                let key: [usize; 3] = [i, j, node.to_usize().unwrap_or_default()];
 
-                // Get tiles for surrounding tiles
-                let adjancent_tile_1 = self.get_adjacent_tile(surrounding_tiles, i, j, 1);
-                let adjancent_tile_2 = self.get_adjacent_tile(surrounding_tiles, i, j, 2);
-                let adjancent_tile_3 = self.get_adjacent_tile(surrounding_tiles, i, j, 3);
-                let adjancent_tile_4 = self.get_adjacent_tile(surrounding_tiles, i, j, 4);
-                let adjancent_tile_5 = self.get_adjacent_tile(surrounding_tiles, i, j, 5);
-                let adjancent_tile_6 = self.get_adjacent_tile(surrounding_tiles, i, j, 6);
-                println!(
-                    "adjs: {:?} {:?} {:?} {:?} {:?} {:?}",
-                    adjancent_tile_1,
-                    adjancent_tile_2,
-                    adjancent_tile_3,
-                    adjancent_tile_4,
-                    adjancent_tile_5,
-                    adjancent_tile_6
-                );
-
-                for net in nets {
-                    println!("({i},{j}): {:?}", net);
-                    let key: [usize; 3] = [i, j, net[0].to_usize().unwrap_or_default()];
-
-                    //
-                    for existing_nets in self.nets.iter() {
-                        if existing_nets.contains(&key) {
-                            println!("Found {i},{j},{:}", net[0]);
-                        }
+                //
+                let mut found = false;
+                for existing_nets in self.nets.iter() {
+                    if existing_nets.contains(&key) {
+                        println!("Found {i},{j},{:}", node);
+                        found = true;
                     }
-                    // if !self.nets.contains(&key) {
-                    //     println!("Adding {i},{j},{:}", net[0]);
-                    //     self.nets.insert(key);
-                    // }
+                }
+                if !found {
+                    println!("Adding new net {i},{j},{:}", node);
+                    //self.nets.insert(Vec::from([key]));
                 }
             }
         }
-
-        println!("\nDone Smooshing.\n");
     }
 
     pub fn create_one_tile_grid(&mut self) {
