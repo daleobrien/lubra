@@ -409,11 +409,12 @@ impl Maze {
 
     fn get_relative_positions_for_tile(&self, i: usize, j: usize) -> [(i32, i32); 6] {
         let k = i + (3 * (j % 2));
-        // We only have 6 different ways a tile can be rotated
+        // We only have six different ways a tile can be rotated
         // For each rotation, we can then get the relative coordinates
         // of the surrounding tiles for each node index within the
         // tile(i,j)
 
+        // There are only n different tiles
         return match k % 6 {
             0 => [(0, -1), (-2, 1), (2, 1), (-1, -1), (1, 0), (0, 1)],
             1 => [(-2, -1), (2, -1), (0, 1), (0, -1), (-1, 0), (1, 0)],
@@ -424,15 +425,6 @@ impl Maze {
             _ => panic!(), // Maths say I can't get here
         };
 
-        // return match k % 6 {
-        //     0 => [(2, 0), (0, 2), (4, 2), (1, 0), (3, 1), (2, 2)],
-        //     1 => [(0, 0), (4, 0), (2, 2), (2, 0), (1, 1), (3, 1)],
-        //     2 => [(4, 2), (2, 0), (0, 2), (3, 1), (2, 2), (1, 1)],
-        //     3 => [(2, 1), (0, 0), (4, 0), (1, 1), (3, 1), (2, 0)],
-        //     4 => [(0, 2), (4, 2), (2, 0), (2, 2), (1, 1), (3, 1)],
-        //     5 => [(4, 0), (2, 2), (0, 0), (3, 1), (2, 0), (1, 1)],
-        //     _ => panic!(), // Maths say I can't get here
-        // };
     }
 
     fn get_connected_titles_for_tile(
