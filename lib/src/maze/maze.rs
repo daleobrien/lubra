@@ -407,22 +407,43 @@ impl Maze {
         return gathered_tiles;
     }
 
-    fn get_relative_position_for_tile_at_coordinates(
+    fn get_relative_positions_for_tile(&self, i: usize, j: usize) -> [(i32, i32); 6] {
+        let k = i + (3 * (j % 2));
+        // We only have 6 different ways a tile can be rotated
+        // For each rotation, we can then get the relative coordinates
+        // of the surrounding tiles for each node index within the
+        // tile(i,j)
+
+        return match k % 6 {
+            0 => [(0, -1), (-2, 1), (2, 1), (-1, -1), (1, 0), (0, 1)],
+            1 => [(-2, -1), (2, -1), (0, 1), (0, -1), (-1, 0), (1, 0)],
+            2 => [(2, 1), (0, -1), (-2, 1), (1, 0), (0, 1), (-1, 0)],
+            3 => [(0, 0), (-2, -1), (2, -1), (-1, 0), (1, 0), (0, -1)],
+            4 => [(-2, 1), (2, 1), (0, -1), (0, 1), (-1, 0), (1, 0)],
+            5 => [(2, -1), (0, 1), (-2, -1), (1, 0), (0, -1), (-1, 0)],
+            _ => panic!(), // Maths say I can't get here
+        };
+
+        // return match k % 6 {
+        //     0 => [(2, 0), (0, 2), (4, 2), (1, 0), (3, 1), (2, 2)],
+        //     1 => [(0, 0), (4, 0), (2, 2), (2, 0), (1, 1), (3, 1)],
+        //     2 => [(4, 2), (2, 0), (0, 2), (3, 1), (2, 2), (1, 1)],
+        //     3 => [(2, 1), (0, 0), (4, 0), (1, 1), (3, 1), (2, 0)],
+        //     4 => [(0, 2), (4, 2), (2, 0), (2, 2), (1, 1), (3, 1)],
+        //     5 => [(4, 0), (2, 2), (0, 0), (3, 1), (2, 0), (1, 1)],
+        //     _ => panic!(), // Maths say I can't get here
+        // };
+    }
+
+    fn get_connected_titles_for_tile(
         &self,
         i: usize,
         j: usize,
-    ) -> [(usize, usize); 6] {
-        let k = i + (3 * (j % 2));
+        tiles: &Array2D<Tile>,
+    ) -> [Tile; 6] {
+        let positions = self.get_relative_positions_for_tile(i, j);
 
-        return match k % 6 {
-            0 => [(2, 0), (0, 2), (4, 2), (1, 0), (3, 1), (2, 2)],
-            1 => [(0, 0), (4, 0), (2, 2), (2, 0), (1, 1), (3, 1)],
-            2 => [(4, 2), (2, 0), (0, 2), (3, 1), (2, 2), (1, 1)],
-            3 => [(2, 1), (0, 0), (4, 0), (1, 1), (3, 1), (2, 0)],
-            4 => [(0, 2), (4, 2), (2, 0), (2, 2), (1, 1), (3, 1)],
-            5 => [(4, 0), (2, 2), (0, 0), (3, 1), (2, 0), (1, 1)],
-            _ => [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)],
-        };
+        return positions.map(|pos| self.get_tile_relative_position((i, j), pos, tiles));
     }
 
     pub fn get_surrounding_tile_connections(
@@ -630,7 +651,7 @@ mod tests {
     #[test]
     fn test_relative_positions() {
         let maze = Maze::new(0, 0, true, Some(37u64));
-        let positions = maze.get_relative_position_for_tile_at_coordinates(0, 0);
+        let positions = maze.get_relative_positions_for_tile(0, 0);
         println!("Positions => {:?}", positions);
         assert_eq!(positions[0], (2, 0));
         assert_eq!(positions[1], (0, 2));
