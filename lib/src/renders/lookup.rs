@@ -9,7 +9,7 @@ use rand_chacha::ChaCha8Rng;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 pub fn find_tiles(mask:u32) -> Vec<u32> {
-	match mask {
+	match mask { 
 		0b000000000000 => vec![0],
 		0b000000000001 => vec![64],
 		0b000000000010 => vec![0, 64],

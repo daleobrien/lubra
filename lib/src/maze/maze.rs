@@ -21,8 +21,8 @@ pub struct Maze {
     nets: HashSet<Vec<[usize; 3]>>,
     width: f64,
     height: f64,
-    number_of_columns: usize,
-    number_of_rows: usize,
+    //number_of_columns: usize,
+    //number_of_rows: usize,
     seed: Option<u64>,
 }
 
@@ -46,8 +46,8 @@ impl Maze {
             width: 0f64,
             height: 0f64,
             nets,
-            number_of_columns,
-            number_of_rows,
+            //number_of_columns,
+            //number_of_rows,
             seed,
         };
 
@@ -67,6 +67,7 @@ impl Maze {
                 let coord: Coordinate = Coordinate { i, j };
 
                 let surrounding_tiles = self.get_surrounding_tiles(i, j, &tiles);
+                //println!("Surrounding tiles: {:?}", surrounding_tiles);
 
                 let tile = self.get_random_tile(i, j, &tiles, &surrounding_tiles);
 
@@ -74,7 +75,7 @@ impl Maze {
                 // TODO: Have tile, add to network!
                 let nets = calculate_nets(tile.bits());
                 println!("Tile ({i},{j}) -> {:?}", nets);
-                for k in 1..6 {
+                for k in 1..=6 {
                     self.update_network(surrounding_tiles, i, j, k, tile);
                 }
 
@@ -165,34 +166,54 @@ impl Maze {
 
         let connected_tile = match k {
             1 => {
-                // Find the triange vertex the lines up with the top vertex
+                // Find the triangle vertex the lines up with the top vertex
+                // TODO: Abstrack this relative position out into a function,
+                // see get_surrounding_tile_connections()
                 let pos = (4 + z) % 6 < 3;
-                let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
-                self.adjacent_vertex(other_row, (1 + i) % 3).bits()
+                let y = if pos { 2 } else { 0 };
+                let x = (1 + i) % 3;
+                let other_row = surrounding_tiles[y];
+                print!("({}, {y}) ", 4 - 2 * x);
+                self.adjacent_vertex(other_row, x).bits()
             }
             2 => {
-                // Find the triange vertex the lines up with the bottom left vertex
+                // Find the triangle vertex the lines up with the bottom left vertex
                 let pos = (2 + z) % 6 < 3;
-                let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
-                self.adjacent_vertex(other_row, (2 + i) % 3).bits()
+                let y = if pos { 2 } else { 0 };
+                let x = (2 + i) % 3;
+                let other_row = surrounding_tiles[y];
+                print!("({}, {y}) ", 4 - 2 * x);
+                self.adjacent_vertex(other_row, x).bits()
             }
             3 => {
-                // Find the triange vertex the lines up with the bottom right vertex
+                // Find the triangle vertex the lines up with the bottom right vertex
                 let pos = (0 + z) % 6 < 3;
-                let other_row = surrounding_tiles[if pos { 2 } else { 0 }];
-                self.adjacent_vertex(other_row, (0 + i) % 3).bits()
+                let y = if pos { 2 } else { 0 };
+                let x = (0 + i) % 3;
+                let other_row = surrounding_tiles[y];
+                print!("({}, {y}) ", 4 - 2 * x);
+                self.adjacent_vertex(other_row, x).bits()
             }
             4 => {
-                // The tile to the left
-                surrounding_tiles[1][2].bits()
+                let pos = (0 + z) % 6 < 3;
+                let y = if pos { 1 } else { 2 };
+                let x = (0 + i) % 3 + 1;
+                print!("({x}, {y}) ");
+                surrounding_tiles[y][x].bits()
             }
             5 => {
-                // The tile to the right
-                surrounding_tiles[1][4].bits()
+                let pos = (2 + z) % 6 < 3;
+                let y = if pos { 1 } else { 2 };
+                let x = (2 + i) % 3 + 1;
+                print!("({x}, {y}) ");
+                surrounding_tiles[y][x].bits()
             }
             6 => {
-                let pos = (i + j) % 2;
-                surrounding_tiles[pos][3].bits()
+                let pos = (4 + z) % 6 < 3;
+                let y = if pos { 0 } else { 2 };
+                let x = (1 + i) % 3 + 1;
+                print!("({x}, {y}) ");
+                surrounding_tiles[y][x].bits()
             }
             _ => Tile::Z1.bits(),
         };
@@ -204,28 +225,28 @@ impl Maze {
 
         // TODO: Do I even care about the other nets ?
         let connected_nets = calculate_nets(connected_tile);
-        println!(" >> {:?}", connected_nets);
+        println!("{k} >> {:?}", connected_nets);
 
-        for net in tile_nets {
-            println!("  > ({i},{j}): {:?}", net);
-
-            for node in net {
-                let key: [usize; 3] = [i, j, node.to_usize().unwrap_or_default()];
-
-                //
-                let mut found = false;
-                for existing_nets in self.nets.iter() {
-                    if existing_nets.contains(&key) {
-                        println!("Found {i},{j},{:}", node);
-                        found = true;
-                    }
-                }
-                if !found {
-                    println!("Adding new net {i},{j},{:}", node);
-                    //self.nets.insert(Vec::from([key]));
-                }
-            }
-        }
+        // for net in tile_nets {
+        //     println!("  > ({i},{j}): {:?}", net);
+        //
+        //     for node in net {
+        //         let key: [usize; 3] = [i, j, node.to_usize().unwrap_or_default()];
+        //
+        //         //
+        //         let mut found = false;
+        //         for existing_nets in self.nets.iter() {
+        //             if existing_nets.contains(&key) {
+        //                 println!("Found {i},{j},{:}", node);
+        //                 found = true;
+        //             }
+        //         }
+        //         if !found {
+        //             // println!("Adding new net {i},{j},{:}", node);
+        //             //self.nets.insert(Vec::from([key]));
+        //         }
+        //     }
+        // }
     }
 
     pub fn create_one_tile_grid(&mut self) {
@@ -386,6 +407,24 @@ impl Maze {
         return gathered_tiles;
     }
 
+    fn get_relative_position_for_tile_at_coordinates(
+        &self,
+        i: usize,
+        j: usize,
+    ) -> [(usize, usize); 6] {
+        let k = i + (3 * (j % 2));
+
+        return match k % 6 {
+            0 => [(2, 0), (0, 2), (4, 2), (1, 0), (3, 1), (2, 2)],
+            1 => [(0, 0), (4, 0), (2, 2), (2, 0), (1, 1), (3, 1)],
+            2 => [(4, 2), (2, 0), (0, 2), (3, 1), (2, 2), (1, 1)],
+            3 => [(2, 1), (0, 0), (4, 0), (1, 1), (3, 1), (2, 0)],
+            4 => [(0, 2), (4, 2), (2, 0), (2, 2), (1, 1), (3, 1)],
+            5 => [(4, 0), (2, 2), (0, 0), (3, 1), (2, 0), (1, 1)],
+            _ => [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)],
+        };
+    }
+
     pub fn get_surrounding_tile_connections(
         &self,
         i: usize,
@@ -400,6 +439,7 @@ impl Maze {
 
         // Calculate the relative positions of the surrounding tiles
         let k = i + (3 * (j % 2));
+
         let pos = [(4 + k) % 6, (2 + k) % 6, (0 + k) % 6];
 
         // Node 1
@@ -588,36 +628,51 @@ mod tests {
     use std::println;
 
     #[test]
-    fn very_small_net() {
-        let maze = Maze::new(3, 2, true, Some(37u64));
-        // let mut row_path_1: Vec<Glyph> = Vec::new();
-        // let mut row_path_2: Vec<Glyph> = Vec::new();
-        //
-        // let title1 = Glyph::new(Coordinate { i: 0, j: 0 }, Tile::C2);
-        // let title2 = Glyph::new(Coordinate { i: 1, j: 0 }, Tile::C1);
-        // row_path_1.push(title1);
-        // row_path_1.push(title2);
-        //
-        // let title3 = Glyph::new(Coordinate { i: 0, j: 1 }, Tile::A2);
-        // let title4 = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::L1);
-        // row_path_2.push(title3);
-        // row_path_2.push(title4);
-        //
-        // maze.add_row(row_path_1);
-        // maze.add_row(row_path_2);
-        //
-        // for i in [0, 1] {
-        //     let mut row_wall: Vec<Glyph> = Vec::new();
-        //     for j in [0, 1] {
-        //         row_wall.push(Glyph::new(Coordinate { i, j }, Tile::W1));
-        //     }
-        //     maze.walls.push(row_wall);
-        // }
-
-        // maze.smoosh();
-
-        let result_f = maze.render("../test-smoosh.svg".to_string());
-
-        println!("Finished {:?}", result_f.unwrap());
+    fn test_relative_positions() {
+        let maze = Maze::new(0, 0, true, Some(37u64));
+        let positions = maze.get_relative_position_for_tile_at_coordinates(0, 0);
+        println!("Positions => {:?}", positions);
+        assert_eq!(positions[0], (2, 0));
+        assert_eq!(positions[1], (0, 2));
+        assert_eq!(positions[2], (4, 2));
+        assert_eq!(positions[3], (1, 0));
+        // assert_eq!(positions[1], (1, 0));
+        // assert_eq!(positions[2], (1, 0));
+        // assert_eq!(positions[0], (1, 0));
+        // assert_eq!(positions[0], (1, 0));
     }
+    // // TODO: Add tests for getting networks
+    // #[test]
+    // fn very_small_net() {
+    //     let maze = Maze::new(3, 2, true, Some(37u64));
+    //     // let mut row_path_1: Vec<Glyph> = Vec::new();
+    //     // let mut row_path_2: Vec<Glyph> = Vec::new();
+    //     //
+    //     // let title1 = Glyph::new(Coordinate { i: 0, j: 0 }, Tile::C2);
+    //     // let title2 = Glyph::new(Coordinate { i: 1, j: 0 }, Tile::C1);
+    //     // row_path_1.push(title1);
+    //     // row_path_1.push(title2);
+    //     //
+    //     // let title3 = Glyph::new(Coordinate { i: 0, j: 1 }, Tile::A2);
+    //     // let title4 = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::L1);
+    //     // row_path_2.push(title3);
+    //     // row_path_2.push(title4);
+    //     //
+    //     // maze.add_row(row_path_1);
+    //     // maze.add_row(row_path_2);
+    //     //
+    //     // for i in [0, 1] {
+    //     //     let mut row_wall: Vec<Glyph> = Vec::new();
+    //     //     for j in [0, 1] {
+    //     //         row_wall.push(Glyph::new(Coordinate { i, j }, Tile::W1));
+    //     //     }
+    //     //     maze.walls.push(row_wall);
+    //     // }
+    //
+    //     // maze.smoosh();
+    //
+    //     let result_f = maze.render("../test-smoosh.svg".to_string());
+    //
+    //     println!("Finished {:?}", result_f.unwrap());
+    // }
 }
