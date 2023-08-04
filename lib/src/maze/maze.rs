@@ -407,36 +407,69 @@ impl Maze {
         return gathered_tiles;
     }
 
-    fn get_relative_positions_for_tile(&self, i: usize, j: usize) -> [(i32, i32); 6] {
-        let k = i + (3 * (j % 2));
-        // We only have six different ways a tile can be rotated
-        // For each rotation, we can then get the relative coordinates
-        // of the surrounding tiles for each node index within the
-        // tile(i,j)
-
-        // There are only 10 different tiles
-        // [(0, 1), (2, -1), (-1, -1), (2, 1), (-2, -1), (0, 0), (-2, 1), (-1, 0), (1, 0), (0, -1)]
-        return match k % 6 {
-            0 => [(0, -1), (-2, 1), (2, 1), (-1, -1), (1, 0), (0, 1)],
-            1 => [(-2, -1), (2, -1), (0, 1), (0, -1), (-1, 0), (1, 0)],
-            2 => [(2, 1), (0, -1), (-2, 1), (1, 0), (0, 1), (-1, 0)],
-            3 => [(0, 0), (-2, -1), (2, -1), (-1, 0), (1, 0), (0, -1)],
-            4 => [(-2, 1), (2, 1), (0, -1), (0, 1), (-1, 0), (1, 0)],
-            5 => [(2, -1), (0, 1), (-2, -1), (1, 0), (0, -1), (-1, 0)],
-            _ => panic!(), // Maths say I can't get here
-        };
-
-    }
-
     fn get_connected_titles_for_tile(
         &self,
         i: usize,
         j: usize,
         tiles: &Array2D<Tile>,
     ) -> [Tile; 6] {
-        let positions = self.get_relative_positions_for_tile(i, j);
+        let k = i + (3 * (j % 2));
+        // We only have six different ways a tile can be rotated
+        // For each rotation, we can then get the adjancent tile
+        //  for each node index within the
+        // tile(i,j).
 
-        return positions.map(|pos| self.get_tile_relative_position((i, j), pos, tiles));
+        return match k % 6 {
+            0 => [
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 1), tiles),
+                self.get_tile_relative_position((i, j), (2, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+            ],
+            1 => [
+                self.get_tile_relative_position((i, j), (-2, -1), tiles),
+                self.get_tile_relative_position((i, j), (2, -1), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
+            ],
+            2 => [
+                self.get_tile_relative_position((i, j), (2, 1), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+            ],
+            3 => [
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-2, -1), tiles),
+                self.get_tile_relative_position((i, j), (2, -1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+            ],
+            4 => [
+                self.get_tile_relative_position((i, j), (-2, -1), tiles),
+                self.get_tile_relative_position((i, j), (2, 1), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
+            ],
+            5 => [
+                self.get_tile_relative_position((i, j), (2, -1), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+            ],
+            _ => panic!(), // Maths say I can't get here
+        };
     }
 
     pub fn get_surrounding_tile_connections(
@@ -641,20 +674,6 @@ mod tests {
     use crate::renders::primatives::Coordinate;
     use std::println;
 
-    #[test]
-    fn test_relative_positions() {
-        let maze = Maze::new(0, 0, true, Some(37u64));
-        let positions = maze.get_relative_positions_for_tile(0, 0);
-        println!("Positions => {:?}", positions);
-        assert_eq!(positions[0], (2, 0));
-        assert_eq!(positions[1], (0, 2));
-        assert_eq!(positions[2], (4, 2));
-        assert_eq!(positions[3], (1, 0));
-        // assert_eq!(positions[1], (1, 0));
-        // assert_eq!(positions[2], (1, 0));
-        // assert_eq!(positions[0], (1, 0));
-        // assert_eq!(positions[0], (1, 0));
-    }
     // // TODO: Add tests for getting networks
     // #[test]
     // fn very_small_net() {
