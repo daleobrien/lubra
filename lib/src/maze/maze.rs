@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
+use crate::maze::consts::NODE_TO_COORD;
 use crate::maze::net::calculate_nets;
 
 use array2d::Array2D;
@@ -137,8 +138,6 @@ impl Maze {
 
         */
     fn update_network(&self, surrounding_tiles: [Tile; 12]) {
-        let opposite_tile = surrounding_tiles[1];
-
         let tile_1_nets = calculate_nets(surrounding_tiles[1].bits());
         let tile_2_nets = calculate_nets(surrounding_tiles[9].bits());
         let tile_3_nets = calculate_nets(surrounding_tiles[5].bits());
@@ -251,93 +250,8 @@ impl Maze {
         e.g.
            result[7] will always return the tile that is adjacent to node 6.
         */
-        return match k % 6 {
-            0 => [
-                self.get_tile_relative_position((i, j), (-1, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (-1, 1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
-            ],
-            1 => [
-                self.get_tile_relative_position((i, j), (-1, -1), tiles),
-                self.get_tile_relative_position((i, j), (-2, -1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-            ],
-            2 => [
-                self.get_tile_relative_position((i, j), (2, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (-1, 1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
-            ],
-            3 => [
-                self.get_tile_relative_position((i, j), (-1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (-1, -1), tiles),
-                self.get_tile_relative_position((i, j), (-2, -1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
-            ],
-            4 => [
-                self.get_tile_relative_position((i, j), (-1, 1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-            ],
-            5 => [
-                self.get_tile_relative_position((i, j), (2, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (-1, -1), tiles),
-                self.get_tile_relative_position((i, j), (-2, -1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
-            ],
-            _ => panic!(), // Maths say I can't get here
-        };
+        return NODE_TO_COORD[k % 6]
+            .map(|coord| self.get_tile_relative_position((i, j), coord, tiles));
     }
 
     fn mask_for_tile_vertex(
