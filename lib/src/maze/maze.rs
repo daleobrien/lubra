@@ -21,8 +21,6 @@ pub struct Maze {
     nets: HashSet<Vec<[usize; 3]>>,
     width: f64,
     height: f64,
-    //number_of_columns: usize,
-    //number_of_rows: usize,
     seed: Option<u64>,
 }
 
@@ -46,8 +44,6 @@ impl Maze {
             width: 0f64,
             height: 0f64,
             nets,
-            //number_of_columns,
-            //number_of_rows,
             seed,
         };
 
@@ -74,9 +70,7 @@ impl Maze {
                 // TODO: Have tile, add to network!
                 let current_tile_nets = calculate_nets(tile.bits());
                 println!("Tile ({i},{j}) -> {:?}", current_tile_nets);
-                // for k in 1..=6 {
-                //     self.update_network(surrounding_tiles, i, j, k, tile);
-                // }
+                self.update_network(surrounding_tiles);
 
                 tiles[(j, i)] = tile;
 
@@ -142,88 +136,22 @@ impl Maze {
            ▽△▽△▽      △▽△▽△
 
         */
-    fn update_network(
-        &self,
-        surrounding_tiles: [[Tile; 5]; 3],
-        i: usize,
-        j: usize,
-        k: usize,
-        tile: Tile,
-    ) {
-        let z = i + (3 * (j % 2));
+    fn update_network(&self, surrounding_tiles: [Tile; 12]) {
+        let opposite_tile = surrounding_tiles[1];
 
-        /*
+        let tile_1_nets = calculate_nets(surrounding_tiles[1].bits());
+        let tile_2_nets = calculate_nets(surrounding_tiles[9].bits());
+        let tile_3_nets = calculate_nets(surrounding_tiles[5].bits());
+        let tile_4_nets = calculate_nets(surrounding_tiles[11].bits());
+        let tile_5_nets = calculate_nets(surrounding_tiles[3].bits());
+        let tile_6_nets = calculate_nets(surrounding_tiles[7].bits());
 
-         🜂🜄🜂🜄🜂  <- 1st row
-         🜄🜂🜄🜂🜄  <- 2nd row
-         🜂🜄🜂🜄🜂  <- 3rd row
-
-         Thus the tile points if the position is (i+j) % 2 == 0
-
-        */
-
-        let connected_tile = match k {
-            1 => {
-                // Find the triangle vertex the lines up with the top vertex
-                // TODO: Abstrack this relative position out into a function,
-                // see get_surrounding_tile_connections()
-                let pos = (4 + z) % 6 < 3;
-                let y = if pos { 2 } else { 0 };
-                let x = (1 + i) % 3;
-                let other_row = surrounding_tiles[y];
-                print!("({}, {y}) ", 4 - 2 * x);
-                self.adjacent_vertex(other_row, x).bits()
-            }
-            2 => {
-                // Find the triangle vertex the lines up with the bottom left vertex
-                let pos = (2 + z) % 6 < 3;
-                let y = if pos { 2 } else { 0 };
-                let x = (2 + i) % 3;
-                let other_row = surrounding_tiles[y];
-                print!("({}, {y}) ", 4 - 2 * x);
-                self.adjacent_vertex(other_row, x).bits()
-            }
-            3 => {
-                // Find the triangle vertex the lines up with the bottom right vertex
-                let pos = (0 + z) % 6 < 3;
-                let y = if pos { 2 } else { 0 };
-                let x = (0 + i) % 3;
-                let other_row = surrounding_tiles[y];
-                print!("({}, {y}) ", 4 - 2 * x);
-                self.adjacent_vertex(other_row, x).bits()
-            }
-            4 => {
-                let pos = (0 + z) % 6 < 3;
-                let y = if pos { 1 } else { 2 };
-                let x = (0 + i) % 3 + 1;
-                print!("({x}, {y}) ");
-                surrounding_tiles[y][x].bits()
-            }
-            5 => {
-                let pos = (2 + z) % 6 < 3;
-                let y = if pos { 1 } else { 2 };
-                let x = (2 + i) % 3 + 1;
-                print!("({x}, {y}) ");
-                surrounding_tiles[y][x].bits()
-            }
-            6 => {
-                let pos = (4 + z) % 6 < 3;
-                let y = if pos { 0 } else { 2 };
-                let x = (1 + i) % 3 + 1;
-                print!("({x}, {y}) ");
-                surrounding_tiles[y][x].bits()
-            }
-            _ => Tile::Z1.bits(),
-        };
-
-        let tile_nets = calculate_nets(tile.bits());
-        if tile_nets.is_empty() {
-            return;
-        }
-
-        // TODO: Do I even care about the other nets ?
-        let connected_nets = calculate_nets(connected_tile);
-        println!("{k} >> {:?}", connected_nets);
+        println!("Nets 1 >> {:?}", tile_1_nets);
+        println!("Nets 2 >> {:?}", tile_2_nets);
+        println!("Nets 3 >> {:?}", tile_3_nets);
+        println!("Nets 4 >> {:?}", tile_4_nets);
+        println!("Nets 5 >> {:?}", tile_5_nets);
+        println!("Nets 6 >> {:?}", tile_6_nets);
 
         // for net in tile_nets {
         //     println!("  > ({i},{j}): {:?}", net);
@@ -299,10 +227,9 @@ impl Maze {
     ) -> [Tile; 12] {
         let k = i + (3 * (j % 2));
         /*
-        We only have six different ways a tile can be rotated
-        For each rotation, we can then get the adjacent tile
-        for each node index within the
-        tile(i,j).
+        We only have six different ways a tile can be rotated/flipped
+        For each rotation/flip, we can then get the adjacent tile
+        for each node index within the tile at {i,j}.
 
         So each k % 6 matches a rotation of the tile
 
@@ -319,6 +246,10 @@ impl Maze {
          {3, 4, 5, 0, 1, 2}
         }
 
+        This means that no matter what rotation the tile is in, we can always get the adjacent tile
+        for an given node index without having to do any math,
+        e.g.
+           result[7] will always return the tile that is adjacent to node 6.
         */
         return match k % 6 {
             0 => [
