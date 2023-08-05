@@ -71,7 +71,7 @@ impl Maze {
                 // TODO: Have tile, add to network!
                 let current_tile_nets = calculate_nets(tile.bits());
                 println!("Tile ({i},{j}) -> {:?}", current_tile_nets);
-                self.update_network(surrounding_tiles);
+                self.update_network(&tile, i, j);
 
                 tiles[(j, i)] = tile;
 
@@ -137,20 +137,30 @@ impl Maze {
            ▽△▽△▽      △▽△▽△
 
         */
-    fn update_network(&self, surrounding_tiles: [Tile; 12]) {
-        let tile_1_nets = calculate_nets(surrounding_tiles[1].bits());
-        let tile_2_nets = calculate_nets(surrounding_tiles[9].bits());
-        let tile_3_nets = calculate_nets(surrounding_tiles[5].bits());
-        let tile_4_nets = calculate_nets(surrounding_tiles[11].bits());
-        let tile_5_nets = calculate_nets(surrounding_tiles[3].bits());
-        let tile_6_nets = calculate_nets(surrounding_tiles[7].bits());
+    fn update_network(&self, tile: &Tile, i: usize, j: usize) {
+        let tile_nets = calculate_nets(tile.bits());
 
-        println!("Nets 1 >> {:?}", tile_1_nets);
-        println!("Nets 2 >> {:?}", tile_2_nets);
-        println!("Nets 3 >> {:?}", tile_3_nets);
-        println!("Nets 4 >> {:?}", tile_4_nets);
-        println!("Nets 5 >> {:?}", tile_5_nets);
-        println!("Nets 6 >> {:?}", tile_6_nets);
+        // let tile_1_nets = calculate_nets(surrounding_tiles[1].bits());
+        // let tile_2_nets = calculate_nets(surrounding_tiles[9].bits());
+        // let tile_3_nets = calculate_nets(surrounding_tiles[5].bits());
+        // let tile_4_nets = calculate_nets(surrounding_tiles[11].bits());
+        // let tile_5_nets = calculate_nets(surrounding_tiles[3].bits());
+        // let tile_6_nets = calculate_nets(surrounding_tiles[7].bits());
+        //
+        // println!("Nets 1 >> {:?}", tile_1_nets);
+        // println!("Nets 2 >> {:?}", tile_2_nets);
+        // println!("Nets 3 >> {:?}", tile_3_nets);
+        // println!("Nets 4 >> {:?}", tile_4_nets);
+        // println!("Nets 5 >> {:?}", tile_5_nets);
+        // println!("Nets 6 >> {:?}", tile_6_nets);
+
+        let k = i + (3 * (j % 2));
+        let mapping = NODE_TO_COORD[k % 6];
+
+        // TODO: I don't think I need the surround Tile values, not even the nets, just the coordinate mapping?
+        // i.e. if node 1 is set, then we know we must also connect (mapping[1].0, mapping[1].1, 1) to (i,j,1)
+        // If the say node 1 connects to node 6, then I also need to connect the above net to
+        // (mapping[7].0, mapping[7].1, 6) to (i,j,6).
 
         // for net in tile_nets {
         //     println!("  > ({i},{j}): {:?}", net);
