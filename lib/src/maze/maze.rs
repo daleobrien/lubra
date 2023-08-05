@@ -73,11 +73,11 @@ impl Maze {
 
                 // TODO: At this stage, only need to get the tiles that are above and or to the left
                 // TODO: Have tile, add to network!
-                let nets = calculate_nets(tile.bits());
-                println!("Tile ({i},{j}) -> {:?}", nets);
-                for k in 1..=6 {
-                    self.update_network(surrounding_tiles, i, j, k, tile);
-                }
+                // let nets = calculate_nets(tile.bits());
+                // println!("Tile ({i},{j}) -> {:?}", nets);
+                // for k in 1..=6 {
+                //     self.update_network(surrounding_tiles, i, j, k, tile);
+                // }
 
                 tiles[(j, i)] = tile;
 
@@ -412,64 +412,150 @@ impl Maze {
         i: usize,
         j: usize,
         tiles: &Array2D<Tile>,
-    ) -> [Tile; 6] {
+    ) -> [Tile; 12] {
         let k = i + (3 * (j % 2));
-        // We only have six different ways a tile can be rotated
-        // For each rotation, we can then get the adjancent tile
-        //  for each node index within the
-        // tile(i,j).
+        /*
+        We only have six different ways a tile can be rotated
+        For each rotation, we can then get the adjacent tile
+        for each node index within the
+        tile(i,j).
 
+        So each k % 6 matches a rotation of the tile
+
+        Each row is indexed in a strange way:  _,1,_,5,_,3,_,6,_,2,_,4
+        where the _ is too the left and right of the vertex, (vertex are number 1,2 & 3).
+
+        k % 6 ->
+        {
+         {0, 1, 2, 3, 4, 5},
+         {3, 4, 5, 0, 1, 2},
+         {0, 1, 2, 3, 4, 5},
+         {3, 4, 5, 0, 1, 2},
+         {0, 1, 2, 3, 4, 5},
+         {3, 4, 5, 0, 1, 2}
+        }
+
+        */
         return match k % 6 {
             0 => [
+                self.get_tile_relative_position((i, j), (-1, -1), tiles),
                 self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 1), tiles),
-                self.get_tile_relative_position((i, j), (2, 1), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
                 self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (2, 0), tiles),
+                self.get_tile_relative_position((i, j), (2, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
                 self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
             ],
             1 => [
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
                 self.get_tile_relative_position((i, j), (-2, -1), tiles),
-                self.get_tile_relative_position((i, j), (2, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, -1), tiles),
                 self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
+                self.get_tile_relative_position((i, j), (2, -1), tiles),
+                self.get_tile_relative_position((i, j), (2, 0), tiles),
                 self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
             ],
             2 => [
+                self.get_tile_relative_position((i, j), (2, 0), tiles),
                 self.get_tile_relative_position((i, j), (2, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
                 self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
                 self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (-1, -1), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
             ],
             3 => [
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
                 self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (-2, -1), tiles),
-                self.get_tile_relative_position((i, j), (2, -1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 1), tiles),
                 self.get_tile_relative_position((i, j), (-1, 0), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
+                self.get_tile_relative_position((i, j), (-2, -1), tiles),
+                self.get_tile_relative_position((i, j), (-1, -1), tiles),
                 self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
+                self.get_tile_relative_position((i, j), (2, -1), tiles),
+                self.get_tile_relative_position((i, j), (2, 0), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
             ],
             4 => [
-                self.get_tile_relative_position((i, j), (-2, -1), tiles),
-                self.get_tile_relative_position((i, j), (2, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
                 self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (-1, -1), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
                 self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (2, 0), tiles),
+                self.get_tile_relative_position((i, j), (2, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
             ],
             5 => [
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
                 self.get_tile_relative_position((i, j), (2, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (-2, 1), tiles),
+                self.get_tile_relative_position((i, j), (2, 0), tiles),
                 self.get_tile_relative_position((i, j), (1, 0), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (-1, 1), tiles),
                 self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
+                self.get_tile_relative_position((i, j), (-2, -1), tiles),
+                self.get_tile_relative_position((i, j), (-1, -1), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
             ],
             _ => panic!(), // Maths say I can't get here
         };
+    }
+
+    fn mask_for_tile(
+        &self,
+        opposite_idx: usize,
+        lower_left_idx: usize,
+        lower_right_idx: usize,
+        tile: Tile,
+        relative_tiles: [Tile; 12],
+    ) -> (bool, bool) {
+        let opposite = relative_tiles[opposite_idx];
+
+        let left = relative_tiles[opposite_idx - 1];
+        let right = relative_tiles[opposite_idx + 1];
+
+        let l_adjacent = relative_tiles[lower_left_idx];
+        let r_adjacent = relative_tiles[lower_right_idx];
+
+        if opposite.contains(Tile::Z2) {
+            if !left.intersects(tile)
+                && !right.intersects(tile)
+                && !l_adjacent.intersects(tile)
+                && !r_adjacent.intersects(tile)
+            {
+                // Can be anything
+                return (false, true);
+            }
+        } else if opposite.intersects(tile) {
+            // Must be connected
+            return (true, false);
+        }
+        // Must be unconnected
+        return (false, false);
     }
 
     pub fn get_surrounding_tile_connections(
@@ -489,8 +575,11 @@ impl Maze {
 
         let pos = [(4 + k) % 6, (2 + k) % 6, (0 + k) % 6];
 
+        let relative_tiles = self.get_connected_titles_for_tile(i, j, tiles);
+
         // Node 1
-        let (m, d) = self.calc_vertex(*surrounding_tiles, Tile::G1, (1 + i) % 3, pos[0] < 3);
+        // let (m, d) = self.calc_vertex(*surrounding_tiles, Tile::G1, (1 + i) % 3, pos[0] < 3);
+        let (m, d) = self.mask_for_tile(1, 3, 11, Tile::G1, relative_tiles);
 
         if m {
             matches |= 0b000_001;
@@ -644,21 +733,39 @@ impl Maze {
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
         let mut wall = Path::new("red".to_string(), 3.0, 0.1);
+        let mut green_wall = Path::new("green".to_string(), 3.0, 0.8);
+        let mut red_wall = Path::new("red".to_string(), 3.0, 0.8);
 
         for row in &self.glyphs {
             for tile in row {
                 tile.add_to_path(&mut path, &mut faint_path);
             }
         }
+        let mut i = 0;
+        let mut j = 0;
         for row in &self.walls {
+            i = 0;
             for tile in row {
-                tile.add_to_path(&mut wall, &mut faint_path)
+                if false && i == 4 && j == 1 {
+                    tile.add_to_path(&mut red_wall, &mut faint_path)
+                } else {
+                    let k = i + (3 * (j % 2));
+                    if k % 6 == 0 {
+                        tile.add_to_path(&mut green_wall, &mut faint_path)
+                    } else {
+                        tile.add_to_path(&mut wall, &mut faint_path)
+                    }
+                }
+                i += 1;
             }
+            j += 1;
         }
 
         svg.push_str(&faint_path.to_string());
         svg.push_str(&path.to_string());
         svg.push_str(&wall.to_string());
+        svg.push_str(&green_wall.to_string());
+        svg.push_str(&red_wall.to_string());
         svg.push_str("</svg>");
 
         fs::write(file_name, svg.as_bytes())?;
