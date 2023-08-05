@@ -452,18 +452,18 @@ impl Maze {
                 self.get_tile_relative_position((i, j), (-1, 0), tiles),
             ],
             1 => [
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-2, -1), tiles),
                 self.get_tile_relative_position((i, j), (-1, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (2, -1), tiles),
-                self.get_tile_relative_position((i, j), (2, 0), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (-1, 1), tiles),
+                self.get_tile_relative_position((i, j), (-2, -1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
                 self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (-1, 1), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (2, 0), tiles),
+                self.get_tile_relative_position((i, j), (2, -1), tiles),
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
             ],
             2 => [
                 self.get_tile_relative_position((i, j), (2, 0), tiles),
@@ -480,18 +480,18 @@ impl Maze {
                 self.get_tile_relative_position((i, j), (1, 0), tiles),
             ],
             3 => [
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
                 self.get_tile_relative_position((i, j), (-1, 1), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-2, -1), tiles),
-                self.get_tile_relative_position((i, j), (-1, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (2, -1), tiles),
-                self.get_tile_relative_position((i, j), (2, 0), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
                 self.get_tile_relative_position((i, j), (1, 0), tiles),
+                self.get_tile_relative_position((i, j), (2, 0), tiles),
+                self.get_tile_relative_position((i, j), (2, -1), tiles),
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
+                self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (-1, -1), tiles),
+                self.get_tile_relative_position((i, j), (-2, -1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
             ],
             4 => [
                 self.get_tile_relative_position((i, j), (-1, 1), tiles),
@@ -508,18 +508,18 @@ impl Maze {
                 self.get_tile_relative_position((i, j), (0, 1), tiles),
             ],
             5 => [
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (2, -1), tiles),
                 self.get_tile_relative_position((i, j), (2, 0), tiles),
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (-1, 1), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-2, -1), tiles),
-                self.get_tile_relative_position((i, j), (-1, -1), tiles),
+                self.get_tile_relative_position((i, j), (2, -1), tiles),
+                self.get_tile_relative_position((i, j), (1, -1), tiles),
                 self.get_tile_relative_position((i, j), (0, -1), tiles),
+                self.get_tile_relative_position((i, j), (-1, -1), tiles),
+                self.get_tile_relative_position((i, j), (-2, -1), tiles),
+                self.get_tile_relative_position((i, j), (-2, 0), tiles),
+                self.get_tile_relative_position((i, j), (-1, 0), tiles),
+                self.get_tile_relative_position((i, j), (-1, 1), tiles),
+                self.get_tile_relative_position((i, j), (0, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 1), tiles),
+                self.get_tile_relative_position((i, j), (1, 0), tiles),
             ],
             _ => panic!(), // Maths say I can't get here
         };
@@ -578,9 +578,7 @@ impl Maze {
         let relative_tiles = self.get_connected_titles_for_tile(i, j, tiles);
 
         // Node 1
-        // let (m, d) = self.calc_vertex(*surrounding_tiles, Tile::G1, (1 + i) % 3, pos[0] < 3);
         let (m, d) = self.mask_for_tile(1, 3, 11, Tile::G1, relative_tiles);
-
         if m {
             matches |= 0b000_001;
         } else if d {
@@ -588,7 +586,8 @@ impl Maze {
         }
 
         // Node 2
-        let (m, d) = self.calc_vertex(*surrounding_tiles, Tile::G2, (2 + i) % 3, pos[1] < 3);
+        let (m, d) = self.mask_for_tile(9, 11, 7, Tile::G2, relative_tiles);
+
         if m {
             matches |= 0b000_010;
         } else if d {
@@ -596,7 +595,7 @@ impl Maze {
         }
 
         // Node3
-        let (m, d) = self.calc_vertex(*surrounding_tiles, Tile::G3, (0 + i) % 3, pos[2] < 3);
+        let (m, d) = self.mask_for_tile(5, 3, 7, Tile::G3, relative_tiles);
         if m {
             matches |= 0b000_100;
         } else if d {
