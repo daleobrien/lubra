@@ -473,11 +473,6 @@ impl Maze {
         let mut dont_care = 0u32;
         let mut matches = 0u32;
 
-        // Calculate the relative positions of the surrounding tiles
-        let k = i + (3 * (j % 2));
-
-        let pos = [(4 + k) % 6, (2 + k) % 6, (0 + k) % 6];
-
         let relative_tiles = self.get_connected_titles_for_tile(i, j, tiles);
 
         // Node 1
