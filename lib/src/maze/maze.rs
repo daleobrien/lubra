@@ -160,7 +160,9 @@ impl Maze {
         // TODO: I don't think I need the surround Tile values, not even the nets, just the coordinate mapping?
         // i.e. if node 1 is set, then we know we must also connect (mapping[1].0, mapping[1].1, 1) to (i,j,1)
         // If the say node 1 connects to node 6, then I also need to connect the above net to
-        // (mapping[7].0, mapping[7].1, 6) to (i,j,6).
+        // (mapping[7].0, mapping[7].1, 6) to (i,j,6). (L1) Tile
+
+        // TODO: I don't think I really need the nets themselves.
 
         // for net in tile_nets {
         //     println!("  > ({i},{j}): {:?}", net);
