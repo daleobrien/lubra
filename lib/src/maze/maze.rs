@@ -66,10 +66,9 @@ impl Maze {
             for i in 0..number_of_columns {
                 let coord: Coordinate = Coordinate { i, j };
 
-                let surrounding_tiles = self.get_surrounding_tiles(i, j, &tiles);
                 //println!("Surrounding tiles: {:?}", surrounding_tiles);
 
-                let tile = self.get_random_tile(i, j, &tiles, &surrounding_tiles);
+                let tile = self.get_random_tile(i, j, &tiles);
 
                 // TODO: At this stage, only need to get the tiles that are above and or to the left
                 // TODO: Have tile, add to network!
@@ -81,7 +80,6 @@ impl Maze {
 
                 tiles[(j, i)] = tile;
 
-                println!("");
                 let glyph: Glyph = Glyph::new(coord, tile);
 
                 row_path.push(glyph);
@@ -293,39 +291,6 @@ impl Maze {
         return other_row[4 - 2 * pos]; // index 4, 2, 0
     }
 
-    fn get_surrounding_tiles(&self, i: usize, j: usize, tiles: &Array2D<Tile>) -> [[Tile; 5]; 3] {
-        // TODO: Can reduce lookups a even more
-        // Pointing up, only need to look up 4
-        // and down, 7
-        // TODO: It will be faster to return different gathered_tiles in one go depending on mask, i, j
-        // I don't think it will be must faster to pass it down
-
-        let gathered_tiles = [
-            [
-                self.get_tile_relative_position((i, j), (-2, -1), tiles),
-                self.get_tile_relative_position((i, j), (-1, -1), tiles),
-                self.get_tile_relative_position((i, j), (0, -1), tiles),
-                self.get_tile_relative_position((i, j), (1, -1), tiles),
-                self.get_tile_relative_position((i, j), (2, -1), tiles),
-            ],
-            [
-                self.get_tile_relative_position((i, j), (-2, 0), tiles),
-                self.get_tile_relative_position((i, j), (-1, 0), tiles),
-                Tile::Z2,
-                self.get_tile_relative_position((i, j), (1, 0), tiles),
-                self.get_tile_relative_position((i, j), (2, 0), tiles),
-            ],
-            [
-                self.get_tile_relative_position((i, j), (-2, 1), tiles),
-                self.get_tile_relative_position((i, j), (-1, 1), tiles),
-                self.get_tile_relative_position((i, j), (0, 1), tiles),
-                self.get_tile_relative_position((i, j), (1, 1), tiles),
-                self.get_tile_relative_position((i, j), (2, 1), tiles),
-            ],
-        ];
-        return gathered_tiles;
-    }
-
     fn get_connected_titles_for_tile(
         &self,
         i: usize,
@@ -502,7 +467,6 @@ impl Maze {
         i: usize,
         j: usize,
         tiles: &Array2D<Tile>,
-        surrounding_tiles: &[[Tile; 5]; 3],
     ) -> (u32, u32) {
         // Get the surrounding tiles
 
@@ -565,19 +529,12 @@ impl Maze {
         return (dont_care, matches);
     }
 
-    fn get_random_tile(
-        &self,
-        i: usize,
-        j: usize,
-        tiles: &Array2D<Tile>,
-        surrounding_tiles: &[[Tile; 5]; 3],
-    ) -> Tile {
+    fn get_random_tile(&self, i: usize, j: usize, tiles: &Array2D<Tile>) -> Tile {
         if i == 0 && j == 0 {
             return Tile::L3;
         }
 
-        let (dont_care, matches) =
-            self.get_surrounding_tile_connections(i, j, tiles, surrounding_tiles);
+        let (dont_care, matches) = self.get_surrounding_tile_connections(i, j, tiles);
 
         // TODO: strip out cells that only have Nx and Tx
         for _ in 0..45 {
