@@ -67,12 +67,13 @@ impl Maze {
                 let coord: Coordinate = Coordinate { i, j };
 
                 let surrounding_tiles = self.get_connected_titles_for_tile(i, j, &tiles);
+
                 let tile = self.get_random_tile(i, j, &surrounding_tiles);
 
                 // TODO: At this stage, only need to get the tiles that are above and or to the left
                 // TODO: Have tile, add to network!
-                // let nets = calculate_nets(tile.bits());
-                // println!("Tile ({i},{j}) -> {:?}", nets);
+                let current_tile_nets = calculate_nets(tile.bits());
+                println!("Tile ({i},{j}) -> {:?}", current_tile_nets);
                 // for k in 1..=6 {
                 //     self.update_network(surrounding_tiles, i, j, k, tile);
                 // }
