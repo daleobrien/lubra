@@ -66,9 +66,8 @@ impl Maze {
             for i in 0..number_of_columns {
                 let coord: Coordinate = Coordinate { i, j };
 
-                //println!("Surrounding tiles: {:?}", surrounding_tiles);
-
-                let tile = self.get_random_tile(i, j, &tiles);
+                let surrounding_tiles = self.get_connected_titles_for_tile(i, j, &tiles);
+                let tile = self.get_random_tile(i, j, &surrounding_tiles);
 
                 // TODO: At this stage, only need to get the tiles that are above and or to the left
                 // TODO: Have tile, add to network!
@@ -415,8 +414,11 @@ impl Maze {
         lower_left_idx: usize,
         lower_right_idx: usize,
         tile: Tile,
-        relative_tiles: [Tile; 12],
-    ) -> (bool, bool) {
+        relative_tiles: &[Tile; 12],
+        mask: u32,
+        dont_care_mask: &mut u32,
+        match_mask: &mut u32,
+    ) {
         let opposite = relative_tiles[opposite_idx];
 
         let left = relative_tiles[opposite_idx - 1];
@@ -431,105 +433,113 @@ impl Maze {
                 && !l_adjacent.intersects(tile)
                 && !r_adjacent.intersects(tile)
             {
+                *dont_care_mask |= mask;
                 // Can be anything
-                return (false, true);
+                return;
             }
         } else if opposite.intersects(tile) {
             // Must be connected
-            return (true, false);
+            *match_mask |= mask;
         }
-        // Must be unconnected
-        return (false, false);
     }
 
     fn mask_for_tile_side(
         &self,
         opposite_idx: usize,
         tile: Tile,
-        relative_tiles: [Tile; 12],
-    ) -> (bool, bool) {
+        relative_tiles: &[Tile; 12],
+        mask: u32,
+        dont_care_mask: &mut u32,
+        match_mask: &mut u32,
+    ) {
         let adjacent = relative_tiles[opposite_idx];
 
         if adjacent.contains(Tile::Z2) {
-            // Don't care
-            return (false, true);
+            *dont_care_mask |= mask;
+            return;
         }
         if adjacent.intersects(tile) {
-            // Must match, on a one
-            return (true, false);
+            *match_mask |= mask;
         }
-        // Must match, on a zero
-        return (false, false);
+        return;
     }
 
     pub fn get_surrounding_tile_connections(
         &self,
         i: usize,
         j: usize,
-        tiles: &Array2D<Tile>,
+        surrounding_tiles: &[Tile; 12],
     ) -> (u32, u32) {
         // Get the surrounding tiles
 
         let mut dont_care = 0u32;
         let mut matches = 0u32;
 
-        let relative_tiles = self.get_connected_titles_for_tile(i, j, tiles);
-
         // Node 1
-        let (m, d) = self.mask_for_tile_vertex(1, 3, 11, Tile::G1, relative_tiles);
-        if m {
-            matches |= 0b000_001;
-        } else if d {
-            dont_care |= 0b000_001;
-        }
-
-        // Node 2
-        let (m, d) = self.mask_for_tile_vertex(9, 11, 7, Tile::G2, relative_tiles);
-
-        if m {
-            matches |= 0b000_010;
-        } else if d {
-            dont_care |= 0b000_010;
-        }
-
-        // Node3
-        let (m, d) = self.mask_for_tile_vertex(5, 3, 7, Tile::G3, relative_tiles);
-        if m {
-            matches |= 0b000_100;
-        } else if d {
-            dont_care |= 0b000_100;
-        }
-
-        let (m, d) = self.mask_for_tile_side(11, Tile::G4, relative_tiles);
-        if m {
-            matches |= 0b001_000;
-        } else if d {
-            dont_care |= 0b001_000;
-        }
-
-        let (m, d) = self.mask_for_tile_side(3, Tile::G5, relative_tiles);
-        if m {
-            matches |= 0b010_000;
-        } else if d {
-            dont_care |= 0b010_000;
-        }
-
-        let (m, d) = self.mask_for_tile_side(7, Tile::G6, relative_tiles);
-        if m {
-            matches |= 0b100_000;
-        } else if d {
-            dont_care |= 0b100_000;
-        }
+        self.mask_for_tile_vertex(
+            1,
+            3,
+            11,
+            Tile::G1,
+            surrounding_tiles,
+            0b000_001,
+            &mut dont_care,
+            &mut matches,
+        );
+        self.mask_for_tile_vertex(
+            9,
+            11,
+            7,
+            Tile::G2,
+            surrounding_tiles,
+            0b000_010,
+            &mut dont_care,
+            &mut matches,
+        );
+        self.mask_for_tile_vertex(
+            5,
+            3,
+            7,
+            Tile::G3,
+            surrounding_tiles,
+            0b000_100,
+            &mut dont_care,
+            &mut matches,
+        );
+        self.mask_for_tile_side(
+            11,
+            Tile::G4,
+            surrounding_tiles,
+            0b001_000,
+            &mut dont_care,
+            &mut matches,
+        );
+        self.mask_for_tile_side(
+            3,
+            Tile::G5,
+            surrounding_tiles,
+            0b010_000,
+            &mut dont_care,
+            &mut matches,
+        );
+        self.mask_for_tile_side(
+            7,
+            Tile::G6,
+            surrounding_tiles,
+            0b100_000,
+            &mut dont_care,
+            &mut matches,
+        );
 
         return (dont_care, matches);
     }
 
-    fn get_random_tile(&self, i: usize, j: usize, tiles: &Array2D<Tile>) -> Tile {
+    fn get_random_tile(&self, i: usize, j: usize, surrounding_tiles: &[Tile; 12]) -> Tile {
         if i == 0 && j == 0 {
             return Tile::L3;
         }
 
-        let (dont_care, matches) = self.get_surrounding_tile_connections(i, j, tiles);
+        let (dont_care, matches) = self.get_surrounding_tile_connections(i, j, surrounding_tiles);
 
         // TODO: strip out cells that only have Nx and Tx
         for _ in 0..45 {
