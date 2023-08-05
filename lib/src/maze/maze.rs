@@ -293,56 +293,6 @@ impl Maze {
         return other_row[4 - 2 * pos]; // index 4, 2, 0
     }
 
-    fn calc_vertex(
-        &self,
-        gathered_tiles: [[Tile; 5]; 3],
-        tile: Tile,
-        pos: usize, // 0..2
-        is_top: bool,
-    ) -> (bool, bool) {
-        /*
-        The other row depends on where the tile is pointing up or down
-        */
-        let other_row = gathered_tiles[if is_top { 2 } else { 0 }];
-
-        let opposite_tile = self.adjacent_vertex(other_row, pos);
-
-        // is not routed
-        if opposite_tile.contains(Tile::Z2) {
-            let this_row = gathered_tiles[1];
-
-            if pos == 0
-                && !this_row[3].intersects(tile)
-                && !this_row[4].intersects(tile)
-                && !other_row[2].intersects(tile)
-                && !other_row[3].intersects(tile)
-            {
-                return (false, true);
-            }
-            if pos == 1
-                && !this_row[1].intersects(tile)
-                && !this_row[3].intersects(tile)
-                && !other_row[1].intersects(tile)
-                && !other_row[3].intersects(tile)
-            {
-                return (false, true);
-            }
-            if pos == 2
-                && !this_row[0].intersects(tile)
-                && !this_row[1].intersects(tile)
-                && !other_row[1].intersects(tile)
-                && !other_row[2].intersects(tile)
-            {
-                return (false, true);
-            }
-        } else if opposite_tile.intersects(tile) {
-            // Must be 1
-            return (true, false);
-        }
-        // Must be 0
-        (false, false)
-    }
-
     fn calc_side(
         &self,
         gathered_tiles: [[Tile; 5]; 3],
