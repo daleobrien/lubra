@@ -293,37 +293,6 @@ impl Maze {
         return other_row[4 - 2 * pos]; // index 4, 2, 0
     }
 
-    fn calc_side(
-        &self,
-        gathered_tiles: [[Tile; 5]; 3],
-        tile: Tile,
-        pos: usize,
-        full_pos: usize,
-    ) -> (bool, bool) {
-        let j = if pos == 1 {
-            if full_pos % 2 == 1 {
-                0
-            } else {
-                2
-            }
-        } else {
-            1
-        };
-
-        let adjacent = gathered_tiles[j][pos + 1];
-
-        if adjacent.contains(Tile::Z2) {
-            // Don't care
-            return (false, true);
-        }
-        if adjacent.intersects(tile) {
-            // Must match, on a one
-            return (true, false);
-        }
-        // Must match, on a zero
-        (false, false)
-    }
-
     fn get_surrounding_tiles(&self, i: usize, j: usize, tiles: &Array2D<Tile>) -> [[Tile; 5]; 3] {
         // TODO: Can reduce lookups a even more
         // Pointing up, only need to look up 4
@@ -475,7 +444,7 @@ impl Maze {
         };
     }
 
-    fn mask_for_tile(
+    fn mask_for_tile_vertex(
         &self,
         opposite_idx: usize,
         lower_left_idx: usize,
@@ -508,6 +477,26 @@ impl Maze {
         return (false, false);
     }
 
+    fn mask_for_tile_side(
+        &self,
+        opposite_idx: usize,
+        tile: Tile,
+        relative_tiles: [Tile; 12],
+    ) -> (bool, bool) {
+        let adjacent = relative_tiles[opposite_idx];
+
+        if adjacent.contains(Tile::Z2) {
+            // Don't care
+            return (false, true);
+        }
+        if adjacent.intersects(tile) {
+            // Must match, on a one
+            return (true, false);
+        }
+        // Must match, on a zero
+        return (false, false);
+    }
+
     pub fn get_surrounding_tile_connections(
         &self,
         i: usize,
@@ -528,7 +517,7 @@ impl Maze {
         let relative_tiles = self.get_connected_titles_for_tile(i, j, tiles);
 
         // Node 1
-        let (m, d) = self.mask_for_tile(1, 3, 11, Tile::G1, relative_tiles);
+        let (m, d) = self.mask_for_tile_vertex(1, 3, 11, Tile::G1, relative_tiles);
         if m {
             matches |= 0b000_001;
         } else if d {
@@ -536,7 +525,7 @@ impl Maze {
         }
 
         // Node 2
-        let (m, d) = self.mask_for_tile(9, 11, 7, Tile::G2, relative_tiles);
+        let (m, d) = self.mask_for_tile_vertex(9, 11, 7, Tile::G2, relative_tiles);
 
         if m {
             matches |= 0b000_010;
@@ -545,28 +534,28 @@ impl Maze {
         }
 
         // Node3
-        let (m, d) = self.mask_for_tile(5, 3, 7, Tile::G3, relative_tiles);
+        let (m, d) = self.mask_for_tile_vertex(5, 3, 7, Tile::G3, relative_tiles);
         if m {
             matches |= 0b000_100;
         } else if d {
             dont_care |= 0b000_100;
         }
 
-        let (m, d) = self.calc_side(*surrounding_tiles, Tile::G4, (0 + i) % 3, pos[2]);
+        let (m, d) = self.mask_for_tile_side(11, Tile::G4, relative_tiles);
         if m {
             matches |= 0b001_000;
         } else if d {
             dont_care |= 0b001_000;
         }
 
-        let (m, d) = self.calc_side(*surrounding_tiles, Tile::G5, (2 + i) % 3, pos[2]);
+        let (m, d) = self.mask_for_tile_side(3, Tile::G5, relative_tiles);
         if m {
             matches |= 0b010_000;
         } else if d {
             dont_care |= 0b010_000;
         }
 
-        let (m, d) = self.calc_side(*surrounding_tiles, Tile::G6, (1 + i) % 3, pos[2]);
+        let (m, d) = self.mask_for_tile_side(7, Tile::G6, relative_tiles);
         if m {
             matches |= 0b100_000;
         } else if d {
@@ -682,8 +671,8 @@ impl Maze {
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
         let mut wall = Path::new("red".to_string(), 3.0, 0.1);
-        let mut green_wall = Path::new("green".to_string(), 3.0, 0.8);
-        let mut red_wall = Path::new("red".to_string(), 3.0, 0.8);
+        let mut green_wall = Path::new("green".to_string(), 3.0, 0.3);
+        let mut red_wall = Path::new("red".to_string(), 3.0, 0.3);
 
         for row in &self.glyphs {
             for tile in row {
