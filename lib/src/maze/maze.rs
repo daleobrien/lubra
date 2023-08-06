@@ -84,7 +84,8 @@ impl Maze {
         self.width = (number_of_columns + 1) as f64 * M;
         self.height = number_of_rows as f64 * H;
 
-        // TODO: Sort the nets, smallest at the end, then iterate over them and merge them together
+        // Sort such that the last net is the shortest, we will be deleting them as we go
+        self.nets.sort_by(|a, b| (&b.len()).cmp(&a.len()));
 
         println!("\nNets are now:");
         for (n, nets) in self.nets.iter().enumerate() {
