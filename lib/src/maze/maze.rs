@@ -86,10 +86,10 @@ impl Maze {
         self.width = (number_of_columns + 1) as f64 * M;
         self.height = number_of_rows as f64 * H;
 
-        // println!("\nNets are now:");
-        // for (n, nets) in self.nets.iter().enumerate() {
-        //     println!("{n}-> {:?}", nets);
-        // }
+        println!("\nNets are now:");
+        for (n, nets) in self.nets.iter().enumerate() {
+            println!("{n}-> {:?}", nets);
+        }
     }
 
     pub fn add_row(&mut self, row: Vec<Glyph>) {
@@ -158,12 +158,16 @@ impl Maze {
 
             for (n, nets) in self.nets.iter().enumerate() {
                 for tile_sub_net in tile_sub_nets.iter() {
-                    println!("    Checking {n} -> {:?}", tile_sub_net);
-
                     let k = tile_sub_net[2];
-                    let coord = mapping[k];
+                    let coord = mapping[k - 1];
+                    println!("    Checking {n} -> {:?} / {:?}", tile_sub_net, coord);
+                    let adj_tile_sub_net = [
+                        add(i, coord.0),
+                        add(j, coord.1),
+                        k.to_usize().unwrap_or_default(),
+                    ];
 
-                    if nets.contains(tile_sub_net) {
+                    if nets.contains(&adj_tile_sub_net) {
                         println!("Found {n} -> {:?}", nets);
                         found = true;
                     }
