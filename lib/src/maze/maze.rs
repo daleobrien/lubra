@@ -19,7 +19,7 @@ pub struct Maze {
     pub style: Option<String>,
     glyphs: Vec<Vec<Glyph>>,
     walls: Vec<Vec<Glyph>>,
-    nets: HashSet<Vec<[usize; 3]>>,
+    nets: Vec<HashSet<[usize; 3]>>,
     width: f64,
     height: f64,
     seed: Option<u64>,
@@ -36,7 +36,7 @@ impl Maze {
 
         let glyphs: Vec<Vec<Glyph>> = Vec::new();
         let walls: Vec<Vec<Glyph>> = Vec::new();
-        let nets = HashSet::new();
+        let mut nets = Vec::new();
 
         let mut obj = Self {
             style: None,
@@ -67,10 +67,6 @@ impl Maze {
 
                 let tile = self.get_random_tile(i, j, &surrounding_tiles);
 
-                // TODO: At this stage, only need to get the tiles that are above and or to the left
-                // TODO: Have tile, add to network!
-                let current_tile_nets = calculate_nets(tile.bits());
-                println!("Tile ({i},{j}) -> {:?}", current_tile_nets);
                 self.update_network(&tile, i, j);
 
                 tiles[(j, i)] = tile;
@@ -90,10 +86,10 @@ impl Maze {
         self.width = (number_of_columns + 1) as f64 * M;
         self.height = number_of_rows as f64 * H;
 
-        println!("\nNets are now:");
-        for (n, nets) in self.nets.iter().enumerate() {
-            println!("{n}-> {:?}", nets);
-        }
+        // println!("\nNets are now:");
+        // for (n, nets) in self.nets.iter().enumerate() {
+        //     println!("{n}-> {:?}", nets);
+        // }
     }
 
     pub fn add_row(&mut self, row: Vec<Glyph>) {
@@ -137,53 +133,60 @@ impl Maze {
            ▽△▽△▽      △▽△▽△
 
         */
-    fn update_network(&self, tile: &Tile, i: usize, j: usize) {
+    fn update_network(&mut self, tile: &Tile, i: usize, j: usize) {
         let tile_nets = calculate_nets(tile.bits());
-
-        // let tile_1_nets = calculate_nets(surrounding_tiles[1].bits());
-        // let tile_2_nets = calculate_nets(surrounding_tiles[9].bits());
-        // let tile_3_nets = calculate_nets(surrounding_tiles[5].bits());
-        // let tile_4_nets = calculate_nets(surrounding_tiles[11].bits());
-        // let tile_5_nets = calculate_nets(surrounding_tiles[3].bits());
-        // let tile_6_nets = calculate_nets(surrounding_tiles[7].bits());
-        //
-        // println!("Nets 1 >> {:?}", tile_1_nets);
-        // println!("Nets 2 >> {:?}", tile_2_nets);
-        // println!("Nets 3 >> {:?}", tile_3_nets);
-        // println!("Nets 4 >> {:?}", tile_4_nets);
-        // println!("Nets 5 >> {:?}", tile_5_nets);
-        // println!("Nets 6 >> {:?}", tile_6_nets);
 
         let k = i + (3 * (j % 2));
         let mapping = NODE_TO_COORD[k % 6];
+
+        println!("Tile ({i},{j}):");
 
         // TODO: I don't think I need the surround Tile values, not even the nets, just the coordinate mapping?
         // i.e. if node 1 is set, then we know we must also connect (mapping[1].0, mapping[1].1, 1) to (i,j,1)
         // If the say node 1 connects to node 6, then I also need to connect the above net to
         // (mapping[7].0, mapping[7].1, 6) to (i,j,6). (L1) Tile
 
-        // TODO: I don't think I really need the nets themselves.
+        for net in tile_nets {
+            let tile_sub_nets: HashSet<[usize; 3]> = net
+                .iter()
+                .map(|node| [i, j, node.to_usize().unwrap_or_default()])
+                .collect();
 
-        // for net in tile_nets {
-        //     println!("  > ({i},{j}): {:?}", net);
-        //
-        //     for node in net {
-        //         let key: [usize; 3] = [i, j, node.to_usize().unwrap_or_default()];
-        //
-        //         //
-        //         let mut found = false;
-        //         for existing_nets in self.nets.iter() {
-        //             if existing_nets.contains(&key) {
-        //                 println!("Found {i},{j},{:}", node);
-        //                 found = true;
-        //             }
-        //         }
-        //         if !found {
-        //             // println!("Adding new net {i},{j},{:}", node);
-        //             //self.nets.insert(Vec::from([key]));
-        //         }
-        //     }
-        // }
+            println!("  -> {:?}", tile_sub_nets);
+
+            let mut found = false;
+
+            for (n, nets) in self.nets.iter().enumerate() {
+                for tile_sub_net in tile_sub_nets.iter() {
+                    if nets.contains(tile_sub_net) {
+                        println!("Found {n} -> {:?}", nets);
+                        found = true;
+                    }
+                }
+                if found {
+                    nets.union(&tile_sub_nets);
+                    break;
+                }
+            }
+            if !found {
+                println!("Adding new net {i},{j},{:?}", tile_sub_nets);
+                self.nets.push(tile_sub_nets);
+            }
+
+            // // Set intersection of keys and self.nets
+            // //
+            // let mut found = false;
+            // for existing_nets in self.nets.iter() {
+            //     if existing_nets.contains(&key) {
+            //         println!("Found {i},{j},{:}", node);
+            //         found = true;
+            //     }
+            // }
+            // if !found {
+            //     // println!("Adding new net {i},{j},{:}", node);
+            //     //self.nets.insert(Vec::from([key]));
+            // }
+        }
     }
 
     pub fn create_one_tile_grid(&mut self) {
@@ -322,12 +325,7 @@ impl Maze {
         return;
     }
 
-    pub fn get_surrounding_tile_connections(
-        &self,
-        i: usize,
-        j: usize,
-        surrounding_tiles: &[Tile; 12],
-    ) -> (u32, u32) {
+    pub fn get_surrounding_tile_connections(&self, surrounding_tiles: &[Tile; 12]) -> (u32, u32) {
         // Get the surrounding tiles
 
         let mut dont_care = 0u32;
@@ -397,7 +395,7 @@ impl Maze {
             return Tile::L3;
         }
 
-        let (dont_care, matches) = self.get_surrounding_tile_connections(i, j, surrounding_tiles);
+        let (dont_care, matches) = self.get_surrounding_tile_connections(surrounding_tiles);
 
         // TODO: strip out cells that only have Nx and Tx
         for _ in 0..45 {
@@ -499,10 +497,9 @@ impl Maze {
                 tile.add_to_path(&mut path, &mut faint_path);
             }
         }
-        let mut i = 0;
         let mut j = 0;
         for row in &self.walls {
-            i = 0;
+            let mut i = 0;
             for tile in row {
                 if false && i == 4 && j == 1 {
                     tile.add_to_path(&mut red_wall, &mut faint_path)
