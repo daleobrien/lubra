@@ -158,6 +158,11 @@ impl Maze {
 
             for (n, nets) in self.nets.iter().enumerate() {
                 for tile_sub_net in tile_sub_nets.iter() {
+                    println!("    Checking {n} -> {:?}", tile_sub_net);
+
+                    let k = tile_sub_net[2];
+                    let coord = mapping[k];
+
                     if nets.contains(tile_sub_net) {
                         println!("Found {n} -> {:?}", nets);
                         found = true;
@@ -169,7 +174,7 @@ impl Maze {
                 }
             }
             if !found {
-                println!("Adding new net {i},{j},{:?}", tile_sub_nets);
+                println!("    Added");
                 self.nets.push(tile_sub_nets);
             }
 
@@ -246,9 +251,7 @@ impl Maze {
         for each node index within the tile at {i,j}.
 
         So each k % 6 matches a rotation of the tile
-
-        Each row is indexed in a strange way:  _,1,_,5,_,3,_,6,_,2,_,4
-        where the _ is too the left and right of the vertex, (vertex are number 1,2 & 3).
+        Each row is indexed:  1,2,3,4,5,6,1l,1r,2l,2r,3l,3r
 
         k % 6 ->
         {
@@ -272,8 +275,7 @@ impl Maze {
     fn mask_for_tile_vertex(
         &self,
         opposite_idx: usize,
-        lower_left_idx: usize,
-        lower_right_idx: usize,
+        idxs: [usize; 4],
         tile: Tile,
         relative_tiles: &[Tile; 12],
         mask: u32,
@@ -281,12 +283,10 @@ impl Maze {
         match_mask: &mut u32,
     ) {
         let opposite = relative_tiles[opposite_idx];
-
-        let left = relative_tiles[opposite_idx - 1];
-        let right = relative_tiles[opposite_idx + 1];
-
-        let l_adjacent = relative_tiles[lower_left_idx];
-        let r_adjacent = relative_tiles[lower_right_idx];
+        let left = relative_tiles[idxs[0]];
+        let right = relative_tiles[idxs[1]];
+        let l_adjacent = relative_tiles[idxs[2]];
+        let r_adjacent = relative_tiles[idxs[3]];
 
         if opposite.contains(Tile::Z2) {
             if !left.intersects(tile)
@@ -331,11 +331,13 @@ impl Maze {
         let mut dont_care = 0u32;
         let mut matches = 0u32;
 
+        // 1,2,3,4,5,6, 1a,1b,2a,2b,3a,3b
+        // 0 1 2 3 4 5  6  7  8  9  10 11
+
         // Node 1
         self.mask_for_tile_vertex(
-            1,
-            3,
-            11,
+            0, // 1
+            [3, 4, 6, 7],
             Tile::G1,
             surrounding_tiles,
             0b000_001,
@@ -343,9 +345,8 @@ impl Maze {
             &mut matches,
         );
         self.mask_for_tile_vertex(
-            9,
-            11,
-            7,
+            1, // 2
+            [3, 5, 8, 9],
             Tile::G2,
             surrounding_tiles,
             0b000_010,
@@ -353,9 +354,8 @@ impl Maze {
             &mut matches,
         );
         self.mask_for_tile_vertex(
-            5,
-            3,
-            7,
+            2, // 3
+            [4, 5, 10, 11],
             Tile::G3,
             surrounding_tiles,
             0b000_100,
@@ -363,7 +363,7 @@ impl Maze {
             &mut matches,
         );
         self.mask_for_tile_side(
-            11,
+            3,
             Tile::G4,
             surrounding_tiles,
             0b001_000,
@@ -371,7 +371,7 @@ impl Maze {
             &mut matches,
         );
         self.mask_for_tile_side(
-            3,
+            4,
             Tile::G5,
             surrounding_tiles,
             0b010_000,
@@ -379,7 +379,7 @@ impl Maze {
             &mut matches,
         );
         self.mask_for_tile_side(
-            7,
+            5,
             Tile::G6,
             surrounding_tiles,
             0b100_000,
