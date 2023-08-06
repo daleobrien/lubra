@@ -156,7 +156,7 @@ impl Maze {
 
             let mut found = false;
 
-            for (n, nets) in self.nets.iter().enumerate() {
+            for (n, nets) in self.nets.iter_mut().enumerate() {
                 for tile_sub_net in tile_sub_nets.iter() {
                     let k = tile_sub_net[2];
                     let coord = mapping[k - 1];
@@ -173,7 +173,9 @@ impl Maze {
                     }
                 }
                 if found {
-                    nets.union(&tile_sub_nets);
+                    for sub_net in tile_sub_nets.iter() {
+                        nets.insert(*sub_net);
+                    }
                     break;
                 }
             }
