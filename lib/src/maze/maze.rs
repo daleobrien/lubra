@@ -67,8 +67,6 @@ impl Maze {
 
                 let tile = self.get_random_tile(i, j, &surrounding_tiles);
 
-                self.update_network(&tile, i, j);
-
                 tiles[(j, i)] = tile;
 
                 let glyph: Glyph = Glyph::new(coord, tile);
@@ -85,6 +83,8 @@ impl Maze {
 
         self.width = (number_of_columns + 1) as f64 * M;
         self.height = number_of_rows as f64 * H;
+
+        // TODO: Sort the nets, smallest at the end, then iterate over them and merge them together
 
         println!("\nNets are now:");
         for (n, nets) in self.nets.iter().enumerate() {
@@ -172,21 +172,23 @@ impl Maze {
                 // Since this tile's subnet was part of 2 or more nets, we can say they are really
                 // the same net. So we need to merge them.
 
-                let n = net_indexes[0]; // Keeo this net
-                                        // Keep the net[n] and merge the rest into it
+                let n = net_indexes[0];
+                // Keep the net[n] and merge the other nets into it
                 let r = net_indexes[1..].to_vec();
 
                 let mut new_net = HashSet::new();
-                // Add the bridging net
+                // Add in the bridging net
                 new_net.extend(tile_sub_nets);
                 // Add the rest of the nets
                 for i in net_indexes {
                     new_net.extend(self.nets[i].clone());
                 }
 
-                self.nets[n] = new_net;
+                self.nets[n] = new_net; // The new merged net
 
                 // Remove the rest of the nets since they are now merged.
+                // Note: This won't have very good performance. It might be the other nets are always towards the end of the list though
+                // which will help.
                 for i in r.iter().rev() {
                     self.nets.remove(*i);
                 }
@@ -382,80 +384,20 @@ impl Maze {
         return (dont_care, matches);
     }
 
-    fn get_random_tile(&self, i: usize, j: usize, surrounding_tiles: &[Tile; 12]) -> Tile {
+    fn get_random_tile(&mut self, i: usize, j: usize, surrounding_tiles: &[Tile; 12]) -> Tile {
+        // TODO: Need to also put in the last tile too
         if i == 0 && j == 0 {
-            return Tile::L3;
+            return Tile::L3; // Always start with a left tile
         }
 
         let (dont_care, matches) = self.get_surrounding_tile_connections(surrounding_tiles);
 
-        // TODO: strip out cells that only have Nx and Tx
-        for _ in 0..45 {
-            let first_tile = random_side(matches, dont_care, self.seed);
-            if !first_tile.intersects(Tile::N1)
-                && !first_tile.intersects(Tile::N2)
-                && !first_tile.intersects(Tile::N3)
-            {
-                return first_tile;
-            }
-        }
-        return random_side(matches, dont_care, self.seed);
-    }
+        let tile = random_side(matches, dont_care, self.seed);
 
-    pub fn create_all_title_in_grid(&mut self) {
-        let possible_tiles = find_tiles(0b101010101010);
+        // Update the network the describes the maze
+        self.update_network(&tile, i, j);
 
-        let mut row_path: Vec<Glyph> = Vec::new();
-        let mut row_wall: Vec<Glyph> = Vec::new();
-
-        let i = 0;
-        let mut j: usize = 0;
-
-        for tile in possible_tiles.iter() {
-            let coord1: Coordinate = Coordinate { i: i * 2, j: j * 2 };
-            let coord2: Coordinate = Coordinate {
-                i: i * 2 + 3,
-                j: j * 2,
-            };
-
-            let path1: Glyph = Glyph::new(coord1, Tile::from_bits_truncate(*tile));
-            let wall1: Glyph = Glyph::new(coord1, Tile::W1);
-
-            let path2: Glyph = Glyph::new(coord2, Tile::from_bits_truncate(*tile));
-            let wall2: Glyph = Glyph::new(coord2, Tile::W1);
-
-            row_path.push(path1);
-            row_wall.push(wall1);
-            row_path.push(path2);
-            row_wall.push(wall2);
-
-            let coord1: Coordinate = Coordinate {
-                i: i * 2 + 1,
-                j: j * 2 + 1,
-            };
-            let coord2: Coordinate = Coordinate {
-                i: i * 2 + 3 + 1,
-                j: j * 2 + 1,
-            };
-
-            let path1: Glyph = Glyph::new(coord1, Tile::from_bits_truncate(*tile));
-            let wall1: Glyph = Glyph::new(coord1, Tile::W1);
-
-            let path2: Glyph = Glyph::new(coord2, Tile::from_bits_truncate(*tile));
-            let wall2: Glyph = Glyph::new(coord2, Tile::W1);
-
-            row_path.push(path1);
-            row_wall.push(wall1);
-            row_path.push(path2);
-            row_wall.push(wall2);
-
-            j += 2;
-        }
-        self.glyphs.push(row_path);
-        self.walls.push(row_wall);
-
-        self.width = (10 * 1) as f64 * (M + 50.0);
-        self.height = (possible_tiles.len() * 3) as f64 * (H + 00.0);
+        return tile;
     }
 
     // Path commands
@@ -481,85 +423,42 @@ impl Maze {
         let mut path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
         let mut wall = Path::new("red".to_string(), 3.0, 0.1);
-        let mut green_wall = Path::new("green".to_string(), 3.0, 0.3);
-        let mut red_wall = Path::new("red".to_string(), 3.0, 0.3);
+        //let mut green_wall = Path::new("green".to_string(), 3.0, 0.3);
+        //let mut red_wall = Path::new("red".to_string(), 3.0, 0.3);
 
         for row in &self.glyphs {
             for tile in row {
                 tile.add_to_path(&mut path, &mut faint_path);
             }
         }
-        let mut j = 0;
+        //let mut j = 0;
         for row in &self.walls {
-            let mut i = 0;
+            //let mut i = 0;
             for tile in row {
-                if false && i == 4 && j == 1 {
-                    tile.add_to_path(&mut red_wall, &mut faint_path)
-                } else {
-                    let k = i + (3 * (j % 2));
-                    if k % 6 == 0 {
-                        tile.add_to_path(&mut green_wall, &mut faint_path)
-                    } else {
-                        tile.add_to_path(&mut wall, &mut faint_path)
-                    }
-                }
-                i += 1;
+                tile.add_to_path(&mut wall, &mut faint_path);
+                // if false && i == 4 && j == 1 {
+                //     tile.add_to_path(&mut red_wall, &mut faint_path)
+                // } else {
+                //     let k = i + (3 * (j % 2));
+                //     if k % 6 == 0 {
+                //         tile.add_to_path(&mut green_wall, &mut faint_path)
+                //     } else {
+                //         tile.add_to_path(&mut wall, &mut faint_path)
+                //     }
+                // }
+                //i += 1;
             }
-            j += 1;
+            //j += 1;
         }
 
         svg.push_str(&faint_path.to_string());
         svg.push_str(&path.to_string());
         svg.push_str(&wall.to_string());
-        svg.push_str(&green_wall.to_string());
-        svg.push_str(&red_wall.to_string());
+        //svg.push_str(&green_wall.to_string());
+        //svg.push_str(&red_wall.to_string());
         svg.push_str("</svg>");
 
         fs::write(file_name, svg.as_bytes())?;
         Ok(())
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::maze::maze::Maze;
-    use crate::maze::tile::Tile;
-    use crate::renders::glyph::Glyph;
-    use crate::renders::primatives::Coordinate;
-    use std::println;
-
-    // // TODO: Add tests for getting networks
-    // #[test]
-    // fn very_small_net() {
-    //     let maze = Maze::new(3, 2, true, Some(37u64));
-    //     // let mut row_path_1: Vec<Glyph> = Vec::new();
-    //     // let mut row_path_2: Vec<Glyph> = Vec::new();
-    //     //
-    //     // let title1 = Glyph::new(Coordinate { i: 0, j: 0 }, Tile::C2);
-    //     // let title2 = Glyph::new(Coordinate { i: 1, j: 0 }, Tile::C1);
-    //     // row_path_1.push(title1);
-    //     // row_path_1.push(title2);
-    //     //
-    //     // let title3 = Glyph::new(Coordinate { i: 0, j: 1 }, Tile::A2);
-    //     // let title4 = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::L1);
-    //     // row_path_2.push(title3);
-    //     // row_path_2.push(title4);
-    //     //
-    //     // maze.add_row(row_path_1);
-    //     // maze.add_row(row_path_2);
-    //     //
-    //     // for i in [0, 1] {
-    //     //     let mut row_wall: Vec<Glyph> = Vec::new();
-    //     //     for j in [0, 1] {
-    //     //         row_wall.push(Glyph::new(Coordinate { i, j }, Tile::W1));
-    //     //     }
-    //     //     maze.walls.push(row_wall);
-    //     // }
-    //
-    //     // maze.smoosh();
-    //
-    //     let result_f = maze.render("../test-smoosh.svg".to_string());
-    //
-    //     println!("Finished {:?}", result_f.unwrap());
-    // }
 }

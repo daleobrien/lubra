@@ -9,9 +9,6 @@ fn main() {
     // //     "Finished {:?}",
     // //     result_g.unwrap()
     // // );
-    // let mut h = Maze::new();
-    // h.create_all_title_in_grid();
-    // let result_h = h.render("test-all.svg".to_string());
 
     // const C: usize = 54; // 9, 54;
     // const R: usize = 36; // 6, 36;
