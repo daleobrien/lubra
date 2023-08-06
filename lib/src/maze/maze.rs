@@ -36,7 +36,7 @@ impl Maze {
 
         let glyphs: Vec<Vec<Glyph>> = Vec::new();
         let walls: Vec<Vec<Glyph>> = Vec::new();
-        let mut nets = Vec::new();
+        let nets = Vec::new();
 
         let mut obj = Self {
             style: None,
@@ -120,7 +120,7 @@ impl Maze {
 
         Repeat until we only have one net.
     F
-         The surrounding_tiles are of the form:
+       The surrounding_tiles are of the form:
 
                 1
                ╱ ╲
@@ -136,15 +136,7 @@ impl Maze {
     fn update_network(&mut self, tile: &Tile, i: usize, j: usize) {
         let tile_nets = calculate_nets(tile.bits());
 
-        let k = i + (3 * (j % 2));
-        let mapping = NODE_TO_COORD[k % 6];
-
-        println!("Tile ({i},{j}):");
-
-        // TODO: I don't think I need the surround Tile values, not even the nets, just the coordinate mapping?
-        // i.e. if node 1 is set, then we know we must also connect (mapping[1].0, mapping[1].1, 1) to (i,j,1)
-        // If the say node 1 connects to node 6, then I also need to connect the above net to
-        // (mapping[7].0, mapping[7].1, 6) to (i,j,6). (L1) Tile
+        let mapping = NODE_TO_COORD[(i + (3 * (j % 2))) % 6];
 
         for net in tile_nets {
             let tile_sub_nets: HashSet<[usize; 3]> = net
@@ -152,51 +144,53 @@ impl Maze {
                 .map(|node| [i, j, node.to_usize().unwrap_or_default()])
                 .collect();
 
-            println!("  -> {:?}", tile_sub_nets);
+            // For this sub net of the current tile, find which nets they are part of
+            let mut net_indexes: Vec<usize> = Vec::new();
 
-            let mut found = false;
-
-            for (n, nets) in self.nets.iter_mut().enumerate() {
+            for (n, nets) in self.nets.iter().enumerate() {
                 for tile_sub_net in tile_sub_nets.iter() {
-                    let k = tile_sub_net[2];
-                    let coord = mapping[k - 1];
-                    println!("    Checking {n} -> {:?} / {:?}", tile_sub_net, coord);
-                    let adj_tile_sub_net = [
-                        add(i, coord.0),
-                        add(j, coord.1),
-                        k.to_usize().unwrap_or_default(),
-                    ];
+                    // Find adjacent tile so we can check if it is part of an existing net
+                    let node_idx = tile_sub_net[2];
+                    let coord = mapping[node_idx - 1];
+                    let x = add(i, coord.0);
+                    let y = add(j, coord.1);
 
-                    if nets.contains(&adj_tile_sub_net) {
-                        println!("Found {n} -> {:?}", nets);
-                        found = true;
+                    if nets.contains(&[x, y, node_idx]) && !net_indexes.contains(&n) {
+                        net_indexes.push(n);
+                        //break;
                     }
-                }
-                if found {
-                    for sub_net in tile_sub_nets.iter() {
-                        nets.insert(*sub_net);
-                    }
-                    break;
                 }
             }
-            if !found {
-                println!("    Added");
+            if net_indexes.len() == 1 {
+                // Append to an existing net
+                let n = net_indexes[0];
+                self.nets[n].extend(tile_sub_nets);
+            } else if net_indexes.len() == 0 {
+                // Add a new net
                 self.nets.push(tile_sub_nets);
-            }
+            } else if net_indexes.len() > 1 {
+                // Since this tile's subnet was part of 2 or more nets, we can say they are really
+                // the same net. So we need to merge them.
 
-            // // Set intersection of keys and self.nets
-            // //
-            // let mut found = false;
-            // for existing_nets in self.nets.iter() {
-            //     if existing_nets.contains(&key) {
-            //         println!("Found {i},{j},{:}", node);
-            //         found = true;
-            //     }
-            // }
-            // if !found {
-            //     // println!("Adding new net {i},{j},{:}", node);
-            //     //self.nets.insert(Vec::from([key]));
-            // }
+                let n = net_indexes[0]; // Keeo this net
+                                        // Keep the net[n] and merge the rest into it
+                let r = net_indexes[1..].to_vec();
+
+                let mut new_net = HashSet::new();
+                // Add the bridging net
+                new_net.extend(tile_sub_nets);
+                // Add the rest of the nets
+                for i in net_indexes {
+                    new_net.extend(self.nets[i].clone());
+                }
+
+                self.nets[n] = new_net;
+
+                // Remove the rest of the nets since they are now merged.
+                for i in r.iter().rev() {
+                    self.nets.remove(*i);
+                }
+            }
         }
     }
 
@@ -234,14 +228,6 @@ impl Maze {
 
         // It must be a valid tile.
         return *tiles.get(y, x).unwrap_or(&Tile::Z1);
-    }
-
-    fn adjacent_vertex(
-        &self,
-        other_row: [Tile; 5],
-        pos: usize, // 0..2
-    ) -> Tile {
-        return other_row[4 - 2 * pos]; // index 4, 2, 0
     }
 
     fn get_connected_titles_for_tile(
