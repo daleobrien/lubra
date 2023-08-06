@@ -10,7 +10,7 @@ use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
 use crate::renders::glyph::Glyph;
-use crate::renders::lookup::{find_tiles, random_side};
+use crate::renders::lookup::random_side;
 use crate::renders::primatives::Coordinate;
 use crate::renders::strokes::{H, M};
 use crate::renders::svg::Path;
@@ -87,7 +87,11 @@ impl Maze {
         // Sort such that the last net is the shortest, we will be deleting them as we go
         self.nets.sort_by(|a, b| (&b.len()).cmp(&a.len()));
 
-        println!("\nNets are now:");
+        // Join the nets together such that we have a comeplete maze!
+
+        // TODO: At the point we can remove nets that have a length of 2, since they are just mini-circle
+        // It does seem that it can be very hard to join some nets!!!
+        println!("\nWe have disjoint {:?} nets:", self.nets.len());
         for (n, nets) in self.nets.iter().enumerate() {
             println!("{n}-> {:?}", nets);
         }

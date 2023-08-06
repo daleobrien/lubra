@@ -14,7 +14,10 @@ fn main() {
     // const R: usize = 36; // 6, 36;
 
     //let maze = Maze::new(18, 6, true, None);
+
+    // Great test case here
     let maze = Maze::new(6, 3, true, Some(101));
+
     //let maze = Maze::new(6, 3, true, None);
     let result_f = maze.render("test-random.svg".to_string());
 
