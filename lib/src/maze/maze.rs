@@ -399,6 +399,11 @@ impl Maze {
 
         let tile = random_side(matches, dont_care, self.seed);
 
+        self.seed = match self.seed {
+            Some(s) => Some(s.wrapping_add(1)),
+            _ => None,
+        };
+
         // Update the network the describes the maze
         self.update_network(&tile, i, j);
 
