@@ -2,6 +2,17 @@ use crate::node_combinations::NodeCombinations;
 
 mod node_combinations;
 
+fn to_bits(nets: Vec<Vec<u32>>) -> u32 {
+    let nodes = nets.clone().into_iter().flatten().collect::<Vec<u32>>();
+
+    let mut bits = 0;
+    for n in nodes {
+        bits |= 1 << (n - 1);
+    }
+
+    return bits;
+}
+
 fn main() {
     let seq = NodeCombinations::new(vec![
         vec![1], // Points
@@ -24,6 +35,7 @@ fn main() {
     ]);
 
     for (i, nodes) in seq.enumerate() {
-        println!("{:3} => {:?}", i + 1, nodes);
+        let key = to_bits(nodes.clone());
+        println!("{:3} 0b{:06b} => {:?}", i + 1, key, nodes);
     }
 }

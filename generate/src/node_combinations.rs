@@ -3,7 +3,6 @@ use itertools::Itertools;
 
 pub struct NodeCombinations {
     list: Vec<Vec<Vec<u32>>>,
-    index: usize,
 }
 
 impl NodeCombinations {
@@ -21,10 +20,7 @@ impl NodeCombinations {
         combinations.sort();
         combinations.reverse();
 
-        return Self {
-            list: combinations,
-            index: 0,
-        };
+        return Self { list: combinations };
     }
 }
 
@@ -76,7 +72,6 @@ impl Iterator for NodeCombinations {
                 {
                     return self.next();
                 }
-                // TODO: remove more items that don't make sense
                 return Some(value);
             }
             None => return None,
