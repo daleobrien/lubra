@@ -1,17 +1,7 @@
 use crate::node_combinations::NodeCombinations;
 
+mod bit_ulits;
 mod node_combinations;
-
-fn to_bits(nets: Vec<Vec<u32>>) -> u32 {
-    let nodes = nets.clone().into_iter().flatten().collect::<Vec<u32>>();
-
-    let mut bits = 0;
-    for n in nodes {
-        bits |= 1 << (n - 1);
-    }
-
-    return bits;
-}
 
 fn main() {
     let seq = NodeCombinations::new(vec![
