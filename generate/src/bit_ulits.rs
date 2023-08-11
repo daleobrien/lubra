@@ -47,6 +47,13 @@ pub fn to_base4(value: u32) -> String {
     return base4_num;
 }
 
+pub fn bit_sequence(n: u32) -> Vec<(u32, u32)> {
+    return (0..n)
+        .into_iter()
+        .map(|n| (n, dont_care_to_bits(n)))
+        .collect();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -85,5 +92,25 @@ mod tests {
 
         let b = to_base4(13414);
         assert_eq!(b, "3101212");
+    }
+
+    #[test]
+    fn test_bit_sequence() {
+        let sequence = bit_sequence(10);
+        assert_eq!(
+            sequence,
+            vec![
+                (0, 0),
+                (1, 2),
+                (2, 8),
+                (3, 10),
+                (4, 32),
+                (5, 34),
+                (6, 40),
+                (7, 42),
+                (8, 128),
+                (9, 130)
+            ]
+        );
     }
 }
