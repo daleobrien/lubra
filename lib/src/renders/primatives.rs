@@ -81,7 +81,7 @@ pub struct SegmentOffset {
 pub struct Segment {
     pub centre: Point,
     pub radius: f64,
-    pub segment: usize, 
+    pub segment: usize,
 }
 
 impl Add<SegmentOffset> for Segment {

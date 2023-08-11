@@ -26,7 +26,9 @@ pub fn write_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>, file_name: 
     let mut file = File::create(file_name).expect("File Creation failed");
     file.write(b"/* This file is generated from a template, ... edit the template instead. */\n");
 
-    file.write_all(b"pub fn calculate_nets (base4_mask:u32) -> Vec<Vec<u32>> {\n");
+    file.write_all(
+        b"pub fn list_of_posible_nets_for_a_mask (base4_mask:u32) -> Vec<Vec<Vec<u32>>> {\n",
+    );
     file.write_all(b"  match base4_mask {\n");
     for key in keys {
         let content = format!(
