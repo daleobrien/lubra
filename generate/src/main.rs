@@ -1,5 +1,6 @@
-use crate::bit_ulits::to_bits;
+use crate::bit_ulits::{bit_sequence, mask_to_bits, to_base4, to_bits};
 use crate::node_combinations::NodeCombinations;
+use std::collections::HashMap;
 
 mod bit_ulits;
 mod node_combinations;
@@ -25,8 +26,24 @@ fn main() {
         vec![1, 2, 3], // All vertexes connected
     ]);
 
-    for (i, nodes) in seq.enumerate() {
-        let key = to_bits(nodes.clone());
-        println!("{:3} 0b{:06b} => {:?}", i + 1, key, nodes);
+    let mut nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>> = HashMap::new();
+
+    for nodes in seq {
+        let bits = to_bits(nodes.clone());
+        for (n, dont_care_bits) in bit_sequence(64).iter() {
+            let index = mask_to_bits(bits & !n & 0b111_111) | dont_care_bits;
+            let s = to_base4(index);
+            nets_by_mask
+                .entry(s)
+                .or_insert_with(Vec::new)
+                .push(nodes.clone());
+        }
+    }
+
+    let mut keys = nets_by_mask.keys().collect::<Vec<&u32>>();
+    keys.sort();
+    println!("");
+    for key in keys {
+        print!("{:06?} => {:3?}\n", key, nets_by_mask[key])
     }
 }
