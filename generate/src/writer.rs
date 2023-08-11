@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::prelude::*;
 
 fn list_to_rust_vector<T: ToString>(list: &[T]) -> String {
     let elements: Vec<String> = list.iter().map(|item| item.to_string()).collect();
@@ -18,18 +20,26 @@ fn list_of_lists_of_list_to_rust_vector<T: ToString>(list: &[Vec<Vec<T>>]) -> St
     return list_to_rust_vector(&elements);
 }
 
-pub fn write_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>) {
+pub fn write_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>, file_name: &str) {
     let mut keys = nets_by_mask.keys().collect::<Vec<&u32>>();
     keys.sort();
-    println!("match mask {{");
+    let mut file = File::create(file_name).expect("File Creation failed");
+    file.write(b"/* This file is generated from a template, ... edit the template instead. */\n");
+
+    file.write_all(b"pub fn calculate_nets (base4_mask:u32) -> Vec<Vec<u32>> {\n");
+    file.write_all(b"  match base4_mask {\n");
     for key in keys {
-        print!(
-            "{:06?} => {:?}\n",
+        let content = format!(
+            "    {:6?} => {},\n",
             key,
             list_of_lists_of_list_to_rust_vector(&nets_by_mask[key])
-        )
+        );
+        file.write(content.as_bytes());
     }
-    println!("}}");
+    file.write_all(b"    _ => vec![],\n");
+    file.write_all(b"  }\n");
+    file.write_all(b"}\n");
+    let _ = file.flush();
 }
 
 #[cfg(test)]
@@ -37,6 +47,7 @@ mod tests {
     use crate::writer::{
         list_of_lists_of_list_to_rust_vector, list_of_lists_to_rust_vector, list_to_rust_vector,
     };
+    use std::{assert_eq, vec};
 
     #[test]
     fn test_list_to_rust_vector() {
