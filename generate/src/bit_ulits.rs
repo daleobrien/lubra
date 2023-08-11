@@ -34,17 +34,23 @@ pub fn mask_to_bits(value: u32) -> u32 {
     return out;
 }
 
-pub fn to_base4(value: u32) -> String {
-    let mut base4_num: String = String::new();
+pub fn to_base4(number: u32) -> u32 {
+    // e.g. to_base4(5) -> "11"
+    if number < 4 {
+        return number;
+    }
+    let mut result = 0;
+    let mut decimal = number.clone();
+    let mut multiplier = 1;
 
-    let mut decimal_num = value.clone();
-    while decimal_num > 0 {
-        let digit = decimal_num % 4;
-        base4_num = format!("{:?}{base4_num}", digit).to_string();
-        decimal_num = decimal_num / 4;
+    while decimal > 0 {
+        let digit = decimal % 4;
+        result += digit * multiplier;
+        multiplier *= 10;
+        decimal /= 4;
     }
 
-    return base4_num;
+    return result;
 }
 
 pub fn bit_sequence(n: u32) -> Vec<(u32, u32)> {
@@ -85,13 +91,13 @@ mod tests {
     #[test]
     fn test_to_base4() {
         let b = to_base4(5);
-        assert_eq!(b, "11");
+        assert_eq!(b, 11);
 
         let b = to_base4(3);
-        assert_eq!(b, "3");
+        assert_eq!(b, 3);
 
         let b = to_base4(13414);
-        assert_eq!(b, "3101212");
+        assert_eq!(b, 3101212);
     }
 
     #[test]
