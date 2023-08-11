@@ -39,8 +39,8 @@ pub fn to_base4(value: u32) -> String {
 
     let mut decimal_num = value.clone();
     while decimal_num > 0 {
-        let remainder = decimal_num % 4;
-        base4_num = format!("{:?}{base4_num}", remainder).to_string();
+        let digit = decimal_num % 4;
+        base4_num = format!("{:?}{base4_num}", digit).to_string();
         decimal_num = decimal_num / 4;
     }
 
