@@ -1,9 +1,11 @@
 use crate::bit_ulits::{bit_sequence, mask_to_bits, to_base4, to_bits};
 use crate::node_combinations::NodeCombinations;
+use crate::writer::write_to_file;
 use std::collections::HashMap;
 
 mod bit_ulits;
 mod node_combinations;
+mod writer;
 
 fn main() {
     let seq = NodeCombinations::new(vec![
@@ -31,19 +33,13 @@ fn main() {
     for nodes in seq {
         let bits = to_bits(nodes.clone());
         for (n, dont_care_bits) in bit_sequence(64).iter() {
-            let index = mask_to_bits(bits & !n & 0b111_111) | dont_care_bits;
-            let s = to_base4(index);
+            let index = to_base4(mask_to_bits(bits & !n & 0b111_111) | dont_care_bits);
             nets_by_mask
-                .entry(s)
+                .entry(index)
                 .or_insert_with(Vec::new)
                 .push(nodes.clone());
         }
     }
 
-    let mut keys = nets_by_mask.keys().collect::<Vec<&u32>>();
-    keys.sort();
-    println!("");
-    for key in keys {
-        print!("{:06?} => {:3?}\n", key, nets_by_mask[key])
-    }
+    write_to_file(nets_by_mask);
 }
