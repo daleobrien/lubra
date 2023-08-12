@@ -283,11 +283,10 @@ impl Maze {
     fn mask_for_tile_vertex(
         &self,
         node_idx: u8,
-        opposite_idx: usize,
         idxs: [usize; 4],
         relative_tiles: &[Option<Tile>; 12],
     ) -> u32 {
-        let opposite = &relative_tiles[opposite_idx];
+        let opposite = &relative_tiles[node_idx - 1];
 
         let left = &relative_tiles[idxs[0]];
         let right = &relative_tiles[idxs[1]];
@@ -305,9 +304,6 @@ impl Maze {
                     1 => 2,
                     2 => 20,
                     3 => 200,
-                    4 => 2000,
-                    5 => 20000,
-                    6 => 200000,
                     _ => 0,
                 };
             }
@@ -317,34 +313,34 @@ impl Maze {
                 1 => 1,
                 2 => 10,
                 3 => 100,
-                4 => 1000,
-                5 => 10000,
-                6 => 100000,
                 _ => 0,
             };
         }
         return 0;
     }
 
-    fn mask_for_tile_side(
-        &self,
-        opposite_idx: usize,
-        tile: Tile,
-        relative_tiles: &[Tile; 12],
-        mask: u32,
-        dont_care_mask: &mut u32,
-        match_mask: &mut u32,
-    ) {
-        //let adjacent = relative_tiles[opposite_idx];
+    fn mask_for_tile_side(&self, node_idx: u8, relative_tiles: &[Option<Tile>; 12]) -> u32 {
+        let adjacent = &relative_tiles[node_idx - 1];
 
-        // if adjacent.contains(Tile::Z2) {
-        //     *dont_care_mask |= mask;
-        //     return;
-        // }
-        // if adjacent.intersects(tile) {
-        //     *match_mask |= mask;
-        // }
-        return;
+        if self.tile_is_empty(adjacent) {
+            return match node_idx {
+                4 => 2000,
+                5 => 20000,
+                6 => 200000,
+                _ => 0,
+            };
+        }
+
+        if self.tile_contains(adjacent, node_idx) {
+            return match node_idx {
+                4 => 1000,
+                5 => 10000,
+                6 => 100000,
+                _ => 0,
+            };
+        }
+
+        return 0;
     }
 
     pub fn get_surrounding_tile_connections(&self, surrounding_tiles: &[Option<Tile>; 12]) -> u32 {
@@ -356,48 +352,12 @@ impl Maze {
         // 0 1 2 3 4 5  6  7  8  9  10 11
 
         // Node 1
-        mask |= self.mask_for_tile_vertex(
-            1,
-            0, // 1
-            [3, 4, 6, 7],
-            surrounding_tiles,
-        );
-        mask |= self.mask_for_tile_vertex(
-            2,
-            1, // 2
-            [3, 5, 8, 9],
-            surrounding_tiles,
-        );
-        mask |= self.mask_for_tile_vertex(
-            3,
-            2, // 3
-            [4, 5, 10, 11],
-            surrounding_tiles,
-        );
-        // self.mask_for_tile_side(
-        //     3,
-        //     Tile::G4,
-        //     surrounding_tiles,
-        //     0b001_000,
-        //     &mut dont_care,
-        //     &mut matches,
-        // );
-        // self.mask_for_tile_side(
-        //     4,
-        //     Tile::G5,
-        //     surrounding_tiles,
-        //     0b010_000,
-        //     &mut dont_care,
-        //     &mut matches,
-        // );
-        // self.mask_for_tile_side(
-        //     5,
-        //     Tile::G6,
-        //     surrounding_tiles,
-        //     0b100_000,
-        //     &mut dont_care,
-        //     &mut matches,
-        // );
+        mask |= self.mask_for_tile_vertex(1, [3, 4, 6, 7], surrounding_tiles);
+        mask |= self.mask_for_tile_vertex(2, [3, 5, 8, 9], surrounding_tiles);
+        mask |= self.mask_for_tile_vertex(3, [4, 5, 10, 11], surrounding_tiles);
+        mask |= self.mask_for_tile_side(4, surrounding_tiles);
+        mask |= self.mask_for_tile_side(5, surrounding_tiles);
+        mask |= self.mask_for_tile_side(6, surrounding_tiles);
 
         return mask;
     }
