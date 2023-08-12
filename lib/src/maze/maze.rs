@@ -129,7 +129,7 @@ impl Maze {
              ╱     ╲
             2 ━ 6 ━ 3
 
-           ▽△▽△▽      △▽△▽△
+           ▽△▽△▽      △▽△▽△:
            △▽▲▽△  or  ▽△▼△▽
            ▽△▽△▽      △▽△▽△
 
@@ -286,7 +286,7 @@ impl Maze {
         idxs: [usize; 4],
         relative_tiles: &[Option<Tile>; 12],
     ) -> u32 {
-        let opposite = &relative_tiles[node_idx - 1];
+        let opposite = &relative_tiles[(node_idx - 1).to_usize().unwrap_or_default()];
 
         let left = &relative_tiles[idxs[0]];
         let right = &relative_tiles[idxs[1]];
@@ -320,7 +320,7 @@ impl Maze {
     }
 
     fn mask_for_tile_side(&self, node_idx: u8, relative_tiles: &[Option<Tile>; 12]) -> u32 {
-        let adjacent = &relative_tiles[node_idx - 1];
+        let adjacent = &relative_tiles[(node_idx - 1).to_usize().unwrap_or_default()];
 
         if self.tile_is_empty(adjacent) {
             return match node_idx {
