@@ -84,6 +84,21 @@ impl Tile {
         }
         return false;
     }
+
+    pub fn contains(&self, node_index: u8) -> bool {
+        for nets in self.nodes.clone() {
+            for n in nets {
+                if n == node_index {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.nodes.len() == 0;
+    }
 }
 
 pub fn add(u: usize, i: i32) -> usize {
@@ -127,5 +142,28 @@ mod tests {
         let tile1 = Tile::new(vec![vec![1, 2], vec![5]]);
         let tile2 = Tile::new(vec![vec![3], vec![6]]);
         assert_eq!(tile1.intersects(&tile2), false);
+    }
+
+    #[test]
+    fn test_contains() {
+        let tile1 = Tile::new(vec![vec![1, 2], vec![5]]);
+        assert_eq!(tile1.contains(1), true);
+        assert_eq!(tile1.contains(2), true);
+        assert_eq!(tile1.contains(3), false);
+        assert_eq!(tile1.contains(4), false);
+        assert_eq!(tile1.contains(5), true);
+        assert_eq!(tile1.contains(6), false);
+
+        let tile1 = Tile::new(vec![]);
+        assert_eq!(tile1.contains(1), false);
+    }
+
+    #[test]
+    fn test_is_empty() {
+        let tile1 = Tile::new(vec![vec![1, 2], vec![5]]);
+        assert_eq!(tile1.is_empty(), false);
+
+        let tile1 = Tile::new(vec![]);
+        assert_eq!(tile1.is_empty(), true);
     }
 }
