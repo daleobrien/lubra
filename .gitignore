@@ -10,3 +10,4 @@ cli/test-all.svg
 cli/test-one-tile.svg
 *.svg
 .idea/inspectionProfiles/Project_Default.xml
+generate/target
