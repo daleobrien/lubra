@@ -4,7 +4,7 @@ use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand_chacha::ChaCha8Rng;
 
-pub fn random_tile(mask: u32, seed: Option<u64>) -> Vec<Vec<u32>> {
+pub fn random_tile(mask: u32, seed: Option<u64>) -> Vec<Vec<u8>> {
     let possible_nets = list_of_posible_nets_for_a_mask(mask);
 
     let mut rng = match seed {

@@ -32,12 +32,12 @@ pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool
     return (origin, flipped);
 }
 
-pub fn rotate(coordinate: Coordinate, tile: Tile) -> Tile {
+pub fn rotate(coordinate: Coordinate, tile: Tile) -> Vec<Vec<u8>> {
     // Rotate tile, depending on position so it renders
     return match coordinate.i % 3 {
         1 => tile.rotate_cw(),
         2 => tile.rotate_ccw(),
-        _ => tile,
+        _ => tile.nodes,
     };
 }
 
@@ -179,279 +179,279 @@ impl Glyph {
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
-        let mut rng = rand::thread_rng();
-
-        // Title can be rotated
-        let mask = rotate(coordinate, tile);
-
+        // let mut rng = rand::thread_rng();
         //
-        if !mask.contains(Tile::AX) {
-            if mask.contains(Tile::A1) && !mask.contains(Tile::C1) {
-                let arc = if flipped { A1_V } else { A1_A } + origin;
-                arcs.push(arc + Radius { r: -W });
-                arcs.push(arc + Radius { r: W });
-            }
-
-            if mask.contains(Tile::A2) && !mask.contains(Tile::C2) {
-                let arc = if flipped { A2_V } else { A2_A } + origin;
-                arcs.push(arc + Radius { r: -W });
-                arcs.push(arc + Radius { r: W });
-            }
-
-            if mask.contains(Tile::A3) && !mask.contains(Tile::C3) {
-                let arc = if flipped { A3_V } else { A3_A } + origin;
-                arcs.push(arc + Radius { r: -W });
-                arcs.push(arc + Radius { r: W });
-            }
-        }
-
-        if mask.contains(Tile::T1) {
-            if flipped {
-                if mask.contains(Tile::Y1) {
-                    fsemi.push(T1_V + origin);
-                } else if mask.contains(Tile::L3) {
-                    farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 1 });
-                    farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 2 });
-                    arcs.push(T1_V_ARC + origin + SegmentOffset { offset: 3 });
-                } else if mask.contains(Tile::L2) {
-                    farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 3 });
-                    farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 2 });
-                    arcs.push(T1_V_ARC + origin + SegmentOffset { offset: 1 });
-                } else {
-                    semi.push(T1_V + origin);
-                }
-            } else {
-                if mask.contains(Tile::Y1) {
-                    fsemi.push(T1_A + origin);
-                } else if mask.contains(Tile::L3) {
-                    farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 6 });
-                    farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 5 });
-                    arcs.push(T1_A_ARC + origin + SegmentOffset { offset: 4 });
-                } else if mask.contains(Tile::L2) {
-                    farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 4 });
-                    farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 5 });
-                    arcs.push(T1_A_ARC + origin + SegmentOffset { offset: 6 });
-                } else {
-                    semi.push(T1_A + origin);
-                }
-            }
-        }
-
-        if mask.contains(Tile::T2) {
-            if flipped {
-                if mask.contains(Tile::Y2) {
-                    fsemi.push(T2_V + origin);
-                } else if mask.contains(Tile::L3) {
-                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 5 });
-                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
-                    arcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
-                } else if mask.contains(Tile::L1) {
-                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
-                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
-                    arcs.push(T2_ARC + origin + SegmentOffset { offset: 5 });
-                } else {
-                    semi.push(T2_V + origin);
-                }
-            } else {
-                if mask.contains(Tile::Y2) {
-                    fsemi.push(T2_A + origin);
-                } else if mask.contains(Tile::L3) {
-                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
-                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 2 });
-                    arcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
-                } else if mask.contains(Tile::L1) {
-                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
-                    farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
-                    arcs.push(T2_ARC + origin + SegmentOffset { offset: 2 });
-                } else {
-                    semi.push(T2_A + origin);
-                }
-            }
-        }
-
-        if mask.contains(Tile::T3) {
-            if flipped {
-                if mask.contains(Tile::Y3) {
-                    fsemi.push(T3_V + origin);
-                } else if mask.contains(Tile::L2) {
-                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
-                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 5 });
-                    arcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
-                } else if mask.contains(Tile::L1) {
-                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
-                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
-                    arcs.push(T3_ARC + origin + SegmentOffset { offset: 5 });
-                } else {
-                    semi.push(T3_V + origin);
-                }
-            } else {
-                if mask.contains(Tile::Y3) {
-                    fsemi.push(T3_A + origin);
-                } else if mask.contains(Tile::L2) {
-                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
-                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 2 });
-                    arcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
-                } else if mask.contains(Tile::L1) {
-                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
-                    farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
-                    arcs.push(T3_ARC + origin + SegmentOffset { offset: 2 });
-                } else {
-                    semi.push(T3_A + origin);
-                }
-            }
-        }
-
-        if mask.contains(Tile::N1) {
-            if flipped {
-                semi.push(N1_V + origin);
-            } else {
-                semi.push(N1_A + origin);
-            }
-        }
-        if mask.contains(Tile::N2) {
-            if flipped {
-                semi.push(N2_V + origin);
-            } else {
-                semi.push(N2_A + origin);
-            }
-        }
-
-        if mask.contains(Tile::N3) {
-            if flipped {
-                semi.push(N3_V + origin);
-            } else {
-                semi.push(N3_A + origin);
-            }
-        }
-
-        if !mask.contains(Tile::LX) {
-            if mask.contains(Tile::L1) && !mask.intersects(Tile::E1) {
-                paint_l1(&mut lines, origin);
-            }
-            if mask.contains(Tile::L2) && !mask.intersects(Tile::E2) {
-                paint_l2(&mut lines, origin, flipped);
-            }
-            if mask.contains(Tile::L3) && !mask.intersects(Tile::E3) {
-                paint_l3(&mut lines, origin, flipped);
-            }
-
-            if mask.contains(Tile::Y1) {
-                paint_y1(&mut lines, &mut faint, origin, flipped);
-            }
-
-            if mask.contains(Tile::Y2) {
-                paint_y2(&mut lines, &mut faint, origin, flipped);
-            }
-
-            if mask.contains(Tile::Y3) {
-                paint_y3(&mut lines, &mut faint, origin, flipped);
-            }
-        }
-
-        if mask.contains(Tile::C1) {
-            let arc = if flipped { A1_V } else { A1_A } + origin;
-
-            if rng.gen_range(0..2) == 0 {
-                // Make the A1 go under the L1
-                arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
-
-                farcs.push(arc + Radius { r: -W });
-                farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
-
-                paint_l1(&mut lines, origin);
-            } else {
-                // Make the A1 go over the L1
-                arcs.push(arc + Radius { r: -W });
-                arcs.push(arc + Radius { r: W });
-
-                if flipped {
-                    push4(&mut lines, origin, L007, L008, L017, L018);
-                    push2(&mut faint, origin, L021, L022);
-                } else {
-                    push4(&mut lines, origin, L005, L006, L042, L041);
-                    push2(&mut faint, origin, L045, L046);
-                }
-            }
-        }
-        if mask.contains(Tile::C2) {
-            let arc = if flipped { A2_V } else { A2_A } + origin;
-
-            if rng.gen_range(0..2) == 0 {
-                arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
-                farcs.push(arc + Radius { r: -W });
-                farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
-                paint_l2(&mut lines, origin, flipped);
-            } else {
-                arcs.push(arc + Radius { r: -W });
-                arcs.push(arc + Radius { r: W });
-
-                if flipped {
-                    push4(&mut lines, origin, L001, L002, L015, L016);
-                    push2(&mut faint, origin, L019, L020);
-                } else {
-                    push4(&mut lines, origin, L025, L026, L040, L039);
-                    push2(&mut faint, origin, L043, L044);
-                }
-            }
-        }
-        if mask.contains(Tile::C3) {
-            let arc = if flipped { A3_V } else { A3_A } + origin;
-            if rng.gen_range(0..2) == 0 {
-                arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
-                farcs.push(arc + Radius { r: -W });
-                farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
-                paint_l3(&mut lines, origin, flipped);
-            } else {
-                arcs.push(arc + Radius { r: -W });
-                arcs.push(arc + Radius { r: W });
-                if flipped {
-                    push4(&mut lines, origin, L011, L012, L013, L014);
-                    push2(&mut faint, origin, L023, L024);
-                } else {
-                    push4(&mut lines, origin, L035, L036, L037, L038);
-                    push2(&mut faint, origin, L047, L048);
-                }
-            }
-        }
-
-        if mask.contains(Tile::AX) {
-            arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
-            arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
-            arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
-        }
-        if mask.contains(Tile::LX) {
-            match rng.gen_range(0..3) {
-                // 0,1,2
-                0 => {
-                    paint_y1(&mut lines, &mut faint, origin, flipped);
-                    if flipped {
-                        push2(&mut lines, origin, L007, L008);
-                    } else {
-                        push2(&mut lines, origin, L005, L006);
-                    }
-                }
-                1 => {
-                    paint_y3(&mut lines, &mut faint, origin, flipped);
-                    if flipped {
-                        push2(&mut lines, origin, L011, L012);
-                    } else {
-                        push2(&mut lines, origin, L035, L036);
-                    }
-                }
-                _ => {
-                    paint_y2(&mut lines, &mut faint, origin, flipped);
-                    if flipped {
-                        push2(&mut lines, origin, L001, L002);
-                    } else {
-                        push2(&mut lines, origin, L025, L026);
-                    }
-                }
-            }
-        }
-
-        if mask.contains(Tile::W1) {
-            create_triangle(flipped).map(|line| lines.push(line + origin));
-        }
+        // // Title can be rotated
+        // let mask = rotate(coordinate, tile);
+        //
+        // //
+        // if !mask.contains(Tile::AX) {
+        //     if mask.contains(Tile::A1) && !mask.contains(Tile::C1) {
+        //         let arc = if flipped { A1_V } else { A1_A } + origin;
+        //         arcs.push(arc + Radius { r: -W });
+        //         arcs.push(arc + Radius { r: W });
+        //     }
+        //
+        //     if mask.contains(Tile::A2) && !mask.contains(Tile::C2) {
+        //         let arc = if flipped { A2_V } else { A2_A } + origin;
+        //         arcs.push(arc + Radius { r: -W });
+        //         arcs.push(arc + Radius { r: W });
+        //     }
+        //
+        //     if mask.contains(Tile::A3) && !mask.contains(Tile::C3) {
+        //         let arc = if flipped { A3_V } else { A3_A } + origin;
+        //         arcs.push(arc + Radius { r: -W });
+        //         arcs.push(arc + Radius { r: W });
+        //     }
+        // }
+        //
+        // if mask.contains(Tile::T1) {
+        //     if flipped {
+        //         if mask.contains(Tile::Y1) {
+        //             fsemi.push(T1_V + origin);
+        //         } else if mask.contains(Tile::L3) {
+        //             farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 1 });
+        //             farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 2 });
+        //             arcs.push(T1_V_ARC + origin + SegmentOffset { offset: 3 });
+        //         } else if mask.contains(Tile::L2) {
+        //             farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 3 });
+        //             farcs.push(T1_V_ARC + origin + SegmentOffset { offset: 2 });
+        //             arcs.push(T1_V_ARC + origin + SegmentOffset { offset: 1 });
+        //         } else {
+        //             semi.push(T1_V + origin);
+        //         }
+        //     } else {
+        //         if mask.contains(Tile::Y1) {
+        //             fsemi.push(T1_A + origin);
+        //         } else if mask.contains(Tile::L3) {
+        //             farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 6 });
+        //             farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 5 });
+        //             arcs.push(T1_A_ARC + origin + SegmentOffset { offset: 4 });
+        //         } else if mask.contains(Tile::L2) {
+        //             farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 4 });
+        //             farcs.push(T1_A_ARC + origin + SegmentOffset { offset: 5 });
+        //             arcs.push(T1_A_ARC + origin + SegmentOffset { offset: 6 });
+        //         } else {
+        //             semi.push(T1_A + origin);
+        //         }
+        //     }
+        // }
+        //
+        // if mask.contains(Tile::T2) {
+        //     if flipped {
+        //         if mask.contains(Tile::Y2) {
+        //             fsemi.push(T2_V + origin);
+        //         } else if mask.contains(Tile::L3) {
+        //             farcs.push(T2_ARC + origin + SegmentOffset { offset: 5 });
+        //             farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
+        //             arcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
+        //         } else if mask.contains(Tile::L1) {
+        //             farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
+        //             farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
+        //             arcs.push(T2_ARC + origin + SegmentOffset { offset: 5 });
+        //         } else {
+        //             semi.push(T2_V + origin);
+        //         }
+        //     } else {
+        //         if mask.contains(Tile::Y2) {
+        //             fsemi.push(T2_A + origin);
+        //         } else if mask.contains(Tile::L3) {
+        //             farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
+        //             farcs.push(T2_ARC + origin + SegmentOffset { offset: 2 });
+        //             arcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
+        //         } else if mask.contains(Tile::L1) {
+        //             farcs.push(T2_ARC + origin + SegmentOffset { offset: 3 });
+        //             farcs.push(T2_ARC + origin + SegmentOffset { offset: 4 });
+        //             arcs.push(T2_ARC + origin + SegmentOffset { offset: 2 });
+        //         } else {
+        //             semi.push(T2_A + origin);
+        //         }
+        //     }
+        // }
+        //
+        // if mask.contains(Tile::T3) {
+        //     if flipped {
+        //         if mask.contains(Tile::Y3) {
+        //             fsemi.push(T3_V + origin);
+        //         } else if mask.contains(Tile::L2) {
+        //             farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
+        //             farcs.push(T3_ARC + origin + SegmentOffset { offset: 5 });
+        //             arcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
+        //         } else if mask.contains(Tile::L1) {
+        //             farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
+        //             farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
+        //             arcs.push(T3_ARC + origin + SegmentOffset { offset: 5 });
+        //         } else {
+        //             semi.push(T3_V + origin);
+        //         }
+        //     } else {
+        //         if mask.contains(Tile::Y3) {
+        //             fsemi.push(T3_A + origin);
+        //         } else if mask.contains(Tile::L2) {
+        //             farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
+        //             farcs.push(T3_ARC + origin + SegmentOffset { offset: 2 });
+        //             arcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
+        //         } else if mask.contains(Tile::L1) {
+        //             farcs.push(T3_ARC + origin + SegmentOffset { offset: 1 });
+        //             farcs.push(T3_ARC + origin + SegmentOffset { offset: 6 });
+        //             arcs.push(T3_ARC + origin + SegmentOffset { offset: 2 });
+        //         } else {
+        //             semi.push(T3_A + origin);
+        //         }
+        //     }
+        // }
+        //
+        // if mask.contains(Tile::N1) {
+        //     if flipped {
+        //         semi.push(N1_V + origin);
+        //     } else {
+        //         semi.push(N1_A + origin);
+        //     }
+        // }
+        // if mask.contains(Tile::N2) {
+        //     if flipped {
+        //         semi.push(N2_V + origin);
+        //     } else {
+        //         semi.push(N2_A + origin);
+        //     }
+        // }
+        //
+        // if mask.contains(Tile::N3) {
+        //     if flipped {
+        //         semi.push(N3_V + origin);
+        //     } else {
+        //         semi.push(N3_A + origin);
+        //     }
+        // }
+        //
+        // if !mask.contains(Tile::LX) {
+        //     if mask.contains(Tile::L1) && !mask.intersects(Tile::E1) {
+        //         paint_l1(&mut lines, origin);
+        //     }
+        //     if mask.contains(Tile::L2) && !mask.intersects(Tile::E2) {
+        //         paint_l2(&mut lines, origin, flipped);
+        //     }
+        //     if mask.contains(Tile::L3) && !mask.intersects(Tile::E3) {
+        //         paint_l3(&mut lines, origin, flipped);
+        //     }
+        //
+        //     if mask.contains(Tile::Y1) {
+        //         paint_y1(&mut lines, &mut faint, origin, flipped);
+        //     }
+        //
+        //     if mask.contains(Tile::Y2) {
+        //         paint_y2(&mut lines, &mut faint, origin, flipped);
+        //     }
+        //
+        //     if mask.contains(Tile::Y3) {
+        //         paint_y3(&mut lines, &mut faint, origin, flipped);
+        //     }
+        // }
+        //
+        // if mask.contains(Tile::C1) {
+        //     let arc = if flipped { A1_V } else { A1_A } + origin;
+        //
+        //     if rng.gen_range(0..2) == 0 {
+        //         // Make the A1 go under the L1
+        //         arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
+        //
+        //         farcs.push(arc + Radius { r: -W });
+        //         farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
+        //
+        //         paint_l1(&mut lines, origin);
+        //     } else {
+        //         // Make the A1 go over the L1
+        //         arcs.push(arc + Radius { r: -W });
+        //         arcs.push(arc + Radius { r: W });
+        //
+        //         if flipped {
+        //             push4(&mut lines, origin, L007, L008, L017, L018);
+        //             push2(&mut faint, origin, L021, L022);
+        //         } else {
+        //             push4(&mut lines, origin, L005, L006, L042, L041);
+        //             push2(&mut faint, origin, L045, L046);
+        //         }
+        //     }
+        // }
+        // if mask.contains(Tile::C2) {
+        //     let arc = if flipped { A2_V } else { A2_A } + origin;
+        //
+        //     if rng.gen_range(0..2) == 0 {
+        //         arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
+        //         farcs.push(arc + Radius { r: -W });
+        //         farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
+        //         paint_l2(&mut lines, origin, flipped);
+        //     } else {
+        //         arcs.push(arc + Radius { r: -W });
+        //         arcs.push(arc + Radius { r: W });
+        //
+        //         if flipped {
+        //             push4(&mut lines, origin, L001, L002, L015, L016);
+        //             push2(&mut faint, origin, L019, L020);
+        //         } else {
+        //             push4(&mut lines, origin, L025, L026, L040, L039);
+        //             push2(&mut faint, origin, L043, L044);
+        //         }
+        //     }
+        // }
+        // if mask.contains(Tile::C3) {
+        //     let arc = if flipped { A3_V } else { A3_A } + origin;
+        //     if rng.gen_range(0..2) == 0 {
+        //         arcs.push(arc + Radius { r: W } + SegmentOffset { offset: 12 });
+        //         farcs.push(arc + Radius { r: -W });
+        //         farcs.push(arc + Radius { r: W } + SegmentOffset { offset: 6 });
+        //         paint_l3(&mut lines, origin, flipped);
+        //     } else {
+        //         arcs.push(arc + Radius { r: -W });
+        //         arcs.push(arc + Radius { r: W });
+        //         if flipped {
+        //             push4(&mut lines, origin, L011, L012, L013, L014);
+        //             push2(&mut faint, origin, L023, L024);
+        //         } else {
+        //             push4(&mut lines, origin, L035, L036, L037, L038);
+        //             push2(&mut faint, origin, L047, L048);
+        //         }
+        //     }
+        // }
+        //
+        // if mask.contains(Tile::AX) {
+        //     arcs.push(if flipped { A1_V } else { A1_A } + origin + Radius { r: -W });
+        //     arcs.push(if flipped { A2_V } else { A2_A } + origin + Radius { r: -W });
+        //     arcs.push(if flipped { A3_V } else { A3_A } + origin + Radius { r: -W });
+        // }
+        // if mask.contains(Tile::LX) {
+        //     match rng.gen_range(0..3) {
+        //         // 0,1,2
+        //         0 => {
+        //             paint_y1(&mut lines, &mut faint, origin, flipped);
+        //             if flipped {
+        //                 push2(&mut lines, origin, L007, L008);
+        //             } else {
+        //                 push2(&mut lines, origin, L005, L006);
+        //             }
+        //         }
+        //         1 => {
+        //             paint_y3(&mut lines, &mut faint, origin, flipped);
+        //             if flipped {
+        //                 push2(&mut lines, origin, L011, L012);
+        //             } else {
+        //                 push2(&mut lines, origin, L035, L036);
+        //             }
+        //         }
+        //         _ => {
+        //             paint_y2(&mut lines, &mut faint, origin, flipped);
+        //             if flipped {
+        //                 push2(&mut lines, origin, L001, L002);
+        //             } else {
+        //                 push2(&mut lines, origin, L025, L026);
+        //             }
+        //         }
+        //     }
+        // }
+        //
+        // if mask.contains(Tile::W1) {
+        //     create_triangle(flipped).map(|line| lines.push(line + origin));
+        // }
 
         return Glyph {
             lines,

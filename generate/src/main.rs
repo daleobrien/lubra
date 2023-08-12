@@ -41,5 +41,5 @@ fn main() {
         }
     }
 
-    write_to_file(nets_by_mask, "../lib/src/maze/nets.rs");
+    write_to_file(nets_by_mask, "nets.rs");
 }
