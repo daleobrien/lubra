@@ -17552,6 +17552,6 @@ pub fn list_of_posible_nets_for_a_mask(base4_mask: u32) -> Vec<Vec<Vec<u32>>> {
             vec![vec![6], vec![3, 4]],
             vec![vec![6], vec![4, 5]],
         ],
-        _ => vec![],
+        _ => vec![vec![]],
     }
 }

@@ -23,13 +23,13 @@ pub fn random_tile(mask: u32, seed: Option<u64>) -> Vec<Vec<u32>> {
 mod tests {
     use super::*;
     use crate::maze::nets::list_of_posible_nets_for_a_mask;
-    use std::{assert_eq, vec};
+    use std::assert_eq;
 
     #[test]
     fn test_random_tile() {
-        let mask = 0b111_111;
+        let mask = 1;
         let tile = random_tile(mask, None);
         let possible_nets = list_of_posible_nets_for_a_mask(mask);
-        assert_eq!(possible_nets.contains(&tile), true);
+        assert_eq!(possible_nets[0], tile);
     }
 }

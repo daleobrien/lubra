@@ -38,7 +38,7 @@ pub fn write_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>, file_name: 
         );
         file.write(content.as_bytes());
     }
-    file.write_all(b"    _ => vec![],\n");
+    file.write_all(b"    _ => vec![vec![]],\n");
     file.write_all(b"  }\n");
     file.write_all(b"}\n");
     let _ = file.flush();
