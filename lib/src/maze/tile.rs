@@ -1,152 +1,88 @@
-// use crate::renders::primatives::{Line, Point};
-// use array2d::Array2D;
-use bitflags::bitflags;
-use serde::ser::{Serialize, Serializer};
+fn rotate_number_up(n: u8) -> u8 {
+    return match n {
+        1 => 2,
+        2 => 3,
+        3 => 1,
+        4 => 5,
+        5 => 6,
+        6 => 4,
+        _ => 0,
+    };
+}
 
-bitflags! {
-  #[derive(Default, serde::Deserialize)]
-  pub struct Tile: u32 {
+fn rotate_number_dn(n: u8) -> u8 {
+    return match n {
+        1 => 3,
+        2 => 1,
+        3 => 2,
+        4 => 6,
+        5 => 4,
+        6 => 5,
+        _ => 0,
+    };
+}
 
-  /*
-    There are only 3 curves and 3 lines, 6 points
-                     [meta,points,curves,lines]
-    thus, 14  bits!  -> 0b00_000000_000_000
-  */
-
-    const G1 = 0b00_000001_000_001;
-    const G2 = 0b00_000010_000_010;
-    const G3 = 0b00_000100_000_100;
-    const G4 = 0b00_001000_011_100;
-    const G5 = 0b00_010000_101_010;
-    const G6 = 0b00_100000_110_001;
-
-    const Z1 = 0b00_000000_000_000; // Empty
-    const Z2 = 0b10_000000_000_000; // Not routed
-    const W1 = 0b01_000000_000_000; // Walls only, used to show the grid
-
-    const L1 = 0b00_000000_000_001; // Simple lines
-    const L2 = 0b00_000000_000_010;
-    const L3 = 0b00_000000_000_100;
-    const LX = 0b00_000000_000_111; // all Lines (any line mask)
-
-    const E1 = 0b00_000000_111_110;
-    const E2 = 0b00_000000_111_101;
-    const E3 = 0b00_000000_111_011;
-
-    const A1 = 0b00_000000_001_000; // Arcs
-    const A2 = 0b00_000000_010_000;
-    const A3 = 0b00_000000_100_000;
-    const AX = 0b00_000000_111_000;
-
-    const Y1 = 0b00_000000_000_110; // Combinations of 2 lines
-    const Y2 = 0b00_000000_000_101;
-    const Y3 = 0b00_000000_000_011;
-
-    const C1 = 0b00_000000_001_001; // Combination of 1 arc and 1 line
-    const C2 = 0b00_000000_010_010;
-    const C3 = 0b00_000000_100_100;
-
-    const T1 = 0b00_100000_000_000; // Points on the edge
-    const T2 = 0b00_010000_000_000;
-    const T3 = 0b00_001000_000_000;
-
-    const N1 = 0b00_000001_000_000; // Points on the vertices
-    const N2 = 0b00_000010_000_000;
-    const N3 = 0b00_000100_000_000;
-
-  }
+#[derive(Clone)]
+pub struct Tile {
+    pub nodes: Vec<Vec<u8>>,
 }
 
 impl Tile {
-    pub fn max(&self) -> u32 {
-        // return self.nets.into_iter().max().unwrap_or_default();
-        return 0;
+    pub fn new(nodes: Vec<Vec<u8>>) -> Tile {
+        Tile { nodes }
     }
 
-    pub fn rotate_cw(&self) -> Tile {
-        let mut rotated_tile = Self::Z1;
-
-        if self.contains(Self::W1) {
-            rotated_tile |= Self::W1;
-        }
-        if self.contains(Self::AX) {
-            rotated_tile |= Self::AX;
-        }
-        if self.contains(Self::LX) {
-            rotated_tile |= Self::LX;
-        }
-
-        for (a, b) in [
-            (Self::Y1, Self::Y2),
-            (Self::Y2, Self::Y3),
-            (Self::Y3, Self::Y1),
-            (Self::A1, Self::A2),
-            (Self::A2, Self::A3),
-            (Self::A3, Self::A1),
-            (Self::C1, Self::C2),
-            (Self::C2, Self::C3),
-            (Self::C3, Self::C1),
-            (Self::L1, Self::L2),
-            (Self::L2, Self::L3),
-            (Self::L3, Self::L1),
-            (Self::N1, Self::N2),
-            (Self::N2, Self::N3),
-            (Self::N3, Self::N1),
-            (Self::T1, Self::T2),
-            (Self::T2, Self::T3),
-            (Self::T3, Self::T1),
-        ] {
-            if self.contains(a) {
-                rotated_tile |= b;
+    pub fn bits(&self) -> u32 {
+        let mut bits = 0;
+        for nets in self.nodes.clone() {
+            for n in nets {
+                bits |= 1 << (n - 1);
             }
         }
-        return rotated_tile;
+        return bits;
     }
-    pub fn rotate_ccw(&self) -> Tile {
-        let mut rotated_tile = Self::Z1;
 
-        if self.contains(Self::W1) {
-            rotated_tile |= Self::W1;
-        }
-        if self.contains(Self::AX) {
-            rotated_tile |= Self::AX;
-        }
-        if self.contains(Self::LX) {
-            rotated_tile |= Self::LX;
-        }
-        for (a, b) in [
-            (Self::Y1, Self::Y3),
-            (Self::Y2, Self::Y1),
-            (Self::Y3, Self::Y2),
-            (Self::A1, Self::A3),
-            (Self::A2, Self::A1),
-            (Self::A3, Self::A2),
-            (Self::C1, Self::C3),
-            (Self::C2, Self::C1),
-            (Self::C3, Self::C2),
-            (Self::L1, Self::L3),
-            (Self::L2, Self::L1),
-            (Self::L3, Self::L2),
-            (Self::N1, Self::N3),
-            (Self::N2, Self::N1),
-            (Self::N3, Self::N2),
-            (Self::T1, Self::T3),
-            (Self::T2, Self::T1),
-            (Self::T3, Self::T2),
-        ] {
-            if self.contains(a) {
-                rotated_tile |= b;
+    pub fn rotate_cw(&self) -> Vec<Vec<u8>> {
+        let mut nodes = Vec::new();
+        for nets in self.nodes.clone() {
+            let mut new_nets = Vec::new();
+            for n in nets {
+                new_nets.push(rotate_number_up(n.clone()));
             }
+            new_nets.sort();
+            nodes.push(new_nets);
         }
-        return rotated_tile;
+        //nodes.sort();
+        return nodes;
+
+        // return self
+        //     .nodes
+        //     .iter()
+        //     .map(|row| row.iter().map(|n| rotate_number_up(*n)).sorted().collect())
+        //     .collect();
     }
-}
-impl Serialize for Tile {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_u32(self.bits)
+    pub fn rotate_ccw(&self) -> Vec<Vec<u8>> {
+        let mut nodes = Vec::new();
+        for nets in self.nodes.clone() {
+            let mut new_nets = Vec::new();
+            for n in nets {
+                new_nets.push(rotate_number_dn(n.clone()));
+            }
+            new_nets.sort();
+            nodes.push(new_nets);
+        }
+        //nodes.sort();
+        return nodes;
+    }
+
+    pub fn intersects(&self, other: &Tile) -> bool {
+        let other_bits = other.bits();
+        let bits = self.bits();
+
+        if other_bits & bits != 0 {
+            return true;
+        }
+        return false;
     }
 }
 
@@ -158,99 +94,38 @@ pub fn add(u: usize, i: i32) -> usize {
     }
 }
 
-// TODO: dO I need this?
-impl From<[u32; 3]> for Tile {
-    fn from(masks: [u32; 3]) -> Tile {
-        let [point_mask, line_mask, curve_mask] = masks;
+#[cfg(test)]
+mod tests {
+    use crate::maze::tile::Tile;
 
-        // Nx and Tx
-        let mut value = Tile::from_bits_truncate(0);
+    #[test]
+    fn test_cw_rotation() {
+        let tile = Tile::new(vec![vec![1, 2], vec![5]]);
+        let rotated_nodes = tile.rotate_cw();
+        assert_eq!(rotated_nodes, vec![vec![2, 3], vec![6]]);
+    }
 
-        if point_mask & 0b000_001 == 0b000_001 {
-            value |= Tile::N1;
-        };
-        if point_mask & 0b000_010 == 0b000_010 {
-            value |= Tile::N2;
-        };
-        if point_mask & 0b000_100 == 0b000_100 {
-            value |= Tile::N3;
-        };
+    #[test]
+    fn test_ccw_rotation() {
+        let tile = Tile::new(vec![vec![1, 2], vec![5]]);
+        let rotated_nodes = tile.rotate_ccw();
+        assert_eq!(rotated_nodes, vec![vec![1, 3], vec![4]]);
+    }
 
-        if point_mask & 0b100_000 == 0b100_000 {
-            value |= Tile::T1;
-        };
-        if point_mask & 0b010_000 == 0b010_000 {
-            value |= Tile::T2;
-        };
-        if point_mask & 0b001_000 == 0b001_000 {
-            value |= Tile::T3;
-        };
+    #[test]
+    fn test_bits() {
+        let tile = Tile::new(vec![vec![1, 2], vec![5]]);
+        assert_eq!(tile.bits(), 0b010011)
+    }
 
-        if curve_mask & 0b011_000 == 0b011_000 {
-            value |= Tile::A1;
-        };
-        if curve_mask & 0b101_000 == 0b101_000 {
-            value |= Tile::A2;
-        };
-        if curve_mask & 0b110_000 == 0b110_000 {
-            value |= Tile::A3;
-        };
-        if line_mask & 0b001 == 0b001 {
-            value |= Tile::L1;
-        };
-        if line_mask & 0b010 == 0b010 {
-            value |= Tile::L2;
-        };
-        if line_mask & 0b100 == 0b100 {
-            value |= Tile::L3;
-        };
+    #[test]
+    fn test_intersects() {
+        let tile1 = Tile::new(vec![vec![1, 2], vec![5]]);
+        let tile2 = Tile::new(vec![vec![2, 3], vec![6]]);
+        assert_eq!(tile1.intersects(&tile2), true);
 
-        // e.g if A1 and L1 then C1 and clear A1/L1
-        // CXs
-        if value & (Tile::A1 | Tile::L1) == (Tile::A1 | Tile::L1) {
-            value ^= Tile::L1;
-            value |= Tile::C1;
-        }
-        if value & (Tile::A2 | Tile::L2) == (Tile::A2 | Tile::L2) {
-            value ^= Tile::L2;
-            value |= Tile::C2;
-        }
-        if value & (Tile::A3 | Tile::L3) == (Tile::A3 | Tile::L3) {
-            value ^= Tile::L3;
-            value |= Tile::C3;
-        }
-
-        // AX
-        if value & (Tile::AX) == (Tile::AX) {
-            value ^= Tile::AX;
-            value |= Tile::AX;
-        }
-
-        // LX
-        if value & Tile::LX == Tile::LX {
-            value ^= Tile::L1;
-            value ^= Tile::L2;
-            value |= Tile::LX;
-            // L3 is solid
-        } else {
-            // Yxs
-            if value & (Tile::L2 | Tile::L3) == (Tile::L2 | Tile::L3) {
-                value ^= Tile::L2;
-                value |= Tile::Y1;
-                // L3 is solid
-            }
-            if value & (Tile::L1 | Tile::L3) == (Tile::L1 | Tile::L3) {
-                value ^= Tile::L3;
-                value |= Tile::Y2;
-                // L1 is solid
-            }
-            if value & (Tile::L1 | Tile::L2) == (Tile::L1 | Tile::L2) {
-                value ^= Tile::L1;
-                value |= Tile::Y3;
-                // L2 is solid
-            }
-        }
-
-        value
+        let tile1 = Tile::new(vec![vec![1, 2], vec![5]]);
+        let tile2 = Tile::new(vec![vec![3], vec![6]]);
+        assert_eq!(tile1.intersects(&tile2), false);
     }
 }
