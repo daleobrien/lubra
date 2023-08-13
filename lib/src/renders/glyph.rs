@@ -163,7 +163,6 @@ pub struct Glyph {
     farcs: Vec<Segment>,
     semi: Vec<Segment>,
     fsemi: Vec<Segment>,
-    pub tile: Tile,
 }
 
 impl Glyph {
@@ -179,10 +178,20 @@ impl Glyph {
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
-        // let mut rng = rand::thread_rng();
-        //
-        // // Title can be rotated
-        // let mask = rotate(coordinate, tile);
+        let mut rng = rand::thread_rng();
+
+        // can be rotated
+        let nets = rotate(coordinate, tile);
+
+        for net in nets {
+            let bits = net.iter().map(|t| 2 ^ t).sum();
+            match bits {
+                0b100_001 => paint_l1(&mut lines, origin),
+                0b010_010 => paint_l2(&mut lines, origin, flipped),
+                0b001_100 => paint_l3(&mut lines, origin, flipped),
+                _ => (),
+            }
+        }
         //
         // //
         // if !mask.contains(Tile::AX) {
@@ -460,7 +469,6 @@ impl Glyph {
             semi,
             fsemi,
             farcs,
-            tile,
         };
     }
 

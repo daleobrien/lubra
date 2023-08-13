@@ -9,19 +9,21 @@ use array2d::Array2D;
 use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
-use crate::renders::glyph::Glyph;
+use crate::renders::glyph::{calculate_origin_and_orientation, Glyph};
 use crate::renders::primatives::Coordinate;
 use crate::renders::strokes::{H, M};
 use crate::renders::svg::Path;
 
 pub struct Maze {
     pub style: Option<String>,
-    glyphs: Vec<Vec<Glyph>>,
     walls: Vec<Vec<Glyph>>,
     nets: Vec<HashSet<[usize; 3]>>,
     width: f64,
     height: f64,
     seed: Option<u64>,
+    number_of_columns: usize,
+    number_of_rows: usize,
+    tiles: Array2D<Tile>,
 }
 
 impl Maze {
@@ -33,18 +35,22 @@ impl Maze {
     ) -> Self {
         // User Maze object somehow
 
-        let glyphs: Vec<Vec<Glyph>> = Vec::new();
         let walls: Vec<Vec<Glyph>> = Vec::new();
         let nets = Vec::new();
 
+        let tiles: Array2D<Tile> =
+            Array2D::filled_with(Tile::new(vec![], false), number_of_rows, number_of_columns);
+
         let mut obj = Self {
             style: None,
-            glyphs,
             walls,
             width: 0f64,
             height: 0f64,
             nets,
             seed,
+            number_of_columns,
+            number_of_rows,
+            tiles,
         };
 
         if randomise {
@@ -55,25 +61,17 @@ impl Maze {
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         // Empty Array2D of Option<Tile>
-        let mut tiles: Array2D<Tile> =
-            Array2D::filled_with(Tile::new(vec![], false), number_of_rows, number_of_columns);
-
         for j in 0..number_of_rows {
-            let mut row_path: Vec<Glyph> = Vec::new();
-            let mut row_wall: Vec<Glyph> = Vec::new();
-
             for i in 0..number_of_columns {
                 let coord: Coordinate = Coordinate { i, j };
 
-                let surrounding_tiles = self.get_connected_titles_for_tile(i, j, &tiles);
+                let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
 
                 let tile = self.get_random_tile(i, j, &surrounding_tiles);
 
                 println!("Tile({i},{j}): {:?}", tile.nodes);
-                tiles[(j, i)] = tile;
+                self.tiles[(j, i)] = tile;
             }
-            self.glyphs.push(row_path);
-            self.walls.push(row_wall);
         }
 
         self.width = (number_of_columns + 1) as f64 * M;
@@ -90,24 +88,6 @@ impl Maze {
         for (n, nets) in self.nets.iter().enumerate() {
             println!("{n}-> {:?}", nets);
         }
-    }
-
-    pub fn add_row(&mut self, row: Vec<Glyph>) {
-        self.glyphs.push(row);
-
-        // Get the max number of rows within any one Row
-        // NOTE: This assumes all items are continuous from 0 to n with now skipped cells
-        let number_of_columns = self
-            .glyphs
-            .iter()
-            .map(|row| row.len())
-            .max()
-            .unwrap_or_default();
-
-        let number_of_rows = self.glyphs.len();
-
-        self.width = (number_of_columns + 1) as f64 * M;
-        self.height = number_of_rows as f64 * H;
     }
 
     /*
@@ -202,30 +182,7 @@ impl Maze {
         }
     }
 
-    pub fn create_one_tile_grid(&mut self) {
-        let mut row_path: Vec<Glyph> = Vec::new();
-        let mut row_wall: Vec<Glyph> = Vec::new();
-
-        // for i in [0, 3, 6, 9, 12, 15] {
-        //     for j in [0, 2, 4, 6, 8, 10] {
-        //         row_path.push(Glyph::new(Coordinate { i, j }, Tile::C3));
-        //         row_wall.push(Glyph::new(Coordinate { i, j }, Tile::W1));
-        //     }
-        // }
-
-        self.glyphs.push(row_path);
-        self.walls.push(row_wall);
-
-        self.width = 17f64 * M;
-        self.height = 12f64 * H;
-    }
-
-    fn get_tile_relative_position(
-        &self,
-        pos: (usize, usize),
-        rel: (i32, i32),
-        tiles: &Array2D<Tile>,
-    ) -> Option<Tile> {
+    fn get_tile_relative_position(&self, pos: (usize, usize), rel: (i32, i32)) -> Option<Tile> {
         // Out of bounds, Array2D will return None if out of bounds.
         // if pos.0 as i32 + rel.0 < 0 || pos.1 as i32 + rel.1 < 0 {
         //     return Tile::new(vec![]);
@@ -235,17 +192,12 @@ impl Maze {
         let y = add(pos.1, rel.1);
 
         return match (x, y) {
-            (Some(x), Some(y)) => tiles.get(y, x).cloned(),
-            _ => None,
+            (Some(x), Some(y)) => self.tiles.get(y, x).cloned(),
+            _ => None, // Out of bounds, not possible tile
         };
     }
 
-    fn get_connected_titles_for_tile(
-        &self,
-        i: usize,
-        j: usize,
-        tiles: &Array2D<Tile>,
-    ) -> [Option<Tile>; 12] {
+    fn get_connected_titles_for_tile(&self, i: usize, j: usize) -> [Option<Tile>; 12] {
         let k = i + (3 * (j % 2));
         /*
         We only have six different ways a tile can be rotated/flipped
@@ -270,8 +222,7 @@ impl Maze {
         e.g.
            result[7] will always return the tile that is adjacent to node 6.
         */
-        return NODE_TO_COORD[k % 6]
-            .map(|coord| self.get_tile_relative_position((i, j), coord, tiles));
+        return NODE_TO_COORD[k % 6].map(|coord| self.get_tile_relative_position((i, j), coord));
     }
 
     fn tile_is_empty(&self, tile: &Option<Tile>) -> bool {
@@ -421,8 +372,8 @@ impl Maze {
         let mut svg = String::new();
 
         let margin = 5.0;
-        let w = self.width;
-        let h = self.height;
+        let w = (self.number_of_columns + 1) as f64 * M;
+        let h = self.number_of_rows as f64 * H;
 
         let view_box = format!(
             "viewBox=\"-{m} -{m} {w} {h}\" ",
@@ -435,42 +386,30 @@ impl Maze {
       "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\" >",
       w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
 
-        let mut path = Path::new("black".to_string(), 3.0, 1.0);
+        let mut solid_path = Path::new("black".to_string(), 3.0, 1.0);
         let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
         let mut wall = Path::new("red".to_string(), 3.0, 0.1);
-        //let mut green_wall = Path::new("green".to_string(), 3.0, 0.3);
-        //let mut red_wall = Path::new("red".to_string(), 3.0, 0.3);
 
-        for row in &self.glyphs {
-            for tile in row {
-                tile.add_to_path(&mut path, &mut faint_path);
+        for j in 0..self.number_of_rows {
+            for i in 0..self.number_of_columns {
+                let coord: Coordinate = Coordinate { i, j };
+
+                let tile = self.tiles[(j, i)].clone();
+
+                let glyph = Glyph::new(coord, tile);
+                glyph.add_to_path(&mut solid_path, &mut faint_path);
             }
         }
-        //let mut j = 0;
+
         for row in &self.walls {
-            //let mut i = 0;
             for tile in row {
                 tile.add_to_path(&mut wall, &mut faint_path);
-                // if false && i == 4 && j == 1 {
-                //     tile.add_to_path(&mut red_wall, &mut faint_path)
-                // } else {
-                //     let k = i + (3 * (j % 2));
-                //     if k % 6 == 0 {
-                //         tile.add_to_path(&mut green_wall, &mut faint_path)
-                //     } else {
-                //         tile.add_to_path(&mut wall, &mut faint_path)
-                //     }
-                // }
-                //i += 1;
             }
-            //j += 1;
         }
 
         svg.push_str(&faint_path.to_string());
-        svg.push_str(&path.to_string());
+        svg.push_str(&solid_path.to_string());
         svg.push_str(&wall.to_string());
-        //svg.push_str(&green_wall.to_string());
-        //svg.push_str(&red_wall.to_string());
         svg.push_str("</svg>");
 
         fs::write(file_name, svg.as_bytes())?;
