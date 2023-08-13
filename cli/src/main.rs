@@ -21,7 +21,7 @@ fn main() {
     // }
 
     // Great test case here
-    let maze = Maze::new(6, 3, true, Some(102));
-    let result_f = maze.render("test-random.svg".to_string());
+    let maze = Maze::new(3, 2, true, Some(102));
+    let result_f = maze.render("test-smoosh.svg".to_string());
     println!("Finished creating Random maze {:?}", result_f.unwrap());
 }
