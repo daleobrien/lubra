@@ -398,6 +398,7 @@ impl Maze {
 
                 let glyph = Glyph::new(coord, tile);
                 glyph.add_to_path(&mut solid_path, &mut faint_path);
+                println!("glyph: {:?}", &solid_path.to_string());
             }
         }
 

@@ -15,6 +15,7 @@ use crate::renders::strokes::{
 use crate::renders::svg::Path;
 
 use rand::Rng;
+use rand_distr::num_traits::ToPrimitive;
 
 pub fn create_triangle(flipped: bool) -> [Line; 3] {
     return if flipped { TRIANGLE_V } else { TRIANGLE_A };
@@ -184,11 +185,18 @@ impl Glyph {
         let nets = rotate(coordinate, tile);
 
         for net in nets {
-            let bits = net.iter().map(|t| 2 ^ t).sum();
+            let bits = net
+                .iter()
+                .map(|t| u8::pow(2u8, ((*t) - 1u8).to_u8().unwrap_or_default() as u32))
+                .sum();
+
+            println!("bits: {:?}, {:b}", net, bits);
             match bits {
                 0b100_001 => paint_l1(&mut lines, origin),
                 0b010_010 => paint_l2(&mut lines, origin, flipped),
                 0b001_100 => paint_l3(&mut lines, origin, flipped),
+                // Test line here ...
+                0b011_000 => paint_l3(&mut lines, origin, flipped),
                 _ => (),
             }
         }
