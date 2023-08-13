@@ -1,6 +1,5 @@
 /target.tmp
-/target
-**/target
+**/target.tmp
 .idea/vcs.xml
 .idea/runConfigurations/Run.xml
 .idea/modules.xml
