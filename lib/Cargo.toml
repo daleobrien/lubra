@@ -18,7 +18,3 @@ serde = { version = "1.0.136", features = ["derive"] }
 array2d = "0.2.1"
 chrono = "0.4"
 rand_chacha = "0.3.1"
-
-
-[build]
-target-dir = "target.tmp"

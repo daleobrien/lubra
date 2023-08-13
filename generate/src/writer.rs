@@ -26,21 +26,21 @@ pub fn write_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>, file_name: 
     let mut file = File::create(file_name).expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
 
-    file.write_all(
+    let _ = file.write_all(
         b"pub fn list_of_posible_nets_for_a_mask (base4_mask:u32) -> Vec<Vec<Vec<u8>>> {\n",
     );
-    file.write_all(b"  match base4_mask {\n");
+    let _ = file.write_all(b"  match base4_mask {\n");
     for key in keys {
         let content = format!(
             "    {:6?} => {},\n",
             key,
             list_of_lists_of_list_to_rust_vector(&nets_by_mask[key])
         );
-        file.write(content.as_bytes());
+        let _ = file.write(content.as_bytes());
     }
-    file.write_all(b"    _ => vec![vec![]],\n");
-    file.write_all(b"  }\n");
-    file.write_all(b"}\n");
+    let _ = file.write_all(b"    _ => vec![vec![]],\n");
+    let _ = file.write_all(b"  }\n");
+    let _ = file.write_all(b"}\n");
     let _ = file.flush();
 }
 

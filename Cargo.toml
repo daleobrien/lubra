@@ -20,6 +20,3 @@ incremental = false
 overflow-checks = false
 strip = true
 
-[build]
-target-dir = "target.tmp"
-cache = "target.tmp/cache"
