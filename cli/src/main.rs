@@ -13,15 +13,15 @@ fn main() {
     // const C: usize = 54; // 9, 54;
     // const R: usize = 36; // 6, 36;
 
-    for i in 100..110 {
-        let maze = Maze::new(18, 6, true, Some(i));
-        let name = format!("random-{}.svg", i);
-        let result_f = maze.render(name.to_string());
-        println!("Finished creating Random maze {:?}", result_f.unwrap());
-    }
+    // for i in 100..110 {
+    //     let maze = Maze::new(18, 6, true, Some(i));
+    //     let name = format!("random-{}.svg", i);
+    //     let result_f = maze.render(name.to_string());
+    //     println!("Finished creating Random maze {:?}", result_f.unwrap());
+    // }
 
     // Great test case here
-    //let maze = Maze::new(6, 3, true, Some(101));
-    //let result_f = maze.render("test-random.svg".to_string());
-    //println!("Finished creating Random maze {:?}", result_f.unwrap());
+    let maze = Maze::new(6, 3, true, Some(102));
+    let result_f = maze.render("test-random.svg".to_string());
+    println!("Finished creating Random maze {:?}", result_f.unwrap());
 }

@@ -54,7 +54,10 @@ impl Maze {
     }
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
-        let mut tiles = Array2D::filled_with(Tile::new(vec![]), number_of_rows, number_of_columns);
+        // Empty Array2D of Option<Tile>
+        let mut tiles: Array2D<Tile> =
+            Array2D::filled_with(Tile::new(vec![], false), number_of_rows, number_of_columns);
+
         for j in 0..number_of_rows {
             let mut row_path: Vec<Glyph> = Vec::new();
             let mut row_wall: Vec<Glyph> = Vec::new();
@@ -66,12 +69,8 @@ impl Maze {
 
                 let tile = self.get_random_tile(i, j, &surrounding_tiles);
 
+                println!("Tile({i},{j}): {:?}", tile.nodes);
                 tiles[(j, i)] = tile;
-
-                // let glyph: Glyph = Glyph::new(coord, tile);
-                // row_path.push(glyph);
-                // let glyph: Glyph = Glyph::new(coord, Tile::W1);
-                // row_wall.push(glyph);
             }
             self.glyphs.push(row_path);
             self.walls.push(row_wall);
@@ -83,7 +82,7 @@ impl Maze {
         // Sort such that the last net is the shortest, we will be deleting them as we go
         self.nets.sort_by(|a, b| (&b.len()).cmp(&a.len()));
 
-        // Join the nets together such that we have a comeplete maze!
+        // Join the nets together such that we have a complete maze!
 
         // TODO: At the point we can remove nets that have a length of 2, since they are just mini-circle
         // It does seem that it can be very hard to join some nets!!!
@@ -153,12 +152,18 @@ impl Maze {
                     // Find adjacent tile so we can check if it is part of an existing net
                     let node_idx = tile_sub_net[2];
                     let coord = mapping[node_idx - 1];
+                    //
                     let x = add(i, coord.0);
                     let y = add(j, coord.1);
 
-                    if nets.contains(&[x, y, node_idx]) && !net_indexes.contains(&n) {
-                        net_indexes.push(n);
-                        //break;
+                    match (x, y) {
+                        (Some(x), Some(y)) => {
+                            if nets.contains(&[x, y, node_idx]) && !net_indexes.contains(&n) {
+                                net_indexes.push(n);
+                                //break;
+                            }
+                        }
+                        _ => {}
                     }
                 }
             }
@@ -226,10 +231,13 @@ impl Maze {
         //     return Tile::new(vec![]);
         // }
 
-        let x: usize = add(pos.0, rel.0);
-        let y: usize = add(pos.1, rel.1);
+        let x = add(pos.0, rel.0);
+        let y = add(pos.1, rel.1);
 
-        return tiles.get(y, x).cloned();
+        return match (x, y) {
+            (Some(x), Some(y)) => tiles.get(y, x).cloned(),
+            _ => None,
+        };
     }
 
     fn get_connected_titles_for_tile(
@@ -268,7 +276,7 @@ impl Maze {
 
     fn tile_is_empty(&self, tile: &Option<Tile>) -> bool {
         match tile {
-            Some(t) => return t.is_empty(),
+            Some(t) => return !t.initialised,
             None => return true,
         }
     }
@@ -346,20 +354,36 @@ impl Maze {
     pub fn get_surrounding_tile_connections(&self, surrounding_tiles: &[Option<Tile>; 12]) -> u32 {
         // Get the surrounding tiles
 
-        let mut mask = 0u32;
-
         // 1,2,3,4,5,6, 1a,1b,2a,2b,3a,3b
         // 0 1 2 3 4 5  6  7  8  9  10 11
 
         // Node 1
-        mask |= self.mask_for_tile_vertex(1, [3, 4, 6, 7], surrounding_tiles);
-        mask |= self.mask_for_tile_vertex(2, [3, 5, 8, 9], surrounding_tiles);
-        mask |= self.mask_for_tile_vertex(3, [4, 5, 10, 11], surrounding_tiles);
-        mask |= self.mask_for_tile_side(4, surrounding_tiles);
-        mask |= self.mask_for_tile_side(5, surrounding_tiles);
-        mask |= self.mask_for_tile_side(6, surrounding_tiles);
+        return self.mask_for_tile_vertex(1, [3, 4, 6, 7], surrounding_tiles)
+            + self.mask_for_tile_vertex(2, [3, 5, 8, 9], surrounding_tiles)
+            + self.mask_for_tile_vertex(3, [4, 5, 10, 11], surrounding_tiles)
+            + self.mask_for_tile_side(4, surrounding_tiles)
+            + self.mask_for_tile_side(5, surrounding_tiles)
+            + self.mask_for_tile_side(6, surrounding_tiles);
+    }
+    #[cfg(debug_assertions)]
+    fn string_for_tile(&self, tile: &Option<Tile>) -> String {
+        match tile {
+            Some(t) => return t.to_string(),
+            None => return "⌀".to_string(),
+        }
+    }
 
-        return mask;
+    #[cfg(debug_assertions)]
+    fn print_surrounding(&self, surrounding_tiles: &[Option<Tile>; 12]) {
+        // 1,2,3,4,5,6, 1a,1b,2a,2b,3a,3b
+        // 0 1 2 3 4 5  6  7  8  9  10 11
+        println!(
+            "Surround tiles: {:?}",
+            &(surrounding_tiles
+                .iter()
+                .map(|t| self.string_for_tile(t))
+                .collect::<Vec<String>>())
+        );
     }
 
     fn get_random_tile(
@@ -370,11 +394,13 @@ impl Maze {
     ) -> Tile {
         // TODO: Need to also put in the last tile too
         if i == 0 && j == 0 {
-            return Tile::new(vec![vec![4, 5]]);
+            return Tile::new(vec![vec![4, 5]], true);
         }
 
-        let mask = self.get_surrounding_tile_connections(surrounding_tiles);
+        //#[cfg(debug_assertions)]
+        // self.print_surrounding(surrounding_tiles);
 
+        let mask = self.get_surrounding_tile_connections(surrounding_tiles);
         let nets = random_tile(mask, self.seed);
 
         self.seed = match self.seed {
@@ -382,7 +408,7 @@ impl Maze {
             _ => None,
         };
 
-        let tile = Tile::new(nets);
+        let tile = Tile::new(nets, true);
 
         self.update_network(&tile, i, j);
 

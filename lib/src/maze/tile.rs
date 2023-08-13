@@ -1,3 +1,6 @@
+use std::fmt;
+use std::fmt::write;
+
 fn rotate_number_up(n: u8) -> u8 {
     return match n {
         1 => 2,
@@ -25,11 +28,12 @@ fn rotate_number_dn(n: u8) -> u8 {
 #[derive(Clone)]
 pub struct Tile {
     pub nodes: Vec<Vec<u8>>,
+    pub initialised: bool,
 }
 
 impl Tile {
-    pub fn new(nodes: Vec<Vec<u8>>) -> Tile {
-        Tile { nodes }
+    pub fn new(nodes: Vec<Vec<u8>>, initialised: bool) -> Tile {
+        Tile { nodes, initialised }
     }
 
     pub fn bits(&self) -> u32 {
@@ -101,12 +105,36 @@ impl Tile {
     }
 }
 
-pub fn add(u: usize, i: i32) -> usize {
-    if i.is_negative() {
-        u - i.wrapping_abs() as u32 as usize
-    } else {
-        u + i as usize
+impl fmt::Debug for Tile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.initialised {
+            write!(f, "{:?}", self.nodes)
+        } else {
+            write!(f, "-")
+        }
     }
+}
+
+impl fmt::Display for Tile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.initialised {
+            write!(f, "{:?}", self.nodes)
+        } else {
+            write!(f, "?")
+        }
+    }
+}
+
+pub fn add(u: usize, i: i32) -> Option<usize> {
+    if i.is_negative() {
+        if u < i.wrapping_abs() as u32 as usize {
+            return None;
+        }
+        let r = u - i.wrapping_abs() as u32 as usize;
+        return Some(r);
+    }
+    let r = u + i as usize;
+    return Some(r);
 }
 
 #[cfg(test)]
