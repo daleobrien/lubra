@@ -143,21 +143,21 @@ mod tests {
 
     #[test]
     fn test_cw_rotation() {
-        let tile = Tile::new(vec![vec![1, 2], vec![5]]);
+        let tile = Tile::new(vec![vec![1, 2], vec![5]], true);
         let rotated_nodes = tile.rotate_cw();
         assert_eq!(rotated_nodes, vec![vec![2, 3], vec![6]]);
     }
 
     #[test]
     fn test_ccw_rotation() {
-        let tile = Tile::new(vec![vec![1, 2], vec![5]]);
+        let tile = Tile::new(vec![vec![1, 2], vec![5]], true);
         let rotated_nodes = tile.rotate_ccw();
         assert_eq!(rotated_nodes, vec![vec![1, 3], vec![4]]);
     }
 
     #[test]
     fn test_bits() {
-        let tile = Tile::new(vec![vec![1, 2], vec![5]]);
+        let tile = Tile::new(vec![vec![1, 2], vec![5]], true);
         assert_eq!(tile.bits(), 0b010011)
     }
 
