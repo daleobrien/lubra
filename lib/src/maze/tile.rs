@@ -163,12 +163,12 @@ mod tests {
 
     #[test]
     fn test_intersects() {
-        let tile1 = Tile::new(vec![vec![1, 2], vec![5]]);
-        let tile2 = Tile::new(vec![vec![2, 3], vec![6]]);
+        let tile1 = Tile::new(vec![vec![1, 2], vec![5]], true);
+        let tile2 = Tile::new(vec![vec![2, 3], vec![6]], true);
         assert_eq!(tile1.intersects(&tile2), true);
 
-        let tile1 = Tile::new(vec![vec![1, 2], vec![5]]);
-        let tile2 = Tile::new(vec![vec![3], vec![6]]);
+        let tile1 = Tile::new(vec![vec![1, 2], vec![5]], true);
+        let tile2 = Tile::new(vec![vec![3], vec![6]], true);
         assert_eq!(tile1.intersects(&tile2), false);
     }
 

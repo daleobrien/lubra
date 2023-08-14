@@ -9,9 +9,10 @@ use array2d::Array2D;
 use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
+use crate::renders::_point::{Coordinate, Point};
+use crate::renders::_rect::Rect;
 use crate::renders::glyph::{calculate_origin_and_orientation, Glyph};
-use crate::renders::primatives::Coordinate;
-use crate::renders::strokes::{H, M};
+use crate::renders::strokes::{H, M, Z};
 use crate::renders::svg::Path;
 
 pub struct Maze {
@@ -372,23 +373,21 @@ impl Maze {
         let mut svg = String::new();
 
         let margin = 5.0;
-        let w = (self.number_of_columns + 1) as f64 * M;
-        let h = self.number_of_rows as f64 * H;
+        let x = 0;
+        let y = 0;
+        let w = (self.number_of_columns + 1) as f64 * M + 5.0 * margin;
+        let h = self.number_of_rows as f64 * H + 5.0 * margin;
 
-        let view_box = format!(
-            "viewBox=\"-{m} -{m} {w} {h}\" ",
-            w = w + 2.0 * margin,
-            h = h + 2.0 * margin,
-            m = margin
-        );
+        let view_box = format!("viewBox=\"-{x} -{y} {w} {h}\" ",);
 
         svg.push_str(&format!(
       "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\" >",
-      w = w + 2.0 * margin, h = h + 2.0 * margin, view_box = view_box));
+      ));
 
         let mut solid_path = Path::new("black".to_string(), 3.0, 1.0);
-        let mut faint_path = Path::new("gray".to_string(), 3.0, 0.2);
-        let mut wall = Path::new("red".to_string(), 3.0, 0.1);
+        let faint_stroke_width = 3.0;
+        let mut faint_path = Path::new("red".to_string(), faint_stroke_width, 0.2);
+        let mut bound_path = Path::new("blue".to_string(), faint_stroke_width, 0.2);
 
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
@@ -398,19 +397,22 @@ impl Maze {
 
                 let glyph = Glyph::new(coord, tile);
                 glyph.add_to_path(&mut solid_path, &mut faint_path);
-                println!("glyph: {:?}", &solid_path.to_string());
+                println!("solid: {:?}", &solid_path.to_string());
+                println!("faint: {:?}", &faint_path.to_string());
             }
         }
+        // Bounds
+        let rect = Rect {
+            origin: Point { x: 0f64, y: 0f64 },
+            delta1: Point { x: w, y: 0f64 },
+            delta2: Point { x: 0f64, y: h },
+            delta3: Point { x: -w, y: 0f64 },
+        };
+        bound_path.rect(&rect);
 
-        for row in &self.walls {
-            for tile in row {
-                tile.add_to_path(&mut wall, &mut faint_path);
-            }
-        }
-
+        svg.push_str(&bound_path.to_string());
         svg.push_str(&faint_path.to_string());
         svg.push_str(&solid_path.to_string());
-        svg.push_str(&wall.to_string());
         svg.push_str("</svg>");
 
         fs::write(file_name, svg.as_bytes())?;

@@ -20,8 +20,13 @@ fn main() {
     //     println!("Finished creating Random maze {:?}", result_f.unwrap());
     // }
 
-    // Great test case here
-    let maze = Maze::new(3, 2, true, Some(102));
-    let result_f = maze.render("test-smoosh.svg".to_string());
+    // // Great test case here
+    // let maze = Maze::new(3, 2, true, Some(102));
+    // let result_f = maze.render("test-smoosh.svg".to_string());
+    // println!("Finished creating Random maze {:?}", result_f.unwrap());
+
+    // Single tile
+    let maze = Maze::new(1, 1, true, Some(102));
+    let result_f = maze.render("test-single.svg".to_string());
     println!("Finished creating Random maze {:?}", result_f.unwrap());
 }

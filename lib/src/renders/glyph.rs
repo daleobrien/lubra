@@ -1,5 +1,5 @@
 use crate::maze::tile::Tile;
-use crate::renders::primatives::{Coordinate, Line, Point, Radius, Segment, SegmentOffset};
+use crate::renders::_point::{Coordinate, Point};
 use crate::renders::shapes::{
     A1_A, A1_V, A2_A, A2_V, A3_A, A3_V, N1_A, N1_V, N2_A, N2_V, N3_A, N3_V, T1_A, T1_A_ARC, T1_V,
     T1_V_ARC, T2_A, T2_ARC, T2_V, T3_A, T3_ARC, T3_V, TRIANGLE_A, TRIANGLE_V,
@@ -14,6 +14,9 @@ use crate::renders::strokes::{
 };
 use crate::renders::svg::Path;
 
+use crate::renders::_arc::Arc;
+use crate::renders::_line::Line;
+use crate::renders::_segment::Segment;
 use rand::Rng;
 use rand_distr::num_traits::ToPrimitive;
 
@@ -48,6 +51,12 @@ fn push2(lines: &mut Vec<Line>, origin: Point, line1: Line, line2: Line) {
     lines.push(line2 + origin);
 }
 
+// #[inline]
+// fn fill(lines: &mut Vec<Line>, pt1: Point, delta1: Point, delta2: Point) {
+//     lines.push(line1 + origin);
+//     lines.push(line2 + origin);
+// }
+
 #[inline]
 fn push3(lines: &mut Vec<Line>, origin: Point, line1: Line, line2: Line, line3: Line) {
     lines.push(line1 + origin);
@@ -79,6 +88,15 @@ fn paint_l2(lines: &mut Vec<Line>, origin: Point, flipped: bool) {
 
 #[inline]
 fn paint_l3(lines: &mut Vec<Line>, origin: Point, flipped: bool) {
+    if flipped {
+        push2(lines, origin, L050, L053);
+    } else {
+        push2(lines, origin, L056, L059);
+    }
+}
+
+#[inline]
+fn paint_l3_fill(lines: &mut Vec<Line>, origin: Point, flipped: bool) {
     if flipped {
         push2(lines, origin, L050, L053);
     } else {
@@ -160,8 +178,8 @@ fn paint_y3(lines: &mut Vec<Line>, faint: &mut Vec<Line>, origin: Point, flipped
 pub struct Glyph {
     lines: Vec<Line>,
     faint: Vec<Line>,
-    arcs: Vec<Segment>,
-    farcs: Vec<Segment>,
+    arcs: Vec<Arc>,
+    farcs: Vec<Arc>,
     semi: Vec<Segment>,
     fsemi: Vec<Segment>,
 }
@@ -172,8 +190,8 @@ impl Glyph {
     pub fn new(coordinate: Coordinate, tile: Tile) -> Self {
         let mut lines: Vec<Line> = Vec::new();
         let mut faint: Vec<Line> = Vec::new();
-        let mut arcs: Vec<Segment> = Vec::new();
-        let mut farcs: Vec<Segment> = Vec::new();
+        let mut arcs: Vec<Arc> = Vec::new();
+        let mut farcs: Vec<Arc> = Vec::new();
         let mut semi: Vec<Segment> = Vec::new();
         let mut fsemi: Vec<Segment> = Vec::new();
 
@@ -199,6 +217,9 @@ impl Glyph {
                 0b011_000 => paint_l3(&mut lines, origin, flipped),
                 _ => (),
             }
+
+            // Draw Walls
+            create_triangle(flipped).map(|line| faint.push(line + origin));
         }
         //
         // //
@@ -466,9 +487,6 @@ impl Glyph {
         //     }
         // }
         //
-        // if mask.contains(Tile::W1) {
-        //     create_triangle(flipped).map(|line| lines.push(line + origin));
-        // }
 
         return Glyph {
             lines,
@@ -481,7 +499,7 @@ impl Glyph {
     }
 
     pub fn add_to_path(&self, path: &mut Path, faint_path: &mut Path) {
-        // self.lines.iter().map(|line| path.line(line));
+        //self.lines.iter().map(|line| path.line(line));
         for line in self.lines.iter() {
             path.line(line);
         }
@@ -489,6 +507,7 @@ impl Glyph {
         for arc in self.arcs.iter() {
             path.arc(arc);
         }
+
         for semi in self.semi.iter() {
             path.semi(semi);
         }
@@ -496,46 +515,13 @@ impl Glyph {
         for line in self.faint.iter() {
             faint_path.line(line);
         }
+
         for farc in self.farcs.iter() {
             faint_path.arc(farc);
         }
+
         for fsemi in self.fsemi.iter() {
             faint_path.semi(fsemi);
         }
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use crate::maze::tile::Tile;
-//     use crate::renders::glyph::Glyph;
-//     use crate::renders::primatives::Coordinate;
-//
-//     #[test]
-//     fn zero_nets() {
-//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::W1);
-//         assert_eq!(title.nets, [0u32, 0u32, 0u32, 0u32, 0u32, 0u32]);
-//         assert_eq!(title.max(), 0u32);
-//     }
-//
-//     #[test]
-//     fn a1_nets() {
-//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1);
-//         assert_eq!(title.nets, [0u32, 0u32, 0u32, 1u32, 1u32, 0u32]);
-//         assert_eq!(title.max(), 1u32);
-//     }
-//
-//     #[test]
-//     fn x2_nets() {
-//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::LX);
-//         assert_eq!(title.nets, [1u32, 2u32, 3u32, 3u32, 2u32, 1u32]);
-//         assert_eq!(title.max(), 3u32);
-//     }
-//
-//     #[test]
-//     fn a1_l2_nets() {
-//         let title = Glyph::new(Coordinate { i: 1, j: 1 }, Tile::A1 | Tile::L1);
-//         assert_eq!(title.nets, [2u32, 0u32, 0u32, 1u32, 1u32, 2u32]);
-//         assert_eq!(title.max(), 2u32);
-//     }
-// }

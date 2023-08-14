@@ -1,4 +1,6 @@
-use crate::renders::primatives::{Line, Point, Segment};
+use crate::renders::_line::Line;
+use crate::renders::_point::Point;
+use crate::renders::_segment::Segment;
 use crate::renders::strokes::{H, M, Q1, Q3, U, W, Z};
 
 pub const TRIANGLE_A: [Line; 3] = [

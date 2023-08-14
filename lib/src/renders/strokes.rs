@@ -1,4 +1,5 @@
-use crate::renders::primatives::{Line, Point};
+use crate::renders::_line::Line;
+use crate::renders::_point::Point;
 
 pub const SMALL_ANGLE: f64 = 0.2709185204562202f64;
 
