@@ -3,9 +3,6 @@ const FRAC_2: f64 = 0.5f64;
 const FRAC_SQRT_3: f64 = 0.57735026918962576450914878050195746f64;
 const FRAC_2_SQRT_3: f64 = 0.28867513459481288225457439025097873f64;
 const FRAC_3_SQRT_3: f64 = 0.19245008972987525483638292683398582f64;
-const FRAC_6_SQRT_3: f64 = 0.096225044864937627418191463416992909f64;
-const FRAC_3: f64 = 1 / 3;
-const FRAC_6: f64 = 1 / 6;
 
 const P1: (f64, f64) = (1 / 2, SQRT_3 / 2);
 const P2: (f64, f64) = (0, 0);
@@ -21,7 +18,7 @@ const P52: (f64, f64) = (2 / 3, FRAC_3_SQRT_3);
 const P53: (f64, f64) = (6 / 6, FRAC_2_SQRT_3);
 const P55: (f64, f64) = (1, FRAC_SQRT_3);
 
-const P61: (f64, f64) = (0, FRAC_6_SQRT_3);
+const P61: (f64, f64) = (0, FRAC_SQRT_3 / 6);
 const P62: (f64, f64) = (1 / 3, 0);
 const P63: (f64, f64) = (2 / 3, 0);
 const P66: (f64, f64) = (0, FRAC_SQRT_3);
