@@ -1,5 +1,7 @@
+use crate::renders::_point::Coordinate;
+use crate::renders::glyph::calculate_origin_and_orientation;
+use rand_distr::num_traits::ToPrimitive;
 use std::fmt;
-use std::fmt::write;
 
 fn rotate_number_up(n: u8) -> u8 {
     return match n {
@@ -34,6 +36,32 @@ pub struct Tile {
 impl Tile {
     pub fn new(nodes: Vec<Vec<u8>>, initialised: bool) -> Tile {
         Tile { nodes, initialised }
+    }
+
+    pub fn to_svg_groups(self, coordinate: Coordinate) -> Vec<String> {
+        // Build the SVG groups and return them
+        let mut groups = vec![];
+
+        let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
+
+        for net in self.nodes {
+            let mut svg = String::new();
+            let bits = net
+                .iter()
+                .map(|t| u8::pow(2u8, ((*t) - 1u8).to_u8().unwrap_or_default() as u32))
+                .sum();
+
+            println!("bits: {:?}, {:b}", net, bits);
+            match bits {
+                // Test line here ...
+                0b011_000 => {
+                    groups.push(format!("\n<use href=\"#test\" x=\"10\" fill=\"blue\" />\n"));
+                }
+                _ => (),
+            }
+        }
+
+        return groups;
     }
 
     pub fn bits(&self) -> u32 {

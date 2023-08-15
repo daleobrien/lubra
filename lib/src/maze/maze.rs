@@ -383,11 +383,21 @@ impl Maze {
         svg.push_str(&format!(
       "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\" >",
       ));
+        svg.push_str(
+            "\n<path id=\"test\" display=\"none\" d=\"M 40 34.641 l 90 51.9615 z M 20 69.282 l 90 51.9615 z\" />\n",
+        );
 
-        let mut solid_path = Path::new("black".to_string(), 3.0, 1.0);
         let faint_stroke_width = 3.0;
-        let mut faint_path = Path::new("red".to_string(), faint_stroke_width, 0.2);
         let mut bound_path = Path::new("blue".to_string(), faint_stroke_width, 0.2);
+
+        let mut svg_groups: Vec<String> = vec![
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+            String::new(),
+        ];
 
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
@@ -395,10 +405,11 @@ impl Maze {
 
                 let tile = self.tiles[(j, i)].clone();
 
-                let glyph = Glyph::new(coord, tile);
-                glyph.add_to_path(&mut solid_path, &mut faint_path);
-                println!("solid: {:?}", &solid_path.to_string());
-                println!("faint: {:?}", &faint_path.to_string());
+                for (i, svg) in tile.to_svg_groups(coord).iter().enumerate() {
+                    svg_groups[i].push_str(svg);
+                }
+
+                //println!("faint: {:?}", &faint_path.to_string());
             }
         }
         // Bounds
@@ -410,9 +421,16 @@ impl Maze {
         };
         bound_path.rect(&rect);
 
-        svg.push_str(&bound_path.to_string());
-        svg.push_str(&faint_path.to_string());
-        svg.push_str(&solid_path.to_string());
+        for (i, paths) in svg_groups.iter().enumerate() {
+            if paths.is_empty() {
+                continue;
+            }
+            svg.push_str(&format!("\n<g display=\"inline\" id=\"{i}\">"));
+            svg.push_str(paths);
+            svg.push_str("</g>\n");
+        }
+
+        //svg.push_str(&bound_path.to_string());
         svg.push_str("</svg>");
 
         fs::write(file_name, svg.as_bytes())?;
