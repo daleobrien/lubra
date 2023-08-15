@@ -1,5 +1,6 @@
 use crate::renders::_point::Coordinate;
 use crate::renders::glyph::calculate_origin_and_orientation;
+use crate::renders::strokes::{L051, L054, L057, L060};
 use rand_distr::num_traits::ToPrimitive;
 use std::fmt;
 
@@ -55,7 +56,11 @@ impl Tile {
             match bits {
                 // Test line here ...
                 0b011_000 => {
-                    groups.push(format!("\n<use href=\"#test\" x=\"10\" fill=\"blue\" />\n"));
+                    if flipped {
+                        groups.push(format!("\n  <path d=\"{} {}\"/>", L051, L054));
+                    } else {
+                        groups.push(format!("\n  <path d=\"{} {}\"/>", L057, L054));
+                    }
                 }
                 _ => (),
             }

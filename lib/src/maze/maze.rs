@@ -383,9 +383,6 @@ impl Maze {
         svg.push_str(&format!(
       "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\" >",
       ));
-        svg.push_str(
-            "\n<path id=\"test\" display=\"none\" d=\"M 40 34.641 l 90 51.9615 z M 20 69.282 l 90 51.9615 z\" />\n",
-        );
 
         let faint_stroke_width = 3.0;
         let mut bound_path = Path::new("blue".to_string(), faint_stroke_width, 0.2);
@@ -425,7 +422,7 @@ impl Maze {
             if paths.is_empty() {
                 continue;
             }
-            svg.push_str(&format!("\n<g display=\"inline\" id=\"{i}\">"));
+            svg.push_str(&format!("\n<g display=\"inline\" id=\"group-{i}\">"));
             svg.push_str(paths);
             svg.push_str("</g>\n");
         }
