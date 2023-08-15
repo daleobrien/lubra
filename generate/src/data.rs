@@ -22,3 +22,30 @@ const P61: (f64, f64) = (0, FRAC_SQRT_3 / 6);
 const P62: (f64, f64) = (1 / 3, 0);
 const P63: (f64, f64) = (2 / 3, 0);
 const P66: (f64, f64) = (0, FRAC_SQRT_3);
+
+/*
+
+fn generate_L1(coords: (f64, f64), size: f64) -> String {
+    let (x, y) = coords;
+    let (x, y) = (x * size, y * size);
+    format!(
+        "M {} {} l {} {} l {} {} l {} {} z m",
+        x,
+        y,
+        size * P1.0,
+        size * P1.1,
+        size * P2.0,
+        size * P2.1,
+        size * P3.0,
+        size * P3.1
+    )
+}
+
+
+fn gererate_L2(coords: (f64, f64)) -> String {
+
+    write!("{}{}", Line { coord, P1, P2}, Line { coord, P2, P3 })
+    )
+
+}
+ */
