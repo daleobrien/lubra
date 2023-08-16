@@ -381,8 +381,14 @@ impl Maze {
         let view_box = format!("viewBox=\"-{x} -{y} {w} {h}\" ",);
 
         svg.push_str(&format!(
-      "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} width=\"{w}px\" height=\"{h}px\" fill-opacity=\"0\" stroke-linecap=\"round\" stroke=\"black\" >",
-      ));
+            "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} \
+               width=\"{w}px\" height=\"{h}px\" \
+               stroke-width=\"3\" \
+               fill-opacity=\"0.03\" \
+               fill=\"black\" \
+               stroke-linecap=\"round\" \
+               stroke=\"black\" >",
+        ));
 
         let faint_stroke_width = 3.0;
         let mut bound_path = Path::new("blue".to_string(), faint_stroke_width, 0.2);

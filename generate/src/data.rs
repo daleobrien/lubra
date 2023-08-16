@@ -94,8 +94,8 @@ const P66: Point = Point {
 };
 
 const SCALE: f64 = 120f64;
-const SVG_FILL: &str = "fill=\"black\" stroke=\"transparent\" stroke-width=\"3\"";
-const SVG_LINE: &str = "fill=\"transparent\" stroke=\"black\" fill-opacity=\"0.03\"";
+const SVG_FILL: &str = "fill=\"black\" stroke=\"transparent\"";
+const SVG_LINE: &str = "fill=\"transparent\" stroke=\"black\"";
 
 impl Add for Point {
     type Output = Self;
@@ -213,7 +213,7 @@ fn generate_L1_fn() -> String {
     // relative to the 0,0 of each tile?, or the centre of the tile?
     return format!(
         "<path {line} d=\"M {{x}} {{y}} m {a:.2} {b:.2} l {c:.2} {d:.2} m {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\
-         <path {fill} d=\"M {{x}} {{y}} m {a:.2} {b:.2} m {c:.2} {d:.2} m {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\
+         <path {fill} d=\"M {{x}} {{y}} m {a:.2} {b:.2} l {c:.2} {d:.2} l {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\
         ",
         a = d[0].x,
         b = d[0].y,
