@@ -1,13 +1,17 @@
-use crate::bit_ulits::{bit_sequence, mask_to_bits, to_base4, to_bits};
+mod bit_utils;
+mod data;
+mod node_combinations;
+mod writer;
+
+use crate::bit_utils::{bit_sequence, mask_to_bits, to_base4, to_bits};
+use crate::data::generate_all_shapes;
 use crate::node_combinations::NodeCombinations;
 use crate::writer::write_to_file;
 use std::collections::HashMap;
 
-mod bit_ulits;
-mod node_combinations;
-mod writer;
-
 fn main() {
+    generate_all_shapes();
+
     let seq = NodeCombinations::new(vec![
         vec![1], // Points
         vec![2],
