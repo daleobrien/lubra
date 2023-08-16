@@ -93,8 +93,7 @@ const P66: Point = Point {
     y: 1f64 / SQRT_3,
 };
 
-//const SCALE: f64 = 120f64;
-const SCALE: f64 = 1f64;
+const SCALE: f64 = 120f64;
 
 impl Add for Point {
     type Output = Self;
@@ -185,7 +184,7 @@ impl Point {
 
 fn diff(points: Vec<Point>) -> Vec<Point> {
     // Convert 4 points into the first point followed by series of differences
-    let mut seq = vec![points[0]];
+    let mut seq = vec![points[0] * SCALE];
 
     let diffs = points
         .windows(2)
@@ -209,7 +208,6 @@ fn wrap_format_with_function(name: &str, svg: String) -> String {
 
 fn generate_L1_fn() -> String {
     let d = diff(vec![P14, P62, P63, P15]);
-    // TODO: Need to assume the wrap_format_with_function() will pass in the offset to the tile
     // relative to the 0,0 of each tile?, or the centre of the tile?
     return format!(
         "M {{x}} {{y}} m {a:.2} {b:.2} l {c:.2} {d:.2} m {e:.2} {f:.2} l {g:.2} {h:.2} z ",
