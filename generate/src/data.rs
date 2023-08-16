@@ -211,6 +211,7 @@ fn wrap_format_with_function(name: &str, svg: String) -> String {
 fn generate_L1_fn() -> String {
     let d = diff(vec![P14, P62, P63, P15]);
     // relative to the 0,0 of each tile?, or the centre of the tile?
+    // TODO: Reduce size of the fill ever so slight, by the stroke width!
     return format!(
         "<path {line} d=\"M {{x}} {{y}} m {a:.2} {b:.2} l {c:.2} {d:.2} m {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\
          <path {fill} d=\"M {{x}} {{y}} m {a:.2} {b:.2} l {c:.2} {d:.2} l {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\
