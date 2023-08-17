@@ -95,7 +95,7 @@ const P66: Point = Point {
 
 const STROKE_WIDTH: f64 = 3f64;
 const SCALE: f64 = 120f64;
-const SVG_FILL: &str = "fill=\"black\" stroke=\"transparent\"";
+const SVG_FILL: &str = "fill=\"white\" stroke=\"transparent\"";
 const SVG_LINE: &str = "fill=\"transparent\" stroke=\"black\"";
 
 impl Add for Point {
@@ -225,19 +225,20 @@ fn format_rectangle(p: Vec<Point>) -> String {
     // TODO: Format positive number prefix with a space, negative with a minus, then I can remove some space
     // Maybe make my own format function, can also remove trailing zeros
     return format!(
-        "<path {line} d=\"M0 0 m{a:.2} {b:.2} l{c:.2} {d:.2}m {e:.2} {f:.2} l{g:.2} {h:.2}z\" />\n\
-     <path {fill} d=\"M0 0 m{ai:.2} {b:.2} l{ci:.2} {d:.2}l {ei:.2} {f:.2} l{gi:.2} {h:.2}z\" />",
+        "<path {line} d=\"M0 0 m{a:.4} {b:.4} l{c:.4} {d:.4}m {e:.4} {f:.4} l{g:.4} {h:.4}z\" />\n\
+     <path {fill} d=\"M0 0 m{ai:.4} {bi:.4} l{ci:.4} {d:.4}l {ei:.4} {fi:.4} l{g:.4} {h:.4}z\" />",
         a = p[0].x,
         ai = p[4].x,
         b = p[0].y,
+        bi = p[4].y,
         c = p[1].x,
         ci = p[1].x,
         d = p[1].y,
         e = p[2].x,
         ei = p[5].x,
         f = p[2].y,
+        fi = p[5].y,
         g = p[3].x,
-        gi = p[3].x,
         h = p[3].y,
         line = SVG_LINE,
         fill = SVG_FILL,
