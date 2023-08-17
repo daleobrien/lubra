@@ -109,6 +109,28 @@ impl Add for Point {
     }
 }
 
+impl Add<Point> for f64 {
+    type Output = Point;
+
+    fn add(self, other: Point) -> Point {
+        Point {
+            x: other.x + self,
+            y: other.y + self,
+        }
+    }
+}
+
+impl Add<f64> for Point {
+    type Output = Point;
+
+    fn add(self, other: f64) -> Point {
+        Point {
+            x: self.x + other,
+            y: self.y + other,
+        }
+    }
+}
+
 impl Sub for Point {
     type Output = Self;
 
@@ -116,6 +138,28 @@ impl Sub for Point {
         Self {
             x: self.x - other.x,
             y: self.y - other.y,
+        }
+    }
+}
+
+impl Sub<Point> for f64 {
+    type Output = Point;
+
+    fn sub(self, other: Point) -> Point {
+        Point {
+            x: other.x - self,
+            y: other.y - self,
+        }
+    }
+}
+
+impl Sub<f64> for Point {
+    type Output = Point;
+
+    fn sub(self, other: f64) -> Point {
+        Point {
+            x: self.x - other,
+            y: self.y - other,
         }
     }
 }
@@ -203,6 +247,10 @@ fn wrap_format_with_function(name: &str, svg: String) -> String {
 }
 
 fn generate_Lx() -> Vec<Point> {
+    // TODO: I really only need two points, the rest I can figure out, give the path width
+    // let w = 0.1;
+    // let mut d = diff(vec![P11 - w, P66 - w, P66 + w, P11 + w]);
+
     let mut d = diff(vec![P14, P62, P63, P15]);
     // Move the bounds in a bit
     d.push(
