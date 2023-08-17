@@ -95,8 +95,8 @@ const P66: Point = Point {
 
 const STROKE_WIDTH: f64 = 3f64;
 const SCALE: f64 = 120f64;
-const SVG_FILL: &str = "fill=\"white\" stroke=\"transparent\"";
-const SVG_LINE: &str = "fill=\"transparent\" stroke=\"black\"";
+const SVG_FILL: &str = "stroke=\"transparent\"";
+const SVG_LINE: &str = "fill=\"transparent\"";
 
 impl Add for Point {
     type Output = Self;
@@ -245,11 +245,11 @@ fn format_rectangle(p: Vec<Point>) -> String {
     );
 }
 
-fn generate_L1_fn() -> String {
+fn generate_L16_fn() -> String {
     return format_rectangle(generate_Lx());
 }
 
-fn generate_L2_fn() -> String {
+fn generate_L25_fn() -> String {
     // Only the first points is rotated about the center, the rest are about (0,0) since they are relative moves
     let pts = generate_Lx()
         .iter()
@@ -259,11 +259,22 @@ fn generate_L2_fn() -> String {
     return format_rectangle(pts);
 }
 
+fn generate_L34_fn() -> String {
+    // Only the first points is rotated about the center, the rest are about (0,0) since they are relative moves
+    let pts = generate_Lx()
+        .iter()
+        .enumerate()
+        .map(|(i, p)| p.rotate_ccw(i, vec![0, 4]))
+        .collect::<Vec<_>>();
+    return format_rectangle(pts);
+}
+
 pub fn generate_all_shapes() {
     //println!("{}", wrap_format_with_function("L1", generate_L1_fn()));
     //println!("{}", wrap_format_with_function("L2", generate_L2_fn()));
-    println!("{}", generate_L1_fn());
-    println!("{}", generate_L2_fn());
+    println!("{}", generate_L16_fn());
+    println!("{}", generate_L25_fn());
+    println!("{}", generate_L34_fn());
 }
 
 #[cfg(test)]
