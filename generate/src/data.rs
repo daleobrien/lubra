@@ -6,97 +6,22 @@ struct Point {
     y: f64,
 }
 
-const SQRT_3: f64 = 1.732050807568877293527446341505872f64;
+const S3: f64 = 0.8660254037844386467637231707529362f64; // sqrt(3)/2
+const S4: f64 = 0.4330127018922193233818615853764681f64; // sqrt(3)/4
+const S5: f64 = 0.2886751345948128822545743902509787f64; // 1/2/sqrt(3)
 
-const P14: Point = Point {
-    x: 1f64 / 3f64,
-    y: SQRT_3 / 2f64,
-};
-
-const P11: Point = Point {
-    x: 1f64 / 2f64,
-    y: SQRT_3 / 2f64,
-};
-const P15: Point = Point {
-    x: 2f64 / 3f64,
-    y: SQRT_3 / 2f64,
-};
-
-const P21: Point = Point {
-    x: -1f64 / 12f64,
-    y: 1f64 / SQRT_3 / 4f64,
-};
-const P22: Point = Point { x: 0f64, y: 0f64 };
-const P23: Point = Point {
-    x: 1f64 / 12f64,
-    y: -1f64 / SQRT_3 / 4f64,
-};
-
-const P35: Point = Point {
-    x: 13f64 / 12f64,
-    y: 1f64 / SQRT_3 / 4f64,
-};
-const P33: Point = Point { x: 1f64, y: 0f64 };
-const P36: Point = Point {
-    x: 11f64 / 12f64,
-    y: -1f64 / SQRT_3 / 4f64,
-};
-
-const P41: Point = Point {
-    x: 1f64 / 3f64,
-    y: 1f64 / SQRT_3,
-};
-const P42: Point = Point {
-    x: 1f64 / 6f64,
-    y: 1f64 / SQRT_3 / 2f64,
-};
-const P40: Point = Point {
-    x: 1f64 / 4f64,
-    y: SQRT_3 / 4f64,
-};
-const P44: Point = Point {
-    x: 0f64,
-    y: 1f64 / SQRT_3,
-};
-
-const P51: Point = Point {
-    x: 2f64 / 3f64,
-    y: 1f64 / SQRT_3,
-};
-const P50: Point = Point {
-    x: 3f64 / 4f64,
-    y: SQRT_3 / 4f64,
-};
-const P53: Point = Point {
-    x: 6f64 / 6f64,
-    y: 1f64 / SQRT_3 / 2f64,
-};
-const P55: Point = Point {
-    x: 1f64,
-    y: 1f64 / SQRT_3,
-};
-
-const P60: Point = Point {
-    x: 0f64,
-    y: 1f64 / 2f64,
-};
-const P62: Point = Point {
-    x: 1f64 / 3f64,
-    y: 0f64,
-};
-const P63: Point = Point {
-    x: 2f64 / 3f64,
-    y: 0f64,
-};
-const P66: Point = Point {
-    x: 0f64,
-    y: 1f64 / SQRT_3,
-};
+const P1: Point = Point { x: 0.5, y: S3 };
+const P2: Point = Point { x: 0.0, y: 0.0 };
+const P3: Point = Point { x: 1.1, y: 0.0 };
+const P4: Point = Point { x: 0.25, y: S4 };
+const P5: Point = Point { x: 0.75, y: S4 };
+const P6: Point = Point { x: 0.5, y: 0.0 };
 
 const STROKE_WIDTH: f64 = 3f64;
 const SCALE: f64 = 120f64;
 const SVG_FILL: &str = "stroke=\"transparent\"";
 const SVG_LINE: &str = "fill=\"transparent\"";
+const PATH_WIDTH: f64 = 0.05f64;
 
 impl Add for Point {
     type Output = Self;
@@ -109,28 +34,6 @@ impl Add for Point {
     }
 }
 
-impl Add<Point> for f64 {
-    type Output = Point;
-
-    fn add(self, other: Point) -> Point {
-        Point {
-            x: other.x + self,
-            y: other.y + self,
-        }
-    }
-}
-
-impl Add<f64> for Point {
-    type Output = Point;
-
-    fn add(self, other: f64) -> Point {
-        Point {
-            x: self.x + other,
-            y: self.y + other,
-        }
-    }
-}
-
 impl Sub for Point {
     type Output = Self;
 
@@ -138,28 +41,6 @@ impl Sub for Point {
         Self {
             x: self.x - other.x,
             y: self.y - other.y,
-        }
-    }
-}
-
-impl Sub<Point> for f64 {
-    type Output = Point;
-
-    fn sub(self, other: Point) -> Point {
-        Point {
-            x: other.x - self,
-            y: other.y - self,
-        }
-    }
-}
-
-impl Sub<f64> for Point {
-    type Output = Point;
-
-    fn sub(self, other: f64) -> Point {
-        Point {
-            x: self.x - other,
-            y: self.y - other,
         }
     }
 }
@@ -190,11 +71,7 @@ impl Point {
     fn rotate(&self, index: usize, offset_rotations: Vec<usize>, s: f64, c: f64) -> Point {
         if offset_rotations.contains(&index) {
             // Centre point of our tile
-            let pivot = SCALE
-                * Point {
-                    x: 0.5f64,
-                    y: 1f64 / 2f64 / SQRT_3,
-                };
+            let pivot = SCALE * Point { x: 0.5f64, y: S5 };
             let translated = *self - pivot;
 
             return pivot
@@ -210,15 +87,13 @@ impl Point {
         };
     }
     fn rotate_ccw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
-        let s = SQRT_3 / 2f64; // Sin(120º)
-        let c = -0.5f64; // Cos(120º)
-        return self.rotate(index, offset_rotations, s, c);
+        // (Sin(120º), Cos(120º))
+        return self.rotate(index, offset_rotations, S3, -0.5);
     }
 
     fn rotate_cw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
-        let s = -SQRT_3 / 2f64; // Sin(-120º)
-        let c = -0.5f64; // Cos(-120º)
-        return self.rotate(index, offset_rotations, s, c);
+        // (Sin(-120º), Cos(-120º))
+        return self.rotate(index, offset_rotations, -S3, -0.5);
     }
 }
 
@@ -247,12 +122,12 @@ fn wrap_format_with_function(name: &str, svg: String) -> String {
 }
 
 fn generate_Lx() -> Vec<Point> {
-    // TODO: I really only need two points, the rest I can figure out, give the path width
-    // let w = 0.1;
-    // let mut d = diff(vec![P11 - w, P66 - w, P66 + w, P11 + w]);
+    let w = Point {
+        x: PATH_WIDTH,
+        y: 0f64,
+    };
+    let mut d = diff(vec![P1 - w, P6 - w, P6 + w, P1 + w]);
 
-    let mut d = diff(vec![P14, P62, P63, P15]);
-    // Move the bounds in a bit
     d.push(
         d[0] + Point {
             x: STROKE_WIDTH / 2f64,
