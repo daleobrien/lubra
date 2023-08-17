@@ -223,6 +223,7 @@ fn generate_Lx() -> Vec<Point> {
 fn format_rectangle(p: Vec<Point>) -> String {
     // TODO: Put {{x}} {{y}} back in
     // TODO: Format positive number prefix with a space, negative with a minus, then I can remove some space
+    // Maybe make my own format function, can also remove trailing zeros
     return format!(
         "<path {line} d=\"M0 0 m{a:.2} {b:.2} l{c:.2} {d:.2}m {e:.2} {f:.2} l{g:.2} {h:.2}z\" />\n\
      <path {fill} d=\"M0 0 m{ai:.2} {b:.2} l{ci:.2} {d:.2}l {ei:.2} {f:.2} l{gi:.2} {h:.2}z\" />",
