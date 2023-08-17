@@ -110,8 +110,6 @@ fn diff(points: Vec<Point>) -> Vec<Point> {
         seq.push(*d);
     }
     return seq;
-    //let results = first.iter().chain(diffs);
-    // return results;
 }
 
 fn wrap_format_with_function(name: &str, svg: String) -> String {
@@ -126,41 +124,21 @@ fn generate_Lx() -> Vec<Point> {
         x: PATH_WIDTH,
         y: 0f64,
     };
-    let mut d = diff(vec![P1 - w, P6 - w, P6 + w, P1 + w]);
-
-    d.push(
-        d[0] + Point {
-            x: STROKE_WIDTH / 2f64,
-            y: 0f64,
-        },
-    );
-    d.push(
-        d[2] - Point {
-            x: STROKE_WIDTH,
-            y: 0f64,
-        },
-    );
-    return d;
+    return diff(vec![P1 - w, P6 - w, P6 + w, P1 + w]);
 }
 
 fn format_rectangle(p: Vec<Point>) -> String {
     // TODO: Put {{x}} {{y}} back in
-    // TODO: Format positive number prefix with a space, negative with a minus, then I can remove some space
     // Maybe make my own format function, can also remove trailing zeros
     return format!(
-        "<path {line} d=\"M0 0 m{a:.4} {b:.4} l{c:.4} {d:.4}m {e:.4} {f:.4} l{g:.4} {h:.4}z\" />\n\
-     <path {fill} d=\"M0 0 m{ai:.4} {bi:.4} l{ci:.4} {d:.4}l {ei:.4} {fi:.4} l{g:.4} {h:.4}z\" />",
+        "<path {fill} d=\"M0 0 m{a:.4} {b:.4} l{c:.4} {d:.4}l {e:.4} {f:.4} l{g:.4} {h:.4}z\" />\n\
+         <path {line} d=\"M0 0 m{a:.4} {b:.4} l{c:.4} {d:.4}m {e:.4} {f:.4} l{g:.4} {h:.4}z\" />\n",
         a = p[0].x,
-        ai = p[4].x,
         b = p[0].y,
-        bi = p[4].y,
         c = p[1].x,
-        ci = p[1].x,
         d = p[1].y,
         e = p[2].x,
-        ei = p[5].x,
         f = p[2].y,
-        fi = p[5].y,
         g = p[3].x,
         h = p[3].y,
         line = SVG_LINE,
