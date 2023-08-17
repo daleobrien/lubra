@@ -93,6 +93,7 @@ const P66: Point = Point {
     y: 1f64 / SQRT_3,
 };
 
+const STROKE_WIDTH: f64 = 3f64;
 const SCALE: f64 = 120f64;
 const SVG_FILL: &str = "fill=\"black\" stroke=\"transparent\"";
 const SVG_LINE: &str = "fill=\"transparent\" stroke=\"black\"";
@@ -119,7 +120,6 @@ impl Sub for Point {
     }
 }
 
-// Point * x
 impl Mul<f64> for Point {
     type Output = Point;
 
@@ -131,7 +131,6 @@ impl Mul<f64> for Point {
     }
 }
 
-// x * Point
 impl Mul<Point> for f64 {
     type Output = Point;
 
@@ -144,43 +143,38 @@ impl Mul<Point> for f64 {
 }
 
 impl Point {
-    fn rotate_ccw(&self) -> Point {
-        let angle_radians = 120f64.to_radians();
+    fn rotate(&self, index: usize, offset_rotations: Vec<usize>, s: f64, c: f64) -> Point {
+        if offset_rotations.contains(&index) {
+            // Centre point of our tile
+            let pivot = SCALE
+                * Point {
+                    x: 0.5f64,
+                    y: 1f64 / 2f64 / SQRT_3,
+                };
+            let translated = *self - pivot;
 
-        let s = angle_radians.sin();
-        let c = angle_radians.cos();
+            return pivot
+                + Point {
+                    x: translated.x * c - translated.y * s,
+                    y: translated.x * s + translated.y * c,
+                };
+        }
 
-        // Centre point of our tile
-        let pivot = Point {
-            x: 0.5f64,
-            y: 1f64 / 2f64 / SQRT_3,
+        return Point {
+            x: self.x * c - self.y * s,
+            y: self.x * s + self.y * c,
         };
-        let translated = *self - pivot;
-
-        return pivot
-            + Point {
-                x: translated.x * c - translated.y * s,
-                y: translated.x * s + translated.y * c,
-            };
+    }
+    fn rotate_ccw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
+        let s = SQRT_3 / 2f64; // Sin(120º)
+        let c = -0.5f64; // Cos(120º)
+        return self.rotate(index, offset_rotations, s, c);
     }
 
-    fn rotate_cw(&self) -> Point {
-        let angle_radians = -120f64.to_radians();
-
-        let s = angle_radians.sin();
-        let c = angle_radians.cos();
-
-        let pivot = Point {
-            x: 0.5f64,
-            y: 1f64 / 2f64 / SQRT_3,
-        };
-        let translated = *self - pivot;
-
-        return pivot
-            + Point {
-                x: translated.x * c - translated.y * s,
-                y: translated.x * s + translated.y * c,
-            };
+    fn rotate_cw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
+        let s = -SQRT_3 / 2f64; // Sin(-120º)
+        let c = -0.5f64; // Cos(-120º)
+        return self.rotate(index, offset_rotations, s, c);
     }
 }
 
@@ -208,49 +202,85 @@ fn wrap_format_with_function(name: &str, svg: String) -> String {
     )
 }
 
-fn generate_L1_fn() -> String {
-    let d = diff(vec![P14, P62, P63, P15]);
-    // relative to the 0,0 of each tile?, or the centre of the tile?
-    // TODO: Reduce size of the fill ever so slight, by the stroke width!
-    return format!(
-        "<path {line} d=\"M {{x}} {{y}} m {a:.2} {b:.2} l {c:.2} {d:.2} m {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\
-         <path {fill} d=\"M {{x}} {{y}} m {a:.2} {b:.2} l {c:.2} {d:.2} l {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\
-        ",
-        a = d[0].x,
-        b = d[0].y,
-        c = d[1].x,
-        d = d[1].y,
-        e = d[2].x,
-        f = d[2].y,
-        g = d[3].x,
-        h = d[3].y,
-        line=SVG_LINE,
-        fill=SVG_FILL,
+fn generate_Lx() -> Vec<Point> {
+    let mut d = diff(vec![P14, P62, P63, P15]);
+    // Move the bounds in a bit
+    d.push(
+        d[0] + Point {
+            x: STROKE_WIDTH / 2f64,
+            y: 0f64,
+        },
     );
+    d.push(
+        d[2] - Point {
+            x: STROKE_WIDTH,
+            y: 0f64,
+        },
+    );
+    return d;
+}
+
+fn format_rectangle(p: Vec<Point>) -> String {
+    // TODO: Put {{x}} {{y}} back in
+    // Need to rotate the first few points too
+    return format!(
+    "<path {line} d=\"M 0 0 m {a:.2} {b:.2} l {c:.2} {d:.2} m {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\n\
+     <path {fill} d=\"M 0 0 m {ai:.2} {b:.2} l {ci:.2} {d:.2} l {ei:.2} {f:.2} l {gi:.2} {h:.2} z\" />",
+    a = p[0].x,
+    ai = p[4].x,
+    b = p[0].y,
+    c = p[1].x,
+    ci = p[1].x,
+    d = p[1].y,
+    e = p[2].x,
+    ei = p[5].x,
+    f = p[2].y,
+    g = p[3].x,
+    gi = p[3].x,
+    h = p[3].y,
+    line = SVG_LINE,
+    fill = SVG_FILL,
+  );
+}
+
+fn generate_L1_fn() -> String {
+    let pts = generate_Lx();
+    return format_rectangle(pts);
+}
+
+fn generate_L2_fn() -> String {
+    // Only the first points is rotated about the center, the rest are about (0,0) since they are relative moves
+    let pts = generate_Lx()
+        .iter()
+        .enumerate()
+        .map(|(i, p)| p.rotate_cw(i, vec![0, 4]))
+        .collect::<Vec<_>>();
+    return format_rectangle(pts);
 }
 
 pub fn generate_all_shapes() {
-    let function = wrap_format_with_function("L1", generate_L1_fn());
-    println!("{}", function);
+    //println!("{}", wrap_format_with_function("L1", generate_L1_fn()));
+    //println!("{}", wrap_format_with_function("L2", generate_L2_fn()));
+    println!("{}", generate_L1_fn());
+    println!("{}", generate_L2_fn());
 }
 
 #[cfg(test)]
-
 mod tests {
-    use approx::{assert_ulps_eq, relative_eq, ulps_eq};
+    use approx::assert_ulps_eq;
+
     extern crate approx;
 
     #[test]
     fn test_rotate() {
         use super::*;
-        use approx;
-        let p = Point { x: 1f64, y: 0f64 };
-        let r = p.rotate_ccw();
-        assert_ulps_eq!(r.x, 0.5f64);
-        assert_ulps_eq!(r.y, SQRT_3 / 2f64);
+        let p = SCALE * Point { x: 1f64, y: 0f64 };
+        let r = p.rotate_ccw(0, vec![0]);
+        assert_ulps_eq!(r.x, SCALE * 0.5f64);
+        assert_ulps_eq!(r.y, SCALE * SQRT_3 / 2f64);
 
-        let q = r.rotate_cw();
-        assert_ulps_eq!(q.x, 1f64);
-        assert_ulps_eq!(q.y, 0f64);
+        let q = r.rotate_cw(0, vec![0]);
+        assert_ulps_eq!(q.x, SCALE * 1f64);
+        assert_ulps_eq!(q.y, SCALE * 0f64, epsilon = 0.0000000000001f64);
     }
 }
