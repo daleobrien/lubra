@@ -222,24 +222,25 @@ fn generate_Lx() -> Vec<Point> {
 
 fn format_rectangle(p: Vec<Point>) -> String {
     // TODO: Put {{x}} {{y}} back in
+    // TODO: Format positive number prefix with a space, negative with a minus, then I can remove some space
     return format!(
-    "<path {line} d=\"M 0 0 m {a:.2} {b:.2} l {c:.2} {d:.2} m {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\n\
-     <path {fill} d=\"M 0 0 m {ai:.2} {b:.2} l {ci:.2} {d:.2} l {ei:.2} {f:.2} l {gi:.2} {h:.2} z\" />",
-    a = p[0].x,
-    ai = p[4].x,
-    b = p[0].y,
-    c = p[1].x,
-    ci = p[1].x,
-    d = p[1].y,
-    e = p[2].x,
-    ei = p[5].x,
-    f = p[2].y,
-    g = p[3].x,
-    gi = p[3].x,
-    h = p[3].y,
-    line = SVG_LINE,
-    fill = SVG_FILL,
-  );
+        "<path {line} d=\"M0 0 m{a:.2} {b:.2} l{c:.2} {d:.2}m {e:.2} {f:.2} l{g:.2} {h:.2}z\" />\n\
+     <path {fill} d=\"M0 0 m{ai:.2} {b:.2} l{ci:.2} {d:.2}l {ei:.2} {f:.2} l{gi:.2} {h:.2}z\" />",
+        a = p[0].x,
+        ai = p[4].x,
+        b = p[0].y,
+        c = p[1].x,
+        ci = p[1].x,
+        d = p[1].y,
+        e = p[2].x,
+        ei = p[5].x,
+        f = p[2].y,
+        g = p[3].x,
+        gi = p[3].x,
+        h = p[3].y,
+        line = SVG_LINE,
+        fill = SVG_FILL,
+    );
 }
 
 fn generate_L1_fn() -> String {
