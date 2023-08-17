@@ -222,7 +222,6 @@ fn generate_Lx() -> Vec<Point> {
 
 fn format_rectangle(p: Vec<Point>) -> String {
     // TODO: Put {{x}} {{y}} back in
-    // Need to rotate the first few points too
     return format!(
     "<path {line} d=\"M 0 0 m {a:.2} {b:.2} l {c:.2} {d:.2} m {e:.2} {f:.2} l {g:.2} {h:.2} z\" />\n\
      <path {fill} d=\"M 0 0 m {ai:.2} {b:.2} l {ci:.2} {d:.2} l {ei:.2} {f:.2} l {gi:.2} {h:.2} z\" />",
@@ -244,8 +243,7 @@ fn format_rectangle(p: Vec<Point>) -> String {
 }
 
 fn generate_L1_fn() -> String {
-    let pts = generate_Lx();
-    return format_rectangle(pts);
+    return format_rectangle(generate_Lx());
 }
 
 fn generate_L2_fn() -> String {
