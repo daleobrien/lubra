@@ -1,117 +1,5 @@
+use crate::types::{diff, Point, P1, P6, PATH_WIDTH, S3, SCALE, SVG_FILL, SVG_LINE};
 use std::f64::consts::FRAC_PI_6;
-use std::ops::{Add, Mul, Sub};
-
-#[derive(Debug, Copy, Clone)]
-struct Point {
-    x: f64,
-    y: f64,
-}
-
-const S3: f64 = 0.8660254037844386467637231707529362f64; /* sqrt(3)/2 */
-const S4: f64 = 0.4330127018922193233818615853764681f64; /* sqrt(3)/4 */
-const S5: f64 = 0.2886751345948128822545743902509787f64; /* 1/2/sqrt(3) */
-
-const P1: Point = Point { x: 0.5, y: S3 };
-const P2: Point = Point { x: 0.0, y: 0.0 };
-const P3: Point = Point { x: 1.1, y: 0.0 };
-const P4: Point = Point { x: 0.25, y: S4 };
-const P5: Point = Point { x: 0.75, y: S4 };
-const P6: Point = Point { x: 0.5, y: 0.0 };
-
-const STROKE_WIDTH: f64 = 3f64;
-const SCALE: f64 = 115.47; // scales such that hieght goes to 100. Maybe I can scale just x-axis a little too?
-const SVG_FILL: &str = "stroke=\"transparent\"";
-const SVG_LINE: &str = "fill=\"transparent\"";
-const PATH_WIDTH: f64 = 0.10f64;
-
-impl Add for Point {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self {
-        Self {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
-    }
-}
-
-impl Sub for Point {
-    type Output = Self;
-
-    fn sub(self, other: Self) -> Self::Output {
-        Self {
-            x: self.x - other.x,
-            y: self.y - other.y,
-        }
-    }
-}
-
-impl Mul<f64> for Point {
-    type Output = Point;
-
-    fn mul(self, scalar: f64) -> Point {
-        Point {
-            x: self.x * scalar,
-            y: self.y * scalar,
-        }
-    }
-}
-
-impl Mul<Point> for f64 {
-    type Output = Point;
-
-    fn mul(self, other: Point) -> Point {
-        Point {
-            x: other.x * self,
-            y: other.y * self,
-        }
-    }
-}
-
-impl Point {
-    fn rotate(&self, index: usize, offset_rotations: Vec<usize>, s: f64, c: f64) -> Point {
-        if offset_rotations.contains(&index) {
-            // Centre point of our tile
-            let pivot = SCALE * Point { x: 0.5f64, y: S5 };
-            let translated = *self - pivot;
-
-            return pivot
-                + Point {
-                    x: translated.x * c - translated.y * s,
-                    y: translated.x * s + translated.y * c,
-                };
-        }
-
-        return Point {
-            x: self.x * c - self.y * s,
-            y: self.x * s + self.y * c,
-        };
-    }
-    fn rotate_ccw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
-        // (Sin(120º), Cos(120º))
-        return self.rotate(index, offset_rotations, S3, -0.5);
-    }
-
-    fn rotate_cw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
-        // (Sin(-120º), Cos(-120º))
-        return self.rotate(index, offset_rotations, -S3, -0.5);
-    }
-}
-
-fn diff(points: Vec<Point>) -> Vec<Point> {
-    // Convert 4 points into the first point followed by series of differences
-    let mut seq = vec![points[0] * SCALE];
-
-    let diffs = points
-        .windows(2)
-        .map(|p| SCALE * (p[1] - p[0]))
-        .collect::<Vec<_>>();
-
-    for d in diffs.iter() {
-        seq.push(*d);
-    }
-    return seq;
-}
 
 fn wrap_format_with_function(name: &str, svg: String) -> String {
     format!(
@@ -139,7 +27,7 @@ fn trim(point: Point) -> String {
     return format!("{} {}", trimf64(point.x), trimf64(point.y));
 }
 
-fn format_rectangle(pts: Vec<Point>) -> String {
+fn generate_Lx_String(pts: Vec<Point>) -> String {
     // TODO: Put {{x}} {{y}} back in
     let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
     return format!(
@@ -152,7 +40,7 @@ fn format_rectangle(pts: Vec<Point>) -> String {
 }
 
 fn generate_L16_fn() -> String {
-    return format_rectangle(generate_Lx());
+    return generate_Lx_String(generate_Lx());
 }
 
 fn generate_L25_fn() -> String {
@@ -161,7 +49,7 @@ fn generate_L25_fn() -> String {
         .enumerate()
         .map(|(i, p)| p.rotate_cw(i, vec![0, 4]))
         .collect::<Vec<_>>();
-    return format_rectangle(pts);
+    return generate_Lx_String(pts);
 }
 
 fn generate_L34_fn() -> String {
@@ -170,7 +58,7 @@ fn generate_L34_fn() -> String {
         .enumerate()
         .map(|(i, p)| p.rotate_ccw(i, vec![0, 4]))
         .collect::<Vec<_>>();
-    return format_rectangle(pts);
+    return generate_Lx_String(pts);
 }
 
 pub fn polar(x: f64, y: f64, radius: f64, angle: f64) -> (f64, f64) {
@@ -178,20 +66,51 @@ pub fn polar(x: f64, y: f64, radius: f64, angle: f64) -> (f64, f64) {
     return (x + (radius * b), y + (radius * a));
 }
 
-// Can I scale the hight, so that we get 100 units of height?
-fn generate_A1_fn() -> String {
+fn generate_AVx() -> [Point; 3] {
     let [start, end] = [12.0 * FRAC_PI_6, 18.0 * FRAC_PI_6];
     let [x, y] = [0.5 * SCALE, S3 * SCALE];
     let r = PATH_WIDTH * SCALE;
     let (a, b) = polar(x, y, r, start);
     let (c, d) = polar(x, y, r, end);
-    // TODO: rotate ...
+    return [
+        Point { x: a, y: b },
+        Point { x: c, y: d },
+        Point { x: r, y: r },
+    ];
+}
+
+// Can I scale the hight, so that we get 100 units of height?
+fn generate_A1_fn() -> String {
+    let [a, b, r] = generate_AVx().map(|p| trim(p));
+    return format!("<path d=\"M{a}A{r} 0 0 0{b}\"/>",);
+}
+
+fn generate_A2_fn() -> String {
+    let [a, b, r] = generate_AVx();
+    let pts = [
+        trim(a.rotate_cw(0, vec![0])),
+        trim(b.rotate_cw(0, vec![0])),
+        trim(r),
+    ];
     return format!(
-        "<path d=\"M{a}A{r} 0 0 {ccw} {b}\" />",
-        a = trim(Point { x: a, y: b }),
-        b = trim(Point { x: c, y: d }),
-        r = trim(Point { x: r, y: r }),
-        ccw = "0",
+        "<path d=\"M{a}A{r} 0 0 0{b}\"/>",
+        a = pts[0],
+        b = pts[1],
+        r = pts[2]
+    );
+}
+fn generate_A3_fn() -> String {
+    let [a, b, r] = generate_AVx();
+    let pts = [
+        trim(a.rotate_ccw(0, vec![0])),
+        trim(b.rotate_ccw(0, vec![0])),
+        trim(r),
+    ];
+    return format!(
+        "<path d=\"M{a}A{r} 0 0 0{b}\"/>",
+        a = pts[0],
+        b = pts[1],
+        r = pts[2]
     );
 }
 
@@ -202,10 +121,13 @@ pub fn generate_all_shapes() {
     println!("{}", generate_L25_fn());
     println!("{}", generate_L34_fn());
     println!("{}", generate_A1_fn());
+    println!("{}", generate_A2_fn());
+    println!("{}", generate_A3_fn());
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::types::SCALE;
     use approx::assert_ulps_eq;
 
     extern crate approx;
@@ -216,7 +138,7 @@ mod tests {
         let p = SCALE * Point { x: 1f64, y: 0f64 };
         let r = p.rotate_ccw(0, vec![0]);
         assert_ulps_eq!(r.x, SCALE * 0.5f64);
-        assert_ulps_eq!(r.y, SCALE * SQRT_3 / 2f64);
+        assert_ulps_eq!(r.y, SCALE * S3);
 
         let q = r.rotate_cw(0, vec![0]);
         assert_ulps_eq!(q.x, SCALE * 1f64);

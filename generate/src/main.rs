@@ -1,6 +1,7 @@
 mod bit_utils;
 mod data;
 mod node_combinations;
+mod types;
 mod writer;
 
 use crate::bit_utils::{bit_sequence, mask_to_bits, to_base4, to_bits};
