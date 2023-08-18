@@ -66,9 +66,13 @@ pub fn polar(x: f64, y: f64, radius: f64, angle: f64) -> (f64, f64) {
     return (x + (radius * b), y + (radius * a));
 }
 
-fn generate_AVx() -> [Point; 3] {
-    let [start, end] = [12.0 * FRAC_PI_6, 18.0 * FRAC_PI_6];
-    let [x, y] = [0.5 * SCALE, S3 * SCALE];
+fn generate_AVx(invert: bool) -> [Point; 3] {
+    let [start, end] = if !invert {
+        [12.0 * FRAC_PI_6, 18.0 * FRAC_PI_6]
+    } else {
+        [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6]
+    };
+    let [x, y] = [0.5 * SCALE, if !invert { S3 * SCALE } else { 0f64 }];
     let r = PATH_WIDTH * SCALE;
     let (a, b) = polar(x, y, r, start);
     let (c, d) = polar(x, y, r, end);
@@ -79,14 +83,19 @@ fn generate_AVx() -> [Point; 3] {
     ];
 }
 
+fn generate_A6_fn() -> String {
+    let [a, b, r] = generate_AVx(true).map(|p| trim(p));
+    return format!("<path d=\"M{a}A{r} 0 0 0{b}\"/>",);
+}
+
 // Can I scale the hight, so that we get 100 units of height?
 fn generate_A1_fn() -> String {
-    let [a, b, r] = generate_AVx().map(|p| trim(p));
+    let [a, b, r] = generate_AVx(false).map(|p| trim(p));
     return format!("<path d=\"M{a}A{r} 0 0 0{b}\"/>",);
 }
 
 fn generate_A2_fn() -> String {
-    let [a, b, r] = generate_AVx();
+    let [a, b, r] = generate_AVx(false);
     let pts = [
         trim(a.rotate_cw(0, vec![0])),
         trim(b.rotate_cw(0, vec![0])),
@@ -100,7 +109,7 @@ fn generate_A2_fn() -> String {
     );
 }
 fn generate_A3_fn() -> String {
-    let [a, b, r] = generate_AVx();
+    let [a, b, r] = generate_AVx(false);
     let pts = [
         trim(a.rotate_ccw(0, vec![0])),
         trim(b.rotate_ccw(0, vec![0])),
@@ -123,12 +132,14 @@ pub fn generate_all_shapes() {
     println!("{}", generate_A1_fn());
     println!("{}", generate_A2_fn());
     println!("{}", generate_A3_fn());
+    println!("{}", generate_A6_fn());
 }
 
 #[cfg(test)]
 mod tests {
     use crate::types::SCALE;
     use approx::assert_ulps_eq;
+    use std::vec;
 
     extern crate approx;
 
