@@ -1,3 +1,4 @@
+use std::f64::consts::FRAC_PI_6;
 use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]
@@ -172,12 +173,34 @@ fn generate_L34_fn() -> String {
     return format_rectangle(pts);
 }
 
+pub fn polar(x: f64, y: f64, radius: f64, angle: f64) -> (f64, f64) {
+    let (a, b) = f64::sin_cos(angle);
+    return (x + (radius * b), y + (radius * a));
+}
+
+fn generate_A1_fn() -> String {
+    let [start, end] = [12.0 * FRAC_PI_6, 18.0 * FRAC_PI_6];
+    let [x, y] = [0.5 * SCALE, S3 * SCALE];
+    let r = PATH_WIDTH * SCALE;
+    let (a, b) = polar(x, y, r, start);
+    let (c, d) = polar(x, y, r, end);
+    // TODO: rotate ...
+    return format!(
+        "<path d=\"M{a}A{r} 0 0 {ccw} {b}\" />",
+        a = trim(Point { x: a, y: b }),
+        b = trim(Point { x: c, y: d }),
+        r = trim(Point { x: r, y: r }),
+        ccw = "0",
+    );
+}
+
 pub fn generate_all_shapes() {
     //println!("{}", wrap_format_with_function("L1", generate_L1_fn()));
     //println!("{}", wrap_format_with_function("L2", generate_L2_fn()));
     println!("{}", generate_L16_fn());
     println!("{}", generate_L25_fn());
     println!("{}", generate_L34_fn());
+    println!("{}", generate_A1_fn());
 }
 
 #[cfg(test)]
