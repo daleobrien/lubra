@@ -19,7 +19,7 @@ const P5: Point = Point { x: 0.75, y: S4 };
 const P6: Point = Point { x: 0.5, y: 0.0 };
 
 const STROKE_WIDTH: f64 = 3f64;
-const SCALE: f64 = 120f64;
+const SCALE: f64 = 115.47; // scales such that hieght goes to 100. Maybe I can scale just x-axis a little too?
 const SVG_FILL: &str = "stroke=\"transparent\"";
 const SVG_LINE: &str = "fill=\"transparent\"";
 const PATH_WIDTH: f64 = 0.10f64;
@@ -178,6 +178,7 @@ pub fn polar(x: f64, y: f64, radius: f64, angle: f64) -> (f64, f64) {
     return (x + (radius * b), y + (radius * a));
 }
 
+// Can I scale the hight, so that we get 100 units of height?
 fn generate_A1_fn() -> String {
     let [start, end] = [12.0 * FRAC_PI_6, 18.0 * FRAC_PI_6];
     let [x, y] = [0.5 * SCALE, S3 * SCALE];
