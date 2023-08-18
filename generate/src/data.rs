@@ -6,9 +6,9 @@ struct Point {
     y: f64,
 }
 
-const S3: f64 = 0.8660254037844386467637231707529362f64; // sqrt(3)/2
-const S4: f64 = 0.4330127018922193233818615853764681f64; // sqrt(3)/4
-const S5: f64 = 0.2886751345948128822545743902509787f64; // 1/2/sqrt(3)
+const S3: f64 = 0.8660254037844386467637231707529362f64; /* sqrt(3)/2 */
+const S4: f64 = 0.4330127018922193233818615853764681f64; /* sqrt(3)/4 */
+const S5: f64 = 0.2886751345948128822545743902509787f64; /* 1/2/sqrt(3) */
 
 const P1: Point = Point { x: 0.5, y: S3 };
 const P2: Point = Point { x: 0.0, y: 0.0 };
@@ -142,13 +142,12 @@ fn format_rectangle(pts: Vec<Point>) -> String {
     // TODO: Put {{x}} {{y}} back in
     let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
     return format!(
-        "<path {SVG_FILL} d=\"M0 0m{a}l{b}l{c}l{d}z\"/>\n\
-         <path {SVG_LINE} d=\"M0 0m{a}l{b}m{c}l{d}z\"/>\n",
-        a = s[0],
-        b = s[1],
-        c = s[2],
-        d = s[3],
-    );
+    "<path {SVG_FILL} d=\"M0 0m{a}l{b}l{c}l{d}z\"/><path {SVG_LINE} d=\"M0 0m{a}l{b}m{c}l{d}z\"/>\n",
+    a = s[0],
+    b = s[1],
+    c = s[2],
+    d = s[3],
+  );
 }
 
 fn generate_L16_fn() -> String {
@@ -156,7 +155,6 @@ fn generate_L16_fn() -> String {
 }
 
 fn generate_L25_fn() -> String {
-    // Only the first points is rotated about the center, the rest are about (0,0) since they are relative moves
     let pts = generate_Lx()
         .iter()
         .enumerate()
@@ -166,7 +164,6 @@ fn generate_L25_fn() -> String {
 }
 
 fn generate_L34_fn() -> String {
-    // Only the first points is rotated about the center, the rest are about (0,0) since they are relative moves
     let pts = generate_Lx()
         .iter()
         .enumerate()
