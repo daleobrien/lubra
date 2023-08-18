@@ -21,7 +21,7 @@ const STROKE_WIDTH: f64 = 3f64;
 const SCALE: f64 = 120f64;
 const SVG_FILL: &str = "stroke=\"transparent\"";
 const SVG_LINE: &str = "fill=\"transparent\"";
-const PATH_WIDTH: f64 = 0.05f64;
+const PATH_WIDTH: f64 = 0.10f64;
 
 impl Add for Point {
     type Output = Self;
@@ -127,29 +127,27 @@ fn generate_Lx() -> Vec<Point> {
     return diff(vec![P1 - w, P6 - w, P6 + w, P1 + w]);
 }
 
-fn trim(num: f64) -> String {
+fn trimf64(num: f64) -> String {
     let space = if num < 0f64 { "" } else { " " };
     let formatted = format!("{space}{:.*}", 4, num);
     let trimmed = formatted.trim_end_matches('0').trim_end_matches('.');
     return trimmed.to_string();
 }
 
-fn format_rectangle(p: Vec<Point>) -> String {
+fn trim(point: Point) -> String {
+    return format!("{} {}", trimf64(point.x), trimf64(point.y));
+}
+
+fn format_rectangle(pts: Vec<Point>) -> String {
     // TODO: Put {{x}} {{y}} back in
-    // Maybe make my own format function, can also remove trailing zeros
+    let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
     return format!(
-        "<path {fill} d=\"M0 0m{a}{b}l{c}{d}l{e}{f}l{g}{h}z\" />\n\
-         <path {line} d=\"M0 0m{a}{b}l{c}{d}m{e}{f}l{g}{h}z\" />\n",
-        a = trim(p[0].x),
-        b = trim(p[0].y),
-        c = trim(p[1].x),
-        d = trim(p[1].y),
-        e = trim(p[2].x),
-        f = trim(p[2].y),
-        g = trim(p[3].x),
-        h = trim(p[3].y),
-        line = SVG_LINE,
-        fill = SVG_FILL,
+        "<path {SVG_FILL} d=\"M0 0m{a}l{b}l{c}l{d}z\"/>\n\
+         <path {SVG_LINE} d=\"M0 0m{a}l{b}m{c}l{d}z\"/>\n",
+        a = s[0],
+        b = s[1],
+        c = s[2],
+        d = s[3],
     );
 }
 
