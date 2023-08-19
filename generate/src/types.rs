@@ -21,7 +21,7 @@ pub const STROKE_WIDTH: f64 = 3f64;
 pub const SCALE: f64 = 120f64;
 pub const SVG_FILL: &str = "stroke=\"transparent\"";
 pub const SVG_LINE: &str = "fill=\"transparent\"";
-pub const PATH_WIDTH: f64 = 0.10f64;
+pub const PATH_WIDTH: f64 = 0.20f64;
 
 impl Add for Point {
     type Output = Self;

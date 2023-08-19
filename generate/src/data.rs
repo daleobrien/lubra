@@ -66,14 +66,19 @@ pub fn polar(x: f64, y: f64, radius: f64, angle: f64) -> (f64, f64) {
     return (x + (radius * b), y + (radius * a));
 }
 
-fn generate_Ax(invert: bool) -> [Point; 3] {
-    let [start, end] = if !invert {
-        [12.0 * FRAC_PI_6, 18.0 * FRAC_PI_6]
-    } else {
-        [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6]
+fn generate_Ax(index: usize) -> [Point; 3] {
+    //
+    let [start, end, r, y] = match index {
+        0 => [
+            12.0 * FRAC_PI_6,
+            18.0 * FRAC_PI_6,
+            PATH_WIDTH * SCALE,
+            S3 * SCALE,
+        ],
+        1 => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH * SCALE, 0f64],
+        _ => panic!("Invalid index"),
     };
-    let [x, y] = [0.5 * SCALE, if !invert { S3 * SCALE } else { 0f64 }];
-    let r = PATH_WIDTH * SCALE;
+    let x = 0.5 * SCALE;
     let (a, b) = polar(x, y, r, start);
     let (c, d) = polar(x, y, r, end);
     return [
@@ -82,21 +87,22 @@ fn generate_Ax(invert: bool) -> [Point; 3] {
         Point { x: r, y: r },
     ];
 }
-fn generate_A1_or_6_fn(invert: bool) -> String {
-    let [a, b, r] = generate_Ax(invert).map(|p| trim(p));
+
+fn generate_A1_or_6_fn(index: usize) -> String {
+    let [a, b, r] = generate_Ax(index).map(|p| trim(p));
     return format!("<path d=\"M{a}A{r} 0 0 0{b}\"/>",);
 }
 
 fn generate_A1_fn() -> String {
-    return generate_A1_or_6_fn(false);
+    return generate_A1_or_6_fn(0);
 }
 
 fn generate_A6_fn() -> String {
-    return generate_A1_or_6_fn(true);
+    return generate_A1_or_6_fn(1);
 }
 
-fn generate_A2_or_5_fn(invert: bool) -> String {
-    let [a, b, r] = generate_Ax(invert);
+fn generate_A2_or_5_fn(index: usize) -> String {
+    let [a, b, r] = generate_Ax(index);
     let pts = [
         trim(a.rotate_cw(0, vec![0])),
         trim(b.rotate_cw(0, vec![0])),
@@ -110,14 +116,14 @@ fn generate_A2_or_5_fn(invert: bool) -> String {
     );
 }
 fn generate_A2_fn() -> String {
-    return generate_A2_or_5_fn(false);
+    return generate_A2_or_5_fn(0);
 }
 fn generate_A4_fn() -> String {
-    return generate_A2_or_5_fn(true);
+    return generate_A2_or_5_fn(1);
 }
 
-fn generate_A3_or_5fn(invert: bool) -> String {
-    let [a, b, r] = generate_Ax(invert);
+fn generate_A3_or_5fn(index: usize) -> String {
+    let [a, b, r] = generate_Ax(index);
     let pts = [
         trim(a.rotate_ccw(0, vec![0])),
         trim(b.rotate_ccw(0, vec![0])),
@@ -131,10 +137,10 @@ fn generate_A3_or_5fn(invert: bool) -> String {
     );
 }
 fn generate_A3_fn() -> String {
-    return generate_A3_or_5fn(false);
+    return generate_A3_or_5fn(0usize);
 }
 fn generate_A5_fn() -> String {
-    return generate_A3_or_5fn(true);
+    return generate_A3_or_5fn(1usize);
 }
 
 pub fn generate_all_shapes() {
