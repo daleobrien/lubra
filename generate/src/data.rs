@@ -1,5 +1,6 @@
 use crate::types::{diff, Point, P1, P6, PATH_WIDTH, S3, SCALE, SVG_FILL, SVG_LINE};
 use std::f64::consts::FRAC_PI_6;
+use std::ops::{Mul, Sub};
 
 fn wrap_format_with_function(name: &str, svg: String) -> String {
     format!(
@@ -62,9 +63,12 @@ fn generate_L34_fn() -> String {
     return generate_Lx_String(pts);
 }
 
-pub fn polar(x: f64, y: f64, radius: f64, angle: f64) -> (f64, f64) {
+pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
     let (a, b) = f64::sin_cos(angle);
-    return (x + (radius * b), y + (radius * a));
+    return Point {
+        x: p.x + radius * b,
+        y: p.y + radius * a,
+    };
 }
 
 fn generate_Ax(index: usize) -> [Point; 3] {
@@ -78,26 +82,28 @@ fn generate_Ax(index: usize) -> [Point; 3] {
         ],
         1 => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH * SCALE, 0f64],
         2 => [
-            12.0 * FRAC_PI_6,
-            18.0 * FRAC_PI_6,
+            8.0 * FRAC_PI_6,
+            10.0 * FRAC_PI_6,
             (0.5 - PATH_WIDTH) * SCALE,
+            S3 * SCALE,
+        ],
+        3 => [
+            10.0 * FRAC_PI_6,
+            8.0 * FRAC_PI_6,
+            (0.5 + PATH_WIDTH) * SCALE,
             S3 * SCALE,
         ],
         _ => panic!("Invalid index"),
     };
     let x = 0.5 * SCALE;
-    let (a, b) = polar(x, y, r, start);
-    let (c, d) = polar(x, y, r, end);
-    return [
-        Point { x: a, y: b },
-        Point { x: c, y: d },
-        Point { x: r, y: r },
-    ];
+    let a = polar(Point { x, y }, r, start);
+    let b = polar(Point { x, y }, r, end);
+    return [a, b, Point { x: r, y: r }];
 }
 
 fn generate_A1_or_6_fn(index: usize) -> String {
     let [a, b, r] = generate_Ax(index).map(|p| trim(p));
-    return format!("<path d=\"M {a} A {r} 0 0 0 {b} \"/>",);
+    return format!("<path d=\"M {a} A {r} 0 0 0  {b} \"/>",);
 }
 
 fn generate_A1_fn() -> String {
@@ -110,7 +116,13 @@ fn generate_A6_fn() -> String {
 
 fn generate_A2_to_3_fn() -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    return generate_A1_or_6_fn(2);
+    let [a, b, r1] = generate_Ax(2).map(|p| trim(p));
+    let [c, d, r2] = generate_Ax(3).map(|p| trim(p));
+    return format!(
+        "<path {SVG_FILL} d=\"M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z\"/>
+         <path {SVG_LINE} d=\"M {a} A {r1} 0 0 1  {b} \"/>\
+         <path {SVG_LINE} d=\"M {c} A {r2} 0 0 0  {d} \"/>",
+    );
 }
 
 fn generate_A2_or_5_fn(index: usize) -> String {
@@ -121,7 +133,7 @@ fn generate_A2_or_5_fn(index: usize) -> String {
         trim(r),
     ];
     return format!(
-        "<path d=\"M{a}A{r} 0 0 0{b}\"/>",
+        "<path d=\"M{a}A{r} 0 0 0 {b}\"/>",
         a = pts[0],
         b = pts[1],
         r = pts[2]
@@ -158,15 +170,15 @@ fn generate_A5_fn() -> String {
 pub fn generate_all_shapes() {
     //println!("{}", wrap_format_with_function("L1", generate_L1_fn()));
     //println!("{}", wrap_format_with_function("L2", generate_L2_fn()));
-    println!("{}", generate_L16_fn());
-    println!("{}", generate_L25_fn());
-    println!("{}", generate_L34_fn());
-    println!("{}", generate_A1_fn());
-    println!("{}", generate_A2_fn());
-    println!("{}", generate_A3_fn());
-    println!("{}", generate_A4_fn());
-    println!("{}", generate_A5_fn());
-    println!("{}", generate_A6_fn());
+    // println!("{}", generate_L16_fn());
+    // println!("{}", generate_L25_fn());
+    // println!("{}", generate_L34_fn());
+    // println!("{}", generate_A1_fn());
+    // println!("{}", generate_A2_fn());
+    // println!("{}", generate_A3_fn());
+    // println!("{}", generate_A4_fn());
+    // println!("{}", generate_A5_fn());
+    // println!("{}", generate_A6_fn());
     println!("{}", generate_A2_to_3_fn());
 }
 
