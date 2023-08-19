@@ -103,7 +103,7 @@ fn generate_Ax(index: usize) -> [Point; 3] {
 
 fn generate_A1_or_6_fn(index: usize) -> String {
     let [a, b, r] = generate_Ax(index).map(|p| trim(p));
-    return format!("<path d=\"M0 0m {a} A {r} 0 0 0  {b} \"/>",);
+    return format!("<path d=\"M0 0m {a} A {r} 0 0 0 {b} \"/>",);
 }
 
 fn generate_A1_fn() -> String {
@@ -120,10 +120,11 @@ fn generate_A4_to_5_fn() -> String {
     let [c, d, r2] = generate_Ax(3);
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
+    // TODO: Need to add offset to b,d ?
     return format!(
-        "<path {SVG_FILL} d=\"M0 0m {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z\"/>
-         <path {SVG_LINE} d=\"M0 0m {a} A {r1} 0 0 1  {b} \"/>\
-         <path {SVG_LINE} d=\"M0 0m {c} A {r2} 0 0 0  {d} \"/>",
+        "<path {SVG_FILL} d=\"M0 0m {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0  {d} z\"/>
+         <path {SVG_LINE} d=\"M0 0m {a} A {r1} 0 0 1 {b} \"/>\
+         <path {SVG_LINE} d=\"M0 0m {c} A {r2} 0 0 0 {d} \"/>",
     );
 }
 
