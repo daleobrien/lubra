@@ -66,7 +66,7 @@ pub fn polar(x: f64, y: f64, radius: f64, angle: f64) -> (f64, f64) {
     return (x + (radius * b), y + (radius * a));
 }
 
-fn generate_AVx(invert: bool) -> [Point; 3] {
+fn generate_Ax(invert: bool) -> [Point; 3] {
     let [start, end] = if !invert {
         [12.0 * FRAC_PI_6, 18.0 * FRAC_PI_6]
     } else {
@@ -82,20 +82,21 @@ fn generate_AVx(invert: bool) -> [Point; 3] {
         Point { x: r, y: r },
     ];
 }
+fn generate_A1_or_6_fn(invert: bool) -> String {
+    let [a, b, r] = generate_Ax(invert).map(|p| trim(p));
+    return format!("<path d=\"M{a}A{r} 0 0 0{b}\"/>",);
+}
+
+fn generate_A1_fn() -> String {
+    return generate_A1_or_6_fn(false);
+}
 
 fn generate_A6_fn() -> String {
-    let [a, b, r] = generate_AVx(true).map(|p| trim(p));
-    return format!("<path d=\"M{a}A{r} 0 0 0{b}\"/>",);
+    return generate_A1_or_6_fn(true);
 }
 
-// Can I scale the hight, so that we get 100 units of height?
-fn generate_A1_fn() -> String {
-    let [a, b, r] = generate_AVx(false).map(|p| trim(p));
-    return format!("<path d=\"M{a}A{r} 0 0 0{b}\"/>",);
-}
-
-fn generate_A2_fn() -> String {
-    let [a, b, r] = generate_AVx(false);
+fn generate_A2_or_5_fn(invert: bool) -> String {
+    let [a, b, r] = generate_Ax(invert);
     let pts = [
         trim(a.rotate_cw(0, vec![0])),
         trim(b.rotate_cw(0, vec![0])),
@@ -108,8 +109,15 @@ fn generate_A2_fn() -> String {
         r = pts[2]
     );
 }
-fn generate_A3_fn() -> String {
-    let [a, b, r] = generate_AVx(false);
+fn generate_A2_fn() -> String {
+    return generate_A2_or_5_fn(false);
+}
+fn generate_A4_fn() -> String {
+    return generate_A2_or_5_fn(true);
+}
+
+fn generate_A3_or_5fn(invert: bool) -> String {
+    let [a, b, r] = generate_Ax(invert);
     let pts = [
         trim(a.rotate_ccw(0, vec![0])),
         trim(b.rotate_ccw(0, vec![0])),
@@ -122,6 +130,12 @@ fn generate_A3_fn() -> String {
         r = pts[2]
     );
 }
+fn generate_A3_fn() -> String {
+    return generate_A3_or_5fn(false);
+}
+fn generate_A5_fn() -> String {
+    return generate_A3_or_5fn(true);
+}
 
 pub fn generate_all_shapes() {
     //println!("{}", wrap_format_with_function("L1", generate_L1_fn()));
@@ -132,6 +146,8 @@ pub fn generate_all_shapes() {
     println!("{}", generate_A1_fn());
     println!("{}", generate_A2_fn());
     println!("{}", generate_A3_fn());
+    println!("{}", generate_A4_fn());
+    println!("{}", generate_A5_fn());
     println!("{}", generate_A6_fn());
 }
 

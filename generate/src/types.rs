@@ -18,7 +18,7 @@ pub const P5: Point = Point { x: 0.75, y: S4 };
 pub const P6: Point = Point { x: 0.5, y: 0.0 };
 
 pub const STROKE_WIDTH: f64 = 3f64;
-pub const SCALE: f64 = 115.47; // scales such that hieght goes to 100. Maybe I can scale just x-axis a little too?#
+pub const SCALE: f64 = 120f64;
 pub const SVG_FILL: &str = "stroke=\"transparent\"";
 pub const SVG_LINE: &str = "fill=\"transparent\"";
 pub const PATH_WIDTH: f64 = 0.10f64;
