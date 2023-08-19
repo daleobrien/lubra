@@ -103,7 +103,7 @@ fn generate_Ax(index: usize) -> [Point; 3] {
 
 fn generate_A1_or_6_fn(index: usize) -> String {
     let [a, b, r] = generate_Ax(index).map(|p| trim(p));
-    return format!("<path d=\"M {a} A {r} 0 0 0  {b} \"/>",);
+    return format!("<path d=\"M0 0m {a} A {r} 0 0 0  {b} \"/>",);
 }
 
 fn generate_A1_fn() -> String {
@@ -114,30 +114,52 @@ fn generate_A6_fn() -> String {
     return generate_A1_or_6_fn(1);
 }
 
-fn generate_A2_to_3_fn() -> String {
+fn generate_A4_to_5_fn() -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = generate_Ax(2).map(|p| trim(p));
-    let [c, d, r2] = generate_Ax(3).map(|p| trim(p));
+    let [a, b, r1] = generate_Ax(2);
+    let [c, d, r2] = generate_Ax(3);
+    let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
+
     return format!(
-        "<path {SVG_FILL} d=\"M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z\"/>
-         <path {SVG_LINE} d=\"M {a} A {r1} 0 0 1  {b} \"/>\
-         <path {SVG_LINE} d=\"M {c} A {r2} 0 0 0  {d} \"/>",
+        "<path {SVG_FILL} d=\"M0 0m {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z\"/>
+         <path {SVG_LINE} d=\"M0 0m {a} A {r1} 0 0 1  {b} \"/>\
+         <path {SVG_LINE} d=\"M0 0m {c} A {r2} 0 0 0  {d} \"/>",
+    );
+}
+
+fn generate_A4_to_6_fn() -> String {
+    // With this and others, I don't need to draw a shape, just a really fat line!
+    let [a, b, r1] = generate_Ax(2);
+    let [c, d, r2] = generate_Ax(3);
+    let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_cw(0, vec![0]));
+    let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
+
+    return format!(
+        "<path {SVG_FILL} d=\"M0 0m {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z\"/>
+         <path {SVG_LINE} d=\"M0 0m {a} A {r1} 0 0 1  {b} \"/>\
+         <path {SVG_LINE} d=\"M0 0m {c} A {r2} 0 0 0  {d} \"/>",
+    );
+}
+
+fn generate_A5_to_6_fn() -> String {
+    // With this and others, I don't need to draw a shape, just a really fat line!
+    let [a, b, r1] = generate_Ax(2);
+    let [c, d, r2] = generate_Ax(3);
+    let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_ccw(0, vec![0]));
+    let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
+
+    return format!(
+        "<path {SVG_FILL} d=\"M0 0m {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z\"/>
+         <path {SVG_LINE} d=\"M0 0m {a} A {r1} 0 0 1  {b} \"/>\
+         <path {SVG_LINE} d=\"M0 0m {c} A {r2} 0 0 0  {d} \"/>",
     );
 }
 
 fn generate_A2_or_5_fn(index: usize) -> String {
     let [a, b, r] = generate_Ax(index);
-    let pts = [
-        trim(a.rotate_cw(0, vec![0])),
-        trim(b.rotate_cw(0, vec![0])),
-        trim(r),
-    ];
-    return format!(
-        "<path d=\"M{a}A{r} 0 0 0 {b}\"/>",
-        a = pts[0],
-        b = pts[1],
-        r = pts[2]
-    );
+    let [a, b] = [a, b].map(|p| p.rotate_cw(0, vec![0]));
+    let [a, b, r] = [a, b, r].map(|p| trim(p));
+    return format!("<path d=\"M0 0m {a} A {r} 0 0 0 {b} \"/>",);
 }
 fn generate_A2_fn() -> String {
     return generate_A2_or_5_fn(0);
@@ -148,17 +170,9 @@ fn generate_A4_fn() -> String {
 
 fn generate_A3_or_5fn(index: usize) -> String {
     let [a, b, r] = generate_Ax(index);
-    let pts = [
-        trim(a.rotate_ccw(0, vec![0])),
-        trim(b.rotate_ccw(0, vec![0])),
-        trim(r),
-    ];
-    return format!(
-        "<path d=\"M{a}A{r} 0 0 0{b}\"/>",
-        a = pts[0],
-        b = pts[1],
-        r = pts[2]
-    );
+    let [a, b] = [a, b].map(|p| p.rotate_ccw(0, vec![0]));
+    let [a, b, r] = [a, b, r].map(|p| trim(p));
+    return format!("<path d=\"M0 0m{a}A{r} 0 0 0{b}\"/>",);
 }
 fn generate_A3_fn() -> String {
     return generate_A3_or_5fn(0usize);
@@ -174,12 +188,14 @@ pub fn generate_all_shapes() {
     // println!("{}", generate_L25_fn());
     // println!("{}", generate_L34_fn());
     // println!("{}", generate_A1_fn());
-    // println!("{}", generate_A2_fn());
+    println!("{}", generate_A2_fn());
     // println!("{}", generate_A3_fn());
-    // println!("{}", generate_A4_fn());
+    println!("{}", generate_A4_fn());
     // println!("{}", generate_A5_fn());
     // println!("{}", generate_A6_fn());
-    println!("{}", generate_A2_to_3_fn());
+    println!("{}", generate_A4_to_5_fn());
+    println!("{}", generate_A4_to_6_fn());
+    println!("{}", generate_A5_to_6_fn());
 }
 
 #[cfg(test)]
