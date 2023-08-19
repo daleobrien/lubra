@@ -29,14 +29,15 @@ fn trim(point: Point) -> String {
 
 fn generate_Lx_String(pts: Vec<Point>) -> String {
     // TODO: Put {{x}} {{y}} back in
+
     let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
     return format!(
-    "<path {SVG_FILL} d=\"M0 0m{a}l{b}l{c}l{d}z\"/><path {SVG_LINE} d=\"M0 0m{a}l{b}m{c}l{d}z\"/>\n",
-    a = s[0],
-    b = s[1],
-    c = s[2],
-    d = s[3],
-  );
+        "<path {SVG_FILL} d=\"M0 0m{a}l{b}l{c}l{d}z\"/><path {SVG_LINE} d=\"M0 0m{a}l{b}m{c}l{d}z\"/>\n",
+        a = s[0],
+        b = s[1],
+        c = s[2],
+        d = s[3],
+    );
 }
 
 fn generate_L16_fn() -> String {
@@ -76,6 +77,12 @@ fn generate_Ax(index: usize) -> [Point; 3] {
             S3 * SCALE,
         ],
         1 => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH * SCALE, 0f64],
+        2 => [
+            12.0 * FRAC_PI_6,
+            18.0 * FRAC_PI_6,
+            (0.5 - PATH_WIDTH) * SCALE,
+            S3 * SCALE,
+        ],
         _ => panic!("Invalid index"),
     };
     let x = 0.5 * SCALE;
@@ -90,7 +97,7 @@ fn generate_Ax(index: usize) -> [Point; 3] {
 
 fn generate_A1_or_6_fn(index: usize) -> String {
     let [a, b, r] = generate_Ax(index).map(|p| trim(p));
-    return format!("<path d=\"M{a}A{r} 0 0 0{b}\"/>",);
+    return format!("<path d=\"M {a} A {r} 0 0 0 {b} \"/>",);
 }
 
 fn generate_A1_fn() -> String {
@@ -99,6 +106,11 @@ fn generate_A1_fn() -> String {
 
 fn generate_A6_fn() -> String {
     return generate_A1_or_6_fn(1);
+}
+
+fn generate_A2_to_3_fn() -> String {
+    // With this and others, I don't need to draw a shape, just a really fat line!
+    return generate_A1_or_6_fn(2);
 }
 
 fn generate_A2_or_5_fn(index: usize) -> String {
@@ -155,6 +167,7 @@ pub fn generate_all_shapes() {
     println!("{}", generate_A4_fn());
     println!("{}", generate_A5_fn());
     println!("{}", generate_A6_fn());
+    println!("{}", generate_A2_to_3_fn());
 }
 
 #[cfg(test)]
