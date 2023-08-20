@@ -1,7 +1,16 @@
 use crate::types::{diff, Point, P1, P6, PATH_WIDTH, S3, SCALE, SVG_FILL, SVG_LINE};
+use std::collections::HashMap;
 use std::f64::consts::FRAC_PI_6;
+use std::fs::File;
+use std::io::Write;
 use std::ops::{Mul, Sub};
+/*
 
+Could I use a use statement within the SVG, and have the objects under a white block?
+
+It can work, only if I don't set the stroke/fill on the source <g...>, I can set that at the svg level
+ though, so it's transparent unless I set the colour in the "use" it.
+ */
 fn wrap_format_with_function(name: &str, svg: String) -> String {
     format!(
         "pub fn {}(offset: Point) -> String \n{{\n  writeln!(\"{}\", x=offset.x, y=offset.y)\n}}",
@@ -28,24 +37,19 @@ fn trim(point: Point) -> String {
     return format!("{} {}", trimf64(point.x), trimf64(point.y));
 }
 
-fn generate_Lx_String(pts: Vec<Point>) -> String {
-    // TODO: Put {{x}} {{y}} back in
-
+fn generate_Lx_String(pts: Vec<Point>) -> [String; 2] {
     let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
-    return format!(
-        "<path {SVG_FILL} d=\"M0 0m{a}l{b}l{c}l{d}z\"/><path {SVG_LINE} d=\"M0 0m{a}l{b}m{c}l{d}z\"/>\n",
-        a = s[0],
-        b = s[1],
-        c = s[2],
-        d = s[3],
-    );
+    return [
+        format!("M{a}l{b}l{c}l{d}z", a = s[0], b = s[1], c = s[2], d = s[3]),
+        format!("M{a}l{b}m{c}l{d}z", a = s[0], b = s[1], c = s[2], d = s[3]),
+    ];
 }
 
-fn generate_L16_fn() -> String {
+fn generate_L16_fn() -> [String; 2] {
     return generate_Lx_String(generate_Lx());
 }
 
-fn generate_L25_fn() -> String {
+fn generate_L25_fn() -> [String; 2] {
     let pts = generate_Lx()
         .iter()
         .enumerate()
@@ -54,7 +58,7 @@ fn generate_L25_fn() -> String {
     return generate_Lx_String(pts);
 }
 
-fn generate_L34_fn() -> String {
+fn generate_L34_fn() -> [String; 2] {
     let pts = generate_Lx()
         .iter()
         .enumerate()
@@ -101,102 +105,137 @@ fn generate_Ax(index: usize) -> [Point; 3] {
     return [a, b, Point { x: r, y: r }];
 }
 
-fn generate_A1_or_6_fn(index: usize) -> String {
+fn generate_A1_or_6_fn(index: usize) -> [String; 2] {
     let [a, b, r] = generate_Ax(index).map(|p| trim(p));
-    return format!("<path d=\"M0 0m {a} A {r} 0 0 0 {b} \"/>",);
+    return [format!("M {a} A {r} 0 0 0 {b}"), format!("")];
 }
 
-fn generate_A1_fn() -> String {
+fn generate_A1_fn() -> [String; 2] {
     return generate_A1_or_6_fn(0);
 }
 
-fn generate_A6_fn() -> String {
+fn generate_A6_fn() -> [String; 2] {
     return generate_A1_or_6_fn(1);
 }
 
-fn generate_A4_to_5_fn() -> String {
+fn generate_A4_to_5_fn() -> [String; 2] {
     // With this and others, I don't need to draw a shape, just a really fat line!
     let [a, b, r1] = generate_Ax(2);
     let [c, d, r2] = generate_Ax(3);
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
-    // TODO: Need to add offset to b,d ?
-    return format!(
-        "<path {SVG_FILL} d=\"M0 0m {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0  {d} z\"/>
-         <path {SVG_LINE} d=\"M0 0m {a} A {r1} 0 0 1 {b} \"/>\
-         <path {SVG_LINE} d=\"M0 0m {c} A {r2} 0 0 0 {d} \"/>",
-    );
+    return [
+        format!("M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0 {d} z"),
+        format!("M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d}"),
+    ];
 }
 
-fn generate_A4_to_6_fn() -> String {
+fn generate_A4_to_6_fn() -> [String; 2] {
     // With this and others, I don't need to draw a shape, just a really fat line!
     let [a, b, r1] = generate_Ax(2);
     let [c, d, r2] = generate_Ax(3);
     let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_cw(0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
-    return format!(
-        "<path {SVG_FILL} d=\"M0 0m {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z\"/>
-         <path {SVG_LINE} d=\"M0 0m {a} A {r1} 0 0 1  {b} \"/>\
-         <path {SVG_LINE} d=\"M0 0m {c} A {r2} 0 0 0  {d} \"/>",
-    );
+    return [
+        format!("M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z "),
+        format!("M {a} A {r1} 0 0 1  {b} M {c} A {r2} 0 0 0  {d} ",),
+    ];
 }
 
-fn generate_A5_to_6_fn() -> String {
+fn generate_A5_to_6_fn() -> [String; 2] {
     // With this and others, I don't need to draw a shape, just a really fat line!
     let [a, b, r1] = generate_Ax(2);
     let [c, d, r2] = generate_Ax(3);
     let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_ccw(0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
-    return format!(
-        "<path {SVG_FILL} d=\"M0 0m {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z\"/>
-         <path {SVG_LINE} d=\"M0 0m {a} A {r1} 0 0 1  {b} \"/>\
-         <path {SVG_LINE} d=\"M0 0m {c} A {r2} 0 0 0  {d} \"/>",
-    );
+    return [
+        format!("M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0  {d} z"),
+        format!("M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d}"),
+    ];
 }
 
-fn generate_A2_or_5_fn(index: usize) -> String {
+fn generate_A2_or_5_fn(index: usize) -> [String; 2] {
     let [a, b, r] = generate_Ax(index);
     let [a, b] = [a, b].map(|p| p.rotate_cw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
-    return format!("<path d=\"M0 0m {a} A {r} 0 0 0 {b} \"/>",);
+    return [format!("M {a} A {r} 0 0 0 {b}"), format!("")];
 }
-fn generate_A2_fn() -> String {
+fn generate_A2_fn() -> [String; 2] {
     return generate_A2_or_5_fn(0);
 }
-fn generate_A4_fn() -> String {
+fn generate_A4_fn() -> [String; 2] {
     return generate_A2_or_5_fn(1);
 }
 
-fn generate_A3_or_5fn(index: usize) -> String {
+fn generate_A3_or_5fn(index: usize) -> [String; 2] {
     let [a, b, r] = generate_Ax(index);
     let [a, b] = [a, b].map(|p| p.rotate_ccw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
-    return format!("<path d=\"M0 0m{a}A{r} 0 0 0{b}\"/>",);
+    return [format!("M{a}A{r} 0 0 0{b}",), format!("")];
 }
-fn generate_A3_fn() -> String {
+fn generate_A3_fn() -> [String; 2] {
     return generate_A3_or_5fn(0usize);
 }
-fn generate_A5_fn() -> String {
+fn generate_A5_fn() -> [String; 2] {
     return generate_A3_or_5fn(1usize);
 }
 
+fn wrap(name: &str, paths: [String; 2]) -> String {
+    let a = format!(
+        "<g id=\"{name}_fill\"><path d=\"{fill}\"/></g>",
+        fill = paths[0]
+    );
+
+    if paths[1].is_empty() {
+        return a;
+    }
+    let b = format!(
+        "<g id=\"{name}_line\"><path d=\"{line}\"/></g>",
+        line = paths[1]
+    );
+
+    return format!("{}\n{}", a, b);
+}
+
 pub fn generate_all_shapes() {
-    //println!("{}", wrap_format_with_function("L1", generate_L1_fn()));
-    //println!("{}", wrap_format_with_function("L2", generate_L2_fn()));
-    // println!("{}", generate_L16_fn());
-    // println!("{}", generate_L25_fn());
-    // println!("{}", generate_L34_fn());
-    // println!("{}", generate_A1_fn());
-    println!("{}", generate_A2_fn());
-    // println!("{}", generate_A3_fn());
-    println!("{}", generate_A4_fn());
-    // println!("{}", generate_A5_fn());
-    // println!("{}", generate_A6_fn());
-    println!("{}", generate_A4_to_5_fn());
-    println!("{}", generate_A4_to_6_fn());
-    println!("{}", generate_A5_to_6_fn());
+    let mut lines: HashMap<Vec<usize>, String> = HashMap::new();
+    let mut fills: HashMap<Vec<usize>, String> = HashMap::new();
+
+    for (key, [line, fill]) in [
+        (vec![1, 6], generate_L16_fn()),
+        (vec![2, 5], generate_L25_fn()),
+        (vec![3, 4], generate_L34_fn()),
+        (vec![1], generate_A1_fn()),
+        (vec![2], generate_A2_fn()),
+        (vec![3], generate_A3_fn()),
+        (vec![4], generate_A4_fn()),
+        (vec![5], generate_A5_fn()),
+        (vec![6], generate_A6_fn()),
+    ] {
+        lines.insert(key.clone(), line);
+        if !fill.is_empty() {
+            fills.insert(key, fill);
+        }
+    }
+
+    let mut file = File::create("../lib/src/renders/shapes.rs").expect("File Creation failed");
+    let _ = file.write(b"/* This file is generated. */\n");
+    let _ = file.write(b"use std::collections::HashMap;\n\n");
+    let _ =
+        file.write(b"\npub const STOKES_FOR_VECTOR: HashMap<Vec<usize>, &str> = HashMap::from([\n");
+    for (key, value) in lines {
+        let _ = write!(file, "  (vec!{:?}, \"{}\"),\n", key, value);
+    }
+    let _ = file.write(b"]);\n");
+    let _ =
+        file.write(b"\npub const FILLS_FOR_VECTOR: HashMap<Vec<usize>, &str> = HashMap::from([\n");
+    for (key, value) in fills {
+        let _ = write!(file, "  (vec!{:?}, \"{}\"),\n", key, value);
+    }
+    let _ = file.write(b"]);\n");
+    let _ = file.flush();
 }
 
 #[cfg(test)]

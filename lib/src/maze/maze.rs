@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
+use std::path::Path;
 
 use crate::maze::consts::NODE_TO_COORD;
 
@@ -10,14 +11,11 @@ use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
 use crate::renders::_point::{Coordinate, Point};
-use crate::renders::_rect::Rect;
-use crate::renders::glyph::{calculate_origin_and_orientation, Glyph};
 use crate::renders::strokes::{H, M, Z};
-use crate::renders::svg::Path;
+use crate::renders::svg::Svg;
 
 pub struct Maze {
     pub style: Option<String>,
-    walls: Vec<Vec<Glyph>>,
     nets: Vec<HashSet<[usize; 3]>>,
     width: f64,
     height: f64,
@@ -36,7 +34,6 @@ impl Maze {
     ) -> Self {
         // User Maze object somehow
 
-        let walls: Vec<Vec<Glyph>> = Vec::new();
         let nets = Vec::new();
 
         let tiles: Array2D<Tile> =
@@ -44,7 +41,6 @@ impl Maze {
 
         let mut obj = Self {
             style: None,
-            walls,
             width: 0f64,
             height: 0f64,
             nets,
@@ -370,37 +366,16 @@ impl Maze {
     // Path commands
     // https://github.com/bodoni/svg/blob/master/src/node/element/path/data.rs
     pub fn render(self, file_name: String) -> Result<(), Box<dyn Error>> {
-        let mut svg = String::new();
-
         let margin = 5.0;
-        let x = 0;
-        let y = 0;
+        let margin = 5.0;
         let w = (self.number_of_columns + 1) as f64 * M + 5.0 * margin;
         let h = self.number_of_rows as f64 * H + 5.0 * margin;
 
-        let view_box = format!("viewBox=\"-{x} -{y} {w} {h}\" ",);
+        // Create header and so on
+        let mut svg = Svg::new(w, h);
 
-        svg.push_str(&format!(
-            "<svg id=\"maze\" xmlns=\"http://www.w3.org/2000/svg\" {view_box} \
-               width=\"{w}px\" height=\"{h}px\" \
-               stroke-width=\"3\" \
-               fill-opacity=\"0.03\" \
-               fill=\"black\" \
-               stroke-linecap=\"round\" \
-               stroke=\"black\" >",
-        ));
-
-        let faint_stroke_width = 3.0;
-        let mut bound_path = Path::new("blue".to_string(), faint_stroke_width, 0.2);
-
-        let mut svg_groups: Vec<String> = vec![
-            String::new(),
-            String::new(),
-            String::new(),
-            String::new(),
-            String::new(),
-            String::new(),
-        ];
+        let x = 0;
+        let y = 0;
 
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
@@ -409,34 +384,28 @@ impl Maze {
                 let tile = self.tiles[(j, i)].clone();
 
                 for (i, svg) in tile.to_svg_groups(coord).iter().enumerate() {
-                    svg_groups[i].push_str(svg);
+                    // svg_groups[i].push_str(svg);
                 }
 
                 //println!("faint: {:?}", &faint_path.to_string());
             }
         }
-        // Bounds
-        let rect = Rect {
-            origin: Point { x: 0f64, y: 0f64 },
-            delta1: Point { x: w, y: 0f64 },
-            delta2: Point { x: 0f64, y: h },
-            delta3: Point { x: -w, y: 0f64 },
-        };
-        bound_path.rect(&rect);
 
-        for (i, paths) in svg_groups.iter().enumerate() {
-            if paths.is_empty() {
-                continue;
-            }
-            svg.push_str(&format!("\n<g display=\"inline\" id=\"group-{i}\">"));
-            svg.push_str(paths);
-            svg.push_str("</g>\n");
-        }
+        // bound_path.rect(&rect);
+        //
+        // for (i, paths) in svg_groups.iter().enumerate() {
+        //     if paths.is_empty() {
+        //         continue;
+        //     }
+        //     svg.push_str(&format!("\n<g display=\"inline\" id=\"group-{i}\">"));
+        //     svg.push_str(paths);
+        //     svg.push_str("</g>\n");
+        // }
 
         //svg.push_str(&bound_path.to_string());
-        svg.push_str("</svg>");
+        //svg.push_str("</svg>");
 
-        fs::write(file_name, svg.as_bytes())?;
+        fs::write(file_name, svg)?;
         Ok(())
     }
 }

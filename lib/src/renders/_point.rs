@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::{Add, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -19,6 +20,12 @@ impl Add for Point {
             x: self.x + other.x,
             y: self.y + other.y,
         }
+    }
+}
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{},{}", self.x, self.y)
     }
 }
 

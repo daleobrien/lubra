@@ -1,152 +1,21 @@
-use crate::renders::_line::Line;
-use crate::renders::_point::Point;
-use crate::renders::_segment::Segment;
-use crate::renders::strokes::{H, M, Q1, Q3, U, W, Z};
+/* This file is generated. */
+use std::collections::HashMap;
 
-pub const TRIANGLE_A: [Line; 3] = [
-    Line {
-        start: Point { x: Z, y: H },
-        delta: Point { x: U, y: Z },
-    },
-    Line {
-        start: Point { x: U, y: H },
-        delta: Point { x: -M, y: -H },
-    },
-    Line {
-        start: Point { x: M, y: Z },
-        delta: Point { x: -M, y: H },
-    },
-];
 
-pub const TRIANGLE_V: [Line; 3] = [
-    Line {
-        start: Point { x: Z, y: Z },
-        delta: Point { x: U, y: Z },
-    },
-    Line {
-        start: Point { x: U, y: Z },
-        delta: Point { x: -M, y: H },
-    },
-    Line {
-        start: Point { x: M, y: H },
-        delta: Point { x: -M, y: -H },
-    },
-];
-pub const A1_V: Segment = Segment {
-    centre: Point { x: M, y: H },
-    radius: M,
-    segment: 5,
-};
-pub const A1_A: Segment = Segment {
-    centre: Point { x: M, y: Z },
-    radius: M,
-    segment: 2,
-};
-pub const A2_V: Segment = Segment {
-    centre: Point { x: Z, y: Z },
-    radius: M,
-    segment: 1,
-};
-pub const A2_A: Segment = Segment {
-    centre: Point { x: Z, y: H },
-    radius: M,
-    segment: 6,
-};
-pub const A3_V: Segment = Segment {
-    centre: Point { x: U, y: Z },
-    radius: M,
-    segment: 3,
-};
-pub const A3_A: Segment = Segment {
-    centre: Point { x: U, y: H },
-    radius: M,
-    segment: 4,
-};
+pub const STOKES_FOR_VECTOR: HashMap<Vec<usize>, &str> = HashMap::from([
+  (vec![6], "M  36 -0 A  24  24 0 0 0  84  0"),
+  (vec![2, 5], "M 132  20.7846l-90  51.9615l-24 -41.5692l 90 -51.9615z"),
+  (vec![3, 4], "M 12 -20.7846l 90  51.9615l-24  41.5692l-90 -51.9615z"),
+  (vec![1], "M  84  103.923 A  24  24 0 0 0  36  103.923"),
+  (vec![2], "M  108 -20.7846 A  24  24 0 0 0  132  20.7846"),
+  (vec![1, 6], "M 36  103.923l 0 -103.923l 48  0l 0  103.923z"),
+  (vec![3], "M-12  20.7846A 24  24 0 0 0 12 -20.7846"),
+  (vec![4], "M  42  72.7461 A  24  24 0 0 0  18  31.1769"),
+  (vec![5], "M 102  31.1769A 24  24 0 0 0 78  72.7461"),
+]);
 
-pub const T1_V_ARC: Segment = Segment {
-    centre: Point { x: M, y: Z },
-    radius: W,
-    segment: 0,
-};
-pub const T1_A_ARC: Segment = Segment {
-    centre: Point { x: M, y: H },
-    radius: W,
-    segment: 0,
-};
-
-pub const T1_V: Segment = Segment {
-    centre: Point { x: M, y: Z },
-    radius: W,
-    segment: 1,
-};
-pub const T1_A: Segment = Segment {
-    centre: Point { x: M, y: H },
-    radius: W,
-    segment: 4,
-};
-
-pub const T2_ARC: Segment = Segment {
-    centre: Point { x: Q3, y: H / 2.0 },
-    radius: W,
-    segment: 0,
-};
-
-pub const T2_V: Segment = Segment {
-    centre: Point { x: Q3, y: H / 2.0 },
-    radius: W,
-    segment: 3,
-};
-pub const T2_A: Segment = Segment {
-    centre: Point { x: Q3, y: H / 2.0 },
-    radius: W,
-    segment: 2,
-};
-
-pub const T3_ARC: Segment = Segment {
-    centre: Point { x: Q1, y: H / 2.0 },
-    radius: W,
-    segment: 0,
-};
-
-pub const T3_V: Segment = Segment {
-    centre: Point { x: Q1, y: H / 2.0 },
-    radius: W,
-    segment: 5,
-};
-pub const T3_A: Segment = Segment {
-    centre: Point { x: Q1, y: H / 2.0 },
-    radius: W,
-    segment: 6,
-};
-
-pub const N1_A: Segment = Segment {
-    centre: Point { x: M, y: Z },
-    radius: W,
-    segment: 1,
-};
-pub const N1_V: Segment = Segment {
-    centre: Point { x: M, y: H },
-    radius: W,
-    segment: 4,
-};
-pub const N2_V: Segment = Segment {
-    centre: Point { x: Z, y: Z },
-    radius: W,
-    segment: 6,
-};
-pub const N2_A: Segment = Segment {
-    centre: Point { x: Z, y: H },
-    radius: W,
-    segment: 5,
-};
-
-pub const N3_V: Segment = Segment {
-    centre: Point { x: U, y: Z },
-    radius: W,
-    segment: 2,
-};
-pub const N3_A: Segment = Segment {
-    centre: Point { x: U, y: H },
-    radius: W,
-    segment: 3,
-};
+pub const FILLS_FOR_VECTOR: HashMap<Vec<usize>, &str> = HashMap::from([
+  (vec![2, 5], "M 132  20.7846l-90  51.9615m-24 -41.5692l 90 -51.9615z"),
+  (vec![1, 6], "M 36  103.923l 0 -103.923m 48  0l 0  103.923z"),
+  (vec![3, 4], "M 12 -20.7846l 90  51.9615m-24  41.5692l-90 -51.9615z"),
+]);

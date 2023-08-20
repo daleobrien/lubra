@@ -1,9 +1,5 @@
-pub mod _arc;
-pub mod _line;
 pub mod _point;
-pub mod _rect;
 pub mod _segment;
-pub mod glyph;
 pub mod math;
 mod shapes;
 pub mod strokes;

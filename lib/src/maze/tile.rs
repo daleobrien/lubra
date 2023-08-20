@@ -1,6 +1,5 @@
-use crate::renders::_point::Coordinate;
-use crate::renders::glyph::calculate_origin_and_orientation;
-use crate::renders::strokes::{L051, L054, L057, L060};
+use crate::renders::_point::{Coordinate, Point};
+use crate::renders::strokes::{L051, L054, L057, L060, M, U};
 use rand_distr::num_traits::ToPrimitive;
 use std::fmt;
 
@@ -32,6 +31,18 @@ fn rotate_number_dn(n: u8) -> u8 {
 pub struct Tile {
     pub nodes: Vec<Vec<u8>>,
     pub initialised: bool,
+}
+
+pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool) {
+    let x_margin = 0.0;
+    let y_margin = 0.0;
+    let origin = Point {
+        x: (M + x_margin) * coordinate.i as f64,
+        y: (U + y_margin) * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
+    };
+    let flipped = (coordinate.j + coordinate.i) % 2 == 1;
+
+    return (origin, flipped);
 }
 
 impl Tile {
