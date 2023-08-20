@@ -1,5 +1,5 @@
 use crate::renders::_point::{Coordinate, Point};
-use crate::renders::strokes::{L051, L054, L057, L060, M, U};
+use crate::renders::fragment::{Fragment, M, U};
 use rand_distr::num_traits::ToPrimitive;
 use std::fmt;
 
@@ -52,28 +52,26 @@ impl Tile {
 
     pub fn to_svg_groups(self, coordinate: Coordinate) -> Vec<String> {
         // Build the SVG groups and return them
-        let mut groups = vec![];
+        let mut groups: Vec<String> = vec![];
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
-        for net in self.nodes {
-            let mut svg = String::new();
-            let bits = net
-                .iter()
-                .map(|t| u8::pow(2u8, ((*t) - 1u8).to_u8().unwrap_or_default() as u32))
-                .sum();
+        let fragment = Fragment::new();
 
-            println!("bits: {:?}, {:b}", net, bits);
-            match bits {
-                // Test line here ...
-                0b011_000 => {
-                    if flipped {
-                        groups.push(format!("\n  <path d=\"{} {}\"/>", L051, L054));
-                    } else {
-                        groups.push(format!("\n  <path d=\"{} {}\"/>", L057, L054));
-                    }
-                }
-                _ => (),
+        for net in self.nodes {
+            let mut bits: u8 = 0;
+            for n in net {
+                bits |= 1 << (n - 1);
+            }
+
+            let [fill, line] = fragment.get(&bits);
+
+            if fill.is_some() {
+                groups.push(fill.unwrap().clone());
+            }
+
+            if line.is_some() {
+                groups.push(line.unwrap().clone());
             }
         }
 

@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
-use std::path::Path;
 
 use crate::maze::consts::NODE_TO_COORD;
 
@@ -10,8 +9,8 @@ use array2d::Array2D;
 use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
-use crate::renders::_point::{Coordinate, Point};
-use crate::renders::strokes::{H, M, Z};
+use crate::renders::_point::Coordinate;
+use crate::renders::fragment::{H, M};
 use crate::renders::svg::Svg;
 
 pub struct Maze {
@@ -371,6 +370,12 @@ impl Maze {
         let w = (self.number_of_columns + 1) as f64 * M + 5.0 * margin;
         let h = self.number_of_rows as f64 * H + 5.0 * margin;
 
+        println!(
+            "Render {w},{h}\n",
+            w = self.number_of_columns,
+            h = self.number_of_rows
+        );
+
         // Create header and so on
         let mut svg = Svg::new(w, h);
 
@@ -382,8 +387,15 @@ impl Maze {
                 let coord: Coordinate = Coordinate { i, j };
 
                 let tile = self.tiles[(j, i)].clone();
+                println!("Tile({i},{j}): {:?}", tile.nodes);
 
-                for (i, svg) in tile.to_svg_groups(coord).iter().enumerate() {
+                for (g, svg) in tile.to_svg_groups(coord).iter().enumerate() {
+                    // Check if we have seen this fragment, if so, `use` the ref, otherwise make a new one
+                    // ...
+                    // Push into group with `<use href="#ref" ...>`
+                    // SVG class can handle this ...
+                    //
+                    println!("({i},{j},{g}) -> svg: {}", svg);
                     // svg_groups[i].push_str(svg);
                 }
 
@@ -391,21 +403,7 @@ impl Maze {
             }
         }
 
-        // bound_path.rect(&rect);
-        //
-        // for (i, paths) in svg_groups.iter().enumerate() {
-        //     if paths.is_empty() {
-        //         continue;
-        //     }
-        //     svg.push_str(&format!("\n<g display=\"inline\" id=\"group-{i}\">"));
-        //     svg.push_str(paths);
-        //     svg.push_str("</g>\n");
-        // }
-
-        //svg.push_str(&bound_path.to_string());
-        //svg.push_str("</svg>");
-
-        fs::write(file_name, svg)?;
+        fs::write(file_name, svg.to_string())?;
         Ok(())
     }
 }

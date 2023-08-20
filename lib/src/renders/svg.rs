@@ -9,11 +9,11 @@ pub struct Svg {
     glyph_sections: HashSet<String>,
 }
 
-impl AsRef<[u8]> for Svg {
-    fn as_ref(&self) -> &[u8] {
-        return format!("{}", self);
-    }
-}
+// impl AsRef<String> for Svg {
+//     fn as_ref(&self) -> String {
+//         return format!("{}", self);
+//     }
+// }
 
 impl fmt::Display for Svg {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

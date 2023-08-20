@@ -1,4 +1,4 @@
-use crate::types::{diff, Point, P1, P6, PATH_WIDTH, S3, SCALE, SVG_FILL, SVG_LINE};
+use crate::types::{diff, Point, P1, P6, PATH_WIDTH, S3, SCALE};
 use std::collections::HashMap;
 use std::f64::consts::FRAC_PI_6;
 use std::fs::File;
@@ -200,41 +200,75 @@ fn wrap(name: &str, paths: [String; 2]) -> String {
 }
 
 pub fn generate_all_shapes() {
-    let mut lines: HashMap<Vec<usize>, String> = HashMap::new();
-    let mut fills: HashMap<Vec<usize>, String> = HashMap::new();
+    let mut lines: HashMap<usize, String> = HashMap::new();
+    let mut fills: HashMap<usize, String> = HashMap::new();
 
     for (key, [line, fill]) in [
-        (vec![1, 6], generate_L16_fn()),
-        (vec![2, 5], generate_L25_fn()),
-        (vec![3, 4], generate_L34_fn()),
-        (vec![1], generate_A1_fn()),
-        (vec![2], generate_A2_fn()),
-        (vec![3], generate_A3_fn()),
-        (vec![4], generate_A4_fn()),
-        (vec![5], generate_A5_fn()),
-        (vec![6], generate_A6_fn()),
+        (0b100_001, generate_L16_fn()),
+        (0b010_010, generate_L25_fn()),
+        (0b001_100, generate_L34_fn()),
+        (0b000_001, generate_A1_fn()),
+        (0b000_010, generate_A2_fn()),
+        (0b000_100, generate_A3_fn()),
+        (0b001_000, generate_A4_fn()),
+        (0b010_000, generate_A5_fn()),
+        (0b100_000, generate_A6_fn()),
+        (0b011_000, generate_A4_to_5_fn()),
+        (0b01_0100, generate_A4_to_6_fn()),
+        (0b11_0000, generate_A5_to_6_fn()),
     ] {
-        lines.insert(key.clone(), line);
+        lines.insert(key, line);
         if !fill.is_empty() {
             fills.insert(key, fill);
         }
     }
 
-    let mut file = File::create("../lib/src/renders/shapes.rs").expect("File Creation failed");
+    // Change this to a look up function rather than a class with a HashMap.
+    let mut file = File::create("../lib/src/renders/fragment.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use std::collections::HashMap;\n\n");
-    let _ =
-        file.write(b"\npub const STOKES_FOR_VECTOR: HashMap<Vec<usize>, &str> = HashMap::from([\n");
+
+    let _ = write!(file, "pub const U: f64 = {SCALE}f64;\n",);
+    let _ = write!(file, "pub const M: f64 = {m}f64;\n", m = SCALE / 2.0);
+    let _ = file.write(b"// U * f64::sqrt(3.0) / 2.0;\n");
+    let _ = write!(file, "pub const H: f64 = {m}f64;\n\n", m = S3 * SCALE);
+
+    let _ = file.write(b"pub struct Fragment {\n");
+    let _ = file.write(b"    strokes: HashMap<u8, String>,\n");
+    let _ = file.write(b"    fills: HashMap<u8, String>,\n");
+    let _ = file.write(b"}\n\n");
+
+    let _ = file.write(b"impl Fragment {\n\n");
+    let _ = file.write(b"    pub fn get(&self, key: &u8) -> [Option<&String>; 2] {\n");
+    let _ = file.write(b"        return [self.strokes.get(key), self.fills.get(key)];\n");
+    let _ = file.write(b"    }\n");
+
+    let _ = file.write(b"\n    pub fn new() -> Fragment {\n");
+    let _ = file.write(b"        let mut strokes:HashMap<u8, String> = HashMap::new();\n");
+    let _ = file.write(b"        let mut fills:HashMap<u8, String> = HashMap::new();\n\n");
+    let _ = file.write(b"\n");
+
     for (key, value) in lines {
-        let _ = write!(file, "  (vec!{:?}, \"{}\"),\n", key, value);
+        let _ = write!(
+            file,
+            "        strokes.insert(0b{:06b}, \"{}\".to_string());\n",
+            key, value
+        );
     }
-    let _ = file.write(b"]);\n");
-    let _ =
-        file.write(b"\npub const FILLS_FOR_VECTOR: HashMap<Vec<usize>, &str> = HashMap::from([\n");
     for (key, value) in fills {
-        let _ = write!(file, "  (vec!{:?}, \"{}\"),\n", key, value);
+        let _ = write!(
+            file,
+            "        fills.insert(0b{:06b}, \"{}\".to_string());\n",
+            key, value
+        );
     }
-    let _ = file.write(b"]);\n");
+    let _ = file.write(b"\n        return Fragment {\n");
+    let _ = file.write(b"             strokes: strokes,\n");
+    let _ = file.write(b"             fills: fills,\n");
+    let _ = file.write(b"        };\n");
+    let _ = file.write(b"    }\n");
+    let _ = file.write(b"}\n");
+
     let _ = file.flush();
 }
 
