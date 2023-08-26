@@ -87,7 +87,7 @@ pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
     };
 }
 
-fn ax(index: usize) -> [Point; 3] {
+fn ax(index: usize, invert: bool) -> [Point; 3] {
     //
     let [start, end, r, y] = match index {
         0 => [
@@ -122,23 +122,23 @@ fn ax(index: usize) -> [Point; 3] {
     return [a, b, Point { x: r, y: r }];
 }
 
-fn a1_or_6(index: usize) -> String {
-    let [a, b, r] = ax(index).map(|p| trim(p));
+fn a1_or_6(index: usize, invert: bool) -> String {
+    let [a, b, r] = ax(index, invert).map(|p| trim(p));
     return format!("<path d=\\\"M {a} A {r} 0 0 0 {b}\\\" />");
 }
 
-fn a1() -> String {
-    return a1_or_6(0);
+fn a1(invert: bool) -> String {
+    return a1_or_6(0, invert);
 }
 
-fn a6() -> String {
-    return a1_or_6(1);
+fn a6(invert: bool) -> String {
+    return a1_or_6(1, invert);
 }
 
-fn a4_to_5() -> String {
+fn a4_to_5(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = ax(2);
-    let [c, d, r2] = ax(3);
+    let [a, b, r1] = ax(2, invert);
+    let [c, d, r2] = ax(3, invert);
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
     return format!(
@@ -147,10 +147,10 @@ fn a4_to_5() -> String {
     );
 }
 
-fn a4_to_6() -> String {
+fn a4_to_6(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = ax(2);
-    let [c, d, r2] = ax(3);
+    let [a, b, r1] = ax(2, invert);
+    let [c, d, r2] = ax(3, invert);
     let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_cw(0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
@@ -160,10 +160,10 @@ fn a4_to_6() -> String {
     );
 }
 
-fn a5_to_6() -> String {
+fn a5_to_6(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = ax(2);
-    let [c, d, r2] = ax(3);
+    let [a, b, r1] = ax(2, invert);
+    let [c, d, r2] = ax(3, invert);
     let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_ccw(0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
@@ -173,30 +173,30 @@ fn a5_to_6() -> String {
     );
 }
 
-fn a2_or_5(index: usize) -> String {
-    let [a, b, r] = ax(index);
+fn a2_or_5(index: usize, invert: bool) -> String {
+    let [a, b, r] = ax(index, invert);
     let [a, b] = [a, b].map(|p| p.rotate_cw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
     return format!("<path d=\\\"M {a} A {r} 0 0 0 {b}\\\" />");
 }
-fn a2() -> String {
-    return a2_or_5(0);
+fn a2(invert: bool) -> String {
+    return a2_or_5(0, invert);
 }
-fn a4() -> String {
-    return a2_or_5(1);
+fn a4(invert: bool) -> String {
+    return a2_or_5(1, invert);
 }
 
-fn a3_or_5(index: usize) -> String {
-    let [a, b, r] = ax(index);
+fn a3_or_5(index: usize, invert: bool) -> String {
+    let [a, b, r] = ax(index, invert);
     let [a, b] = [a, b].map(|p| p.rotate_ccw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
     return format!("<path d=\\\"M{a}A{r} 0 0 0{b}\\\"/>");
 }
-fn a3() -> String {
-    return a3_or_5(0usize);
+fn a3(invert: bool) -> String {
+    return a3_or_5(0usize, invert);
 }
-fn a5() -> String {
-    return a3_or_5(1usize);
+fn a5(invert: bool) -> String {
+    return a3_or_5(1usize, invert);
 }
 
 pub fn generate_all_shapes() {
@@ -209,15 +209,15 @@ pub fn generate_all_shapes() {
         (0b01_010_010, l2_to_5(true)),
         (0b00_001_100, l3_to_4(false)),
         (0b01_001_100, l3_to_4(true)),
-        (0b00_000_001, a1()),
-        (0b00_000_010, a2()),
-        (0b00_000_100, a3()),
-        (0b00_001_000, a4()),
-        (0b00_010_000, a5()),
-        (0b00_100_000, a6()),
-        (0b00_011_000, a4_to_5()),
-        (0b00_010_100, a4_to_6()),
-        (0b00_110_000, a5_to_6()),
+        (0b00_000_001, a1(false)),
+        (0b00_000_010, a2(false)),
+        (0b00_000_100, a3(false)),
+        (0b00_001_000, a4(false)),
+        (0b00_010_000, a5(false)),
+        (0b00_100_000, a6(false)),
+        (0b00_011_000, a4_to_5(false)),
+        (0b00_010_100, a4_to_6(false)),
+        (0b00_110_000, a5_to_6(false)),
         (0b10_000_000, l_wall(false)),
         (0b11_000_000, l_wall(true)),
     ] {
