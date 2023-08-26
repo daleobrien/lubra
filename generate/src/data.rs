@@ -1,5 +1,5 @@
 use common::types::point::{diff, Point, PATH_WIDTH, S3, TILE_WIDTH};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::f64::consts::FRAC_PI_6;
 use std::fs::File;
 use std::io::Write;
@@ -15,6 +15,25 @@ fn generate_lx(invert: bool) -> Vec<Point> {
     return diff(points, invert);
 }
 
+fn walls(invert: bool) -> Vec<Point> {
+    let a = Point { x: 0.0, y: 0.0 };
+    let b = Point { x: 0.5, y: S3 };
+    let c = Point { x: 1.0, y: 0.0 };
+    let points = vec![a, b, c];
+    return diff(points, invert);
+}
+
+fn l_wall(invert: bool) -> String {
+    let pts = walls(invert);
+    let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
+    return format!(
+        "<path fill=\\\"transparent\\\" stroke=\\\"red\\\" d=\\\"M{a}l{b}l{c}z \\\"/>",
+        a = s[0],
+        b = s[1],
+        c = s[2]
+    );
+}
+
 fn trimf64(num: f64) -> String {
     let space = if num < 0f64 { "" } else { " " };
     let formatted = format!("{space}{:.*}", 2, num);
@@ -26,7 +45,7 @@ fn trim(point: Point) -> String {
     return format!("{} {}", trimf64(point.x), trimf64(point.y));
 }
 
-fn generate_lx_string(pts: Vec<Point>) -> String {
+fn l_a_to_b(pts: Vec<Point>) -> String {
     let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
     return format!(
         "<path d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
@@ -39,7 +58,7 @@ fn generate_lx_string(pts: Vec<Point>) -> String {
 }
 
 fn l1_to_6(invert: bool) -> String {
-    return generate_lx_string(generate_lx(invert));
+    return l_a_to_b(generate_lx(invert));
 }
 
 fn l2_to_5(invert: bool) -> String {
@@ -48,7 +67,7 @@ fn l2_to_5(invert: bool) -> String {
         .enumerate()
         .map(|(i, p)| p.rotate_cw(i, vec![0, 4]))
         .collect::<Vec<_>>();
-    return generate_lx_string(pts);
+    return l_a_to_b(pts);
 }
 
 fn l3_to_4(invert: bool) -> String {
@@ -57,7 +76,7 @@ fn l3_to_4(invert: bool) -> String {
         .enumerate()
         .map(|(i, p)| p.rotate_ccw(i, vec![0, 4]))
         .collect::<Vec<_>>();
-    return generate_lx_string(pts);
+    return l_a_to_b(pts);
 }
 
 pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
@@ -184,21 +203,23 @@ pub fn generate_all_shapes() {
     let mut paths: BTreeMap<usize, String> = BTreeMap::new();
 
     for (key, path) in [
-        (0b0_100_001, l1_to_6(false)),
-        (0b1_100_001, l1_to_6(true)),
-        (0b0_010_010, l2_to_5(false)),
-        (0b1_010_010, l2_to_5(true)),
-        (0b0_001_100, l3_to_4(false)),
-        (0b1_001_100, l3_to_4(true)),
-        (0b0_000_001, a1()),
-        (0b0_000_010, a2()),
-        (0b0_000_100, a3()),
-        (0b0_001_000, a4()),
-        (0b0_010_000, a5()),
-        (0b0_100_000, a6()),
-        (0b0_011_000, a4_to_5()),
-        (0b0_010_100, a4_to_6()),
-        (0b0_110_000, a5_to_6()),
+        (0b00_100_001, l1_to_6(false)),
+        (0b01_100_001, l1_to_6(true)),
+        (0b00_010_010, l2_to_5(false)),
+        (0b01_010_010, l2_to_5(true)),
+        (0b00_001_100, l3_to_4(false)),
+        (0b01_001_100, l3_to_4(true)),
+        (0b00_000_001, a1()),
+        (0b00_000_010, a2()),
+        (0b00_000_100, a3()),
+        (0b00_001_000, a4()),
+        (0b00_010_000, a5()),
+        (0b00_100_000, a6()),
+        (0b00_011_000, a4_to_5()),
+        (0b00_010_100, a4_to_6()),
+        (0b00_110_000, a5_to_6()),
+        (0b10_000_000, l_wall(false)),
+        (0b11_000_000, l_wall(true)),
     ] {
         paths.insert(key, path);
     }

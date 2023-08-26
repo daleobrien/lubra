@@ -57,6 +57,16 @@ impl Tile {
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
 
+        // ADD walls
+        let mut bits = 0b10_000_000;
+        if flipped {
+            bits |= 0b01_000_000;
+        }
+        let wall = MAP_PATHS.get(&bits);
+        if wall.is_some() {
+            groups.push(wall.unwrap());
+        }
+
         for net in self.nodes {
             let mut bits: u8 = 0;
             for n in net {

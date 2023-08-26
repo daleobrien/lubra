@@ -91,19 +91,33 @@ impl Point {
 
 pub fn diff(points: Vec<Point>, invert: bool) -> Vec<Point> {
     // Convert 4 points into the first point followed by series of differences
-    let mut seq = vec![points[0] * TILE_WIDTH];
+    let mut seq = vec![];
+    seq.push(
+        TILE_WIDTH
+            * if invert {
+                points[0]
+            } else {
+                Point { x: 0.0, y: S3 } - points[0]
+            },
+    );
 
     let diffs = points
         .windows(2)
-        .map(|p| TILE_WIDTH * (p[1] - p[0]))
+        .map(|p| {
+            TILE_WIDTH
+                * if invert {
+                    p[1] - p[0]
+                } else {
+                    Point {
+                        x: p[1].x - p[0].x,
+                        y: p[0].y - p[1].y, // diff in the other direction
+                    }
+                }
+        })
         .collect::<Vec<_>>();
 
     for d in diffs.iter() {
-        if invert {
-            seq.push(Point { x: 0f64, y: S3 } - *d);
-        } else {
-            seq.push(*d);
-        }
+        seq.push(*d);
     }
     return seq;
 }
