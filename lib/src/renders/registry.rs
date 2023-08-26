@@ -1,0 +1,93 @@
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+pub struct StringRegistry {
+    map: HashMap<usize, String>,
+    counter: AtomicUsize,
+}
+
+impl StringRegistry {
+    pub fn new() -> Self {
+        StringRegistry {
+            map: HashMap::new(),
+            counter: AtomicUsize::new(0),
+        }
+    }
+
+    pub fn add(&mut self, value: &str) -> usize {
+        let id = self.counter.fetch_add(1, Ordering::Relaxed);
+        self.map.insert(id, value.to_string());
+        id
+    }
+
+    pub fn get(&self, id: usize) -> Option<&String> {
+        self.map.get(&id)
+    }
+    pub(crate) fn iter(&self) -> StringRegistryIter {
+        StringRegistryIter {
+            inner: self.map.iter(),
+        }
+    }
+}
+
+pub struct StringRegistryIter<'a> {
+    inner: std::collections::hash_map::Iter<'a, usize, String>,
+}
+
+impl<'a> Iterator for StringRegistryIter<'a> {
+    type Item = (&'a usize, &'a String);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
+    }
+}
+
+impl IntoIterator for StringRegistry {
+    type Item = (usize, String);
+    type IntoIter = std::collections::hash_map::IntoIter<usize, String>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.map.into_iter()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::assert_eq;
+
+    #[test]
+    fn test_string_registry() {
+        let mut registry = StringRegistry::new();
+
+        let id = registry.add("Hello");
+        assert_eq!(registry.get(id), Some(&"Hello".to_string()));
+        assert_eq!(id, 0usize);
+
+        // No string at id + 1
+        assert_eq!(registry.get(id + 1), None);
+
+        let id = registry.add("Longer String");
+        assert_eq!(id, 1usize);
+        assert_eq!(registry.get(id), Some(&"Longer String".to_string()));
+
+        assert_eq!(registry.get(0usize), Some(&"Hello".to_string()));
+    }
+
+    #[test]
+    fn test_string_registry_iter() {
+        let mut registry = StringRegistry::new();
+
+        let string1 = "First item";
+        let id1 = registry.add(string1);
+
+        let string2 = "Another item";
+        let id2 = registry.add(string2);
+
+        let mut iter = registry.iter();
+
+        assert_eq!(iter.next(), Some((&id1, &string1.to_string())));
+        assert_eq!(iter.next(), Some((&id2, &string2.to_string())));
+        assert_eq!(iter.next(), None);
+    }
+}

@@ -9,7 +9,7 @@ use array2d::Array2D;
 use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
-use crate::renders::_point::Coordinate;
+use crate::renders::_point::{Coordinate, Point};
 use crate::renders::fragment::{H, M};
 use crate::renders::svg::Svg;
 
@@ -385,24 +385,21 @@ impl Maze {
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
                 let coord: Coordinate = Coordinate { i, j };
+                let point: Point = Point {
+                    x: i as f64,
+                    y: j as f64,
+                };
 
                 let tile = self.tiles[(j, i)].clone();
                 println!("Tile({i},{j}): {:?}", tile.nodes);
 
-                for (g, svg) in tile.to_svg_groups(coord).iter().enumerate() {
-                    // Check if we have seen this fragment, if so, `use` the ref, otherwise make a new one
-                    // ...
-                    // Push into group with `<use href="#ref" ...>`
-                    // SVG class can handle this ...
-                    //
-                    println!("({i},{j},{g}) -> svg: {}", *svg);
-                    // svg_groups[i].push_str(svg);
+                for (g, &frag) in tile.to_svg_groups(coord).iter().enumerate() {
+                    svg.add_fragment(frag, point, g);
                 }
-
-                //println!("faint: {:?}", &faint_path.to_string());
             }
         }
 
+        println!("svg: {}", file_name);
         fs::write(file_name, svg.to_string())?;
         Ok(())
     }

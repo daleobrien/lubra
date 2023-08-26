@@ -4,19 +4,6 @@ use std::f64::consts::FRAC_PI_6;
 use std::fs::File;
 use std::io::Write;
 use std::ops::{Mul, Sub};
-/*
-
-Could I use a use statement within the SVG, and have the objects under a white block?
-
-It can work, only if I don't set the stroke/fill on the source <g...>, I can set that at the svg level
- though, so it's transparent unless I set the colour in the "use" it.
- */
-fn wrap_format_with_function(name: &str, svg: String) -> String {
-    format!(
-        "pub fn {}(offset: Point) -> String \n{{\n  writeln!(\"{}\", x=offset.x, y=offset.y)\n}}",
-        name, svg
-    )
-}
 
 fn generate_Lx() -> Vec<Point> {
     let w = Point {
@@ -37,34 +24,38 @@ fn trim(point: Point) -> String {
     return format!("{} {}", trimf64(point.x), trimf64(point.y));
 }
 
-fn generate_Lx_String(pts: Vec<Point>) -> [String; 2] {
+fn generate_lx_string(pts: Vec<Point>) -> String {
     let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
-    return [
-        format!("M{a}l{b}l{c}l{d}z", a = s[0], b = s[1], c = s[2], d = s[3]),
-        format!("M{a}l{b}m{c}l{d}z", a = s[0], b = s[1], c = s[2], d = s[3]),
-    ];
+    return format!(
+        "<path d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
+         <path  fill=\\\"transparent\\\" d\\\"M{a}l{b}m{c}l{d}z\\\"/>",
+        a = s[0],
+        b = s[1],
+        c = s[2],
+        d = s[3]
+    );
 }
 
-fn generate_L16_fn() -> [String; 2] {
-    return generate_Lx_String(generate_Lx());
+fn generate_l16_fn() -> String {
+    return generate_lx_string(generate_Lx());
 }
 
-fn generate_L25_fn() -> [String; 2] {
+fn generate_l25_fn() -> String {
     let pts = generate_Lx()
         .iter()
         .enumerate()
         .map(|(i, p)| p.rotate_cw(i, vec![0, 4]))
         .collect::<Vec<_>>();
-    return generate_Lx_String(pts);
+    return generate_lx_string(pts);
 }
 
-fn generate_L34_fn() -> [String; 2] {
+fn generate_l34_fn() -> String {
     let pts = generate_Lx()
         .iter()
         .enumerate()
         .map(|(i, p)| p.rotate_ccw(i, vec![0, 4]))
         .collect::<Vec<_>>();
-    return generate_Lx_String(pts);
+    return generate_lx_string(pts);
 }
 
 pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
@@ -75,7 +66,7 @@ pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
     };
 }
 
-fn generate_Ax(index: usize) -> [Point; 3] {
+fn generate_ax(index: usize) -> [Point; 3] {
     //
     let [start, end, r, y] = match index {
         0 => [
@@ -105,122 +96,101 @@ fn generate_Ax(index: usize) -> [Point; 3] {
     return [a, b, Point { x: r, y: r }];
 }
 
-fn generate_A1_or_6_fn(index: usize) -> [String; 2] {
-    let [a, b, r] = generate_Ax(index).map(|p| trim(p));
-    return [format!("M {a} A {r} 0 0 0 {b}"), format!("")];
+fn generate_a1_or_6_fn(index: usize) -> String {
+    let [a, b, r] = generate_ax(index).map(|p| trim(p));
+    return format!("<path d=\\\"M {a} A {r} 0 0 0 {b}\\\" />");
 }
 
-fn generate_A1_fn() -> [String; 2] {
-    return generate_A1_or_6_fn(0);
+fn generate_a1_fn() -> String {
+    return generate_a1_or_6_fn(0);
 }
 
-fn generate_A6_fn() -> [String; 2] {
-    return generate_A1_or_6_fn(1);
+fn generate_a6_fn() -> String {
+    return generate_a1_or_6_fn(1);
 }
 
-fn generate_A4_to_5_fn() -> [String; 2] {
+fn generate_a4_to_5_fn() -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = generate_Ax(2);
-    let [c, d, r2] = generate_Ax(3);
+    let [a, b, r1] = generate_ax(2);
+    let [c, d, r2] = generate_ax(3);
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
-    return [
-        format!("M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0 {d} z"),
-        format!("M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d}"),
-    ];
+    return format!(
+        "<path d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0 {d} z \\\" /> \
+         <path  fill=\\\"transparent\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d} \\\" />"
+    );
 }
 
-fn generate_A4_to_6_fn() -> [String; 2] {
+fn generate_a4_to_6_fn() -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = generate_Ax(2);
-    let [c, d, r2] = generate_Ax(3);
+    let [a, b, r1] = generate_ax(2);
+    let [c, d, r2] = generate_ax(3);
     let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_cw(0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
-    return [
-        format!("M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z "),
-        format!("M {a} A {r1} 0 0 1  {b} M {c} A {r2} 0 0 0  {d} ",),
-    ];
+    return format!(
+        "<path d=\\\"M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z \\\"/> \
+         <path  fill=\\\"transparent\\\" d=\\\"M {a} A {r1} 0 0 1  {b} M {c} A {r2} 0 0 0  {d} \\\"/>"
+    );
 }
 
-fn generate_A5_to_6_fn() -> [String; 2] {
+fn generate_a5_to_6_fn() -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = generate_Ax(2);
-    let [c, d, r2] = generate_Ax(3);
+    let [a, b, r1] = generate_ax(2);
+    let [c, d, r2] = generate_ax(3);
     let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_ccw(0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
-    return [
-        format!("M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0  {d} z"),
-        format!("M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d}"),
-    ];
+    return format!(
+        "<path d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0  {d} z\\\" /> \
+         <path fill=\\\"transparent\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d}\\\" />"
+    );
 }
 
-fn generate_A2_or_5_fn(index: usize) -> [String; 2] {
-    let [a, b, r] = generate_Ax(index);
+fn generate_a2_or_5_fn(index: usize) -> String {
+    let [a, b, r] = generate_ax(index);
     let [a, b] = [a, b].map(|p| p.rotate_cw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
-    return [format!("M {a} A {r} 0 0 0 {b}"), format!("")];
+    return format!("<path d=\\\"M {a} A {r} 0 0 0 {b}\\\" />");
 }
-fn generate_A2_fn() -> [String; 2] {
-    return generate_A2_or_5_fn(0);
+fn generate_a2_fn() -> String {
+    return generate_a2_or_5_fn(0);
 }
-fn generate_A4_fn() -> [String; 2] {
-    return generate_A2_or_5_fn(1);
+fn generate_a4_fn() -> String {
+    return generate_a2_or_5_fn(1);
 }
 
-fn generate_A3_or_5fn(index: usize) -> [String; 2] {
-    let [a, b, r] = generate_Ax(index);
+fn generate_a3_or_5fn(index: usize) -> String {
+    let [a, b, r] = generate_ax(index);
     let [a, b] = [a, b].map(|p| p.rotate_ccw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
-    return [format!("M{a}A{r} 0 0 0{b}",), format!("")];
+    return format!("<path d=\\\"M{a}A{r} 0 0 0{b}\\\"/>");
 }
-fn generate_A3_fn() -> [String; 2] {
-    return generate_A3_or_5fn(0usize);
+fn generate_a3_fn() -> String {
+    return generate_a3_or_5fn(0usize);
 }
-fn generate_A5_fn() -> [String; 2] {
-    return generate_A3_or_5fn(1usize);
-}
-
-fn wrap(name: &str, paths: [String; 2]) -> String {
-    let a = format!(
-        "<g id=\"{name}_fill\"><path d=\"{fill}\"/></g>",
-        fill = paths[0]
-    );
-
-    if paths[1].is_empty() {
-        return a;
-    }
-    let b = format!(
-        "<g id=\"{name}_line\"><path d=\"{line}\"/></g>",
-        line = paths[1]
-    );
-
-    return format!("{}\n{}", a, b);
+fn generate_a5_fn() -> String {
+    return generate_a3_or_5fn(1usize);
 }
 
 pub fn generate_all_shapes() {
-    let mut lines: HashMap<usize, String> = HashMap::new();
-    let mut fills: HashMap<usize, String> = HashMap::new();
+    let mut paths: HashMap<usize, String> = HashMap::new();
 
-    for (key, [line, fill]) in [
-        (0b100_001, generate_L16_fn()),
-        (0b010_010, generate_L25_fn()),
-        (0b001_100, generate_L34_fn()),
-        (0b000_001, generate_A1_fn()),
-        (0b000_010, generate_A2_fn()),
-        (0b000_100, generate_A3_fn()),
-        (0b001_000, generate_A4_fn()),
-        (0b010_000, generate_A5_fn()),
-        (0b100_000, generate_A6_fn()),
-        (0b011_000, generate_A4_to_5_fn()),
-        (0b01_0100, generate_A4_to_6_fn()),
-        (0b11_0000, generate_A5_to_6_fn()),
+    for (key, path) in [
+        (0b100_001, generate_l16_fn()),
+        (0b010_010, generate_l25_fn()),
+        (0b001_100, generate_l34_fn()),
+        (0b000_001, generate_a1_fn()),
+        (0b000_010, generate_a2_fn()),
+        (0b000_100, generate_a3_fn()),
+        (0b001_000, generate_a4_fn()),
+        (0b010_000, generate_a5_fn()),
+        (0b100_000, generate_a6_fn()),
+        (0b011_000, generate_a4_to_5_fn()),
+        (0b01_0100, generate_a4_to_6_fn()),
+        (0b11_0000, generate_a5_to_6_fn()),
     ] {
-        lines.insert(key, line);
-        if !fill.is_empty() {
-            fills.insert(key, fill);
-        }
+        paths.insert(key, path);
     }
 
     // Change this to a look up function rather than a class with a HashMap.
@@ -233,14 +203,8 @@ pub fn generate_all_shapes() {
     let _ = file.write(b"// U * f64::sqrt(3.0) / 2.0;\n");
     let _ = write!(file, "pub const H: f64 = {m}f64;\n\n", m = S3 * SCALE);
 
-    let _ = file.write(b"pub static MAP_LINE: Map<u8, &'static str> = phf_map! {\n");
-    for (key, value) in lines {
-        let _ = write!(file, "  {}u8 =>  \"{}\",\n", key, value);
-    }
-    let _ = file.write(b"};\n\n");
-
-    let _ = file.write(b"pub static MAP_FILL: Map<u8, &'static str> = phf_map! {\n");
-    for (key, value) in fills {
+    let _ = file.write(b"pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {\n");
+    for (key, value) in paths {
         let _ = write!(file, "  {}u8 =>  \"{}\",\n", key, value);
     }
     let _ = file.write(b"};\n\n");

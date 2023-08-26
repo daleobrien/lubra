@@ -1,5 +1,5 @@
 use crate::renders::_point::{Coordinate, Point};
-use crate::renders::fragment::{M, MAP_FILL, MAP_LINE, U};
+use crate::renders::fragment::{M, MAP_PATHS, U};
 use rand_distr::num_traits::ToPrimitive;
 use std::fmt;
 
@@ -62,14 +62,9 @@ impl Tile {
                 bits |= 1 << (n - 1);
             }
 
-            let fill = MAP_FILL.get(&bits);
-            if fill.is_some() {
-                groups.push(fill.unwrap());
-            }
-
-            let line = MAP_LINE.get(&bits);
-            if line.is_some() {
-                groups.push(line.unwrap());
+            let path = MAP_PATHS.get(&bits);
+            if path.is_some() {
+                groups.push(path.unwrap());
             }
         }
 
