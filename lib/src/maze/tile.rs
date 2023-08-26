@@ -62,19 +62,12 @@ impl Tile {
                 bits |= 1 << (n - 1);
             }
 
-            let line = MAP_LINE.get(&bits);
             let fill = MAP_FILL.get(&bits);
-
             if fill.is_some() {
-                groups.push(
-                    match fill {
-                        Some(x) => *x,
-                        None => todo!(),
-                    }
-                    .clone(),
-                );
+                groups.push(fill.unwrap());
             }
 
+            let line = MAP_LINE.get(&bits);
             if line.is_some() {
                 groups.push(line.unwrap());
             }
