@@ -89,30 +89,34 @@ pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
 
 fn ax(index: usize, invert: bool) -> [Point; 3] {
     //
+
+    let h1 = if invert { 0.0 } else { S3 * TILE_WIDTH };
+    let h2 = if invert { S3 * TILE_WIDTH } else { 0.0 };
+
     let [start, end, r, y] = match index {
         0 => [
             12.0 * FRAC_PI_6,
             18.0 * FRAC_PI_6,
             PATH_WIDTH * TILE_WIDTH,
-            S3 * TILE_WIDTH,
+            h1,
         ],
         1 => [
             18.0 * FRAC_PI_6,
             12.0 * FRAC_PI_6,
             PATH_WIDTH * TILE_WIDTH,
-            0f64,
+            h2,
         ],
         2 => [
             8.0 * FRAC_PI_6,
             10.0 * FRAC_PI_6,
             (0.5 - PATH_WIDTH) * TILE_WIDTH,
-            S3 * TILE_WIDTH,
+            h1,
         ],
         3 => [
             10.0 * FRAC_PI_6,
             8.0 * FRAC_PI_6,
             (0.5 + PATH_WIDTH) * TILE_WIDTH,
-            S3 * TILE_WIDTH,
+            h1,
         ],
         _ => panic!("Invalid index"),
     };
@@ -210,6 +214,7 @@ pub fn generate_all_shapes() {
         (0b00_001_100, l3_to_4(false)),
         (0b01_001_100, l3_to_4(true)),
         (0b00_000_001, a1(false)),
+        (0b01_000_001, a1(true)),
         (0b00_000_010, a2(false)),
         (0b00_000_100, a3(false)),
         (0b00_001_000, a4(false)),

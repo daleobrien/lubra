@@ -14,6 +14,7 @@ pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {
   32u8 =>  "<path d=\"M  36 -0 A  24  24 0 0 0  84  0\" />",
   33u8 =>  "<path d=\"M-36  0l 0  103.92l 48  0l 0 -103.92z \"/> <path  fill=\"transparent\" d=\"M-36  0l 0  103.92m 48  0l 0 -103.92z\"/>",
   48u8 =>  "<path d=\"M  36  0 A  36  36 0 0 1  18  31.18 L  42  72.75 A  84  84 0 0 0   84  0 z\" /> <path fill=\"transparent\" d=\"M  36  0 A  36  36 0 0 1  18  31.18 M  42  72.75 A  84  84 0 0 0  84  0\" />",
+  65u8 =>  "<path d=\"M  84  0 A  24  24 0 0 0  36 -0\" />",
   76u8 =>  "<path d=\"M 12 -20.78l 90  51.96l-24  41.57l-90 -51.96z \"/> <path  fill=\"transparent\" d=\"M 12 -20.78l 90  51.96m-24  41.57l-90 -51.96z\"/>",
   82u8 =>  "<path d=\"M 132  20.78l-90  51.96l-24 -41.57l 90 -51.96z \"/> <path  fill=\"transparent\" d=\"M 132  20.78l-90  51.96m-24 -41.57l 90 -51.96z\"/>",
   97u8 =>  "<path d=\"M 36  103.92l 0 -103.92l 48  0l 0  103.92z \"/> <path  fill=\"transparent\" d=\"M 36  103.92l 0 -103.92m 48  0l 0  103.92z\"/>",
