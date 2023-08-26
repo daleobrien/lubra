@@ -1,5 +1,5 @@
 use common::types::point::{diff, Point, PATH_WIDTH, S3, TILE_WIDTH};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::f64::consts::FRAC_PI_6;
 use std::fs::File;
 use std::io::Write;
@@ -181,7 +181,7 @@ fn a5() -> String {
 }
 
 pub fn generate_all_shapes() {
-    let mut paths: HashMap<usize, String> = HashMap::new();
+    let mut paths: BTreeMap<usize, String> = BTreeMap::new();
 
     for (key, path) in [
         (0b0_100_001, l1_to_6(false)),
