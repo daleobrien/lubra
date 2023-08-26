@@ -1,4 +1,4 @@
-use common::types::point::{diff, Point, PATH_WIDTH, S3, SCALE};
+use common::types::point::{diff, Point, PATH_WIDTH, S3, TILE_WIDTH};
 use std::collections::HashMap;
 use std::f64::consts::FRAC_PI_6;
 use std::fs::File;
@@ -74,25 +74,30 @@ fn ax(index: usize) -> [Point; 3] {
         0 => [
             12.0 * FRAC_PI_6,
             18.0 * FRAC_PI_6,
-            PATH_WIDTH * SCALE,
-            S3 * SCALE,
+            PATH_WIDTH * TILE_WIDTH,
+            S3 * TILE_WIDTH,
         ],
-        1 => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH * SCALE, 0f64],
+        1 => [
+            18.0 * FRAC_PI_6,
+            12.0 * FRAC_PI_6,
+            PATH_WIDTH * TILE_WIDTH,
+            0f64,
+        ],
         2 => [
             8.0 * FRAC_PI_6,
             10.0 * FRAC_PI_6,
-            (0.5 - PATH_WIDTH) * SCALE,
-            S3 * SCALE,
+            (0.5 - PATH_WIDTH) * TILE_WIDTH,
+            S3 * TILE_WIDTH,
         ],
         3 => [
             10.0 * FRAC_PI_6,
             8.0 * FRAC_PI_6,
-            (0.5 + PATH_WIDTH) * SCALE,
-            S3 * SCALE,
+            (0.5 + PATH_WIDTH) * TILE_WIDTH,
+            S3 * TILE_WIDTH,
         ],
         _ => panic!("Invalid index"),
     };
-    let x = 0.5 * SCALE;
+    let x = 0.5 * TILE_WIDTH;
     let a = polar(Point { x, y }, r, start);
     let b = polar(Point { x, y }, r, end);
     return [a, b, Point { x: r, y: r }];
@@ -202,12 +207,6 @@ pub fn generate_all_shapes() {
     let mut file = File::create("../lib/src/renders/fragment.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
-
-    let _ = write!(file, "pub const U: f64 = {SCALE}f64;\n",);
-    let _ = write!(file, "pub const M: f64 = {m}f64;\n", m = SCALE / 2.0);
-    let _ = file.write(b"// U * f64::sqrt(3.0) / 2.0;\n");
-    let _ = write!(file, "pub const H: f64 = {m}f64;\n\n", m = S3 * SCALE);
-
     let _ = file.write(b"pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {\n");
     for (key, value) in paths {
         let _ = write!(file, "  {}u8 =>  \"{}\",\n", key, value);
@@ -220,7 +219,7 @@ pub fn generate_all_shapes() {
 #[cfg(test)]
 mod tests {
     use approx::assert_ulps_eq;
-    use common::types::point::{Point, SCALE};
+    use common::types::point::{Point, TILE_WIDTH};
     use std::vec;
 
     extern crate approx;
@@ -228,13 +227,13 @@ mod tests {
     #[test]
     fn test_rotate() {
         use super::*;
-        let p = SCALE * Point { x: 1f64, y: 0f64 };
+        let p = TILE_WIDTH * Point { x: 1f64, y: 0f64 };
         let r = p.rotate_ccw(0, vec![0]);
-        assert_ulps_eq!(r.x, SCALE * 0.5f64);
-        assert_ulps_eq!(r.y, SCALE * S3);
+        assert_ulps_eq!(r.x, TILE_WIDTH * 0.5f64);
+        assert_ulps_eq!(r.y, TILE_WIDTH * S3);
 
         let q = r.rotate_cw(0, vec![0]);
-        assert_ulps_eq!(q.x, SCALE * 1f64);
-        assert_ulps_eq!(q.y, SCALE * 0f64, epsilon = 0.0000000000001f64);
+        assert_ulps_eq!(q.x, TILE_WIDTH * 1f64);
+        assert_ulps_eq!(q.y, TILE_WIDTH * 0f64, epsilon = 0.0000000000001f64);
     }
 }

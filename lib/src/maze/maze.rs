@@ -10,9 +10,8 @@ use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
 use crate::renders::_point::Coordinate;
-use crate::renders::fragment::{H, M};
 use crate::renders::svg::Svg;
-use common::types::point::Point;
+use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 
 pub struct Maze {
     pub style: Option<String>,
@@ -71,8 +70,8 @@ impl Maze {
             }
         }
 
-        self.width = (number_of_columns + 1) as f64 * M;
-        self.height = number_of_rows as f64 * H;
+        self.width = (number_of_columns + 1) as f64 * TILE_WIDTH / 2.0;
+        self.height = number_of_rows as f64 * TILE_HEIGHT;
 
         // Sort such that the last net is the shortest, we will be deleting them as we go
         self.nets.sort_by(|a, b| (&b.len()).cmp(&a.len()));
@@ -368,8 +367,8 @@ impl Maze {
     pub fn render(self, file_name: String) -> Result<(), Box<dyn Error>> {
         let margin = 5.0;
         let margin = 5.0;
-        let w = (self.number_of_columns + 1) as f64 * M + 5.0 * margin;
-        let h = self.number_of_rows as f64 * H + 5.0 * margin;
+        let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;
+        let h = self.number_of_rows as f64 * TILE_HEIGHT + 5.0 * margin;
 
         println!(
             "Render {w},{h}\n",
@@ -392,7 +391,6 @@ impl Maze {
                 };
 
                 let tile = self.tiles[(j, i)].clone();
-                println!("Tile({i},{j}): {:?}", tile.nodes);
 
                 for (g, &frag) in tile.to_svg_groups(coord).iter().enumerate() {
                     svg.add_fragment(frag, point, g);

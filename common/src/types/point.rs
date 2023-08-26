@@ -11,7 +11,8 @@ pub const S3: f64 = 0.8660254037844386467637231707529362f64; /* sqrt(3)/2 */
 // pub const S4: f64 = 0.4330127018922193233818615853764681f64; /* sqrt(3)/4 */
 pub const S5: f64 = 0.2886751345948128822545743902509787f64; /* 1/2/sqrt(3) */
 
-pub const SCALE: f64 = 120f64;
+pub const TILE_WIDTH: f64 = 120f64;
+pub const TILE_HEIGHT: f64 = 120f64 * S3;
 pub const PATH_WIDTH: f64 = 0.20f64;
 
 impl Add for Point {
@@ -62,7 +63,7 @@ impl Point {
     fn rotate(&self, index: usize, offset_rotations: Vec<usize>, s: f64, c: f64) -> Point {
         if offset_rotations.contains(&index) {
             // Centre point of our tile
-            let pivot = SCALE * Point { x: 0.5f64, y: S5 };
+            let pivot = TILE_WIDTH * Point { x: 0.5f64, y: S5 };
             let translated = *self - pivot;
 
             return pivot
@@ -90,11 +91,11 @@ impl Point {
 
 pub fn diff(points: Vec<Point>, invert: bool) -> Vec<Point> {
     // Convert 4 points into the first point followed by series of differences
-    let mut seq = vec![points[0] * SCALE];
+    let mut seq = vec![points[0] * TILE_WIDTH];
 
     let diffs = points
         .windows(2)
-        .map(|p| SCALE * (p[1] - p[0]))
+        .map(|p| TILE_WIDTH * (p[1] - p[0]))
         .collect::<Vec<_>>();
 
     for d in diffs.iter() {

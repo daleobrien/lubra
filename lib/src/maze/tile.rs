@@ -1,6 +1,6 @@
 use crate::renders::_point::Coordinate;
-use crate::renders::fragment::{M, MAP_PATHS, U};
-use common::types::point::Point;
+use crate::renders::fragment::MAP_PATHS;
+use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use rand_distr::num_traits::ToPrimitive;
 use std::fmt;
 
@@ -38,8 +38,8 @@ pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool
     let x_margin = 0.0;
     let y_margin = 0.0;
     let origin = Point {
-        x: (M + x_margin) * coordinate.i as f64,
-        y: (U + y_margin) * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
+        x: (TILE_WIDTH / 2.0 + x_margin) * coordinate.i as f64,
+        y: (TILE_HEIGHT + y_margin) * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
     };
     let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
@@ -61,6 +61,10 @@ impl Tile {
             let mut bits: u8 = 0;
             for n in net {
                 bits |= 1 << (n - 1);
+            }
+
+            if flipped {
+                bits |= 0b1_000_000;
             }
 
             let path = MAP_PATHS.get(&bits);
