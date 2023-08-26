@@ -78,6 +78,7 @@ impl Svg {
             h = self.height
         ));
 
+        // TODO: User <def ... /> and then <use ... /> to reference the glyph fragments.
         // // These are all the glyphs, ... tile fragments.
         // s.push_str(" <g id=\"glyphs\" stroke=\"transparent\" fill=\"transparent\">");
         // for content in &self.glyph_sections {

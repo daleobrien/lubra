@@ -1,5 +1,5 @@
 use crate::renders::_point::{Coordinate, Point};
-use crate::renders::fragment::{Fragment, M, U};
+use crate::renders::fragment::{M, MAP_FILL, MAP_LINE, U};
 use rand_distr::num_traits::ToPrimitive;
 use std::fmt;
 
@@ -50,13 +50,11 @@ impl Tile {
         Tile { nodes, initialised }
     }
 
-    pub fn to_svg_groups(self, coordinate: Coordinate) -> Vec<String> {
+    pub fn to_svg_groups(self, coordinate: Coordinate) -> Vec<&'static str> {
         // Build the SVG groups and return them
-        let mut groups: Vec<String> = vec![];
+        let mut groups: Vec<&str> = vec![];
 
         let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
-
-        let fragment = Fragment::new();
 
         for net in self.nodes {
             let mut bits: u8 = 0;
@@ -64,14 +62,21 @@ impl Tile {
                 bits |= 1 << (n - 1);
             }
 
-            let [fill, line] = fragment.get(&bits);
+            let line = MAP_LINE.get(&bits);
+            let fill = MAP_FILL.get(&bits);
 
             if fill.is_some() {
-                groups.push(fill.unwrap().clone());
+                groups.push(
+                    match fill {
+                        Some(x) => *x,
+                        None => todo!(),
+                    }
+                    .clone(),
+                );
             }
 
             if line.is_some() {
-                groups.push(line.unwrap().clone());
+                groups.push(line.unwrap());
             }
         }
 

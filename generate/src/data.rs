@@ -226,48 +226,24 @@ pub fn generate_all_shapes() {
     // Change this to a look up function rather than a class with a HashMap.
     let mut file = File::create("../lib/src/renders/fragment.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
-    let _ = file.write(b"use std::collections::HashMap;\n\n");
+    let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
 
     let _ = write!(file, "pub const U: f64 = {SCALE}f64;\n",);
     let _ = write!(file, "pub const M: f64 = {m}f64;\n", m = SCALE / 2.0);
     let _ = file.write(b"// U * f64::sqrt(3.0) / 2.0;\n");
     let _ = write!(file, "pub const H: f64 = {m}f64;\n\n", m = S3 * SCALE);
 
-    let _ = file.write(b"pub struct Fragment {\n");
-    let _ = file.write(b"    strokes: HashMap<u8, String>,\n");
-    let _ = file.write(b"    fills: HashMap<u8, String>,\n");
-    let _ = file.write(b"}\n\n");
-
-    let _ = file.write(b"impl Fragment {\n\n");
-    let _ = file.write(b"    pub fn get(&self, key: &u8) -> [Option<&String>; 2] {\n");
-    let _ = file.write(b"        return [self.strokes.get(key), self.fills.get(key)];\n");
-    let _ = file.write(b"    }\n");
-
-    let _ = file.write(b"\n    pub fn new() -> Fragment {\n");
-    let _ = file.write(b"        let mut strokes:HashMap<u8, String> = HashMap::new();\n");
-    let _ = file.write(b"        let mut fills:HashMap<u8, String> = HashMap::new();\n\n");
-    let _ = file.write(b"\n");
-
+    let _ = file.write(b"pub static MAP_LINE: Map<u8, &'static str> = phf_map! {\n");
     for (key, value) in lines {
-        let _ = write!(
-            file,
-            "        strokes.insert(0b{:06b}, \"{}\".to_string());\n",
-            key, value
-        );
+        let _ = write!(file, "  {}u8 =>  \"{}\",\n", key, value);
     }
+    let _ = file.write(b"};\n\n");
+
+    let _ = file.write(b"pub static MAP_FILL: Map<u8, &'static str> = phf_map! {\n");
     for (key, value) in fills {
-        let _ = write!(
-            file,
-            "        fills.insert(0b{:06b}, \"{}\".to_string());\n",
-            key, value
-        );
+        let _ = write!(file, "  {}u8 =>  \"{}\",\n", key, value);
     }
-    let _ = file.write(b"\n        return Fragment {\n");
-    let _ = file.write(b"             strokes: strokes,\n");
-    let _ = file.write(b"             fills: fills,\n");
-    let _ = file.write(b"        };\n");
-    let _ = file.write(b"    }\n");
-    let _ = file.write(b"}\n");
+    let _ = file.write(b"};\n\n");
 
     let _ = file.flush();
 }

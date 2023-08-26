@@ -395,7 +395,7 @@ impl Maze {
                     // Push into group with `<use href="#ref" ...>`
                     // SVG class can handle this ...
                     //
-                    println!("({i},{j},{g}) -> svg: {}", svg);
+                    println!("({i},{j},{g}) -> svg: {}", *svg);
                     // svg_groups[i].push_str(svg);
                 }
 
