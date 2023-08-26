@@ -30,7 +30,7 @@ fn generate_lx_string(pts: Vec<Point>) -> String {
     let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
     return format!(
         "<path d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
-         <path  fill=\\\"transparent\\\" d\\\"M{a}l{b}m{c}l{d}z\\\"/>",
+         <path  fill=\\\"transparent\\\" d=\\\"M{a}l{b}m{c}l{d}z\\\"/>",
         a = s[0],
         b = s[1],
         c = s[2],
