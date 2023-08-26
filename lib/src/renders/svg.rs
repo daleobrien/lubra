@@ -1,5 +1,5 @@
-use crate::renders::_point::Point;
 use crate::renders::registry::StringRegistry;
+use common::types::point::Point;
 use std::fmt;
 
 pub struct Svg {
@@ -76,7 +76,7 @@ impl Svg {
             s.push_str(&layer.to_string());
         }
         //
-        s.push_str("</svg>");
+        s.push_str("\n</svg>");
         return s;
     }
 }

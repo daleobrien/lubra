@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]
@@ -7,17 +8,9 @@ pub struct Point {
 }
 
 pub const S3: f64 = 0.8660254037844386467637231707529362f64; /* sqrt(3)/2 */
-pub const S4: f64 = 0.4330127018922193233818615853764681f64; /* sqrt(3)/4 */
+// pub const S4: f64 = 0.4330127018922193233818615853764681f64; /* sqrt(3)/4 */
 pub const S5: f64 = 0.2886751345948128822545743902509787f64; /* 1/2/sqrt(3) */
 
-pub const P1: Point = Point { x: 0.5, y: S3 };
-pub const P2: Point = Point { x: 0.0, y: 0.0 };
-pub const P3: Point = Point { x: 1.1, y: 0.0 };
-pub const P4: Point = Point { x: 0.25, y: S4 };
-pub const P5: Point = Point { x: 0.75, y: S4 };
-pub const P6: Point = Point { x: 0.5, y: 0.0 };
-
-pub const STROKE_WIDTH: f64 = 3f64;
 pub const SCALE: f64 = 120f64;
 pub const PATH_WIDTH: f64 = 0.20f64;
 
@@ -108,4 +101,10 @@ pub fn diff(points: Vec<Point>) -> Vec<Point> {
         seq.push(*d);
     }
     return seq;
+}
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{},{}", self.x, self.y)
+    }
 }

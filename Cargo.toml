@@ -3,7 +3,8 @@
 members = [
     "lib",
     "cli",
-    "generate"
+    "generate",
+    "common"
 ]
 
 [profile.release]

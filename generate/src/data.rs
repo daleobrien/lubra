@@ -1,21 +1,22 @@
-use crate::types::{diff, Point, P1, P6, PATH_WIDTH, S3, SCALE};
+use common::types::point::{diff, Point, PATH_WIDTH, S3, SCALE};
 use std::collections::HashMap;
 use std::f64::consts::FRAC_PI_6;
 use std::fs::File;
 use std::io::Write;
-use std::ops::{Mul, Sub};
 
-fn generate_Lx() -> Vec<Point> {
+fn generate_lx() -> Vec<Point> {
     let w = Point {
         x: PATH_WIDTH,
         y: 0f64,
     };
-    return diff(vec![P1 - w, P6 - w, P6 + w, P1 + w]);
+    let a = Point { x: 0.5, y: S3 };
+    let b = Point { x: 0.5, y: 0.0 };
+    return diff(vec![a - w, b - w, b + w, a + w]);
 }
 
 fn trimf64(num: f64) -> String {
     let space = if num < 0f64 { "" } else { " " };
-    let formatted = format!("{space}{:.*}", 4, num);
+    let formatted = format!("{space}{:.*}", 2, num);
     let trimmed = formatted.trim_end_matches('0').trim_end_matches('.');
     return trimmed.to_string();
 }
@@ -37,11 +38,11 @@ fn generate_lx_string(pts: Vec<Point>) -> String {
 }
 
 fn l1_to_6() -> String {
-    return generate_lx_string(generate_Lx());
+    return generate_lx_string(generate_lx());
 }
 
 fn l2_to_5() -> String {
-    let pts = generate_Lx()
+    let pts = generate_lx()
         .iter()
         .enumerate()
         .map(|(i, p)| p.rotate_cw(i, vec![0, 4]))
@@ -50,7 +51,7 @@ fn l2_to_5() -> String {
 }
 
 fn l3_to_4() -> String {
-    let pts = generate_Lx()
+    let pts = generate_lx()
         .iter()
         .enumerate()
         .map(|(i, p)| p.rotate_ccw(i, vec![0, 4]))
@@ -177,18 +178,18 @@ pub fn generate_all_shapes() {
     let mut paths: HashMap<usize, String> = HashMap::new();
 
     for (key, path) in [
-        (0b100_001, l1_to_6()),
-        (0b010_010, l2_to_5()),
-        (0b001_100, l3_to_4()),
-        (0b000_001, a1()),
-        (0b000_010, a2()),
-        (0b000_100, a3()),
-        (0b001_000, a4()),
-        (0b010_000, a5()),
-        (0b100_000, a6()),
-        (0b011_000, a4_to_5()),
-        (0b01_0100, a4_to_6()),
-        (0b11_0000, a5_to_6()),
+        (0b0_100_001, l1_to_6()),
+        (0b0_010_010, l2_to_5()),
+        (0b0_001_100, l3_to_4()),
+        (0b0_000_001, a1()),
+        (0b0_000_010, a2()),
+        (0b0_000_100, a3()),
+        (0b0_001_000, a4()),
+        (0b0_010_000, a5()),
+        (0b0_100_000, a6()),
+        (0b0_011_000, a4_to_5()),
+        (0b0_010_100, a4_to_6()),
+        (0b0_110_000, a5_to_6()),
     ] {
         paths.insert(key, path);
     }
@@ -216,6 +217,7 @@ pub fn generate_all_shapes() {
 mod tests {
     use crate::types::SCALE;
     use approx::assert_ulps_eq;
+    use common::types::point::{Point, SCALE};
     use std::vec;
 
     extern crate approx;

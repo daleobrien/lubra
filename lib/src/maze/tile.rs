@@ -1,5 +1,6 @@
-use crate::renders::_point::{Coordinate, Point};
+use crate::renders::_point::Coordinate;
 use crate::renders::fragment::{M, MAP_PATHS, U};
+use common::types::point::Point;
 use rand_distr::num_traits::ToPrimitive;
 use std::fmt;
 

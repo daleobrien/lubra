@@ -9,9 +9,10 @@ use array2d::Array2D;
 use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
-use crate::renders::_point::{Coordinate, Point};
+use crate::renders::_point::Coordinate;
 use crate::renders::fragment::{H, M};
 use crate::renders::svg::Svg;
+use common::types::point::Point;
 
 pub struct Maze {
     pub style: Option<String>,
