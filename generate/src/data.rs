@@ -36,11 +36,11 @@ fn generate_lx_string(pts: Vec<Point>) -> String {
     );
 }
 
-fn generate_l16_fn() -> String {
+fn l1_to_6() -> String {
     return generate_lx_string(generate_Lx());
 }
 
-fn generate_l25_fn() -> String {
+fn l2_to_5() -> String {
     let pts = generate_Lx()
         .iter()
         .enumerate()
@@ -49,7 +49,7 @@ fn generate_l25_fn() -> String {
     return generate_lx_string(pts);
 }
 
-fn generate_l34_fn() -> String {
+fn l3_to_4() -> String {
     let pts = generate_Lx()
         .iter()
         .enumerate()
@@ -66,7 +66,7 @@ pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
     };
 }
 
-fn generate_ax(index: usize) -> [Point; 3] {
+fn ax(index: usize) -> [Point; 3] {
     //
     let [start, end, r, y] = match index {
         0 => [
@@ -96,23 +96,23 @@ fn generate_ax(index: usize) -> [Point; 3] {
     return [a, b, Point { x: r, y: r }];
 }
 
-fn generate_a1_or_6_fn(index: usize) -> String {
-    let [a, b, r] = generate_ax(index).map(|p| trim(p));
+fn a1_or_6(index: usize) -> String {
+    let [a, b, r] = ax(index).map(|p| trim(p));
     return format!("<path d=\\\"M {a} A {r} 0 0 0 {b}\\\" />");
 }
 
-fn generate_a1_fn() -> String {
-    return generate_a1_or_6_fn(0);
+fn a1() -> String {
+    return a1_or_6(0);
 }
 
-fn generate_a6_fn() -> String {
-    return generate_a1_or_6_fn(1);
+fn a6() -> String {
+    return a1_or_6(1);
 }
 
-fn generate_a4_to_5_fn() -> String {
+fn a4_to_5() -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = generate_ax(2);
-    let [c, d, r2] = generate_ax(3);
+    let [a, b, r1] = ax(2);
+    let [c, d, r2] = ax(3);
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
     return format!(
@@ -121,10 +121,10 @@ fn generate_a4_to_5_fn() -> String {
     );
 }
 
-fn generate_a4_to_6_fn() -> String {
+fn a4_to_6() -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = generate_ax(2);
-    let [c, d, r2] = generate_ax(3);
+    let [a, b, r1] = ax(2);
+    let [c, d, r2] = ax(3);
     let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_cw(0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
@@ -134,10 +134,10 @@ fn generate_a4_to_6_fn() -> String {
     );
 }
 
-fn generate_a5_to_6_fn() -> String {
+fn a5_to_6() -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = generate_ax(2);
-    let [c, d, r2] = generate_ax(3);
+    let [a, b, r1] = ax(2);
+    let [c, d, r2] = ax(3);
     let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_ccw(0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
@@ -147,48 +147,48 @@ fn generate_a5_to_6_fn() -> String {
     );
 }
 
-fn generate_a2_or_5_fn(index: usize) -> String {
-    let [a, b, r] = generate_ax(index);
+fn a2_or_5(index: usize) -> String {
+    let [a, b, r] = ax(index);
     let [a, b] = [a, b].map(|p| p.rotate_cw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
     return format!("<path d=\\\"M {a} A {r} 0 0 0 {b}\\\" />");
 }
-fn generate_a2_fn() -> String {
-    return generate_a2_or_5_fn(0);
+fn a2() -> String {
+    return a2_or_5(0);
 }
-fn generate_a4_fn() -> String {
-    return generate_a2_or_5_fn(1);
+fn a4() -> String {
+    return a2_or_5(1);
 }
 
-fn generate_a3_or_5fn(index: usize) -> String {
-    let [a, b, r] = generate_ax(index);
+fn a3_or_5(index: usize) -> String {
+    let [a, b, r] = ax(index);
     let [a, b] = [a, b].map(|p| p.rotate_ccw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
     return format!("<path d=\\\"M{a}A{r} 0 0 0{b}\\\"/>");
 }
-fn generate_a3_fn() -> String {
-    return generate_a3_or_5fn(0usize);
+fn a3() -> String {
+    return a3_or_5(0usize);
 }
-fn generate_a5_fn() -> String {
-    return generate_a3_or_5fn(1usize);
+fn a5() -> String {
+    return a3_or_5(1usize);
 }
 
 pub fn generate_all_shapes() {
     let mut paths: HashMap<usize, String> = HashMap::new();
 
     for (key, path) in [
-        (0b100_001, generate_l16_fn()),
-        (0b010_010, generate_l25_fn()),
-        (0b001_100, generate_l34_fn()),
-        (0b000_001, generate_a1_fn()),
-        (0b000_010, generate_a2_fn()),
-        (0b000_100, generate_a3_fn()),
-        (0b001_000, generate_a4_fn()),
-        (0b010_000, generate_a5_fn()),
-        (0b100_000, generate_a6_fn()),
-        (0b011_000, generate_a4_to_5_fn()),
-        (0b01_0100, generate_a4_to_6_fn()),
-        (0b11_0000, generate_a5_to_6_fn()),
+        (0b100_001, l1_to_6()),
+        (0b010_010, l2_to_5()),
+        (0b001_100, l3_to_4()),
+        (0b000_001, a1()),
+        (0b000_010, a2()),
+        (0b000_100, a3()),
+        (0b001_000, a4()),
+        (0b010_000, a5()),
+        (0b100_000, a6()),
+        (0b011_000, a4_to_5()),
+        (0b01_0100, a4_to_6()),
+        (0b11_0000, a5_to_6()),
     ] {
         paths.insert(key, path);
     }
