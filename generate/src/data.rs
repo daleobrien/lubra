@@ -26,11 +26,40 @@ fn walls(invert: bool) -> Vec<Point> {
 fn l_wall(invert: bool) -> String {
     let pts = walls(invert);
     let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
+
+    let a = TILE_WIDTH
+        * Point {
+            x: 0.0,
+            y: if invert { S3 } else { 0.0 },
+        };
+    let b = TILE_WIDTH
+        * Point {
+            x: 0.5,
+            y: if invert { 0.0 } else { S3 },
+        };
+    let c = TILE_WIDTH
+        * Point {
+            x: 1.0,
+            y: if invert { S3 } else { 0.0 },
+        };
+
+    let colour = if invert { "red" } else { "green" };
     return format!(
-        "<path fill=\\\"transparent\\\" stroke=\\\"red\\\" d=\\\"M{a}l{b}l{c}z \\\"/>",
+        "<path stroke=\\\"{colour}\\\" d=\\\"M{a}l{b}l{c}z \\\"/> \
+        <text stroke=\\\"{colour}\\\" x=\\\"{ax}\\\" y=\\\"{ay}\\\">1</text>\
+        <text stroke=\\\"{colour}\\\" x=\\\"{bx}\\\" y=\\\"{by}\\\">2</text>\
+        <text stroke=\\\"{colour}\\\" x=\\\"{cx}\\\" y=\\\"{cy}\\\">3</text>\
+        ",
+        colour = colour,
         a = s[0],
         b = s[1],
-        c = s[2]
+        c = s[2],
+        ax = a.x,
+        ay = a.y,
+        bx = b.x,
+        by = b.y,
+        cx = c.x,
+        cy = c.y,
     );
 }
 
@@ -48,8 +77,8 @@ fn trim(point: Point) -> String {
 fn l_a_to_b(pts: Vec<Point>) -> String {
     let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
     return format!(
-        "<path d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
-         <path  fill=\\\"transparent\\\" d=\\\"M{a}l{b}m{c}l{d}z\\\"/>",
+        "<path fill=\\\"black\\\" d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
+         <path stroke=\\\"black\\\" d=\\\"M{a}l{b}m{c}l{d}z\\\"/>",
         a = s[0],
         b = s[1],
         c = s[2],
@@ -128,7 +157,9 @@ fn ax(index: usize, invert: bool) -> [Point; 3] {
 
 fn a1_or_6(index: usize, invert: bool) -> String {
     let [a, b, r] = ax(index, invert).map(|p| trim(p));
-    return format!("<path d=\\\"M {a} A {r} 0 0 0 {b}\\\" />");
+    return format!(
+        "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />"
+    );
 }
 
 fn a1(invert: bool) -> String {
@@ -146,8 +177,8 @@ fn a4_to_5(invert: bool) -> String {
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
     return format!(
-        "<path d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0 {d} z \\\" /> \
-         <path  fill=\\\"transparent\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d} \\\" />"
+        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0 {d} z \\\" /> \
+         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d} \\\" />"
     );
 }
 
@@ -159,8 +190,8 @@ fn a4_to_6(invert: bool) -> String {
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
     return format!(
-        "<path d=\\\"M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z \\\"/> \
-         <path  fill=\\\"transparent\\\" d=\\\"M {a} A {r1} 0 0 1  {b} M {c} A {r2} 0 0 0  {d} \\\"/>"
+        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z \\\"/> \
+         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1  {b} M {c} A {r2} 0 0 0  {d} \\\"/>"
     );
 }
 
@@ -172,8 +203,8 @@ fn a5_to_6(invert: bool) -> String {
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
     return format!(
-        "<path d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0  {d} z\\\" /> \
-         <path fill=\\\"transparent\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d}\\\" />"
+        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0  {d} z\\\" /> \
+         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d}\\\" />"
     );
 }
 
@@ -181,7 +212,9 @@ fn a2_or_5(index: usize, invert: bool) -> String {
     let [a, b, r] = ax(index, invert);
     let [a, b] = [a, b].map(|p| p.rotate_cw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
-    return format!("<path d=\\\"M {a} A {r} 0 0 0 {b}\\\" />");
+    return format!(
+        "<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />"
+    );
 }
 fn a2(invert: bool) -> String {
     return a2_or_5(0, invert);
@@ -194,7 +227,7 @@ fn a3_or_5(index: usize, invert: bool) -> String {
     let [a, b, r] = ax(index, invert);
     let [a, b] = [a, b].map(|p| p.rotate_ccw(0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
-    return format!("<path d=\\\"M{a}A{r} 0 0 0{b}\\\"/>");
+    return format!("<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M{a}A{r} 0 0 0{b}\\\"/>");
 }
 fn a3(invert: bool) -> String {
     return a3_or_5(0usize, invert);

@@ -394,7 +394,6 @@ impl Maze {
                 println!("-> Tile({i},{j}): {:?}", tile.nodes, i = i, j = j);
 
                 for (g, &frag) in tile.to_svg_groups(coord).iter().enumerate() {
-                    println!("-> frag[{g}]: {}", frag);
                     svg.add_fragment(frag, point, g);
                 }
             }

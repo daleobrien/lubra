@@ -34,7 +34,7 @@ impl Svg {
 
     pub fn add_fragment(&mut self, fragment: &str, index: Point, layer_index: usize) {
         // let name = fragment;
-        println!("adding fragment: {}", layer_index);
+        // println!("adding fragment: {}", layer_index);
         let name = self.glyphs.add(fragment);
 
         self.layers[layer_index].push_str(&format!(
@@ -47,19 +47,21 @@ impl Svg {
     pub fn to_string(&self) -> String {
         let mut s = String::new();
 
+        let margin = 15f64;
         s.push_str(&format!(
             "<svg \
-               viewBox=\"0 0 {w} {h}\" \
+               viewBox=\"{m} {m} {w} {h}\" \
                width=\"{w}px\" height=\"{h}px\" \
                xmlns=\"http://www.w3.org/2000/svg\" \
                stroke-width=\"3\" \
                fill-opacity=\"0.03\" \
-               fill=\"black\" \
+               fill=\"transparent\" \
                stroke-linecap=\"round\" \
-               stroke=\"black\" \
+               stroke=\"transparent\" \
                >",
-            w = self.width,
-            h = self.height
+            m = -margin,
+            w = self.width + margin * 2f64,
+            h = self.height + margin * 2f64
         ));
 
         s.push_str(&format!("\n<defs>"));
