@@ -4,14 +4,15 @@ use std::f64::consts::FRAC_PI_6;
 use std::fs::File;
 use std::io::Write;
 
-fn generate_lx() -> Vec<Point> {
+fn generate_lx(invert: bool) -> Vec<Point> {
     let w = Point {
         x: PATH_WIDTH,
         y: 0f64,
     };
     let a = Point { x: 0.5, y: S3 };
     let b = Point { x: 0.5, y: 0.0 };
-    return diff(vec![a - w, b - w, b + w, a + w]);
+    let points = vec![a - w, b - w, b + w, a + w];
+    return diff(points, invert);
 }
 
 fn trimf64(num: f64) -> String {
@@ -37,12 +38,12 @@ fn generate_lx_string(pts: Vec<Point>) -> String {
     );
 }
 
-fn l1_to_6() -> String {
-    return generate_lx_string(generate_lx());
+fn l1_to_6(invert: bool) -> String {
+    return generate_lx_string(generate_lx(invert));
 }
 
-fn l2_to_5() -> String {
-    let pts = generate_lx()
+fn l2_to_5(invert: bool) -> String {
+    let pts = generate_lx(invert)
         .iter()
         .enumerate()
         .map(|(i, p)| p.rotate_cw(i, vec![0, 4]))
@@ -50,8 +51,8 @@ fn l2_to_5() -> String {
     return generate_lx_string(pts);
 }
 
-fn l3_to_4() -> String {
-    let pts = generate_lx()
+fn l3_to_4(invert: bool) -> String {
+    let pts = generate_lx(invert)
         .iter()
         .enumerate()
         .map(|(i, p)| p.rotate_ccw(i, vec![0, 4]))
@@ -178,9 +179,12 @@ pub fn generate_all_shapes() {
     let mut paths: HashMap<usize, String> = HashMap::new();
 
     for (key, path) in [
-        (0b0_100_001, l1_to_6()),
-        (0b0_010_010, l2_to_5()),
-        (0b0_001_100, l3_to_4()),
+        (0b0_100_001, l1_to_6(false)),
+        (0b1_100_001, l1_to_6(true)),
+        (0b0_010_010, l2_to_5(false)),
+        (0b1_010_010, l2_to_5(true)),
+        (0b0_001_100, l3_to_4(false)),
+        (0b1_001_100, l3_to_4(true)),
         (0b0_000_001, a1()),
         (0b0_000_010, a2()),
         (0b0_000_100, a3()),
@@ -215,7 +219,6 @@ pub fn generate_all_shapes() {
 
 #[cfg(test)]
 mod tests {
-    use crate::types::SCALE;
     use approx::assert_ulps_eq;
     use common::types::point::{Point, SCALE};
     use std::vec;

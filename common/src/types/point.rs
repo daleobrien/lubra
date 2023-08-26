@@ -77,18 +77,18 @@ impl Point {
             y: self.x * s + self.y * c,
         };
     }
-    pub(crate) fn rotate_ccw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
+    pub fn rotate_ccw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
         // (Sin(120º), Cos(120º))
         return self.rotate(index, offset_rotations, S3, -0.5);
     }
 
-    pub(crate) fn rotate_cw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
+    pub fn rotate_cw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
         // (Sin(-120º), Cos(-120º))
         return self.rotate(index, offset_rotations, -S3, -0.5);
     }
 }
 
-pub fn diff(points: Vec<Point>) -> Vec<Point> {
+pub fn diff(points: Vec<Point>, invert: bool) -> Vec<Point> {
     // Convert 4 points into the first point followed by series of differences
     let mut seq = vec![points[0] * SCALE];
 
@@ -98,7 +98,11 @@ pub fn diff(points: Vec<Point>) -> Vec<Point> {
         .collect::<Vec<_>>();
 
     for d in diffs.iter() {
-        seq.push(*d);
+        if invert {
+            seq.push(Point { x: 0f64, y: S3 } - *d);
+        } else {
+            seq.push(*d);
+        }
     }
     return seq;
 }

@@ -1,7 +1,6 @@
 mod bit_utils;
 mod data;
 mod node_combinations;
-mod types;
 mod writer;
 
 use crate::bit_utils::{bit_sequence, mask_to_bits, to_base4, to_bits};
@@ -11,6 +10,7 @@ use crate::writer::write_to_file;
 use std::collections::HashMap;
 
 fn main() {
+    println!("Generating Rust code for all possible nets.");
     generate_all_shapes();
 
     let seq = NodeCombinations::new(vec![
@@ -46,5 +46,5 @@ fn main() {
         }
     }
 
-    write_to_file(nets_by_mask, "nets.rs");
+    write_to_file(nets_by_mask, "../lib/src/maze/nets.rs");
 }
