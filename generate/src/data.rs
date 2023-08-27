@@ -119,33 +119,54 @@ pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
 fn ax(index: usize, invert: bool) -> [Point; 3] {
     //
 
-    let h1 = if invert { 0.0 } else { S3 * TILE_WIDTH };
-    let h2 = if invert { S3 * TILE_WIDTH } else { 0.0 };
-
-    let [start, end, r, y] = match index {
-        0 => [
+    let [start, end, r, y] = match (invert, index) {
+        (false, 0) => [
             12.0 * FRAC_PI_6,
             18.0 * FRAC_PI_6,
             PATH_WIDTH * TILE_WIDTH,
-            h1,
+            S3 * TILE_WIDTH,
         ],
-        1 => [
+        (true, 0) => [
             18.0 * FRAC_PI_6,
             12.0 * FRAC_PI_6,
             PATH_WIDTH * TILE_WIDTH,
-            h2,
+            0.0,
         ],
-        2 => [
+        (false, 1) => [
+            18.0 * FRAC_PI_6,
+            12.0 * FRAC_PI_6,
+            PATH_WIDTH * TILE_WIDTH,
+            0.0,
+        ],
+        (true, 1) => [
+            18.0 * FRAC_PI_6,
+            12.0 * FRAC_PI_6,
+            PATH_WIDTH * TILE_WIDTH,
+            0.0,
+        ],
+        (false, 2) => [
             8.0 * FRAC_PI_6,
             10.0 * FRAC_PI_6,
             (0.5 - PATH_WIDTH) * TILE_WIDTH,
-            h1,
+            S3 * TILE_WIDTH,
         ],
-        3 => [
+        (true, 2) => [
+            8.0 * FRAC_PI_6,
+            10.0 * FRAC_PI_6,
+            (0.5 - PATH_WIDTH) * TILE_WIDTH,
+            S3 * TILE_WIDTH,
+        ],
+        (false, 3) => [
             10.0 * FRAC_PI_6,
             8.0 * FRAC_PI_6,
             (0.5 + PATH_WIDTH) * TILE_WIDTH,
-            h1,
+            S3 * TILE_WIDTH,
+        ],
+        (true, 3) => [
+            10.0 * FRAC_PI_6,
+            8.0 * FRAC_PI_6,
+            (0.5 + PATH_WIDTH) * TILE_WIDTH,
+            S3 * TILE_WIDTH,
         ],
         _ => panic!("Invalid index"),
     };

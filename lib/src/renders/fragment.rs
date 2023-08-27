@@ -14,11 +14,11 @@ pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {
   32u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  36 -0 A  24  24 0 0 0  84  0\" />",
   33u8 =>  "<path fill=\"black\" d=\"M 0.3  0.87l 0 -103.92l 48  0l 0  103.92z \"/> <path stroke=\"black\" d=\"M 0.3  0.87l 0 -103.92m 48  0l 0  103.92z\"/>",
   48u8 =>  "<path fill=\"black\" d=\"M  36  0 A  36  36 0 0 1  18  31.18 L  42  72.75 A  84  84 0 0 0   84  0 z\" /> <path stroke=\"black\" d=\"M  36  0 A  36  36 0 0 1  18  31.18 M  42  72.75 A  84  84 0 0 0  84  0\" />",
-  65u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  84  0 A  24  24 0 0 0  36 -0\" />",
+  65u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  36 -0 A  24  24 0 0 0  84  0\" />",
   76u8 =>  "<path fill=\"black\" d=\"M 119.85  0.26l-90 -51.96l-24  41.57l 90  51.96z \"/> <path stroke=\"black\" d=\"M 119.85  0.26l-90 -51.96m-24  41.57l 90  51.96z\"/>",
   82u8 =>  "<path fill=\"black\" d=\"M 59.85  103.66l 90 -51.96l-24 -41.57l-90  51.96z \"/> <path stroke=\"black\" d=\"M 59.85  103.66l 90 -51.96m-24 -41.57l-90  51.96z\"/>",
   97u8 =>  "<path fill=\"black\" d=\"M 0.3  0l 0  103.92l 48  0l 0 -103.92z \"/> <path stroke=\"black\" d=\"M 0.3  0l 0  103.92m 48  0l 0 -103.92z\"/>",
   128u8 =>  "<path stroke=\"green\" d=\"M 0  0l 60  103.92l 60 -103.92z \"/> <text stroke=\"green\" x=\"0\" y=\"0\">1</text><text stroke=\"green\" x=\"60\" y=\"103.92304845413263\">2</text><text stroke=\"green\" x=\"120\" y=\"0\">3</text>",
-  192u8 =>  "<path stroke=\"red\" d=\"M 0  103.92l 60 -103.92l 60  103.92z \"/> <text stroke=\"red\" x=\"0\" y=\"103.92304845413263\">1</text><text stroke=\"red\" x=\"60\" y=\"0\">2</text><text stroke=\"red\" x=\"120\" y=\"103.92304845413263\">3</text>",
+  192u8 =>  "<path stroke=\"red\" d=\"M 0  0.87l 60 -103.92l 60  103.92z \"/> <text stroke=\"red\" x=\"0\" y=\"103.92304845413263\">1</text><text stroke=\"red\" x=\"60\" y=\"0\">2</text><text stroke=\"red\" x=\"120\" y=\"103.92304845413263\">3</text>",
 };
 

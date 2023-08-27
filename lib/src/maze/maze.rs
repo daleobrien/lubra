@@ -343,6 +343,9 @@ impl Maze {
         if i == 0 && j == 0 {
             return Tile::new(vec![vec![4, 5]], true);
         }
+        if i == 0 && j == 1 {
+            return Tile::new(vec![vec![3, 4]], true);
+        }
 
         //#[cfg(debug_assertions)]
         // self.print_surrounding(surrounding_tiles);
