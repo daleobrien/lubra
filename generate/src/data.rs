@@ -12,7 +12,8 @@ fn generate_lx(invert: bool) -> Path {
     };
     let a = Point { x: 0.5, y: S3 };
     let b = Point { x: 0.5, y: 0.0 };
-    TILE_WIDTH * Path::new(vec![a - w, b - w, b + w, a + w]).diff(invert)
+
+    return Path::new(vec![a - w, b - w, b + w, a + w]).diff(invert);
 }
 
 fn walls(invert: bool) -> Path {
@@ -86,25 +87,17 @@ fn l_a_to_b(path: Path) -> String {
 }
 
 fn l1_to_6(invert: bool) -> String {
-    return l_a_to_b(generate_lx(invert));
+    return l_a_to_b(TILE_WIDTH * generate_lx(invert));
 }
 
 fn l2_to_5(invert: bool) -> String {
-    let pts = generate_lx(invert)
-        .iter()
-        .enumerate()
-        .map(|(i, p)| p.rotate_cw(i, vec![0, 4]))
-        .collect::<Vec<_>>();
-    return l_a_to_b(Path::new(pts));
+    let pts = TILE_WIDTH * generate_lx(invert).rotate_cw(invert, vec![0, 4]);
+    return l_a_to_b(pts);
 }
 
 fn l3_to_4(invert: bool) -> String {
-    let pts = generate_lx(invert)
-        .iter()
-        .enumerate()
-        .map(|(i, p)| p.rotate_ccw(i, vec![0, 4]))
-        .collect::<Vec<_>>();
-    return l_a_to_b(Path::new(pts));
+    let pts = TILE_WIDTH * generate_lx(invert).rotate_ccw(invert, vec![0, 4]);
+    return l_a_to_b(pts);
 }
 
 pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
@@ -206,7 +199,7 @@ fn a4_to_6(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
     let [a, b, r1] = ax(2, invert);
     let [c, d, r2] = ax(3, invert);
-    let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_cw(0, vec![0]));
+    let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_cw(invert, 0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
     return format!(
@@ -219,7 +212,7 @@ fn a5_to_6(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
     let [a, b, r1] = ax(2, invert);
     let [c, d, r2] = ax(3, invert);
-    let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_ccw(0, vec![0]));
+    let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_ccw(invert, 0, vec![0]));
     let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
 
     return format!(
@@ -230,7 +223,7 @@ fn a5_to_6(invert: bool) -> String {
 
 fn a2_or_5(index: usize, invert: bool) -> String {
     let [a, b, r] = ax(index, invert);
-    let [a, b] = [a, b].map(|p| p.rotate_cw(0, vec![0]));
+    let [a, b] = [a, b].map(|p| p.rotate_cw(invert, 0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
     return format!(
         "<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />"
@@ -245,7 +238,7 @@ fn a4(invert: bool) -> String {
 
 fn a3_or_5(index: usize, invert: bool) -> String {
     let [a, b, r] = ax(index, invert);
-    let [a, b] = [a, b].map(|p| p.rotate_ccw(0, vec![0]));
+    let [a, b] = [a, b].map(|p| p.rotate_ccw(invert, 0, vec![0]));
     let [a, b, r] = [a, b, r].map(|p| trim(p));
     return format!("<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M{a}A{r} 0 0 0{b}\\\"/>");
 }

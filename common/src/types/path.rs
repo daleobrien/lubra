@@ -26,11 +26,25 @@ impl Path {
         return Path { points: pts };
     }
 
-    // pub fn rotate_cw(self, index: usize, offset_rotations: Vec<usize>) -> Path {
-    //     Path {
-    //         points: self.iter().map(|p| p.rotate_cw(index)).collect(),
-    //     }
-    // }
+    pub fn rotate_cw(self, invert: bool, offset_rotations: Vec<usize>) -> Path {
+        Path {
+            points: self
+                .iter()
+                .enumerate()
+                .map(|(index, p)| p.rotate_cw(invert, index, offset_rotations.clone()))
+                .collect(),
+        }
+    }
+
+    pub fn rotate_ccw(self, invert: bool, offset_rotations: Vec<usize>) -> Path {
+        Path {
+            points: self
+                .iter()
+                .enumerate()
+                .map(|(index, p)| p.rotate_ccw(invert, index, offset_rotations.clone()))
+                .collect(),
+        }
+    }
 }
 
 impl Deref for Path {

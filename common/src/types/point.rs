@@ -1,6 +1,6 @@
 // use itertools::concat;
 use std::fmt;
-use std::ops::{Add, Deref, Mul, Sub};
+use std::ops::{Add, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -61,10 +61,17 @@ impl Mul<Point> for f64 {
 }
 
 impl Point {
-    fn rotate(&self, index: usize, offset_rotations: Vec<usize>, s: f64, c: f64) -> Point {
+    fn rotate(
+        &self,
+        pivot: Point,
+        index: usize,
+        offset_rotations: Vec<usize>,
+        s: f64,
+        c: f64,
+    ) -> Point {
         if offset_rotations.contains(&index) {
             // Centre point of our tile
-            let pivot = TILE_WIDTH * Point { x: 0.5f64, y: S5 };
+
             let translated = *self - pivot;
 
             return pivot
@@ -79,14 +86,22 @@ impl Point {
             y: self.x * s + self.y * c,
         };
     }
-    pub fn rotate_ccw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
+    pub fn rotate_ccw(&self, invert: bool, index: usize, offset_rotations: Vec<usize>) -> Point {
         // (Sin(120º), Cos(120º))
-        return self.rotate(index, offset_rotations, S3, -0.5);
+        let pivot = Point {
+            x: 0.5f64,
+            y: if invert { S3 - S5 } else { S5 },
+        };
+        return self.rotate(pivot, index, offset_rotations, S3, -0.5);
     }
 
-    pub fn rotate_cw(&self, index: usize, offset_rotations: Vec<usize>) -> Point {
+    pub fn rotate_cw(&self, invert: bool, index: usize, offset_rotations: Vec<usize>) -> Point {
         // (Sin(-120º), Cos(-120º))
-        return self.rotate(index, offset_rotations, -S3, -0.5);
+        let pivot = Point {
+            x: 0.5f64,
+            y: if invert { 1.0 - S5 } else { S5 },
+        };
+        return self.rotate(pivot, index, offset_rotations, -S3, -0.5);
     }
 
     pub fn invert(&self) -> Point {
