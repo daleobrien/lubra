@@ -1,5 +1,6 @@
+// use itertools::concat;
 use std::fmt;
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Deref, Mul, Sub};
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -8,7 +9,7 @@ pub struct Point {
 }
 
 pub const S3: f64 = 0.8660254037844386467637231707529362f64; /* sqrt(3)/2 */
-// pub const S4: f64 = 0.4330127018922193233818615853764681f64; /* sqrt(3)/4 */
+//pub const S4: f64 = 0.4330127018922193233818615853764681f64; /* sqrt(3)/4 */
 pub const S5: f64 = 0.2886751345948128822545743902509787f64; /* 1/2/sqrt(3) */
 
 pub const TILE_WIDTH: f64 = 120f64;
@@ -87,34 +88,13 @@ impl Point {
         // (Sin(-120º), Cos(-120º))
         return self.rotate(index, offset_rotations, -S3, -0.5);
     }
-}
 
-pub fn diff(points: Vec<Point>, invert: bool) -> Vec<Point> {
-    // Convert 4 points into the first point followed by series of differences
-    let mut pts: Vec<Point> = Vec::new();
-
-    for p in points.iter() {
-        if invert {
-            pts.push(Point {
-                x: p.x,
-                y: S3 - p.y,
-            });
-        } else {
-            pts.push(*p);
+    pub fn invert(&self) -> Point {
+        Point {
+            x: self.x,
+            y: S3 - self.y,
         }
     }
-
-    let mut seq = vec![pts[0]];
-
-    let diffs = pts
-        .windows(2)
-        .map(|p| TILE_WIDTH * (p[1] - p[0]))
-        .collect::<Vec<_>>();
-
-    for d in diffs.iter() {
-        seq.push(*d);
-    }
-    return seq;
 }
 
 impl fmt::Display for Point {

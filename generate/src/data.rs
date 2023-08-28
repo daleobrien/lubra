@@ -1,26 +1,25 @@
-use common::types::point::{diff, Point, PATH_WIDTH, S3, TILE_WIDTH};
+use common::types::path::Path;
+use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 use std::collections::BTreeMap;
 use std::f64::consts::FRAC_PI_6;
 use std::fs::File;
 use std::io::Write;
 
-fn generate_lx(invert: bool) -> Vec<Point> {
+fn generate_lx(invert: bool) -> Path {
     let w = Point {
         x: PATH_WIDTH,
         y: 0f64,
     };
     let a = Point { x: 0.5, y: S3 };
     let b = Point { x: 0.5, y: 0.0 };
-    let points = vec![a - w, b - w, b + w, a + w];
-    return diff(points, invert);
+    TILE_WIDTH * Path::new(vec![a - w, b - w, b + w, a + w]).diff(invert)
 }
 
-fn walls(invert: bool) -> Vec<Point> {
+fn walls(invert: bool) -> Path {
     let a = Point { x: 0.0, y: 0.0 };
     let b = Point { x: 0.5, y: S3 };
     let c = Point { x: 1.0, y: 0.0 };
-    let points = vec![a, b, c];
-    return diff(points, invert);
+    TILE_WIDTH * Path::new(vec![a, b, c]).diff(invert)
 }
 
 fn l_wall(invert: bool) -> String {
@@ -74,8 +73,8 @@ fn trim(point: Point) -> String {
     return format!("{} {}", trimf64(point.x), trimf64(point.y));
 }
 
-fn l_a_to_b(pts: Vec<Point>) -> String {
-    let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
+fn l_a_to_b(path: Path) -> String {
+    let s = path.iter().map(|p| trim(*p)).collect::<Vec<_>>();
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
          <path stroke=\\\"black\\\" d=\\\"M{a}l{b}m{c}l{d}z\\\"/>",
@@ -96,7 +95,7 @@ fn l2_to_5(invert: bool) -> String {
         .enumerate()
         .map(|(i, p)| p.rotate_cw(i, vec![0, 4]))
         .collect::<Vec<_>>();
-    return l_a_to_b(pts);
+    return l_a_to_b(Path::new(pts));
 }
 
 fn l3_to_4(invert: bool) -> String {
@@ -105,7 +104,7 @@ fn l3_to_4(invert: bool) -> String {
         .enumerate()
         .map(|(i, p)| p.rotate_ccw(i, vec![0, 4]))
         .collect::<Vec<_>>();
-    return l_a_to_b(pts);
+    return l_a_to_b(Path::new(pts));
 }
 
 pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
