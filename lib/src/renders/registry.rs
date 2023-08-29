@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 pub struct StringRegistry {
+    set: HashMap<String, usize>,
     map: HashMap<usize, String>,
     counter: AtomicUsize,
 }
@@ -11,13 +12,21 @@ impl StringRegistry {
         StringRegistry {
             map: HashMap::new(),
             counter: AtomicUsize::new(0),
+            set: HashMap::new(),
         }
     }
 
     pub fn add(&mut self, value: &str) -> usize {
+        if self.set.contains_key(value) {
+            let id = *self.set.get(value).unwrap();
+            return id;
+        }
+        // Add if since we haven't already added it!
         let id = self.counter.fetch_add(1, Ordering::Relaxed);
         self.map.insert(id, value.to_string());
-        id
+        self.set.insert(value.to_string(), id);
+
+        return id;
     }
 
     pub fn get(&self, id: usize) -> Option<&String> {
@@ -89,5 +98,14 @@ mod tests {
         assert_eq!(iter.next(), Some((&id1, &string1.to_string())));
         assert_eq!(iter.next(), Some((&id2, &string2.to_string())));
         assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_duplicate_adds() {
+        let mut registry = StringRegistry::new();
+
+        let id1 = registry.add("Item");
+        let id2 = registry.add("Item");
+        assert_eq!(id1, id2);
     }
 }
