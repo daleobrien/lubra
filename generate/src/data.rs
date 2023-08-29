@@ -1,5 +1,6 @@
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
+use itertools::concat;
 use std::collections::BTreeMap;
 use std::f64::consts::FRAC_PI_6;
 use std::fs::File;
@@ -108,70 +109,41 @@ pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
     };
 }
 
-fn ax(index: usize, invert: bool) -> [Point; 3] {
+fn ax(index: usize, invert: bool) -> Path {
     //
 
     let [start, end, r, y] = match (invert, index) {
-        (false, 0) => [
-            12.0 * FRAC_PI_6,
-            18.0 * FRAC_PI_6,
-            PATH_WIDTH * TILE_WIDTH,
-            S3 * TILE_WIDTH,
-        ],
-        (true, 0) => [
-            18.0 * FRAC_PI_6,
-            12.0 * FRAC_PI_6,
-            PATH_WIDTH * TILE_WIDTH,
-            0.0,
-        ],
-        (false, 1) => [
-            18.0 * FRAC_PI_6,
-            12.0 * FRAC_PI_6,
-            PATH_WIDTH * TILE_WIDTH,
-            0.0,
-        ],
-        (true, 1) => [
-            18.0 * FRAC_PI_6,
-            12.0 * FRAC_PI_6,
-            PATH_WIDTH * TILE_WIDTH,
-            0.0,
-        ],
-        (false, 2) => [
-            8.0 * FRAC_PI_6,
-            10.0 * FRAC_PI_6,
-            (0.5 - PATH_WIDTH) * TILE_WIDTH,
-            S3 * TILE_WIDTH,
-        ],
+        (false, 0) => [12.0 * FRAC_PI_6, 18.0 * FRAC_PI_6, PATH_WIDTH, S3],
+        (true, 0) => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH, 0.0],
+        (false, 1) => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH, 0.0],
+        (true, 1) => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH, 0.0],
+        (false, 2) => [8.0 * FRAC_PI_6, 10.0 * FRAC_PI_6, (0.5 - PATH_WIDTH), S3],
         (true, 2) => [
             8.0 * FRAC_PI_6,
             10.0 * FRAC_PI_6,
-            (0.5 - PATH_WIDTH) * TILE_WIDTH,
+            (0.5 - PATH_WIDTH),
             S3 * TILE_WIDTH,
         ],
-        (false, 3) => [
-            10.0 * FRAC_PI_6,
-            8.0 * FRAC_PI_6,
-            (0.5 + PATH_WIDTH) * TILE_WIDTH,
-            S3 * TILE_WIDTH,
-        ],
-        (true, 3) => [
-            10.0 * FRAC_PI_6,
-            8.0 * FRAC_PI_6,
-            (0.5 + PATH_WIDTH) * TILE_WIDTH,
-            S3 * TILE_WIDTH,
-        ],
+        (false, 3) => [10.0 * FRAC_PI_6, 8.0 * FRAC_PI_6, (0.5 + PATH_WIDTH), S3],
+        (true, 3) => [10.0 * FRAC_PI_6, 8.0 * FRAC_PI_6, (0.5 + PATH_WIDTH), S3],
         _ => panic!("Invalid index"),
     };
-    let x = 0.5 * TILE_WIDTH;
+    let x = 0.5;
     let a = polar(Point { x, y }, r, start);
     let b = polar(Point { x, y }, r, end);
-    return [a, b, Point { x: r, y: r }];
+    return Path::new(vec![a, b, Point { x: r, y: r }]);
 }
 
 fn a1_or_6(index: usize, invert: bool) -> String {
-    let [a, b, r] = ax(index, invert).map(|p| trim(p));
+    let pts: Vec<String> = ax(index, invert)
+        .iter()
+        .map(|p| trim(*p * TILE_WIDTH))
+        .collect();
     return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />"
+        "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",
+        a = pts[0],
+        b = pts[1],
+        r = pts[2]
     );
 }
 
@@ -185,48 +157,84 @@ fn a6(invert: bool) -> String {
 
 fn a4_to_5(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = ax(2, invert);
-    let [c, d, r2] = ax(3, invert);
-    let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
+
+    let pts = concat(vec![ax(2, invert), ax(3, invert)]);
+    let pts: Vec<String> = pts.iter().map(|p| trim(*p * TILE_WIDTH)).collect();
 
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0 {d} z \\\" /> \
-         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d} \\\" />"
+         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d} \\\" />",
+        a = pts[0],
+        b = pts[1],
+        r1 = pts[2],
+        c = pts[3],
+        d = pts[4],
+        r2 = pts[5]
     );
 }
 
 fn a4_to_6(invert: bool) -> String {
-    // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = ax(2, invert);
-    let [c, d, r2] = ax(3, invert);
-    let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_cw(invert, 0, vec![0]));
-    let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
+    let mut arc1 = ax(2, invert);
+    let r1 = arc1.pop().unwrap();
+    let mut arc2 = ax(3, invert);
+    let r2 = arc2.pop().unwrap();
+    let pts = concat(vec![arc1, arc2]).rotate_cw(invert, vec![0]);
+
+    let pts: Vec<String> = concat(vec![pts, Path::new(vec![r1, r2])])
+        .iter()
+        .map(|p| trim(*p * TILE_WIDTH))
+        .collect();
 
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z \\\"/> \
-         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1  {b} M {c} A {r2} 0 0 0  {d} \\\"/>"
+         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1  {b} M {c} A {r2} 0 0 0  {d} \\\"/>",
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
+        r1 = pts[4],
+        r2 = pts[5],
     );
 }
 
 fn a5_to_6(invert: bool) -> String {
-    // With this and others, I don't need to draw a shape, just a really fat line!
-    let [a, b, r1] = ax(2, invert);
-    let [c, d, r2] = ax(3, invert);
-    let [a, b, c, d] = [a, b, c, d].map(|p| p.rotate_ccw(invert, 0, vec![0]));
-    let [a, b, c, d, r1, r2] = [a, b, c, d, r1, r2].map(|p| trim(p));
+    let mut arc1 = ax(2, invert);
+    let r1 = arc1.pop().unwrap();
+    let mut arc2 = ax(3, invert);
+    let r2 = arc2.pop().unwrap();
+    let pts = concat(vec![arc1, arc2]).rotate_ccw(invert, vec![0]);
+
+    let pts: Vec<String> = concat(vec![pts, Path::new(vec![r1, r2])])
+        .iter()
+        .map(|p| trim(*p * TILE_WIDTH))
+        .collect();
 
     return format!(
-        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0  {d} z\\\" /> \
-         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d}\\\" />"
+        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z \\\"/> \
+         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1  {b} M {c} A {r2} 0 0 0  {d} \\\"/>",
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
+        r1 = pts[4],
+        r2 = pts[5],
     );
 }
 
 fn a2_or_5(index: usize, invert: bool) -> String {
-    let [a, b, r] = ax(index, invert);
-    let [a, b] = [a, b].map(|p| p.rotate_cw(invert, 0, vec![0]));
-    let [a, b, r] = [a, b, r].map(|p| trim(p));
+    let mut pts = ax(index, invert);
+    let r = pts.pop().unwrap();
+    let pts = pts.rotate_cw(invert, vec![0]);
+    let pts: Vec<String> = concat(vec![pts, Path::new(vec![r])])
+        .iter()
+        .map(|p| trim(*p * TILE_WIDTH))
+        .collect();
+
     return format!(
-        "<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />"
+        "<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",
+        a = pts[0],
+        b = pts[1],
+        r = pts[2]
     );
 }
 fn a2(invert: bool) -> String {
@@ -237,10 +245,20 @@ fn a4(invert: bool) -> String {
 }
 
 fn a3_or_5(index: usize, invert: bool) -> String {
-    let [a, b, r] = ax(index, invert);
-    let [a, b] = [a, b].map(|p| p.rotate_ccw(invert, 0, vec![0]));
-    let [a, b, r] = [a, b, r].map(|p| trim(p));
-    return format!("<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M{a}A{r} 0 0 0{b}\\\"/>");
+    let mut pts = ax(index, invert);
+    let r = pts.pop().unwrap();
+    let pts = pts.rotate_ccw(invert, vec![0]);
+    let pts: Vec<String> = concat(vec![pts, Path::new(vec![r])])
+        .iter()
+        .map(|p| trim(*p * TILE_WIDTH))
+        .collect();
+
+    return format!(
+        "<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",
+        a = pts[0],
+        b = pts[1],
+        r = pts[2]
+    );
 }
 fn a3(invert: bool) -> String {
     return a3_or_5(0usize, invert);
@@ -300,11 +318,11 @@ mod tests {
     fn test_rotate() {
         use super::*;
         let p = TILE_WIDTH * Point { x: 1f64, y: 0f64 };
-        let r = p.rotate_ccw(0, vec![0]);
+        let r = p.rotate_ccw(false, 0, vec![0]);
         assert_ulps_eq!(r.x, TILE_WIDTH * 0.5f64);
         assert_ulps_eq!(r.y, TILE_WIDTH * S3);
 
-        let q = r.rotate_cw(0, vec![0]);
+        let q = r.rotate_cw(false, 0, vec![0]);
         assert_ulps_eq!(q.x, TILE_WIDTH * 1f64);
         assert_ulps_eq!(q.y, TILE_WIDTH * 0f64, epsilon = 0.0000000000001f64);
     }

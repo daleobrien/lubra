@@ -1,7 +1,8 @@
-use crate::types::point::{Point, TILE_WIDTH};
+use crate::types::point::Point;
 use itertools::concat;
-use std::ops::{Deref, Mul};
+use std::ops::{Deref, DerefMut, Mul};
 
+#[derive(Debug, Clone)]
 pub struct Path {
     points: Vec<Point>,
 }
@@ -52,6 +53,35 @@ impl Deref for Path {
 
     fn deref(&self) -> &Self::Target {
         &self.points
+    }
+}
+
+impl DerefMut for Path {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.points
+    }
+}
+
+impl Default for Path {
+    fn default() -> Self {
+        Path::new(Vec::new())
+    }
+}
+
+impl Extend<Point> for Path {
+    fn extend<T: IntoIterator<Item = Point>>(&mut self, iter: T) {
+        for elem in iter {
+            self.points.push(elem);
+        }
+    }
+}
+
+impl IntoIterator for Path {
+    type Item = Point;
+    type IntoIter = std::vec::IntoIter<Point>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.points.into_iter()
     }
 }
 
