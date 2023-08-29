@@ -67,7 +67,14 @@ impl Tile {
             groups.push(wall.unwrap());
         }
 
-        for net in self.nodes {
+        let nodes = match (coordinate.i + coordinate.j) % 2 {
+            0 => self.nodes,
+            1 => self.rotate_cw(),
+            _ => self.rotate_ccw(),
+        };
+
+        println!("nodes: {:?}", nodes);
+        for net in nodes {
             let mut bits: u8 = 0;
             for n in net {
                 bits |= 1 << (n - 1);
