@@ -62,10 +62,10 @@ impl Tile {
         if flipped {
             bits |= 0b01_000_000;
         }
-        let wall = MAP_PATHS.get(&bits);
-        if wall.is_some() {
-            groups.push(wall.unwrap());
-        }
+        // let wall = MAP_PATHS.get(&bits);
+        // if wall.is_some() {
+        //     groups.push(wall.unwrap());
+        // }
 
         let nodes = match (coordinate.i + coordinate.j) % 2 {
             0 => self.nodes,
@@ -76,7 +76,7 @@ impl Tile {
         println!("nodes: {:?}", nodes);
         for net in nodes {
             let mut bits: u8 = 0;
-            for n in net {
+            for n in net.clone() {
                 bits |= 1 << (n - 1);
             }
 
@@ -87,6 +87,11 @@ impl Tile {
             let path = MAP_PATHS.get(&bits);
             if path.is_some() {
                 groups.push(path.unwrap());
+            } else {
+                println!(
+                    "No path for bits: {:b} / {:?} @ {:?}",
+                    bits, net, coordinate
+                );
             }
         }
 

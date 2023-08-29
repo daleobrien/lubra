@@ -249,8 +249,11 @@ pub fn generate_all_shapes() {
         (0b00_010_000, a5(false)),
         (0b00_100_000, a6(false)),
         (0b00_011_000, a4_to_5(false)),
+        (0b01_011_000, a4_to_5(true)),
         (0b00_010_100, a4_to_6(false)),
+        (0b01_010_100, a4_to_6(true)),
         (0b00_110_000, a5_to_6(false)),
+        (0b01_110_000, a5_to_6(true)),
         (0b10_000_000, l_wall(false)),
         (0b11_000_000, l_wall(true)),
     ] {
