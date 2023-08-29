@@ -10,7 +10,7 @@ pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {
   16u8 =>  "<path fill=\"black\" stroke=\"black\" d=\"M  102  31.18 A  24  24 0 0 0 -42  72.75\" />",
   18u8 =>  "<path fill=\"black\" d=\"M 132  20.78l-90  51.96l-24 -41.57l 90 -51.96z \"/> <path stroke=\"black\" d=\"M 132  20.78l-90  51.96m-24 -41.57l 90 -51.96z\"/>",
   20u8 =>  "<path fill=\"black\" d=\"M  102  31.18 A  36  36 0 0 1   24 -103.92 L -24 -103.92 A  84  84 0 0 0   18 -31.18 z \"/> <path stroke=\"black\" d=\"M  102  31.18 A  36  36 0 0 1   24 -103.92 M -24 -103.92 A  84  84 0 0 0   18 -31.18 \"/>",
-  24u8 =>  "<path fill=\"black\" d=\"M  42  72.75 A  36  36 0 0 1  78  72.75 L  102  31.18 A  84  84 0 0 0  18  31.18 z \" /> <path stroke=\"green\" d=\"M  42  72.75 A  36  36 0 0 1  78  72.75 M  102  31.18 A  84  84 0 0 0  18  31.18 \" />",
+  24u8 =>  "<path fill=\"black\" d=\"M  42  72.75 A  36  36 0 0 1  78  72.75 L  102  31.18 A  84  84 0 0 0  18  31.18 z \" /> <path stroke=\"black\" d=\"M  42  72.75 A  36  36 0 0 1  78  72.75 M  102  31.18 A  84  84 0 0 0  18  31.18 \" />",
   32u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  36 -0 A  24  24 0 0 0  84  0\" />",
   33u8 =>  "<path fill=\"black\" d=\"M 36  103.92l 0 -103.92l 48  0l 0  103.92z \"/> <path stroke=\"black\" d=\"M 36  103.92l 0 -103.92m 48  0l 0  103.92z\"/>",
   48u8 =>  "<path fill=\"black\" d=\"M  36  0 A  36  36 0 0 1  -102  31.18 L -78  72.75 A  84  84 0 0 0  -36  0 z \"/> <path stroke=\"black\" d=\"M  36  0 A  36  36 0 0 1  -102  31.18 M -78  72.75 A  84  84 0 0 0  -36  0 \"/>",
@@ -18,7 +18,15 @@ pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {
   76u8 =>  "<path fill=\"black\" d=\"M 132  83.14l-90 -51.96l-24  41.57l 90  51.96z \"/> <path stroke=\"black\" d=\"M 132  83.14l-90 -51.96m-24  41.57l 90  51.96z\"/>",
   82u8 =>  "<path fill=\"black\" d=\"M-1.92  148.82l 90 -51.96l-24 -41.57l-90  51.96z \"/> <path stroke=\"black\" d=\"M-1.92  148.82l 90 -51.96m-24 -41.57l-90  51.96z\"/>",
   97u8 =>  "<path fill=\"black\" d=\"M 36  0l 0  103.92l 48  0l 0 -103.92z \"/> <path stroke=\"black\" d=\"M 36  0l 0  103.92m 48  0l 0 -103.92z\"/>",
-  128u8 =>  "<path stroke=\"green\" d=\"M 0  0l 60  103.92l 60 -103.92z \"/> <text stroke=\"green\" x=\"0\" y=\"0\">1</text><text stroke=\"green\" x=\"60\" y=\"103.92304845413263\">2</text><text stroke=\"green\" x=\"120\" y=\"0\">3</text>",
-  192u8 =>  "<path stroke=\"red\" d=\"M 0  103.92l 60 -103.92l 60  103.92z \"/> <text stroke=\"red\" x=\"0\" y=\"103.92304845413263\">1</text><text stroke=\"red\" x=\"60\" y=\"0\">2</text><text stroke=\"red\" x=\"120\" y=\"103.92304845413263\">3</text>",
+  128u8 =>  "  <path stroke=\"blue\" d=\"M 0  0l 60  103.92l 60 -103.92z \"/>
+ <text stroke=\"blue\" x=\" 0\" y=\" 0\">1</text>
+<text stroke=\"blue\" x=\" 60\" y=\" 103.92\">2</text>
+<text stroke=\"blue\" x=\" 120\" y=\" 0\">3</text>
+",
+  192u8 =>  "  <path stroke=\"red\" d=\"M 0  103.92l 60 -103.92l 60  103.92z \"/>
+ <text stroke=\"red\" x=\" 0\" y=\" 103.92\">1</text>
+<text stroke=\"red\" x=\" 60\" y=\" 0\">2</text>
+<text stroke=\"red\" x=\" 120\" y=\" 103.92\">3</text>
+",
 };
 

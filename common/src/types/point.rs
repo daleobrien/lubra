@@ -1,4 +1,4 @@
-// use itertools::concat;
+use crate::types::format::trimf64;
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
 
@@ -61,6 +61,10 @@ impl Mul<Point> for f64 {
 }
 
 impl Point {
+    pub fn trim(self) -> String {
+        return format!("{} {}", trimf64(self.x), trimf64(self.y));
+    }
+
     fn rotate(
         &self,
         pivot: Point,

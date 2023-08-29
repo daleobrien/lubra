@@ -12,6 +12,16 @@ impl Path {
         Path { points }
     }
 
+    pub fn trim(self) -> Vec<String> {
+        return self.iter().map(|p| p.trim()).collect();
+    }
+
+    pub fn invert(self) -> Path {
+        Path {
+            points: self.iter().map(|p| p.invert()).collect(),
+        }
+    }
+
     pub fn diff(self, invert: bool) -> Path {
         // Convert a series of points into the first point followed by series of differences
         let pts: Vec<Point> = self

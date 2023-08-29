@@ -1,3 +1,4 @@
+use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 use itertools::concat;
@@ -17,66 +18,43 @@ fn generate_lx(invert: bool) -> Path {
     return Path::new(vec![a - w, b - w, b + w, a + w]).diff(invert);
 }
 
-fn walls(invert: bool) -> Path {
+fn triangle() -> Path {
     let a = Point { x: 0.0, y: 0.0 };
     let b = Point { x: 0.5, y: S3 };
     let c = Point { x: 1.0, y: 0.0 };
-    TILE_WIDTH * Path::new(vec![a, b, c]).diff(invert)
+    Path::new(vec![a, b, c])
 }
 
 fn l_wall(invert: bool) -> String {
-    let pts = walls(invert);
-    let s = pts.iter().map(|p| trim(*p)).collect::<Vec<_>>();
+    let mut t = triangle();
+    if invert {
+        t = t.invert();
+    }
+    t = TILE_WIDTH * t;
+    let s = t.clone().diff(false).trim();
 
-    let a = TILE_WIDTH
-        * Point {
-            x: 0.0,
-            y: if invert { S3 } else { 0.0 },
-        };
-    let b = TILE_WIDTH
-        * Point {
-            x: 0.5,
-            y: if invert { 0.0 } else { S3 },
-        };
-    let c = TILE_WIDTH
-        * Point {
-            x: 1.0,
-            y: if invert { S3 } else { 0.0 },
-        };
-
-    let colour = if invert { "red" } else { "green" };
+    // TODO: text will need to rotate with i,j
+    let colour = if invert { "red" } else { "blue" };
     return format!(
-        "<path stroke=\\\"{colour}\\\" d=\\\"M{a}l{b}l{c}z \\\"/> \
-        <text stroke=\\\"{colour}\\\" x=\\\"{ax}\\\" y=\\\"{ay}\\\">1</text>\
-        <text stroke=\\\"{colour}\\\" x=\\\"{bx}\\\" y=\\\"{by}\\\">2</text>\
-        <text stroke=\\\"{colour}\\\" x=\\\"{cx}\\\" y=\\\"{cy}\\\">3</text>\
+        "  <path stroke=\\\"{colour}\\\" d=\\\"M{a}l{b}l{c}z \\\"/>\n \
+           <text stroke=\\\"{colour}\\\" x=\\\"{ax}\\\" y=\\\"{ay}\\\">1</text>\n\
+           <text stroke=\\\"{colour}\\\" x=\\\"{bx}\\\" y=\\\"{by}\\\">2</text>\n\
+           <text stroke=\\\"{colour}\\\" x=\\\"{cx}\\\" y=\\\"{cy}\\\">3</text>\n\
         ",
-        colour = colour,
         a = s[0],
         b = s[1],
         c = s[2],
-        ax = a.x,
-        ay = a.y,
-        bx = b.x,
-        by = b.y,
-        cx = c.x,
-        cy = c.y,
+        ax = trimf64(t[0].x),
+        ay = trimf64(t[0].y),
+        bx = trimf64(t[1].x),
+        by = trimf64(t[1].y),
+        cx = trimf64(t[2].x),
+        cy = trimf64(t[2].y),
     );
 }
 
-fn trimf64(num: f64) -> String {
-    let space = if num < 0f64 { "" } else { " " };
-    let formatted = format!("{space}{:.*}", 2, num);
-    let trimmed = formatted.trim_end_matches('0').trim_end_matches('.');
-    return trimmed.to_string();
-}
-
-fn trim(point: Point) -> String {
-    return format!("{} {}", trimf64(point.x), trimf64(point.y));
-}
-
 fn l_a_to_b(path: Path) -> String {
-    let s = path.iter().map(|p| trim(*p)).collect::<Vec<_>>();
+    let s = path.trim();
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
          <path stroke=\\\"black\\\" d=\\\"M{a}l{b}m{c}l{d}z\\\"/>",
@@ -135,10 +113,8 @@ fn ax(index: usize, invert: bool) -> Path {
 }
 
 fn a1_or_6(index: usize, invert: bool) -> String {
-    let pts: Vec<String> = ax(index, invert)
-        .iter()
-        .map(|p| trim(*p * TILE_WIDTH))
-        .collect();
+    let pts: Vec<String> = (TILE_WIDTH * ax(index, invert)).trim();
+
     return format!(
         "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",
         a = pts[0],
@@ -159,7 +135,7 @@ fn a4_to_5(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
 
     let pts = concat(vec![ax(2, invert), ax(3, invert)]);
-    let pts: Vec<String> = pts.iter().map(|p| trim(*p * TILE_WIDTH)).collect();
+    let pts: Vec<String> = (TILE_WIDTH * pts).trim();
 
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0 {d} z \\\" /> \
@@ -180,10 +156,7 @@ fn a4_to_6(invert: bool) -> String {
     let r2 = arc2.pop().unwrap();
     let pts = concat(vec![arc1, arc2]).rotate_cw(invert, vec![0]);
 
-    let pts: Vec<String> = concat(vec![pts, Path::new(vec![r1, r2])])
-        .iter()
-        .map(|p| trim(*p * TILE_WIDTH))
-        .collect();
+    let pts: Vec<String> = (TILE_WIDTH * concat(vec![pts, Path::new(vec![r1, r2])])).trim();
 
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z \\\"/> \
@@ -204,10 +177,7 @@ fn a5_to_6(invert: bool) -> String {
     let r2 = arc2.pop().unwrap();
     let pts = concat(vec![arc1, arc2]).rotate_ccw(invert, vec![0]);
 
-    let pts: Vec<String> = concat(vec![pts, Path::new(vec![r1, r2])])
-        .iter()
-        .map(|p| trim(*p * TILE_WIDTH))
-        .collect();
+    let pts: Vec<String> = (TILE_WIDTH * concat(vec![pts, Path::new(vec![r1, r2])])).trim();
 
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1  {b} L {c} A {r2} 0 0 0  {d} z \\\"/> \
@@ -225,10 +195,7 @@ fn a2_or_5(index: usize, invert: bool) -> String {
     let mut pts = ax(index, invert);
     let r = pts.pop().unwrap();
     let pts = pts.rotate_cw(invert, vec![0]);
-    let pts: Vec<String> = concat(vec![pts, Path::new(vec![r])])
-        .iter()
-        .map(|p| trim(*p * TILE_WIDTH))
-        .collect();
+    let pts: Vec<String> = (TILE_WIDTH * concat(vec![pts, Path::new(vec![r])])).trim();
 
     return format!(
         "<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",
@@ -248,10 +215,7 @@ fn a3_or_5(index: usize, invert: bool) -> String {
     let mut pts = ax(index, invert);
     let r = pts.pop().unwrap();
     let pts = pts.rotate_ccw(invert, vec![0]);
-    let pts: Vec<String> = concat(vec![pts, Path::new(vec![r])])
-        .iter()
-        .map(|p| trim(*p * TILE_WIDTH))
-        .collect();
+    let pts: Vec<String> = (TILE_WIDTH * concat(vec![pts, Path::new(vec![r])])).trim();
 
     return format!(
         "<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",

@@ -1,5 +1,5 @@
 use crate::renders::registry::StringRegistry;
-use common::types::point::Point;
+use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use std::fmt;
 
 pub struct Svg {
@@ -39,8 +39,8 @@ impl Svg {
 
         self.layers[layer_index].push_str(&format!(
             "\n  <use href=\"#{name}\" x=\"{x}\" y=\"{y}\"/>",
-            x = index.x * 120.0,
-            y = index.y * 103.0,
+            x = index.x * TILE_WIDTH / 2.0,
+            y = index.y * TILE_HEIGHT,
         ));
     }
 
