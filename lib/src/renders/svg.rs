@@ -74,15 +74,15 @@ impl Svg {
         }
         s.push_str(&format!("\n</defs>\n"));
 
-        s.push_str(&format!(
-            "<g transform=\"translate(0,{h}) scale(1, -1)\">",
-            h = self.height - margin * 2f64
-        ));
+        // s.push_str(&format!(
+        //     "<g transform=\"translate(0,{h}) scale(1, -1)\">",
+        //     h = self.height - margin * 2f64
+        // ));
         for layer in &self.layers {
             s.push_str(&layer.to_string());
         }
         //
-        s.push_str("</g>");
+        // s.push_str("</g>");
         s.push_str("\n</svg>");
         return s;
     }

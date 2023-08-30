@@ -37,8 +37,8 @@ fn l_wall(invert: bool) -> String {
     let colour = if invert { "red" } else { "blue" };
     return format!(
         "  <path stroke=\\\"{colour}\\\" d=\\\"M{a}l{b}l{c}z \\\"/>\n \
-           <text stroke=\\\"{colour}\\\" x=\\\"{ax}\\\" y=\\\"{ay}\\\">1</text>\n\
-           <text stroke=\\\"{colour}\\\" x=\\\"{bx}\\\" y=\\\"{by}\\\">2</text>\n\
+           <text stroke=\\\"{colour}\\\" x=\\\"{ax}\\\" y=\\\"{ay}\\\">2</text>\n\
+           <text stroke=\\\"{colour}\\\" x=\\\"{bx}\\\" y=\\\"{by}\\\">1</text>\n\
            <text stroke=\\\"{colour}\\\" x=\\\"{cx}\\\" y=\\\"{cy}\\\">3</text>\n\
         ",
         a = s[0],
