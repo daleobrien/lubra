@@ -17,10 +17,14 @@ impl StringRegistry {
     }
 
     pub fn add(&mut self, value: &str) -> usize {
-        if self.set.contains_key(value) {
-            let id = *self.set.get(value).unwrap();
-            return id;
+
+        // If we have already stored the value, just return the key (id)
+        for (key, val) in self.map {
+          if *value == *val {
+            return key;
+          }
         }
+        
         // Add if since we haven't already added it!
         let id = self.counter.fetch_add(1, Ordering::Relaxed);
         self.map.insert(id, value.to_string());
