@@ -117,19 +117,19 @@ fn a1(invert: bool) -> String {
 }
 
 fn a2(invert: bool) -> String {
-    return a2_or_4(1, invert);
+    return a2_or_5(1, invert);
 }
 
 fn a3(invert: bool) -> String {
-    return a3_or_5(1, invert);
+    return a3_or_4(1, invert);
 }
 
 fn a4(invert: bool) -> String {
-    return a2_or_4(6, invert);
+    return a3_or_4(6, invert);
 }
 
 fn a5(invert: bool) -> String {
-    return a3_or_5(6, invert);
+    return a2_or_5(6, invert);
 }
 
 fn a6(invert: bool) -> String {
@@ -192,6 +192,7 @@ fn a5_to_6(invert: bool) -> String {
 
 fn a1_or_6(index: usize, invert: bool) -> String {
     let (pts, r) = ax(index, invert);
+
     let pts = (TILE_WIDTH * pts).trim();
     return format!(
         "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b}\\\" />",
@@ -200,12 +201,12 @@ fn a1_or_6(index: usize, invert: bool) -> String {
     );
 }
 
-fn a2_or_4(index: usize, invert: bool) -> String {
+fn a2_or_5(index: usize, invert: bool) -> String {
     let (pts, r) = ax(index, invert);
-    println!("a2_or_4: invert -> {invert} {:?}\n", pts);
 
-    let pts = pts.rotate_cw(invert, vec![0]);
-    let pts: Vec<String> = (TILE_WIDTH * pts).trim();
+    let pts = pts.rotate_cw(false, vec![0, 1]);
+
+    let pts = (TILE_WIDTH * pts).trim();
 
     let colour = if invert { "red" } else { "blue" };
     return format!(
@@ -215,7 +216,7 @@ fn a2_or_4(index: usize, invert: bool) -> String {
     );
 }
 
-fn a3_or_5(index: usize, invert: bool) -> String {
+fn a3_or_4(index: usize, invert: bool) -> String {
     let (pts, r) = ax(index, invert);
     let pts = pts.rotate_ccw(invert, vec![0]);
     let pts: Vec<String> = (TILE_WIDTH * pts).trim();
