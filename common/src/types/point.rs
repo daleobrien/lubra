@@ -102,7 +102,7 @@ impl Point {
         // (Sin(-120º), Cos(-120º))
         let pivot = Point {
             x: 0.5f64,
-            y: if invert { 1.0 - S5 } else { S5 },
+            y: if invert { S3 - S5 } else { S5 },
         };
         return self.rotate(pivot, index, offset_rotations, -S3, -0.5);
     }
