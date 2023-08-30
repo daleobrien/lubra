@@ -91,55 +91,61 @@ fn ax(index: usize, invert: bool) -> Path {
     //
 
     let [start, end, r, y] = match (invert, index) {
-        (false, 0) => [12.0 * FRAC_PI_6, 18.0 * FRAC_PI_6, PATH_WIDTH, S3],
-        (true, 0) => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH, 0.0],
-        (false, 1) => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH, 0.0],
-        (true, 1) => [18.0 * FRAC_PI_6, 12.0 * FRAC_PI_6, PATH_WIDTH, 0.0],
-        (false, 2) => [8.0 * FRAC_PI_6, 10.0 * FRAC_PI_6, (0.5 - PATH_WIDTH), S3],
-        (true, 2) => [
-            8.0 * FRAC_PI_6,
-            10.0 * FRAC_PI_6,
-            (0.5 - PATH_WIDTH),
-            S3 * TILE_WIDTH,
-        ],
-        (false, 3) => [10.0 * FRAC_PI_6, 8.0 * FRAC_PI_6, (0.5 + PATH_WIDTH), S3],
-        (true, 3) => [10.0 * FRAC_PI_6, 8.0 * FRAC_PI_6, (0.5 + PATH_WIDTH), S3],
+        (false, 1) => [0.0, 6.0, PATH_WIDTH, S3],
+        (true, 1) => [6.0, 0.0, PATH_WIDTH, 0.0],
+
+        (false, 2) => [8.0, 10.0, (0.5 - PATH_WIDTH), S3],
+        (false, 3) => [10.0, 8.0, (0.5 + PATH_WIDTH), S3],
+
+        (true, 2) => [14.0, 16.0, (0.5 + PATH_WIDTH), 0.0],
+        (true, 3) => [16.0, 12.0, (0.5 - PATH_WIDTH), 0.0],
+
+        (false, 6) => [6.0, 0.0, PATH_WIDTH, 0.0],
+        (true, 6) => [0.0, 6.0, PATH_WIDTH, S3],
         _ => panic!("Invalid index"),
     };
     let x = 0.5;
-    let a = polar(Point { x, y }, r, start);
-    let b = polar(Point { x, y }, r, end);
+    let a = polar(Point { x, y }, r, start * FRAC_PI_6);
+    let b = polar(Point { x, y }, r, end * FRAC_PI_6);
     return Path::new(vec![a, b, Point { x: r, y: r }]);
 }
 
-fn a1_or_6(index: usize, invert: bool) -> String {
-    let pts: Vec<String> = (TILE_WIDTH * ax(index, invert)).trim();
-
-    return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",
-        a = pts[0],
-        b = pts[1],
-        r = pts[2]
-    );
+fn a1(invert: bool) -> String {
+    return a1_or_6(1, invert);
 }
 
-fn a1(invert: bool) -> String {
-    return a1_or_6(0, invert);
+fn a2(invert: bool) -> String {
+    return a2_or_4(1, invert);
+}
+
+fn a3(invert: bool) -> String {
+    return a3_or_5(1, invert);
+}
+
+fn a4(invert: bool) -> String {
+    return a2_or_4(6, invert);
+}
+
+fn a5(invert: bool) -> String {
+    return a3_or_5(6, invert);
 }
 
 fn a6(invert: bool) -> String {
-    return a1_or_6(1, invert);
+    return a1_or_6(6, invert);
 }
 
 fn a4_to_5(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
 
     let pts = concat(vec![ax(2, invert), ax(3, invert)]);
+    //println!("\n4-5 invert -> {invert} {:?}", pts);
     let pts: Vec<String> = (TILE_WIDTH * pts).trim();
+    // println!("4-5 invert -> {invert} {:?}\n", pts);
 
+    let colour = if invert { "purple" } else { "black" };
     return format!(
-        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0 {d} z \\\" /> \
-         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d} \\\" />",
+        "<path fill=\\\"{colour}\\\" d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r2} 0 0 0 {d} z \\\" /> \
+         <path stroke=\\\"{colour}\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} 0 0 0 {d} \\\" />",
         a = pts[0],
         b = pts[1],
         r1 = pts[2],
@@ -148,7 +154,6 @@ fn a4_to_5(invert: bool) -> String {
         r2 = pts[5]
     );
 }
-
 fn a4_to_6(invert: bool) -> String {
     let mut arc1 = ax(2, invert);
     let r1 = arc1.pop().unwrap();
@@ -191,24 +196,31 @@ fn a5_to_6(invert: bool) -> String {
     );
 }
 
-fn a2_or_5(index: usize, invert: bool) -> String {
-    let mut pts = ax(index, invert);
-    let r = pts.pop().unwrap();
-    let pts = pts.rotate_cw(invert, vec![0]);
-    let pts: Vec<String> = (TILE_WIDTH * concat(vec![pts, Path::new(vec![r])])).trim();
+fn a1_or_6(index: usize, invert: bool) -> String {
+    let pts: Vec<String> = (TILE_WIDTH * ax(index, invert)).trim();
 
     return format!(
-        "<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",
+        "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",
         a = pts[0],
         b = pts[1],
         r = pts[2]
     );
 }
-fn a2(invert: bool) -> String {
-    return a2_or_5(0, invert);
-}
-fn a4(invert: bool) -> String {
-    return a2_or_5(1, invert);
+
+fn a2_or_4(index: usize, invert: bool) -> String {
+    let mut pts = ax(index, invert);
+    println!("a2_or_4: invert -> {invert} {:?}\n", pts);
+    let r = pts.pop().unwrap();
+    let pts = pts.rotate_cw(invert, vec![0]);
+    let pts: Vec<String> = (TILE_WIDTH * concat(vec![pts, Path::new(vec![r])])).trim();
+
+    let colour = if invert { "red" } else { "blue" };
+    return format!(
+        "<path fill=\\\"{colour}\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} 0 0 0 {b}\\\" />",
+        a = pts[0],
+        b = pts[1],
+        r = pts[2]
+    );
 }
 
 fn a3_or_5(index: usize, invert: bool) -> String {
@@ -224,12 +236,6 @@ fn a3_or_5(index: usize, invert: bool) -> String {
         r = pts[2]
     );
 }
-fn a3(invert: bool) -> String {
-    return a3_or_5(0usize, invert);
-}
-fn a5(invert: bool) -> String {
-    return a3_or_5(1usize, invert);
-}
 
 pub fn generate_all_shapes() {
     let mut paths: BTreeMap<usize, String> = BTreeMap::new();
@@ -244,10 +250,15 @@ pub fn generate_all_shapes() {
         (0b00_000_001, a1(false)),
         (0b01_000_001, a1(true)),
         (0b00_000_010, a2(false)),
+        (0b01_000_010, a2(true)),
         (0b00_000_100, a3(false)),
+        (0b01_000_100, a3(true)),
         (0b00_001_000, a4(false)),
+        (0b01_001_000, a4(true)),
         (0b00_010_000, a5(false)),
+        (0b01_010_000, a5(true)),
         (0b00_100_000, a6(false)),
+        (0b01_100_000, a6(true)),
         (0b00_011_000, a4_to_5(false)),
         (0b01_011_000, a4_to_5(true)),
         (0b00_010_100, a4_to_6(false)),

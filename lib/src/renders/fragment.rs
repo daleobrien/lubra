@@ -3,9 +3,9 @@ use ::phf::{Map, phf_map};
 
 pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {
   1u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  84  103.92 A  24  24 0 0 0  36  103.92\" />",
-  2u8 =>  "<path fill=\"black\" stroke=\"black\" d=\"M  108 -20.78 A  24  24 0 0 0  72 -83.14\" />",
+  2u8 =>  "<path fill=\"blue\" stroke=\"black\" d=\"M  108 -20.78 A  24  24 0 0 0  72 -83.14\" />",
   4u8 =>  "<path fill=\"black\" stroke=\"black\" d=\"M -12  20.78 A  24  24 0 0 0 -108 -20.78\" />",
-  8u8 =>  "<path fill=\"black\" stroke=\"black\" d=\"M  42  72.75 A  24  24 0 0 0 -42 -72.75\" />",
+  8u8 =>  "<path fill=\"blue\" stroke=\"black\" d=\"M  42  72.75 A  24  24 0 0 0 -42 -72.75\" />",
   12u8 =>  "<path fill=\"black\" d=\"M 12 -20.78l 90  51.96l-24  41.57l-90 -51.96z \"/> <path stroke=\"black\" d=\"M 12 -20.78l 90  51.96m-24  41.57l-90 -51.96z\"/>",
   16u8 =>  "<path fill=\"black\" stroke=\"black\" d=\"M  102  31.18 A  24  24 0 0 0 -42  72.75\" />",
   18u8 =>  "<path fill=\"black\" d=\"M 132  20.78l-90  51.96l-24 -41.57l 90 -51.96z \"/> <path stroke=\"black\" d=\"M 132  20.78l-90  51.96m-24 -41.57l 90 -51.96z\"/>",
@@ -15,12 +15,17 @@ pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {
   33u8 =>  "<path fill=\"black\" d=\"M 36  103.92l 0 -103.92l 48  0l 0  103.92z \"/> <path stroke=\"black\" d=\"M 36  103.92l 0 -103.92m 48  0l 0  103.92z\"/>",
   48u8 =>  "<path fill=\"black\" d=\"M  36  0 A  36  36 0 0 1  -102  31.18 L -78  72.75 A  84  84 0 0 0  -36  0 z \"/> <path stroke=\"black\" d=\"M  36  0 A  36  36 0 0 1  -102  31.18 M -78  72.75 A  84  84 0 0 0  -36  0 \"/>",
   65u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  36 -0 A  24  24 0 0 0  84  0\" />",
+  66u8 =>  "<path fill=\"red\" stroke=\"black\" d=\"M -1.92  148.82 A  24  24 0 0 0 -42 -72.75\" />",
+  68u8 =>  "<path fill=\"black\" stroke=\"black\" d=\"M  132  83.14 A  24  24 0 0 0 -42  72.75\" />",
+  72u8 =>  "<path fill=\"red\" stroke=\"black\" d=\"M  64.08  55.29 A  24  24 0 0 0  72 -83.14\" />",
   76u8 =>  "<path fill=\"black\" d=\"M 132  83.14l-90 -51.96l-24  41.57l 90  51.96z \"/> <path stroke=\"black\" d=\"M 132  83.14l-90 -51.96m-24  41.57l 90  51.96z\"/>",
+  80u8 =>  "<path fill=\"black\" stroke=\"black\" d=\"M  18  72.75 A  24  24 0 0 0 -108 -20.78\" />",
   82u8 =>  "<path fill=\"black\" d=\"M-1.92  148.82l 90 -51.96l-24 -41.57l-90  51.96z \"/> <path stroke=\"black\" d=\"M-1.92  148.82l 90 -51.96m-24 -41.57l-90  51.96z\"/>",
-  84u8 =>  "<path fill=\"black\" d=\"M  10768.08 -6076.17 A  36  36 0 0 1   10734 -6287.34 L -24 -103.92 A  84  84 0 0 0   18 -31.18 z \"/> <path stroke=\"black\" d=\"M  10768.08 -6076.17 A  36  36 0 0 1   10734 -6287.34 M -24 -103.92 A  84  84 0 0 0   18 -31.18 \"/>",
-  88u8 =>  "<path fill=\"black\" d=\"M  42  12439.59 A  36  36 0 0 1  78  12439.59 L  102  31.18 A  84  84 0 0 0  18  31.18 z \" /> <path stroke=\"black\" d=\"M  42  12439.59 A  36  36 0 0 1  78  12439.59 M  102  31.18 A  84  84 0 0 0  18  31.18 \" />",
+  84u8 =>  "<path fill=\"black\" d=\"M  28.08  55.29 A  84  84 0 0 1   54 -51.96 L  6 -51.96 A  36  36 0 0 0  -48 -83.14 z \"/> <path stroke=\"black\" d=\"M  28.08  55.29 A  84  84 0 0 1   54 -51.96 M  6 -51.96 A  36  36 0 0 0  -48 -83.14 \"/>",
+  88u8 =>  "<path fill=\"purple\" d=\"M  102  72.75 A  84  84 0 0 1  18  72.75 L  42  31.18 A  36  36 0 0 0  96  0 z \" /> <path stroke=\"purple\" d=\"M  102  72.75 A  84  84 0 0 1  18  72.75 M  42  31.18 A  36  36 0 0 0  96  0 \" />",
+  96u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  84  103.92 A  24  24 0 0 0  36  103.92\" />",
   97u8 =>  "<path fill=\"black\" d=\"M 36  0l 0  103.92l 48  0l 0 -103.92z \"/> <path stroke=\"black\" d=\"M 36  0l 0  103.92m 48  0l 0 -103.92z\"/>",
-  112u8 =>  "<path fill=\"black\" d=\"M -10644 -6131.46 A  36  36 0 0 1  -10812 -6152.24 L -78  72.75 A  84  84 0 0 0  -36  0 z \"/> <path stroke=\"black\" d=\"M -10644 -6131.46 A  36  36 0 0 1  -10812 -6152.24 M -78  72.75 A  84  84 0 0 0  -36  0 \"/>",
+  112u8 =>  "<path fill=\"black\" d=\"M  36  103.92 A  84  84 0 0 1  -72 -20.78 L -48  20.78 A  36  36 0 0 0  -48  83.14 z \"/> <path stroke=\"black\" d=\"M  36  103.92 A  84  84 0 0 1  -72 -20.78 M -48  20.78 A  36  36 0 0 0  -48  83.14 \"/>",
   128u8 =>  "  <path stroke=\"blue\" d=\"M 0  0l 60  103.92l 60 -103.92z \"/>
  <text stroke=\"blue\" x=\" 0\" y=\" 0\">1</text>
 <text stroke=\"blue\" x=\" 60\" y=\" 103.92\">2</text>

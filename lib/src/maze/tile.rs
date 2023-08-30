@@ -62,18 +62,19 @@ impl Tile {
         if flipped {
             bits |= 0b01_000_000;
         }
-        // let wall = MAP_PATHS.get(&bits);
-        // if wall.is_some() {
-        //     groups.push(wall.unwrap());
-        // }
+        let wall = MAP_PATHS.get(&bits);
+        if wall.is_some() {
+            groups.push(wall.unwrap());
+        }
 
-        let nodes = match (coordinate.i + coordinate.j) % 2 {
-            0 => self.nodes,
-            1 => self.rotate_cw(),
-            _ => self.rotate_ccw(),
-        };
+        // let nodes = match (coordinate.i + coordinate.j) % 2 {
+        //     0 => self.nodes,
+        //     1 => self.rotate_cw(),
+        //     _ => self.rotate_ccw(),
+        // };
+        let nodes = self.nodes;
 
-        println!("nodes: {:?}", nodes);
+        println!("nodes: {:?} flipped -> {flipped}", nodes);
         for net in nodes {
             let mut bits: u8 = 0;
             for n in net.clone() {
