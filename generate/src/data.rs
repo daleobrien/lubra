@@ -203,12 +203,7 @@ fn a1_or_6(index: usize, invert: bool) -> String {
 
 fn a2_or_5(index: usize, invert: bool) -> String {
     let (pts, r) = ax(index, invert);
-
-    let pts = if invert {
-        pts.rotate_cw(invert, vec![0, 1])
-    } else {
-        pts.rotate_ccw(invert, vec![0, 1])
-    };
+    let pts = pts.rotate_ccw(invert, vec![0, 1]);
 
     let pts = (TILE_WIDTH * pts).trim();
 
@@ -222,11 +217,7 @@ fn a2_or_5(index: usize, invert: bool) -> String {
 
 fn a3_or_4(index: usize, invert: bool) -> String {
     let (pts, r) = ax(index, invert);
-    let pts = if invert {
-        pts.rotate_ccw(invert, vec![0, 1])
-    } else {
-        pts.rotate_cw(invert, vec![0, 1])
-    };
+    let pts = pts.rotate_cw(invert, vec![0, 1]);
     let pts: Vec<String> = (TILE_WIDTH * pts).trim();
 
     return format!(

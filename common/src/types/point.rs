@@ -65,15 +65,15 @@ impl Point {
         return format!("{} {}", trimf64(self.x), trimf64(self.y));
     }
 
-    fn rotate(
-        &self,
-        pivot: Point,
-        index: usize,
-        offset_rotations: Vec<usize>,
-        s: f64,
-        c: f64,
-    ) -> Point {
+    fn rotate(&self, invert: bool, index: usize, offset_rotations: Vec<usize>, ccw: bool) -> Point {
+        let c = -0.5;
+        let s = if invert ^ ccw { S3 } else { -S3 };
+
         if offset_rotations.contains(&index) {
+            let pivot = Point {
+                x: 0.5f64,
+                y: if invert { S3 - S5 } else { S5 },
+            };
             // Centre point of our tile
             let translated = *self - pivot;
 
@@ -84,6 +84,7 @@ impl Point {
                 };
         }
         // relative rotation, these points are diffs, so don't need a pivot point
+
         return Point {
             x: self.x * c - self.y * s,
             y: self.x * s + self.y * c,
@@ -91,20 +92,12 @@ impl Point {
     }
     pub fn rotate_ccw(&self, invert: bool, index: usize, offset_rotations: Vec<usize>) -> Point {
         // (Sin(120º), Cos(120º))
-        let pivot = Point {
-            x: 0.5f64,
-            y: if invert { S3 - S5 } else { S5 },
-        };
-        return self.rotate(pivot, index, offset_rotations, S3, -0.5);
+        return self.rotate(invert, index, offset_rotations, true);
     }
 
     pub fn rotate_cw(&self, invert: bool, index: usize, offset_rotations: Vec<usize>) -> Point {
         // (Sin(-120º), Cos(-120º))
-        let pivot = Point {
-            x: 0.5f64,
-            y: if invert { S3 - S5 } else { S5 },
-        };
-        return self.rotate(pivot, index, offset_rotations, -S3, -0.5);
+        return self.rotate(invert, index, offset_rotations, false);
     }
 
     pub fn invert(&self) -> Point {
