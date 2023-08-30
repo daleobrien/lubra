@@ -91,15 +91,19 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
     //
 
     let [start, end, r, y] = match (invert, index) {
+        // Small Arc on Node 1
         (false, 1) => [0.0, 6.0, PATH_WIDTH, S3],
         (true, 1) => [6.0, 0.0, PATH_WIDTH, 0.0],
 
+        //Inner Arc on Node 1 (Node 4-5)
         (false, 2) => [8.0, 10.0, (0.5 - PATH_WIDTH), S3],
-        (false, 3) => [10.0, 8.0, (0.5 + PATH_WIDTH), S3],
-
         (true, 2) => [14.0, 16.0, (0.5 + PATH_WIDTH), 0.0],
+
+        // Outer Arc on Node 1 (Node 4-5)
+        (false, 3) => [10.0, 8.0, (0.5 + PATH_WIDTH), S3],
         (true, 3) => [16.0, 12.0, (0.5 - PATH_WIDTH), 0.0],
 
+        // Small Arc on Node 6
         (false, 6) => [6.0, 0.0, PATH_WIDTH, 0.0],
         (true, 6) => [0.0, 6.0, PATH_WIDTH, S3],
         _ => panic!("Invalid index"),
