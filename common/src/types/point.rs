@@ -75,7 +75,6 @@ impl Point {
     ) -> Point {
         if offset_rotations.contains(&index) {
             // Centre point of our tile
-
             let translated = *self - pivot;
 
             return pivot
@@ -84,7 +83,7 @@ impl Point {
                     y: translated.x * s + translated.y * c,
                 };
         }
-
+        // relative rotation, these points are diffs, so don't need a pivot point
         return Point {
             x: self.x * c - self.y * s,
             y: self.x * s + self.y * c,

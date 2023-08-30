@@ -204,6 +204,7 @@ fn a1_or_6(index: usize, invert: bool) -> String {
 fn a2_or_5(index: usize, invert: bool) -> String {
     let (pts, r) = ax(index, invert);
 
+    // TODO: Seems off by a radius!, so normal 6 is probs arc the wrong way
     let pts = pts.rotate_cw(false, vec![0, 1]);
 
     let pts = (TILE_WIDTH * pts).trim();
