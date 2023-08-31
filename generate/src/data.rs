@@ -141,18 +141,18 @@ fn a6(invert: bool) -> String {
 }
 
 fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
-    let pts: Vec<String> = pts.scale().trim();
+    let pts: Vec<String> = pts.str();
 
     return format!(
-        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
+    "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
          <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d} \\\" />",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-        r1=radii.0,
-        r2=radii.1
-    );
+    a = pts[0],
+    b = pts[1],
+    c = pts[2],
+    d = pts[3],
+    r1 = radii.0,
+    r2 = radii.1
+  );
 }
 
 fn a4_to_5(invert: bool) -> String {
@@ -163,6 +163,7 @@ fn a4_to_5(invert: bool) -> String {
     let pts = concat(vec![arc1, arc2]);
     return a_x_to_y(pts, (r1, r2));
 }
+
 fn a4_to_6(invert: bool) -> String {
     let (arc1, r1) = ax(2, invert);
     let (arc2, r2) = ax(3, invert);
@@ -182,22 +183,22 @@ fn a456(invert: bool) -> String {
     let pts2 = pts1.clone().rotate_ccw(invert, vec![0, 1]);
     let pts3 = pts1.clone().rotate_cw(invert, vec![0, 1]);
 
-    let p1: Vec<String> = pts1.scale().trim();
+    let p1: Vec<String> = pts1.str();
     let (p2, p3) = match invert {
         false => (pts3, pts2),
         true => (pts2, pts3),
     };
-    let p2 = p2.scale().trim();
-    let p3 = p3.scale().trim();
+    let p2 = p2.str();
+    let p3 = p3.str();
 
     return format!(
-        "<path fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 1 {d} L {e} A {r} {r} 0 0 1 {f} z \\\" />\
+    "<path fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 1 {d} L {e} A {r} {r} 0 0 1 {f} z \\\" />\
         <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} M {c} A {r} {r} 0 0 1 {d} M {e} A {r} {r} 0 0 1 {f} \\\" />",
-        a = p1[0], b = p1[1], c = p2[0], d = p2[1], e = p3[0], f = p3[1] );
+    a = p1[0], b = p1[1], c = p2[0], d = p2[1], e = p3[0], f = p3[1]);
 }
 
 fn a_x_or_y(pts: Path, r: String) -> String {
-    let pts = pts.scale().trim();
+    let pts = pts.str();
     return format!(
         "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b}\\\" />",
         a = pts[0],
