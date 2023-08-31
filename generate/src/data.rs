@@ -157,7 +157,6 @@ fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
 
 fn a4_to_5(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
-
     let (arc1, r1) = ax(2, invert);
     let (arc2, r2) = ax(3, invert);
     let pts = concat(vec![arc1, arc2]);
