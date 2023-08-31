@@ -182,20 +182,18 @@ fn a456(invert: bool) -> String {
     let pts2 = pts1.clone().rotate_ccw(invert, vec![0, 1]);
     let pts3 = pts1.clone().rotate_cw(invert, vec![0, 1]);
 
-    let pts1: Vec<String> = pts1.scale().trim();
-    let pts2: Vec<String> = pts2.scale().trim();
-    let pts3: Vec<String> = pts3.scale().trim();
+    let p1: Vec<String> = pts1.scale().trim();
+    let (p2, p3) = match invert {
+        false => (pts3, pts2),
+        true => (pts2, pts3),
+    };
+    let p2 = p2.scale().trim();
+    let p3 = p3.scale().trim();
 
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 1 {d} L {e} A {r} {r} 0 0 1 {f} z \\\" />\
         <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} M {c} A {r} {r} 0 0 1 {d} M {e} A {r} {r} 0 0 1 {f} \\\" />",
-        a = pts1[0],
-        b = pts1[1],
-         c = pts2[0],
-         d = pts2[1],
-         e = pts3[0],
-         f = pts3[1]
-    );
+        a = p1[0], b = p1[1], c = p2[0], d = p2[1], e = p3[0], f = p3[1] );
 }
 
 fn a_x_or_y(pts: Path, r: String) -> String {

@@ -22,6 +22,10 @@ impl Path {
         return self.iter().map(|p| p.trim()).collect();
     }
 
+    pub fn str(self) -> Vec<String> {
+        return self.iter().map(|p| (*p * TILE_WIDTH).trim()).collect();
+    }
+
     pub fn invert(self) -> Path {
         Path {
             points: self.iter().map(|p| p.invert()).collect(),
