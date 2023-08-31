@@ -140,6 +140,21 @@ fn a6(invert: bool) -> String {
     return a1_or_6(6, invert);
 }
 
+fn axy(pts: Path, radii: (String, String)) -> String {
+    let pts: Vec<String> = (TILE_WIDTH * pts).trim();
+
+    return format!(
+        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
+         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d} \\\" />",
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
+        r1=radii.0,
+        r2=radii.1
+    );
+}
+
 fn a4_to_5(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
 
@@ -147,53 +162,23 @@ fn a4_to_5(invert: bool) -> String {
     let (arc2, r2) = ax(3, invert);
     let pts = concat(vec![arc1, arc2]);
 
-    // let pts = if invert { pts.invert() } else { pts };
-    let pts: Vec<String> = (TILE_WIDTH * pts).trim();
-    println!("4-5 invert -> {invert} {:?}\n", pts);
-    println!("r1 {r1} , r2 {r2}");
-
-    let colour = if invert { "red" } else { "blue" };
-    return format!(
-        "<path fill=\\\"{colour}\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
-         <path stroke=\\\"{colour}\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d} \\\" />",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-    );
+    return axy(pts, (r1, r2));
 }
 fn a4_to_6(invert: bool) -> String {
     let (arc1, r1) = ax(2, invert);
     let (arc2, r2) = ax(3, invert);
-    let pts = concat(vec![arc1, arc2]).rotate_cw(invert, vec![0]);
 
-    let pts: Vec<String> = (TILE_WIDTH * pts).trim();
+    let pts = concat(vec![arc1, arc2]).rotate_ccw(invert, vec![0, 1, 2, 3]);
 
-    return format!(
-        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1  {b} L {c} A {r2} {r2} 0 0 0  {d} z \\\"/> \
-         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1  {b} M {c} A {r2} {r2} 0 0 0  {d} \\\"/>",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-    );
+    return axy(pts, (r1, r2));
 }
 
 fn a5_to_6(invert: bool) -> String {
     let (arc1, r1) = ax(2, invert);
     let (arc2, r2) = ax(3, invert);
-    let pts = concat(vec![arc1, arc2]).rotate_ccw(invert, vec![0]);
+    let pts = concat(vec![arc1, arc2]).rotate_cw(invert, vec![0, 1, 2, 3]);
 
-    let pts: Vec<String> = (TILE_WIDTH * pts).trim();
-
-    return format!(
-        "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1  {b} L {c} A {r2} {r2} 0 0 0  {d} z \\\"/> \
-         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1  {b} M {c} A {r2} {r2} 0 0 0  {d} \\\"/>",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-    );
+    return axy(pts, (r1, r2));
 }
 
 fn a1_or_6(index: usize, invert: bool) -> String {
@@ -257,8 +242,8 @@ pub fn generate_all_shapes() {
         (0b01_100_000, a6(true)),
         (0b00_011_000, a4_to_5(false)),
         (0b01_011_000, a4_to_5(true)),
-        (0b00_010_100, a4_to_6(false)),
-        (0b01_010_100, a4_to_6(true)),
+        (0b00_101_000, a4_to_6(false)),
+        (0b01_101_000, a4_to_6(true)),
         (0b00_110_000, a5_to_6(false)),
         (0b01_110_000, a5_to_6(true)),
         (0b10_000_000, l_wall(false)),
