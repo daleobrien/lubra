@@ -96,11 +96,11 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
         (true, 1) => [6.0, 0.0, PATH_WIDTH, 0.0],
 
         // Inner Arc on Node 1 (Node 4-5)
-        (false, 2) => [2.0, 4.0, (0.5 - PATH_WIDTH), 0.0],
+        (false, 2) => [8.0, 10.0, (0.5 - PATH_WIDTH), S3],
         (true, 2) => [2.0, 4.0, (0.5 - PATH_WIDTH), 0.0],
 
         // Outer Arc on Node 1 (Node 4-5)
-        (false, 3) => [4.0, 2.0, (0.5 + PATH_WIDTH), 0.0],
+        (false, 3) => [10.0, 8.0, (0.5 + PATH_WIDTH), S3],
         (true, 3) => [4.0, 2.0, (0.5 + PATH_WIDTH), 0.0],
 
         // Small Arc on Node 6
