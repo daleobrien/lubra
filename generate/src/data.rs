@@ -184,7 +184,7 @@ fn a456(invert: bool) -> String {
 
     let pts1: Vec<String> = pts1.scale().trim();
     let pts2: Vec<String> = pts2.scale().trim();
-    let pts3: Vec<String> = (TILE_WIDTH * pts3).trim();
+    let pts3: Vec<String> = pts3.scale().trim();
 
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 1 {d} L {e} A {r} {r} 0 0 1 {f} z \\\" />\
@@ -199,7 +199,7 @@ fn a456(invert: bool) -> String {
 }
 
 fn a_x_or_y(pts: Path, r: String) -> String {
-    let pts = (TILE_WIDTH * pts).trim();
+    let pts = pts.scale().trim();
     return format!(
         "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b}\\\" />",
         a = pts[0],
