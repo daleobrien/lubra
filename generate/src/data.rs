@@ -4,6 +4,7 @@ use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 use itertools::concat;
 use std::collections::BTreeMap;
 use std::f64::consts::FRAC_PI_6;
+use std::fmt::format;
 use std::fs::File;
 use std::io::Write;
 
@@ -140,7 +141,7 @@ fn a6(invert: bool) -> String {
     return a1_or_6(6, invert);
 }
 
-fn axy(pts: Path, radii: (String, String)) -> String {
+fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
     let pts: Vec<String> = (TILE_WIDTH * pts).trim();
 
     return format!(
@@ -161,61 +162,68 @@ fn a4_to_5(invert: bool) -> String {
     let (arc1, r1) = ax(2, invert);
     let (arc2, r2) = ax(3, invert);
     let pts = concat(vec![arc1, arc2]);
-
-    return axy(pts, (r1, r2));
+    return a_x_to_y(pts, (r1, r2));
 }
 fn a4_to_6(invert: bool) -> String {
     let (arc1, r1) = ax(2, invert);
     let (arc2, r2) = ax(3, invert);
-
     let pts = concat(vec![arc1, arc2]).rotate_ccw(invert, vec![0, 1, 2, 3]);
-
-    return axy(pts, (r1, r2));
+    return a_x_to_y(pts, (r1, r2));
 }
 
 fn a5_to_6(invert: bool) -> String {
     let (arc1, r1) = ax(2, invert);
     let (arc2, r2) = ax(3, invert);
     let pts = concat(vec![arc1, arc2]).rotate_cw(invert, vec![0, 1, 2, 3]);
-
-    return axy(pts, (r1, r2));
+    return a_x_to_y(pts, (r1, r2));
 }
 
-fn a1_or_6(index: usize, invert: bool) -> String {
-    let (pts, r) = ax(index, invert);
+fn a456(invert: bool) -> String {
+    let (pts1, r) = ax(2, invert);
+    let pts2 = pts1.clone().rotate_ccw(invert, vec![0, 1]);
+    let pts3 = pts1.clone().rotate_cw(invert, vec![0, 1]);
 
+    let pts1: Vec<String> = (TILE_WIDTH * pts1).trim();
+    let pts2: Vec<String> = (TILE_WIDTH * pts2).trim();
+    let pts3: Vec<String> = (TILE_WIDTH * pts3).trim();
+    // "<path fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 0 {d} L {e} A {r} {r} 0 0 0 {f} z \\\" />
+    // <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} M {c} A {r} {r} 0 0 0 {d} M {e} A {r} {r} 0 0 0 {f} \\\" />",
+    return format!(
+        " <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} M {c} A {r} {r} 0 0 1 {d} M {e} A {r} {r} 0 0 1 {f} \\\" />",
+        a = pts1[0],
+        b = pts1[1],
+         c = pts2[0],
+         d = pts2[1],
+         e = pts3[0],
+         f = pts3[1]
+    );
+}
+
+fn a_x_or_y(pts: Path, r: String) -> String {
     let pts = (TILE_WIDTH * pts).trim();
     return format!(
         "<path stroke=\\\"black\\\" fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b}\\\" />",
         a = pts[0],
         b = pts[1],
+        r = r
     );
+}
+
+fn a1_or_6(index: usize, invert: bool) -> String {
+    let (pts, r) = ax(index, invert);
+    return a_x_or_y(pts, r);
 }
 
 fn a2_or_5(index: usize, invert: bool) -> String {
     let (pts, r) = ax(index, invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1]);
-
-    let pts = (TILE_WIDTH * pts).trim();
-
-    let colour = if invert { "red" } else { "blue" };
-    return format!(
-        "<path fill=\\\"{colour}\\\" stroke=\\\"{colour}\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b}\\\" />",
-        a = pts[0],
-        b = pts[1],
-    );
+    return a_x_or_y(pts, r);
 }
 
 fn a3_or_4(index: usize, invert: bool) -> String {
     let (pts, r) = ax(index, invert);
     let pts = pts.rotate_cw(invert, vec![0, 1]);
-    let pts: Vec<String> = (TILE_WIDTH * pts).trim();
-
-    return format!(
-        "<path fill=\\\"black\\\" stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b}\\\" />",
-        a = pts[0],
-        b = pts[1]
-    );
+    return a_x_or_y(pts, r);
 }
 
 pub fn generate_all_shapes() {
@@ -246,6 +254,8 @@ pub fn generate_all_shapes() {
         (0b01_101_000, a4_to_6(true)),
         (0b00_110_000, a5_to_6(false)),
         (0b01_110_000, a5_to_6(true)),
+        (0b00_111_000, a456(false)),
+        (0b01_111_000, a456(true)),
         (0b10_000_000, l_wall(false)),
         (0b11_000_000, l_wall(true)),
     ] {
