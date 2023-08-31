@@ -95,13 +95,13 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
         (false, 1) => [0.0, 6.0, PATH_WIDTH, S3],
         (true, 1) => [6.0, 0.0, PATH_WIDTH, 0.0],
 
-        //Inner Arc on Node 1 (Node 4-5)
-        (false, 2) => [8.0, 10.0, (0.5 - PATH_WIDTH), S3],
-        (true, 2) => [14.0, 16.0, (0.5 + PATH_WIDTH), 0.0],
+        // Inner Arc on Node 1 (Node 4-5)
+        (false, 2) => [2.0, 4.0, (0.5 - PATH_WIDTH), 0.0],
+        (true, 2) => [2.0, 4.0, (0.5 - PATH_WIDTH), 0.0],
 
         // Outer Arc on Node 1 (Node 4-5)
-        (false, 3) => [10.0, 8.0, (0.5 + PATH_WIDTH), S3],
-        (true, 3) => [16.0, 12.0, (0.5 - PATH_WIDTH), 0.0],
+        (false, 3) => [4.0, 2.0, (0.5 + PATH_WIDTH), 0.0],
+        (true, 3) => [4.0, 2.0, (0.5 + PATH_WIDTH), 0.0],
 
         // Small Arc on Node 6
         (false, 6) => [6.0, 0.0, PATH_WIDTH, 0.0],
@@ -147,13 +147,15 @@ fn a4_to_5(invert: bool) -> String {
     let (arc2, r2) = ax(3, invert);
     let pts = concat(vec![arc1, arc2]);
 
+    // let pts = if invert { pts.invert() } else { pts };
     let pts: Vec<String> = (TILE_WIDTH * pts).trim();
-    //println!("4-5 invert -> {invert} {:?}\n", pts);
+    println!("4-5 invert -> {invert} {:?}\n", pts);
+    println!("r1 {r1} , r2 {r2}");
 
-    let colour = if invert { "purple" } else { "black" };
+    let colour = if invert { "red" } else { "blue" };
     return format!(
-        "<path fill=\\\"{colour}\\\" d=\\\"M {a} A {r1} 0 0 1 {b} L {c} A {r1} {r1} 0 0 0 {d} z \\\" /> \
-         <path stroke=\\\"{colour}\\\" d=\\\"M {a} A {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d} \\\" />",
+        "<path fill=\\\"{colour}\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
+         <path stroke=\\\"{colour}\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d} \\\" />",
         a = pts[0],
         b = pts[1],
         c = pts[2],
