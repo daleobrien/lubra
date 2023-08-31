@@ -70,12 +70,12 @@ fn l1_to_6(invert: bool) -> String {
 }
 
 fn l2_to_5(invert: bool) -> String {
-    let pts = TILE_WIDTH * generate_lx(invert).rotate_cw(invert, vec![0, 4]);
+    let pts = TILE_WIDTH * generate_lx(invert).rotate_ccw(invert, vec![0, 4]);
     return l_a_to_b(pts);
 }
 
 fn l3_to_4(invert: bool) -> String {
-    let pts = TILE_WIDTH * generate_lx(invert).rotate_ccw(invert, vec![0, 4]);
+    let pts = TILE_WIDTH * generate_lx(invert).rotate_cw(invert, vec![0, 4]);
     return l_a_to_b(pts);
 }
 
