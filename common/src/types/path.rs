@@ -1,4 +1,4 @@
-use crate::types::point::Point;
+use crate::types::point::{Point, TILE_WIDTH};
 use itertools::concat;
 use std::ops::{Deref, DerefMut, Mul};
 
@@ -10,6 +10,12 @@ pub struct Path {
 impl Path {
     pub fn new(points: Vec<Point>) -> Path {
         Path { points }
+    }
+
+    pub fn scale(self) -> Path {
+        return Path {
+            points: self.iter().map(|p| *p * TILE_WIDTH).collect(),
+        };
     }
 
     pub fn trim(self) -> Vec<String> {

@@ -3,8 +3,7 @@ use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 use itertools::concat;
 use std::collections::BTreeMap;
-use std::f64::consts::FRAC_PI_6;
-use std::fmt::format;
+use std::f64::consts::FRAC_PI_3;
 use std::fs::File;
 use std::io::Write;
 
@@ -94,24 +93,24 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
     let [start, end, r, y] = match (invert, index) {
         // Small Arc on Node 1
         (false, 1) => [0.0, 6.0, PATH_WIDTH, S3],
-        (true, 1) => [6.0, 0.0, PATH_WIDTH, 0.0],
+        (true, 1) => [3.0, 0.0, PATH_WIDTH, 0.0],
 
         // Inner Arc on Node 1 (Node 4-5)
-        (false, 2) => [8.0, 10.0, (0.5 - PATH_WIDTH), S3],
-        (true, 2) => [2.0, 4.0, (0.5 - PATH_WIDTH), 0.0],
+        (false, 2) => [4.0, 5.0, (0.5 - PATH_WIDTH), S3],
+        (true, 2) => [1.0, 2.0, (0.5 - PATH_WIDTH), 0.0],
 
         // Outer Arc on Node 1 (Node 4-5)
-        (false, 3) => [10.0, 8.0, (0.5 + PATH_WIDTH), S3],
-        (true, 3) => [4.0, 2.0, (0.5 + PATH_WIDTH), 0.0],
+        (false, 3) => [5.0, 4.0, (0.5 + PATH_WIDTH), S3],
+        (true, 3) => [2.0, 1.0, (0.5 + PATH_WIDTH), 0.0],
 
         // Small Arc on Node 6
-        (false, 6) => [6.0, 0.0, PATH_WIDTH, 0.0],
-        (true, 6) => [0.0, 6.0, PATH_WIDTH, S3],
+        (false, 6) => [3.0, 0.0, PATH_WIDTH, 0.0],
+        (true, 6) => [0.0, 3.0, PATH_WIDTH, S3],
         _ => panic!("Invalid index"),
     };
     let x = 0.5;
-    let a = polar(Point { x, y }, r, start * FRAC_PI_6);
-    let b = polar(Point { x, y }, r, end * FRAC_PI_6);
+    let a = polar(Point { x, y }, r, start * FRAC_PI_3);
+    let b = polar(Point { x, y }, r, end * FRAC_PI_3);
 
     let r = trimf64(TILE_WIDTH * r);
     return (Path::new(vec![a, b]), r);
@@ -142,7 +141,7 @@ fn a6(invert: bool) -> String {
 }
 
 fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
-    let pts: Vec<String> = (TILE_WIDTH * pts).trim();
+    let pts: Vec<String> = pts.scale().trim();
 
     return format!(
         "<path fill=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
@@ -183,13 +182,13 @@ fn a456(invert: bool) -> String {
     let pts2 = pts1.clone().rotate_ccw(invert, vec![0, 1]);
     let pts3 = pts1.clone().rotate_cw(invert, vec![0, 1]);
 
-    let pts1: Vec<String> = (TILE_WIDTH * pts1).trim();
-    let pts2: Vec<String> = (TILE_WIDTH * pts2).trim();
+    let pts1: Vec<String> = pts1.scale().trim();
+    let pts2: Vec<String> = pts2.scale().trim();
     let pts3: Vec<String> = (TILE_WIDTH * pts3).trim();
-    // "<path fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 0 {d} L {e} A {r} {r} 0 0 0 {f} z \\\" />
-    // <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} M {c} A {r} {r} 0 0 0 {d} M {e} A {r} {r} 0 0 0 {f} \\\" />",
+
     return format!(
-        " <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} M {c} A {r} {r} 0 0 1 {d} M {e} A {r} {r} 0 0 1 {f} \\\" />",
+        "<path fill=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 1 {d} L {e} A {r} {r} 0 0 1 {f} z \\\" />\
+        <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} M {c} A {r} {r} 0 0 1 {d} M {e} A {r} {r} 0 0 1 {f} \\\" />",
         a = pts1[0],
         b = pts1[1],
          c = pts2[0],
