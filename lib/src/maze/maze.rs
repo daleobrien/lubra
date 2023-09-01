@@ -339,7 +339,7 @@ impl Maze {
         j: usize,
         surrounding_tiles: &[Option<Tile>; 12],
     ) -> Tile {
-        return Tile::new(vec![vec![4, 5, 6]], true);
+        return Tile::new(vec![vec![6]], true);
 
         // // TODO: Need to also put in the last tile too
         // if i == 0 && j == 0 {

@@ -92,7 +92,7 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
 
     let [start, end, r, y] = match (invert, index) {
         // Small Arc on Node 1
-        (false, 1) => [0.0, 6.0, PATH_WIDTH, S3],
+        (false, 1) => [0.0, 3.0, PATH_WIDTH, S3],
         (true, 1) => [3.0, 0.0, PATH_WIDTH, 0.0],
 
         // Inner Arc on Node 1 (Node 4-5)

@@ -2,9 +2,9 @@
 use ::phf::{Map, phf_map};
 
 pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {
-  1u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  84  103.92 A  24  24 0 0 0  84  103.92\" />",
-  2u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M -12  20.78 A  24  24 0 0 0 -12  20.78\" />",
-  4u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  108 -20.78 A  24  24 0 0 0  108 -20.78\" />",
+  1u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  84  103.92 A  24  24 0 0 0  36  103.92\" />",
+  2u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M -12  20.78 A  24  24 0 0 0  12 -20.78\" />",
+  4u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  108 -20.78 A  24  24 0 0 0  132  20.78\" />",
   8u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  42  72.75 A  24  24 0 0 0  18  31.18\" />",
   12u8 =>  "<path fill=\"black\" d=\"M 132  20.78l-90  51.96l-24 -41.57l 90 -51.96z \"/> <path stroke=\"black\" d=\"M 132  20.78l-90  51.96m-24 -41.57l 90 -51.96z\"/>",
   16u8 =>  "<path stroke=\"black\" fill=\"black\" d=\"M  102  31.18 A  24  24 0 0 0  78  72.75\" />",
