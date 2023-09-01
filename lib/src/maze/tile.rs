@@ -4,9 +4,9 @@ use std::fmt;
 
 fn rotate_number_up(n: u8) -> u8 {
     return match n {
-        1 => 2,
-        2 => 3,
-        3 => 1,
+        1 => 3,
+        2 => 1,
+        3 => 2,
         4 => 5,
         5 => 6,
         6 => 4,
@@ -16,9 +16,9 @@ fn rotate_number_up(n: u8) -> u8 {
 
 fn rotate_number_dn(n: u8) -> u8 {
     return match n {
-        1 => 3,
-        2 => 1,
-        3 => 2,
+        1 => 2,
+        2 => 3,
+        3 => 1,
         4 => 6,
         5 => 4,
         6 => 5,
@@ -53,6 +53,7 @@ impl Tile {
             groups.push(wall.unwrap());
         }
 
+        //println!("\nBEFORE {:?}", self.nodes.clone());
         let index = coordinate.i % 3;
         let nodes = match index {
             0 => self.nodes,
@@ -60,6 +61,7 @@ impl Tile {
             2 => self.rotate_cw(),
             _ => panic!("Invalid rotation"),
         };
+        //println!("AFTER {:?}", nodes.clone());
 
         for net in nodes {
             let mut bits: u8 = 0;
