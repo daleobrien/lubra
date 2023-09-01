@@ -1,7 +1,5 @@
 use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
-use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
-use rand_distr::num_traits::ToPrimitive;
 use std::fmt;
 
 fn rotate_number_up(n: u8) -> u8 {
@@ -34,18 +32,6 @@ pub struct Tile {
     pub initialised: bool,
 }
 
-pub fn calculate_origin_and_orientation(coordinate: &Coordinate) -> (Point, bool) {
-    let x_margin = 0.0;
-    let y_margin = 0.0;
-    let origin = Point {
-        x: (TILE_WIDTH / 2.0 + x_margin) * coordinate.i as f64,
-        y: (TILE_HEIGHT + y_margin) * f64::sqrt(3.0) / 2.0 * coordinate.j as f64,
-    };
-    let flipped = (coordinate.j + coordinate.i) % 2 == 1;
-
-    return (origin, flipped);
-}
-
 impl Tile {
     pub fn new(nodes: Vec<Vec<u8>>, initialised: bool) -> Tile {
         Tile { nodes, initialised }
@@ -55,7 +41,7 @@ impl Tile {
         // Build the SVG groups and return them
         let mut groups: Vec<&str> = vec![];
 
-        let (origin, flipped) = calculate_origin_and_orientation(&coordinate);
+        let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
         // ADD walls
         let mut bits = 0b10_000_000;
@@ -67,14 +53,14 @@ impl Tile {
             groups.push(wall.unwrap());
         }
 
-        // let nodes = match (coordinate.i + coordinate.j) % 2 {
-        //     0 => self.nodes,
-        //     1 => self.rotate_cw(),
-        //     _ => self.rotate_ccw(),
-        // };
-        let nodes = self.nodes;
+        let index = coordinate.i % 3;
+        let nodes = match index {
+            0 => self.nodes,
+            1 => self.rotate_ccw(),
+            2 => self.rotate_cw(),
+            _ => panic!("Invalid rotation"),
+        };
 
-        println!("nodes: {:?} flipped -> {flipped}", nodes);
         for net in nodes {
             let mut bits: u8 = 0;
             for n in net.clone() {

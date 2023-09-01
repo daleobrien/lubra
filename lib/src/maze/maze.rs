@@ -339,12 +339,12 @@ impl Maze {
         j: usize,
         surrounding_tiles: &[Option<Tile>; 12],
     ) -> Tile {
-        return Tile::new(vec![vec![6]], true);
+        //return Tile::new(vec![vec![4, 5]], true);
 
-        // // TODO: Need to also put in the last tile too
-        // if i == 0 && j == 0 {
-        //     return Tile::new(vec![vec![4, 5]], true);
-        // }
+        // TODO: Need to also put in the last tile too
+        if i == 0 && j == 0 {
+            return Tile::new(vec![vec![4, 5]], true);
+        }
         // if i == 0 && j == 1 {
         //     return Tile::new(vec![vec![3, 4]], true);
         // }
@@ -371,7 +371,6 @@ impl Maze {
     // https://github.com/bodoni/svg/blob/master/src/node/element/path/data.rs
     pub fn render(self, file_name: String) -> Result<(), Box<dyn Error>> {
         let margin = 5.0;
-        let margin = 5.0;
         let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;
         let h = self.number_of_rows as f64 * TILE_HEIGHT + 5.0 * margin;
 
@@ -397,7 +396,7 @@ impl Maze {
 
                 let tile = self.tiles[(j, i)].clone();
 
-                println!("-> Tile({i},{j}): {:?}", tile.nodes, i = i, j = j);
+                // println!("-> Tile({i},{j}): {:?}", tile.nodes, i = i, j = j);
 
                 for (g, &frag) in tile.to_svg_groups(coord).iter().enumerate() {
                     svg.add_fragment(frag, point, g);

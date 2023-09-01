@@ -32,24 +32,24 @@ fn l_wall(invert: bool) -> String {
     }
     t = TILE_WIDTH * t;
     let s = t.clone().diff(false).trim();
-
+    /*
+      <text stroke=\\\"{colour}\\\" x=\\\"{ax}\\\" y=\\\"{ay}\\\">2</text>\n\
+      <text stroke=\\\"{colour}\\\" x=\\\"{bx}\\\" y=\\\"{by}\\\">1</text>\n\
+      <text stroke=\\\"{colour}\\\" x=\\\"{cx}\\\" y=\\\"{cy}\\\">3</text>\n\
+    */
     // TODO: text will need to rotate with i,j
     let colour = if invert { "red" } else { "blue" };
     return format!(
-        "  <path stroke=\\\"{colour}\\\" d=\\\"M{a}l{b}l{c}z \\\"/>\n \
-           <text stroke=\\\"{colour}\\\" x=\\\"{ax}\\\" y=\\\"{ay}\\\">2</text>\n\
-           <text stroke=\\\"{colour}\\\" x=\\\"{bx}\\\" y=\\\"{by}\\\">1</text>\n\
-           <text stroke=\\\"{colour}\\\" x=\\\"{cx}\\\" y=\\\"{cy}\\\">3</text>\n\
-        ",
+        "<path stroke=\\\"{colour}\\\" d=\\\"M{a}l{b}l{c}z\\\" />",
         a = s[0],
         b = s[1],
         c = s[2],
-        ax = trimf64(t[0].x),
-        ay = trimf64(t[0].y),
-        bx = trimf64(t[1].x),
-        by = trimf64(t[1].y),
-        cx = trimf64(t[2].x),
-        cy = trimf64(t[2].y),
+        // ax = trimf64(t[0].x),
+        // ay = trimf64(t[0].y),
+        // bx = trimf64(t[1].x),
+        // by = trimf64(t[1].y),
+        // cx = trimf64(t[2].x),
+        // cy = trimf64(t[2].y),
     );
 }
 

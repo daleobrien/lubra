@@ -14,7 +14,7 @@ pub const S5: f64 = 0.2886751345948128822545743902509787f64; /* 1/2/sqrt(3) */
 
 pub const TILE_WIDTH: f64 = 120f64;
 pub const TILE_HEIGHT: f64 = 120f64 * S3;
-pub const PATH_WIDTH: f64 = 0.20f64;
+pub const PATH_WIDTH: f64 = 0.10f64;
 
 impl Add for Point {
     type Output = Self;
