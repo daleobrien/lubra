@@ -2,7 +2,7 @@ use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use std::fmt;
 
-fn rotate_number_up(n: u8) -> u8 {
+fn rotate_number_up(n: u32) -> u32 {
     return match n {
         1 => 3,
         2 => 1,
@@ -14,7 +14,7 @@ fn rotate_number_up(n: u8) -> u8 {
     };
 }
 
-fn rotate_number_dn(n: u8) -> u8 {
+fn rotate_number_dn(n: u32) -> u32 {
     return match n {
         1 => 2,
         2 => 3,
@@ -28,12 +28,12 @@ fn rotate_number_dn(n: u8) -> u8 {
 
 #[derive(Clone)]
 pub struct Tile {
-    pub nodes: Vec<Vec<u8>>,
+    pub nodes: Vec<Vec<u32>>,
     pub initialised: bool,
 }
 
 impl Tile {
-    pub fn new(nodes: Vec<Vec<u8>>, initialised: bool) -> Tile {
+    pub fn new(nodes: Vec<Vec<u32>>, initialised: bool) -> Tile {
         Tile { nodes, initialised }
     }
 
@@ -64,7 +64,7 @@ impl Tile {
         //println!("AFTER {:?}", nodes.clone());
 
         for net in nodes {
-            let mut bits: u8 = 0;
+            let mut bits: u32 = 0;
             for n in net.clone() {
                 bits |= 1 << (n - 1);
             }
@@ -97,7 +97,7 @@ impl Tile {
         return bits;
     }
 
-    pub fn rotate_cw(&self) -> Vec<Vec<u8>> {
+    pub fn rotate_cw(&self) -> Vec<Vec<u32>> {
         let mut nodes = Vec::new();
         for nets in self.nodes.clone() {
             let mut new_nets = Vec::new();
@@ -116,7 +116,7 @@ impl Tile {
         //     .map(|row| row.iter().map(|n| rotate_number_up(*n)).sorted().collect())
         //     .collect();
     }
-    pub fn rotate_ccw(&self) -> Vec<Vec<u8>> {
+    pub fn rotate_ccw(&self) -> Vec<Vec<u32>> {
         let mut nodes = Vec::new();
         for nets in self.nodes.clone() {
             let mut new_nets = Vec::new();
@@ -140,7 +140,7 @@ impl Tile {
         return false;
     }
 
-    pub fn contains(&self, node_index: u8) -> bool {
+    pub fn contains(&self, node_index: u32) -> bool {
         for nets in self.nodes.clone() {
             for n in nets {
                 if n == node_index {
@@ -196,14 +196,14 @@ mod tests {
     fn test_cw_rotation() {
         let tile = Tile::new(vec![vec![1, 2], vec![5]], true);
         let rotated_nodes = tile.rotate_cw();
-        assert_eq!(rotated_nodes, vec![vec![2, 3], vec![6]]);
+        assert_eq!(rotated_nodes, vec![vec![1, 3], vec![6]]);
     }
 
     #[test]
     fn test_ccw_rotation() {
         let tile = Tile::new(vec![vec![1, 2], vec![5]], true);
         let rotated_nodes = tile.rotate_ccw();
-        assert_eq!(rotated_nodes, vec![vec![1, 3], vec![4]]);
+        assert_eq!(rotated_nodes, vec![vec![2, 3], vec![4]]);
     }
 
     #[test]

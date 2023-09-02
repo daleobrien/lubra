@@ -1,5 +1,5 @@
 /* This file is generated. */
-pub fn list_of_posible_nets_for_a_mask (base4_mask:u32) -> Vec<Vec<Vec<u8>>> {
+pub fn list_of_posible_nets_for_a_mask (base4_mask:u32) -> Vec<Vec<Vec<u32>>> {
   match base4_mask {
          0 => vec![vec![]],
          1 => vec![vec![vec![1]]],

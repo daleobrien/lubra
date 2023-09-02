@@ -27,7 +27,7 @@ pub fn write_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>, file_name: 
     let _ = file.write(b"/* This file is generated. */\n");
 
     let _ = file.write_all(
-        b"pub fn list_of_posible_nets_for_a_mask (base4_mask:u32) -> Vec<Vec<Vec<u8>>> {\n",
+        b"pub fn list_of_posible_nets_for_a_mask (base4_mask:u32) -> Vec<Vec<Vec<u32>>> {\n",
     );
     let _ = file.write_all(b"  match base4_mask {\n");
     for key in keys {

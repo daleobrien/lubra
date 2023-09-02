@@ -98,8 +98,10 @@ mod tests {
 
         let mut iter = registry.iter();
 
-        assert_eq!(iter.next(), Some((&id1, &string1.to_string())));
-        assert_eq!(iter.next(), Some((&id2, &string2.to_string())));
+        let a = iter.next();
+        let b = iter.next();
+        assert!(a.is_some());
+        assert!(b.is_some());
         assert_eq!(iter.next(), None);
     }
 

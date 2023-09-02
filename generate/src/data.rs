@@ -252,9 +252,9 @@ pub fn generate_all_shapes() {
     let mut file = File::create("../lib/src/renders/fragment.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
-    let _ = file.write(b"pub static MAP_PATHS: Map<u8, &'static str> = phf_map! {\n");
+    let _ = file.write(b"pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {\n");
     for (key, value) in paths {
-        let _ = write!(file, "  {}u8 =>  \"{}\",\n", key, value);
+        let _ = write!(file, "  {}u32 =>  \"{}\",\n", key, value);
     }
     let _ = file.write(b"};\n\n");
 

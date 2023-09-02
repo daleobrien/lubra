@@ -13,6 +13,33 @@ use crate::renders::_point::Coordinate;
 use crate::renders::svg::Svg;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 
+const NODE_1: usize = 0usize;
+const NODE_2: usize = 1usize;
+const NODE_3: usize = 2usize;
+const NODE_4: usize = 3usize;
+const NODE_5: usize = 4usize;
+const NODE_6: usize = 5usize;
+
+const NODE_1L: usize = 6usize;
+const NODE_1R: usize = 7usize;
+const NODE_2L: usize = 8usize;
+const NODE_2R: usize = 9usize;
+const NODE_3L: usize = 10usize;
+const NODE_3R: usize = 11usize;
+
+#[cfg(debug_assertions)]
+fn pretty_print_int(b: u32) {
+    let mut s_iter = format!("{:b}", b);
+    let mut s = String::new();
+    for (idx, val) in s_iter.chars().rev().enumerate() {
+        if idx != 0 && idx % 2 == 0 {
+            s.insert(0, '_');
+        }
+        s.insert(0, val);
+    }
+    println!("{}", s);
+}
+
 pub struct Maze {
     pub style: Option<String>,
     nets: Vec<HashSet<[usize; 3]>>,
@@ -80,10 +107,10 @@ impl Maze {
 
         // TODO: At the point we can remove nets that have a length of 2, since they are just mini-circle
         // It does seem that it can be very hard to join some nets!!!
-        println!("\nWe have disjoint {:?} nets:", self.nets.len());
-        for (n, nets) in self.nets.iter().enumerate() {
-            println!("{n}-> {:?}", nets);
-        }
+        // println!("\nWe have disjoint {:?} nets:", self.nets.len());
+        // for (n, nets) in self.nets.iter().enumerate() {
+        //     println!("{n}-> {:?}", nets);
+        // }
     }
 
     /*
@@ -187,6 +214,10 @@ impl Maze {
         let x = add(pos.0, rel.0);
         let y = add(pos.1, rel.1);
 
+        // println!(
+        //     "pos ({},{}) + rel ({},{}) -> ({x:?},{y:?})",
+        //     pos.0, pos.1, rel.0, rel.1
+        // );
         return match (x, y) {
             (Some(x), Some(y)) => self.tiles.get(y, x).cloned(),
             _ => None, // Out of bounds, not possible tile
@@ -218,17 +249,19 @@ impl Maze {
         e.g.
            result[7] will always return the tile that is adjacent to node 6.
         */
+
         return NODE_TO_COORD[k % 6].map(|coord| self.get_tile_relative_position((i, j), coord));
     }
 
     fn tile_is_empty(&self, tile: &Option<Tile>) -> bool {
+        //
         match tile {
-            Some(t) => return !t.initialised,
-            None => return true,
+            Some(t) => return !t.initialised, // A tile, may or may not be free
+            None => return false,             // It's not really empty, but it's not a tile either.
         }
     }
 
-    fn tile_contains(&self, tile: &Option<Tile>, node_idx: u8) -> bool {
+    fn tile_contains(&self, tile: &Option<Tile>, node_idx: u32) -> bool {
         match tile {
             Some(t) => return t.contains(node_idx),
             None => return false,
@@ -237,16 +270,23 @@ impl Maze {
 
     fn mask_for_tile_vertex(
         &self,
-        node_idx: u8,
+        relative_idx: usize,
         idxs: [usize; 4],
         relative_tiles: &[Option<Tile>; 12],
     ) -> u32 {
-        let opposite = &relative_tiles[(node_idx - 1).to_usize().unwrap_or_default()];
+        let opposite = &relative_tiles[relative_idx];
 
         let left = &relative_tiles[idxs[0]];
         let right = &relative_tiles[idxs[1]];
         let l_adjacent = &relative_tiles[idxs[2]];
         let r_adjacent = &relative_tiles[idxs[3]];
+        let node_idx = relative_idx as u32;
+
+        println!(
+            "NODE {node_idx}: o -> {opposite:?} l->{left:?} r->{right:?} la->{la:?} ra->{ra:?}",
+            la = l_adjacent,
+            ra = r_adjacent
+        );
         //
         if self.tile_is_empty(opposite) {
             if !self.tile_contains(left, node_idx)
@@ -274,8 +314,10 @@ impl Maze {
         return 0;
     }
 
-    fn mask_for_tile_side(&self, node_idx: u8, relative_tiles: &[Option<Tile>; 12]) -> u32 {
-        let adjacent = &relative_tiles[(node_idx - 1).to_usize().unwrap_or_default()];
+    fn mask_for_tile_side(&self, relative_idx: usize, relative_tiles: &[Option<Tile>; 12]) -> u32 {
+        let adjacent = &relative_tiles[relative_idx];
+
+        let node_idx = relative_idx as u32;
 
         if self.tile_is_empty(adjacent) {
             return match node_idx {
@@ -301,16 +343,18 @@ impl Maze {
     pub fn get_surrounding_tile_connections(&self, surrounding_tiles: &[Option<Tile>; 12]) -> u32 {
         // Get the surrounding tiles
 
-        // 1,2,3,4,5,6, 1a,1b,2a,2b,3a,3b
-        // 0 1 2 3 4 5  6  7  8  9  10 11
+        // 1,2,3, 4,5,6, 1a,1b, 2a,2b, 3a,3b
+        // 0 1 2  3 4 5  6  7   8  9   10 11
 
         // Node 1
-        return self.mask_for_tile_vertex(1, [3, 4, 6, 7], surrounding_tiles)
-            + self.mask_for_tile_vertex(2, [3, 5, 8, 9], surrounding_tiles)
-            + self.mask_for_tile_vertex(3, [4, 5, 10, 11], surrounding_tiles)
-            + self.mask_for_tile_side(4, surrounding_tiles)
-            + self.mask_for_tile_side(5, surrounding_tiles)
-            + self.mask_for_tile_side(6, surrounding_tiles);
+        return self.mask_for_tile_vertex(NODE_1, [NODE_4, NODE_5, NODE_1L, NODE_1R], surrounding_tiles)
+            // Node 2
+            + self.mask_for_tile_vertex(NODE_2, [NODE_4, NODE_6, NODE_2L, NODE_2R], surrounding_tiles)
+            // Node 3
+            + self.mask_for_tile_vertex(NODE_3, [NODE_3, NODE_5, NODE_3L, NODE_3R], surrounding_tiles)
+            + self.mask_for_tile_side(NODE_4, surrounding_tiles)
+            + self.mask_for_tile_side(NODE_5, surrounding_tiles)
+            + self.mask_for_tile_side(NODE_6, surrounding_tiles);
     }
     #[cfg(debug_assertions)]
     fn string_for_tile(&self, tile: &Option<Tile>) -> String {
@@ -339,8 +383,9 @@ impl Maze {
         j: usize,
         surrounding_tiles: &[Option<Tile>; 12],
     ) -> Tile {
-        //return Tile::new(vec![vec![1], vec![4, 5]], true);
+        //return Tile::new(vec![vec![2]], true);
 
+        println!("\n get random ({i},{j})");
         // TODO: Need to also put in the last tile too
         if i == 0 && j == 0 {
             return Tile::new(vec![vec![4, 5]], true);
@@ -350,10 +395,21 @@ impl Maze {
         // }
 
         //#[cfg(debug_assertions)]
-        // self.print_surrounding(surrounding_tiles);
+        self.print_surrounding(surrounding_tiles);
 
         let mask = self.get_surrounding_tile_connections(surrounding_tiles);
         let nets = random_tile(mask, self.seed);
+        // DEBUG
+        let num = mask
+            .to_string()
+            .as_bytes()
+            .rchunks(3)
+            .rev()
+            .map(std::str::from_utf8)
+            .collect::<Result<Vec<&str>, _>>()
+            .unwrap()
+            .join("_"); // separator
+        println!("mask: {num} nets {nets:?}");
 
         self.seed = match self.seed {
             Some(s) => Some(s.wrapping_add(1)),
@@ -383,9 +439,6 @@ impl Maze {
         // Create header and so on
         let mut svg = Svg::new(w, h);
 
-        let x = 0;
-        let y = 0;
-
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
                 let coord: Coordinate = Coordinate { i, j };
@@ -407,5 +460,47 @@ impl Maze {
         println!("svg: {}", file_name);
         fs::write(file_name, svg.to_string())?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::maze::maze::Maze;
+
+    #[test]
+    fn test_surrounding_for_island() {
+        let maze = Maze::new(1, 1, false, None);
+
+        let surrounding_tiles = maze.get_connected_titles_for_tile(0, 0);
+
+        let result: Vec<usize> = surrounding_tiles
+            .iter()
+            .map(|t| if t.is_some() { 1 } else { 0 })
+            .collect::<Vec<usize>>();
+        assert_eq!(result, vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn test_surrounding_for_x_0() {
+        let maze = Maze::new(9, 9, false, None);
+
+        let expected = vec![
+            vec![1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0],
+            vec![0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0],
+            vec![0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1],
+            vec![0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1],
+            vec![0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1],
+            vec![1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
+        ];
+        for i in 0..6 {
+            println!("=> ({}, 0)", i);
+            let surrounding_tiles = maze.get_connected_titles_for_tile(i, 0);
+
+            let result: Vec<usize> = surrounding_tiles
+                .iter()
+                .map(|t| if t.is_some() { 1 } else { 0 })
+                .collect::<Vec<usize>>();
+            assert_eq!(result, expected[i]);
+        }
     }
 }

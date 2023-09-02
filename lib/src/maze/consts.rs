@@ -89,4 +89,4 @@ const K5: [(i32, i32); 12] = [
     (-2, 0),
 ];
 
-pub const NODE_TO_COORD: [[(i32, i32); 12]; 6] = [K0, K1, K2, K3, K4, K5];
+pub const NODE_TO_COORD: [[(i32, i32); 12]; 6] = [K3, K4, K5, K0, K1, K2];
