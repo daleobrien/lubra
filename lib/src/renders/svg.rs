@@ -38,7 +38,7 @@ impl Svg {
         let name = self.glyphs.add(fragment);
 
         self.layers[layer_index].push_str(&format!(
-            "\n  <use href=\"#{name}\" x=\"{x}\" y=\"{y}\"/>",
+            "\n  <use href=\"#{name}\" x=\"{x:.2}\" y=\"{y:.2}\"/>",
             x = index.x * TILE_WIDTH / 2.0,
             y = index.y * TILE_HEIGHT,
         ));
@@ -54,7 +54,7 @@ impl Svg {
                width=\"{w}px\" height=\"{h}px\" \
                xmlns=\"http://www.w3.org/2000/svg\" \
                stroke-width=\"3\" \
-               fill-opacity=\"0.1\" \
+               fill-opacity=\"0.7\" \
                stroke-opacity=\"0.3\" \
                fill=\"transparent\" \
                stroke-linecap=\"butt\" \
