@@ -288,6 +288,7 @@ dependencies = [
  "serde",
  "strum",
  "strum_macros",
+ "weighted_rand",
 ]
 
 [[package]]
@@ -840,6 +841,16 @@ name = "wasi"
 version = "0.10.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a143597ca7c7793eff794def352d41792a93c481eb1042423ff7ff72ba2c31f"
+
+[[package]]
+name = "weighted_rand"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "431a4e6cbb8f34b78dbcc1d9c86a47be5dce6f3b991d7a8cd250dfdede1ee7b7"
+dependencies = [
+ "rand",
+ "serde",
+]
 
 [[package]]
 name = "winapi"

@@ -207,17 +207,10 @@ impl Maze {
 
     fn get_tile_relative_position(&self, pos: (usize, usize), rel: (i32, i32)) -> Option<Tile> {
         // Out of bounds, Array2D will return None if out of bounds.
-        // if pos.0 as i32 + rel.0 < 0 || pos.1 as i32 + rel.1 < 0 {
-        //     return Tile::new(vec![]);
-        // }
 
         let x = add(pos.0, rel.0);
         let y = add(pos.1, rel.1);
 
-        // println!(
-        //     "pos ({},{}) + rel ({},{}) -> ({x:?},{y:?})",
-        //     pos.0, pos.1, rel.0, rel.1
-        // );
         return match (x, y) {
             (Some(x), Some(y)) => self.tiles.get(y, x).cloned(),
             _ => None, // Out of bounds, not possible tile
@@ -423,12 +416,6 @@ impl Maze {
         let margin = 5.0;
         let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;
         let h = self.number_of_rows as f64 * TILE_HEIGHT + 5.0 * margin;
-
-        // println!(
-        //     "Render {w},{h}\n",
-        //     w = self.number_of_columns,
-        //     h = self.number_of_rows
-        // );
 
         // Create header and so on
         let mut svg = Svg::new(w, h);

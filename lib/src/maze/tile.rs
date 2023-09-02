@@ -53,7 +53,6 @@ impl Tile {
             groups.push(wall.unwrap());
         }
 
-        //println!("\nBEFORE {:?}", self.nodes.clone());
         let index = coordinate.i % 3;
         let nodes = match index {
             0 => self.nodes,
@@ -61,7 +60,6 @@ impl Tile {
             2 => self.rotate_cw(),
             _ => panic!("Invalid rotation"),
         };
-        //println!("AFTER {:?}", nodes.clone());
 
         for net in nodes {
             let mut bits: u32 = 0;

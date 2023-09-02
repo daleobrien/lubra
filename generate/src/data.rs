@@ -33,9 +33,8 @@ fn l_wall(invert: bool) -> String {
     t = TILE_WIDTH * t;
     let s = t.clone().diff(false).trim();
 
-    let colour = if invert { "red" } else { "blue" };
     return format!(
-        "<path stroke=\\\"{colour}\\\" d=\\\"M{a}l{b}l{c}z\\\" />",
+        "<path fill-opacity=\\\"0.1\\\" stroke=\\\"blue\\\" d=\\\"M{a}l{b}l{c}z\\\" />",
         a = s[0],
         b = s[1],
         c = s[2],
