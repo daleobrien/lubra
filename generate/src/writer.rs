@@ -20,14 +20,14 @@ fn list_of_lists_of_list_to_rust_vector<T: ToString>(list: &[Vec<Vec<T>>]) -> St
     return list_to_rust_vector(&elements);
 }
 
-pub fn write_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>, file_name: &str) {
+pub fn write_nets_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>, file_name: &str) {
     let mut keys = nets_by_mask.keys().collect::<Vec<&u32>>();
     keys.sort();
     let mut file = File::create(file_name).expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
 
     let _ = file.write_all(
-        b"pub fn list_of_posible_nets_for_a_mask (base4_mask:u32) -> Vec<Vec<Vec<u32>>> {\n",
+        b"pub fn list_of_possible_nets_for_a_mask (base4_mask:u32) -> Vec<Vec<Vec<u32>>> {\n",
     );
     let _ = file.write_all(b"  match base4_mask {\n");
     for key in keys {
@@ -39,6 +39,25 @@ pub fn write_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>, file_name: 
         let _ = file.write(content.as_bytes());
     }
     let _ = file.write_all(b"    _ => vec![vec![]],\n");
+    let _ = file.write_all(b"  }\n");
+    let _ = file.write_all(b"}\n");
+    let _ = file.flush();
+}
+
+pub fn write_mass_to_file(mass_by_mask: HashMap<u32, Vec<u32>>, file_name: &str) {
+    let mut keys = mass_by_mask.keys().collect::<Vec<&u32>>();
+    keys.sort();
+    let mut file = File::create(file_name).expect("File Creation failed");
+    let _ = file.write(b"/* This file is generated. */\n");
+
+    let _ =
+        file.write_all(b"pub fn list_of_possible_mass_for_a_mask (base4_mask:u32) -> Vec<u32> {\n");
+    let _ = file.write_all(b"  match base4_mask {\n");
+    for key in keys {
+        let content = format!("    {:6?} => vec!{:?},\n", key, &mass_by_mask[key]);
+        let _ = file.write(content.as_bytes());
+    }
+    let _ = file.write_all(b"    _ => vec![],\n");
     let _ = file.write_all(b"  }\n");
     let _ = file.write_all(b"}\n");
     let _ = file.flush();

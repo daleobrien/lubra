@@ -26,7 +26,7 @@ fn main() {
     // println!("Finished creating Random maze {:?}", result_f.unwrap());
 
     // Single tile
-    let maze = Maze::new(6, 3, true, Some(102));
+    let maze = Maze::new(18, 6, true, Some(102));
     let result_f = maze.render("test-single.svg".to_string());
     println!("Finished creating Random maze {:?}", result_f.unwrap());
 }

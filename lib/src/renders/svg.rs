@@ -55,6 +55,7 @@ impl Svg {
                xmlns=\"http://www.w3.org/2000/svg\" \
                stroke-width=\"3\" \
                fill-opacity=\"0.1\" \
+               stroke-opacity=\"0.3\" \
                fill=\"transparent\" \
                stroke-linecap=\"round\" \
                stroke=\"transparent\" \
