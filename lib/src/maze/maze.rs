@@ -13,13 +13,15 @@ use crate::renders::_point::Coordinate;
 use crate::renders::svg::Svg;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 
+// Get the surrounding tiles
+// 1,2,3, 4,5,6, 1a,1b, 2a,2b, 3a,3b
+// 0 1 2  3 4 5  6  7   8  9   10 11
 const NODE_1: usize = 0usize;
 const NODE_2: usize = 1usize;
 const NODE_3: usize = 2usize;
 const NODE_4: usize = 3usize;
 const NODE_5: usize = 4usize;
 const NODE_6: usize = 5usize;
-
 const NODE_1L: usize = 6usize;
 const NODE_1R: usize = 7usize;
 const NODE_2L: usize = 8usize;
@@ -107,10 +109,14 @@ impl Maze {
 
         // TODO: At the point we can remove nets that have a length of 2, since they are just mini-circle
         // It does seem that it can be very hard to join some nets!!!
-        // println!("\nWe have disjoint {:?} nets:", self.nets.len());
-        // for (n, nets) in self.nets.iter().enumerate() {
-        //     println!("{n}-> {:?}", nets);
-        // }
+        println!("\nWe have disjoint {:?} nets:", self.nets.len());
+        for (n, nets) in self.nets.iter().enumerate() {
+            println!("{n}-> {:?}", nets);
+            if nets.len() == 2 {
+                // We can remove this net, since it is just a mini-circle
+                // self.nets.remove(n);
+            }
+        }
     }
 
     /*
@@ -329,11 +335,6 @@ impl Maze {
     }
 
     pub fn get_surrounding_tile_connections(&self, surrounding_tiles: &[Option<Tile>; 12]) -> u32 {
-        // Get the surrounding tiles
-
-        // 1,2,3, 4,5,6, 1a,1b, 2a,2b, 3a,3b
-        // 0 1 2  3 4 5  6  7   8  9   10 11
-
         // Node 1
         return self.mask_for_tile_vertex(NODE_1, [NODE_4, NODE_5, NODE_1L, NODE_1R], surrounding_tiles)
             // Node 2
@@ -373,30 +374,16 @@ impl Maze {
     ) -> Tile {
         //return Tile::new(vec![vec![2]], true);
 
-        // println!("\n get random ({i},{j})");
-        // TODO: Need to also put in the last tile too
         if i == 0 && j == 0 {
             return Tile::new(vec![vec![4, 5]], true);
         }
-        // if i == 0 && j == 1 {
-        //     return Tile::new(vec![vec![3, 4]], true);
-        // }
-
-        //#[cfg(debug_assertions)]
-        //self.print_surrounding(surrounding_tiles);
+        if i + 1 == self.number_of_columns && j + 1 == self.number_of_rows {
+            // TODO: Need to lookup to figure out which tile to use here
+            return Tile::new(vec![vec![3, 4]], true);
+        }
 
         let mask = self.get_surrounding_tile_connections(surrounding_tiles);
         let nets = random_tile(mask, self.seed);
-        // DEBUG
-        let num = mask
-            .to_string()
-            .as_bytes()
-            .rchunks(3)
-            .rev()
-            .map(std::str::from_utf8)
-            .collect::<Result<Vec<&str>, _>>()
-            .unwrap()
-            .join("_"); // separator
 
         self.seed = match self.seed {
             Some(s) => Some(s.wrapping_add(1)),
@@ -429,8 +416,6 @@ impl Maze {
                 };
 
                 let tile = self.tiles[(j, i)].clone();
-
-                // println!("-> Tile({i},{j}): {:?}", tile.nodes, i = i, j = j);
 
                 for (g, &frag) in tile.to_svg_groups(coord).iter().enumerate() {
                     svg.add_fragment(frag, point, g);
