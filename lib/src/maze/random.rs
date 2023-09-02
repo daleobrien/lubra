@@ -24,5 +24,8 @@ pub fn random_tile(mask: u32, seed: Option<u64>) -> Vec<Vec<u32>> {
     let nets_table = builder.build();
 
     let index = nets_table.next_rng(&mut rng);
-    return possible_nets[index].clone();
+    let mut nets = possible_nets[index].clone();
+    // Shuffle the nets so that the render order changes
+    nets.shuffle(&mut rng);
+    return nets;
 }
