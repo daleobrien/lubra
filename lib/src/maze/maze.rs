@@ -280,31 +280,26 @@ impl Maze {
         let right = &relative_tiles[idxs[1]];
         let l_adjacent = &relative_tiles[idxs[2]];
         let r_adjacent = &relative_tiles[idxs[3]];
-        let node_idx = relative_idx as u32;
+        let node_value = 1 + relative_idx as u32;
 
-        println!(
-            "NODE {node_idx}: o -> {opposite:?} l->{left:?} r->{right:?} la->{la:?} ra->{ra:?}",
-            la = l_adjacent,
-            ra = r_adjacent
-        );
         //
         if self.tile_is_empty(opposite) {
-            if !self.tile_contains(left, node_idx)
-                && !self.tile_contains(right, node_idx)
-                && !self.tile_contains(l_adjacent, node_idx)
-                && !self.tile_contains(r_adjacent, node_idx)
+            if !self.tile_contains(left, node_value)
+                && !self.tile_contains(right, node_value)
+                && !self.tile_contains(l_adjacent, node_value)
+                && !self.tile_contains(r_adjacent, node_value)
             {
                 // Can be anything
-                return match node_idx {
+                return match node_value {
                     1 => 2,
                     2 => 20,
                     3 => 200,
                     _ => 0,
                 };
             }
-        } else if self.tile_contains(opposite, node_idx) {
+        } else if self.tile_contains(opposite, node_value) {
             // Must be connected
-            return match node_idx {
+            return match node_value {
                 1 => 1,
                 2 => 10,
                 3 => 100,
@@ -317,10 +312,10 @@ impl Maze {
     fn mask_for_tile_side(&self, relative_idx: usize, relative_tiles: &[Option<Tile>; 12]) -> u32 {
         let adjacent = &relative_tiles[relative_idx];
 
-        let node_idx = relative_idx as u32;
+        let node_value = 1 + relative_idx as u32;
 
         if self.tile_is_empty(adjacent) {
-            return match node_idx {
+            return match node_value {
                 4 => 2000,
                 5 => 20000,
                 6 => 200000,
@@ -328,8 +323,8 @@ impl Maze {
             };
         }
 
-        if self.tile_contains(adjacent, node_idx) {
-            return match node_idx {
+        if self.tile_contains(adjacent, node_value) {
+            return match node_value {
                 4 => 1000,
                 5 => 10000,
                 6 => 100000,
@@ -385,7 +380,7 @@ impl Maze {
     ) -> Tile {
         //return Tile::new(vec![vec![2]], true);
 
-        println!("\n get random ({i},{j})");
+        // println!("\n get random ({i},{j})");
         // TODO: Need to also put in the last tile too
         if i == 0 && j == 0 {
             return Tile::new(vec![vec![4, 5]], true);
@@ -395,7 +390,7 @@ impl Maze {
         // }
 
         //#[cfg(debug_assertions)]
-        self.print_surrounding(surrounding_tiles);
+        //self.print_surrounding(surrounding_tiles);
 
         let mask = self.get_surrounding_tile_connections(surrounding_tiles);
         let nets = random_tile(mask, self.seed);
@@ -409,7 +404,6 @@ impl Maze {
             .collect::<Result<Vec<&str>, _>>()
             .unwrap()
             .join("_"); // separator
-        println!("mask: {num} nets {nets:?}");
 
         self.seed = match self.seed {
             Some(s) => Some(s.wrapping_add(1)),
@@ -430,11 +424,11 @@ impl Maze {
         let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;
         let h = self.number_of_rows as f64 * TILE_HEIGHT + 5.0 * margin;
 
-        println!(
-            "Render {w},{h}\n",
-            w = self.number_of_columns,
-            h = self.number_of_rows
-        );
+        // println!(
+        //     "Render {w},{h}\n",
+        //     w = self.number_of_columns,
+        //     h = self.number_of_rows
+        // );
 
         // Create header and so on
         let mut svg = Svg::new(w, h);
