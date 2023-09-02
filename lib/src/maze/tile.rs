@@ -48,10 +48,6 @@ impl Tile {
         if flipped {
             bits |= 0b01_000_000;
         }
-        let wall = MAP_PATHS.get(&bits);
-        if wall.is_some() {
-            groups.push(wall.unwrap());
-        }
 
         let index = coordinate.i % 3;
         let nodes = match index {
@@ -80,6 +76,10 @@ impl Tile {
                     bits, net, coordinate
                 );
             }
+        }
+        let wall = MAP_PATHS.get(&bits);
+        if wall.is_some() {
+            groups.push(wall.unwrap());
         }
 
         return groups;
