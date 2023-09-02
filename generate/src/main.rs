@@ -27,10 +27,10 @@ fn main() {
         vec![1, 6], // Lines
         vec![2, 5],
         vec![3, 4],
-        // vec![1, 2], // Almost lines, vertex to vertex
-        // vec![2, 3],
-        // vec![1, 3],
-        // vec![1, 2, 3], // All vertexes connected
+        vec![1, 2], // Almost lines, vertex to vertex
+        vec![2, 3],
+        vec![1, 3],
+        vec![1, 2, 3], // All vertexes connected
     ]);
 
     let mut nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>> = HashMap::new();
