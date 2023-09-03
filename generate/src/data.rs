@@ -104,35 +104,43 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
     return (Path::new(vec![a, b]), r);
 }
 
-fn a1_to_2(invert: bool) -> String {
+fn a12() -> (f64, Path) {
+    let r = PATH_WIDTH * 2.0;
+
     let w = PATH_WIDTH / 2.0;
 
     let x = 0.5 - w;
-    let t = S3;
 
-    let y = (1.0 + 2.0 * w) * S5;
+    let y = (0.5 + w + r) * S4;
+    let a = Point { x: x, y: S3 };
 
-    let a = Point { x: x, y: y };
-    let b = polar(Point { x, y }, w, 4.0 * FRAC_PI_3);
+    let b = Point { x: x, y: y };
+    let c = polar(Point { x, y }, r, 4.0 * FRAC_PI_3);
 
-    let c = TILE_WIDTH
-        * Point {
-            x: -PATH_WIDTH / 4.0,
-            y: PATH_WIDTH * S4,
-        };
-    println!("{w} {PATH_WIDTH} {:?}\n{:?}", a, b);
+    let d = w * Point { x: -0.5, y: S3 };
+
+    return (r, Path::new(vec![a, b, c, d]));
+}
+
+fn a12_to_str(r: f64, pts: Path) -> String {
+    let pts = pts.str();
     return format!(
-        "\
-         \\n  <path stroke=\\\"red\\\" d=\\\"\\n  M {x} {t} \\n  L {x} {y}\\\"  /> \
-         \\n  <path stroke=\\\"green\\\" d=\\\"\\n  M {c} L {b}\\\"  /> \
-         \\n  <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b} \\\" />\\n",
-        t = TILE_WIDTH * t,
-        x = TILE_WIDTH * x,
-        y = TILE_WIDTH * y,
-        a = TILE_WIDTH * a,
-        b = TILE_WIDTH * b,
-        r = TILE_WIDTH * w,
+        "<path stroke=\\\"black\\\" d=\\\"\\n  M {a} L {b} M {c} L {d}\\\"/> \
+         <path stroke=\\\"black\\\" d=\\\"M {b} A {r} {r} 0 0 0 {c} \\\" />",
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
+        r = TILE_WIDTH * r,
     );
+}
+
+fn a1_to_2(invert: bool) -> String {
+    let (r, pts) = a12();
+    let pts1 = pts.clone().rotate_ccw(invert, vec![0, 1, 2, 3]);
+    let pts2 = pts.clone().rotate_cw(invert, vec![0, 1, 2, 3]);
+    let pts3 = pts.clone();
+    return a12_to_str(r, pts1) + &a12_to_str(r, pts2) + &a12_to_str(r, pts3);
 }
 
 fn a1(invert: bool) -> String {
