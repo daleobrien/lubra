@@ -1,6 +1,6 @@
 use common::types::format::trimf64;
 use common::types::path::Path;
-use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
+use common::types::point::{Point, PATH_WIDTH, S3, S4, S5, TILE_WIDTH};
 use itertools::concat;
 use std::collections::BTreeMap;
 use std::f64::consts::FRAC_PI_3;
@@ -102,6 +102,37 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
 
     let r = trimf64(TILE_WIDTH * r);
     return (Path::new(vec![a, b]), r);
+}
+
+fn a1_to_2(invert: bool) -> String {
+    let w = PATH_WIDTH / 2.0;
+
+    let x = 0.5 - w;
+    let t = S3;
+
+    let y = (1.0 + 2.0 * w) * S5;
+
+    let a = Point { x: x, y: y };
+    let b = polar(Point { x, y }, w, 4.0 * FRAC_PI_3);
+
+    let c = TILE_WIDTH
+        * Point {
+            x: -PATH_WIDTH / 4.0,
+            y: PATH_WIDTH * S4,
+        };
+    println!("{w} {PATH_WIDTH} {:?}\n{:?}", a, b);
+    return format!(
+        "\
+         \\n  <path stroke=\\\"red\\\" d=\\\"\\n  M {x} {t} \\n  L {x} {y}\\\"  /> \
+         \\n  <path stroke=\\\"green\\\" d=\\\"\\n  M {c} L {b}\\\"  /> \
+         \\n  <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b} \\\" />\\n",
+        t = TILE_WIDTH * t,
+        x = TILE_WIDTH * x,
+        y = TILE_WIDTH * y,
+        a = TILE_WIDTH * a,
+        b = TILE_WIDTH * b,
+        r = TILE_WIDTH * w,
+    );
 }
 
 fn a1(invert: bool) -> String {
@@ -233,6 +264,7 @@ pub fn generate_all_shapes() {
         (0b01_010_000, a5(true)),
         (0b00_100_000, a6(false)),
         (0b01_100_000, a6(true)),
+        (0b00_000_011, a1_to_2(false)),
         (0b00_011_000, a4_to_5(false)),
         (0b01_011_000, a4_to_5(true)),
         (0b00_101_000, a4_to_6(false)),

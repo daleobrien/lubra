@@ -375,7 +375,7 @@ impl Maze {
         //return Tile::new(vec![vec![2]], true);
 
         if i == 0 && j == 0 {
-            return Tile::new(vec![vec![4, 5]], true);
+            return Tile::new(vec![vec![1, 2]], true);
         }
         if i + 1 == self.number_of_columns && j + 1 == self.number_of_rows {
             // TODO: Need to lookup to figure out which tile to use here

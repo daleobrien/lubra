@@ -4,6 +4,7 @@ use ::phf::{Map, phf_map};
 pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {
   1u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  78  103.9 A  18  18 0 0 0  42  103.9\" />",
   2u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M -9  15.6 A  18  18 0 0 0  9 -15.6\" />",
+  3u32 =>  "\n  <path stroke=\"red\" d=\"\n  M 51 103.92304845413263 \n  L 51 39.837168574084174\"  /> \n  <path stroke=\"green\" d=\"\n  M -4.5,10.392304845413262 L 46.5,32.042939940024226\"  /> \n  <path stroke=\"black\" d=\"M 51,39.837168574084174 A 9 9 0 0 0 46.5,32.042939940024226 \" />\n",
   4u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  111 -15.6 A  18  18 0 0 0  129  15.6\" />",
   8u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  39  67.5 A  18  18 0 0 0  21  36.4\" />",
   12u32 =>  "<path fill=\"white\" d=\"M 129  15.6l-90  52l-18 -31.2l 90 -52z \"/> <path stroke=\"black\" d=\"M 129  15.6l-90  52m-18 -31.2l 90 -52z\"/>",

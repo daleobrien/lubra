@@ -50,16 +50,16 @@ impl Svg {
         let margin = 15f64;
         s.push_str(&format!(
             "<svg \
-               viewBox=\"{m} {m} {w} {h}\" \
-               width=\"{w}px\" height=\"{h}px\" \
-               xmlns=\"http://www.w3.org/2000/svg\" \
-               stroke-width=\"3\" \
-               fill-opacity=\"0.7\" \
-               stroke-opacity=\"0.3\" \
-               fill=\"transparent\" \
-               stroke-linecap=\"butt\" \
-               stroke=\"transparent\" \
-               >",
+               \n  viewBox=\"{m} {m} {w} {h}\" \
+               \n  width=\"{w}px\" height=\"{h}px\" \
+               \n  xmlns=\"http://www.w3.org/2000/svg\" \
+               \n  stroke-width=\"3\" \
+               \n  fill-opacity=\"0.7\" \
+               \n  stroke-opacity=\"0.3\" \
+               \n  fill=\"transparent\" \
+               \n  stroke-linecap=\"round\" \
+               \n  stroke=\"transparent\" \
+               >\n",
             m = -margin,
             w = self.width + margin * 2f64,
             h = self.height + margin * 2f64
@@ -75,15 +75,15 @@ impl Svg {
         }
         s.push_str(&format!("\n</defs>\n"));
 
-        // s.push_str(&format!(
-        //     "<g transform=\"translate(0,{h}) scale(1, -1)\">",
-        //     h = self.height - margin * 2f64
-        // ));
+        s.push_str(&format!(
+            "<g transform=\"translate(0,{h}) scale(1, -1)\">",
+            h = self.height - margin * 2f64
+        ));
         for layer in &self.layers {
             s.push_str(&layer.to_string());
         }
         //
-        // s.push_str("</g>");
+        s.push_str("</g>");
         s.push_str("\n</svg>");
         return s;
     }

@@ -1,6 +1,6 @@
 use crate::types::point::{Point, TILE_WIDTH};
 use itertools::concat;
-use std::ops::{Deref, DerefMut, Mul};
+use std::ops::{Add, Deref, DerefMut, Mul, Sub};
 
 #[derive(Debug, Clone)]
 pub struct Path {
@@ -64,6 +64,26 @@ impl Path {
                 .enumerate()
                 .map(|(index, p)| p.rotate_ccw(invert, index, offset_rotations.clone()))
                 .collect(),
+        }
+    }
+}
+
+impl Add<Point> for Path {
+    type Output = Path;
+
+    fn add(self, other: Point) -> Path {
+        Path {
+            points: self.iter().map(|(a)| *a + other).collect(),
+        }
+    }
+}
+
+impl Add<Path> for Point {
+    type Output = Path;
+
+    fn add(self, other: Path) -> Path {
+        Path {
+            points: other.iter().map(|(a)| *a + self).collect(),
         }
     }
 }
