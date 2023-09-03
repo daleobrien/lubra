@@ -77,10 +77,10 @@ impl Tile {
                 );
             }
         }
-        let wall = MAP_PATHS.get(&bits);
-        if wall.is_some() {
-            groups.push(wall.unwrap());
-        }
+        // let wall = MAP_PATHS.get(&bits);
+        // if wall.is_some() {
+        //     groups.push(wall.unwrap());
+        // }
 
         return groups;
     }
