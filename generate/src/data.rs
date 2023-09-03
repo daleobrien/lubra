@@ -1,6 +1,6 @@
 use common::types::format::trimf64;
 use common::types::path::Path;
-use common::types::point::{Point, PATH_WIDTH, S3, S4, S5, TILE_WIDTH};
+use common::types::point::{Point, PATH_WIDTH, S3, S4, TILE_WIDTH};
 use itertools::concat;
 use std::collections::BTreeMap;
 use std::f64::consts::FRAC_PI_3;
@@ -185,13 +185,13 @@ fn a23(invert: bool) -> String {
 
 fn a13(invert: bool) -> String {
     let (r1, r2, pts) = a23pts(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
+    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
     return axy_to_str(invert, r1, r2, pts);
 }
 
 fn a12(invert: bool) -> String {
     let (r1, r2, pts) = a23pts(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
+    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
     return axy_to_str(invert, r1, r2, pts);
 }
 

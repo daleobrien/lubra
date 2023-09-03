@@ -91,6 +91,8 @@ impl Maze {
                 let coord: Coordinate = Coordinate { i, j };
 
                 let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
+                // println!("\n>>");
+                // self.print_surrounding(&surrounding_tiles);
 
                 let tile = self.get_random_tile(i, j, &surrounding_tiles);
 
@@ -279,6 +281,7 @@ impl Maze {
         let right = &relative_tiles[idxs[1]];
         let l_adjacent = &relative_tiles[idxs[2]];
         let r_adjacent = &relative_tiles[idxs[3]];
+
         let node_value = 1 + relative_idx as u32;
 
         //
@@ -340,7 +343,7 @@ impl Maze {
             // Node 2
             + self.mask_for_tile_vertex(NODE_2, [NODE_4, NODE_6, NODE_2L, NODE_2R], surrounding_tiles)
             // Node 3
-            + self.mask_for_tile_vertex(NODE_3, [NODE_3, NODE_5, NODE_3L, NODE_3R], surrounding_tiles)
+            + self.mask_for_tile_vertex(NODE_3, [NODE_5, NODE_6, NODE_3L, NODE_3R], surrounding_tiles)
             + self.mask_for_tile_side(NODE_4, surrounding_tiles)
             + self.mask_for_tile_side(NODE_5, surrounding_tiles)
             + self.mask_for_tile_side(NODE_6, surrounding_tiles);
@@ -357,13 +360,19 @@ impl Maze {
     fn print_surrounding(&self, surrounding_tiles: &[Option<Tile>; 12]) {
         // 1,2,3,4,5,6, 1a,1b,2a,2b,3a,3b
         // 0 1 2 3 4 5  6  7  8  9  10 11
-        println!(
-            "Surround tiles: {:?}",
-            &(surrounding_tiles
-                .iter()
-                .map(|t| self.string_for_tile(t))
-                .collect::<Vec<String>>())
-        );
+        println!("Surrounding tiles:");
+        println!("  1: {}", self.string_for_tile(&surrounding_tiles[0]));
+        println!("  2: {}", self.string_for_tile(&surrounding_tiles[1]));
+        println!("  3: {}", self.string_for_tile(&surrounding_tiles[2]));
+        println!("  4: {}", self.string_for_tile(&surrounding_tiles[3]));
+        println!("  4: {}", self.string_for_tile(&surrounding_tiles[4]));
+        println!("  6: {}", self.string_for_tile(&surrounding_tiles[5]));
+        println!(" 1r: {}", self.string_for_tile(&surrounding_tiles[6]));
+        println!(" 1l: {}", self.string_for_tile(&surrounding_tiles[7]));
+        println!(" 2r: {}", self.string_for_tile(&surrounding_tiles[8]));
+        println!(" 2l: {}", self.string_for_tile(&surrounding_tiles[9]));
+        println!(" 3r: {}", self.string_for_tile(&surrounding_tiles[10]));
+        println!(" 3l: {}", self.string_for_tile(&surrounding_tiles[11]));
     }
 
     fn get_random_tile(
@@ -372,7 +381,7 @@ impl Maze {
         j: usize,
         surrounding_tiles: &[Option<Tile>; 12],
     ) -> Tile {
-        //return Tile::new(vec![vec![1, 2]], true);
+        //return Tile::new(vec![vec![1, 3]], true);
 
         if i == 0 && j == 0 {
             return Tile::new(vec![vec![2, 5]], true);
