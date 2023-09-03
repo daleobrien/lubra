@@ -107,7 +107,7 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
 fn a12() -> (f64, Path) {
     let r = PATH_WIDTH * 2.0;
 
-    let w = PATH_WIDTH / 2.0;
+    let w = PATH_WIDTH;
 
     let x = 0.5 - w;
 

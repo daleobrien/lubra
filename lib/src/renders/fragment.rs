@@ -4,7 +4,7 @@ use ::phf::{Map, phf_map};
 pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {
   1u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  78  103.9 A  18  18 0 0 0  42  103.9\" />",
   2u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M -9  15.6 A  18  18 0 0 0  9 -15.6\" />",
-  3u32 =>  "<path stroke=\"black\" d=\"\n  M  4.5 -7.8 L  42  13.9 A 36 36 0 0 0  78  13.9 L  115.5 -7.8\"/><path stroke=\"black\" d=\"\n  M  124.5  7.8 L  87  29.4 A 36 36 0 0 0  69  60.6 L  69  103.9\"/><path stroke=\"black\" d=\"\n  M  51  103.9 L  51  60.6 A 36 36 0 0 0  33  29.4 L -4.5  7.8\"/>",
+  3u32 =>  "<path stroke=\"black\" d=\"\n  M  9 -15.6 L  42  3.5 A 36 36 0 0 0  78  3.5 L  111 -15.6\"/><path stroke=\"black\" d=\"\n  M  129  15.6 L  96  34.6 A 36 36 0 0 0  78  65.8 L  78  103.9\"/><path stroke=\"black\" d=\"\n  M  42  103.9 L  42  65.8 A 36 36 0 0 0  24  34.6 L -9  15.6\"/>",
   4u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  111 -15.6 A  18  18 0 0 0  129  15.6\" />",
   8u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  39  67.5 A  18  18 0 0 0  21  36.4\" />",
   12u32 =>  "<path fill=\"white\" d=\"M 129  15.6l-90  52l-18 -31.2l 90 -52z \"/> <path stroke=\"black\" d=\"M 129  15.6l-90  52m-18 -31.2l 90 -52z\"/>",
@@ -18,7 +18,7 @@ pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {
   56u32 =>  "<path fill=\"white\" d=\"M  39  67.5 A  42  42 0 0 1  81  67.5 L  99  36.4 A  42  42 0 0 1  78 -0 L  42  0 A  42  42 0 0 1  21  36.4 z \" /><path stroke=\"black\" d=\"M  39  67.5 A  42  42 0 0 1  81  67.5 M  99  36.4 A  42  42 0 0 1  78 -0 M  42  0 A  42  42 0 0 1  21  36.4 \" />",
   65u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  42 -0 A  18  18 0 0 0  78  0\" />",
   66u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  9  119.5 A  18  18 0 0 0 -9  88.3\" />",
-  67u32 =>  "<path stroke=\"black\" d=\"\n  M  4.5  111.7 L  42  90.1 A 36 36 0 0 1  78  90.1 L  115.5  111.7\"/><path stroke=\"black\" d=\"\n  M  124.5  96.1 L  87  74.5 A 36 36 0 0 1  69  43.3 L  69  0\"/><path stroke=\"black\" d=\"\n  M  51  0 L  51  43.3 A 36 36 0 0 1  33  74.5 L -4.5  96.1\"/>",
+  67u32 =>  "<path stroke=\"black\" d=\"\n  M  9  119.5 L  42  100.5 A 36 36 0 0 1  78  100.5 L  111  119.5\"/><path stroke=\"black\" d=\"\n  M  129  88.3 L  96  69.3 A 36 36 0 0 1  78  38.1 L  78  0\"/><path stroke=\"black\" d=\"\n  M  42  0 L  42  38.1 A 36 36 0 0 1  24  69.3 L -9  88.3\"/>",
   68u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  129  88.3 A  18  18 0 0 0  111  119.5\" />",
   72u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  21  67.5 A  18  18 0 0 0  39  36.4\" />",
   76u32 =>  "<path fill=\"white\" d=\"M 129  88.3l-90 -52l-18  31.2l 90  52z \"/> <path stroke=\"black\" d=\"M 129  88.3l-90 -52m-18  31.2l 90  52z\"/>",
