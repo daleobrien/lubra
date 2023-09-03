@@ -125,8 +125,8 @@ fn a12() -> (f64, Path) {
 fn a12_to_str(r: f64, pts: Path) -> String {
     let pts = pts.str();
     return format!(
-        "<path stroke=\\\"black\\\" d=\\\"\\n  M {a} L {b} M {c} L {d}\\\"/> \
-         <path stroke=\\\"black\\\" d=\\\"M {b} A {r} {r} 0 0 0 {c} \\\" />",
+        "<path stroke=\\\"black\\\" d=\\\"\\n  M {a} L {b} A {r} {r} 0 0 0 {c} L {d}\\\"/> \
+         ",
         a = pts[0],
         b = pts[1],
         c = pts[2],

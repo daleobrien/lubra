@@ -4,7 +4,7 @@ use ::phf::{Map, phf_map};
 pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {
   1u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  78  103.9 A  18  18 0 0 0  42  103.9\" />",
   2u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M -9  15.6 A  18  18 0 0 0  9 -15.6\" />",
-  3u32 =>  "<path stroke=\"black\" d=\"\n  M  4.5 -7.8 L  42  13.9 M  78  13.9 L  115.5 -7.8\"/> <path stroke=\"black\" d=\"M  42  13.9 A 36 36 0 0 0  78  13.9 \" /><path stroke=\"black\" d=\"\n  M  124.5  7.8 L  87  29.4 M  69  60.6 L  69  103.9\"/> <path stroke=\"black\" d=\"M  87  29.4 A 36 36 0 0 0  69  60.6 \" /><path stroke=\"black\" d=\"\n  M  51  103.9 L  51  60.6 M  33  29.4 L -4.5  7.8\"/> <path stroke=\"black\" d=\"M  51  60.6 A 36 36 0 0 0  33  29.4 \" />",
+  3u32 =>  "<path stroke=\"black\" d=\"\n  M  4.5 -7.8 L  42  13.9 A 36 36 0 0 0  78  13.9 L  115.5 -7.8\"/> <path stroke=\"black\" d=\"\n  M  124.5  7.8 L  87  29.4 A 36 36 0 0 0  69  60.6 L  69  103.9\"/> <path stroke=\"black\" d=\"\n  M  51  103.9 L  51  60.6 A 36 36 0 0 0  33  29.4 L -4.5  7.8\"/> ",
   4u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  111 -15.6 A  18  18 0 0 0  129  15.6\" />",
   8u32 =>  "<path stroke=\"black\" fill=\"white\" d=\"M  39  67.5 A  18  18 0 0 0  21  36.4\" />",
   12u32 =>  "<path fill=\"white\" d=\"M 129  15.6l-90  52l-18 -31.2l 90 -52z \"/> <path stroke=\"black\" d=\"M 129  15.6l-90  52m-18 -31.2l 90 -52z\"/>",
