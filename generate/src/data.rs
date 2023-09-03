@@ -122,11 +122,11 @@ fn a12() -> (f64, Path) {
     return (r, Path::new(vec![a, b, c, d]));
 }
 
-fn a12_to_str(r: f64, pts: Path) -> String {
+fn a12_to_str(invert: bool, r: f64, pts: Path) -> String {
     let pts = pts.str();
+    let dir = if invert { 1 } else { 0 };
     return format!(
-        "<path stroke=\\\"black\\\" d=\\\"\\n  M {a} L {b} A {r} {r} 0 0 0 {c} L {d}\\\"/> \
-         ",
+        "<path stroke=\\\"black\\\" d=\\\"\\n  M {a} L {b} A {r} {r} 0 0 {dir} {c} L {d}\\\"/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
@@ -137,10 +137,14 @@ fn a12_to_str(r: f64, pts: Path) -> String {
 
 fn a1_to_2(invert: bool) -> String {
     let (r, pts) = a12();
+    let pts = if invert { pts.invert() } else { pts };
+
     let pts1 = pts.clone().rotate_ccw(invert, vec![0, 1, 2, 3]);
     let pts2 = pts.clone().rotate_cw(invert, vec![0, 1, 2, 3]);
     let pts3 = pts.clone();
-    return a12_to_str(r, pts1) + &a12_to_str(r, pts2) + &a12_to_str(r, pts3);
+    return a12_to_str(invert, r, pts1)
+        + &a12_to_str(invert, r, pts2)
+        + &a12_to_str(invert, r, pts3);
 }
 
 fn a1(invert: bool) -> String {
@@ -273,6 +277,7 @@ pub fn generate_all_shapes() {
         (0b00_100_000, a6(false)),
         (0b01_100_000, a6(true)),
         (0b00_000_011, a1_to_2(false)),
+        (0b01_000_011, a1_to_2(true)),
         (0b00_011_000, a4_to_5(false)),
         (0b01_011_000, a4_to_5(true)),
         (0b00_101_000, a4_to_6(false)),

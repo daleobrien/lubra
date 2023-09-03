@@ -83,7 +83,7 @@ impl Add<Path> for Point {
 
     fn add(self, other: Path) -> Path {
         Path {
-            points: other.iter().map(|(a)| *a + self).collect(),
+            points: other.iter().map(|a| *a + self).collect(),
         }
     }
 }

@@ -57,7 +57,7 @@ impl Svg {
                \n  fill-opacity=\"0.7\" \
                \n  stroke-opacity=\"0.3\" \
                \n  fill=\"transparent\" \
-               \n  stroke-linecap=\"flat\" \
+               \n  stroke-linecap=\"butt\" \
                \n  stroke=\"transparent\" \
                >\n",
             m = -margin,
