@@ -106,19 +106,13 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
 
 fn a12() -> (f64, Path) {
     let r = PATH_WIDTH * 2.0;
-
     let w = PATH_WIDTH;
-
     let x = 0.5 - w;
-
     let y = (0.5 + w + r) * S4;
     let a = Point { x: x, y: S3 };
-
     let b = Point { x: x, y: y };
     let c = polar(Point { x, y }, r, 4.0 * FRAC_PI_3);
-
     let d = w * Point { x: -0.5, y: S3 };
-
     return (r, Path::new(vec![a, b, c, d]));
 }
 
@@ -154,6 +148,31 @@ fn a123(invert: bool) -> String {
         c3 = pts3[2],
         d3 = pts3[3],
         r = TILE_WIDTH * r,
+    );
+}
+
+fn a23(invert: bool) -> String {
+    let w = PATH_WIDTH;
+    let a = w * Point { x: -0.5, y: S3 };
+    let b = w * Point { x: 0.5, y: S3 } + Point { x: 1.0, y: 0.0 };
+    let c = w * Point { x: -0.5, y: -S3 } + Point { x: 1.0, y: 0.0 };
+    let d = w * Point { x: 0.5, y: -S3 };
+
+    let r1 = trimf64(TILE_WIDTH * (1.0 + PATH_WIDTH));
+    let r2 = trimf64(TILE_WIDTH * (1.0 - PATH_WIDTH));
+    let pts = Path::new(vec![a, b, c, d]);
+    let pts = if invert { pts.invert() } else { pts };
+
+    let pts = pts.str();
+    let dir1 = if invert { 1 } else { 0 };
+    let dir2 = if invert { 0 } else { 1 };
+    return format!(
+        "<path fill=\\\"white\\\" d=\\\"M {a} A {r1} {r1} 0 0 {dir1} {b} L {c} A {r2} {r2} 0 0 {dir2} {d} z \\\" /> \
+         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 {dir1} {b} M {c} A {r2} {r2} 0 0 {dir2} {d} \\\" />",
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
     );
 }
 
@@ -288,6 +307,8 @@ pub fn generate_all_shapes() {
         (0b01_100_000, a6(true)),
         (0b00_000_111, a123(false)),
         (0b01_000_111, a123(true)),
+        (0b00_000_110, a23(false)),
+        (0b01_000_110, a23(true)),
         (0b00_011_000, a4_to_5(false)),
         (0b01_011_000, a4_to_5(true)),
         (0b00_101_000, a4_to_6(false)),
