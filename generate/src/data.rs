@@ -104,7 +104,7 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
     return (Path::new(vec![a, b]), r);
 }
 
-fn a12() -> (f64, Path) {
+fn a123pts() -> (f64, Path) {
     let r = PATH_WIDTH * 2.0;
     let w = PATH_WIDTH;
     let x = 0.5 - w;
@@ -117,7 +117,7 @@ fn a12() -> (f64, Path) {
 }
 
 fn a123(invert: bool) -> String {
-    let (r, pts) = a12();
+    let (r, pts) = a123pts();
     let pts = if invert { pts.invert() } else { pts };
 
     let dir = if invert { 1 } else { 0 };
@@ -151,7 +151,7 @@ fn a123(invert: bool) -> String {
     );
 }
 
-fn a23(invert: bool) -> String {
+fn a23pts(invert: bool) -> (String, String, Path) {
     let w = PATH_WIDTH;
     let a = w * Point { x: -0.5, y: S3 };
     let b = w * Point { x: 0.5, y: S3 } + Point { x: 1.0, y: 0.0 };
@@ -162,7 +162,10 @@ fn a23(invert: bool) -> String {
     let r2 = trimf64(TILE_WIDTH * (1.0 - PATH_WIDTH));
     let pts = Path::new(vec![a, b, c, d]);
     let pts = if invert { pts.invert() } else { pts };
+    return (r1, r2, pts);
+}
 
+fn axy_to_str(invert: bool, r1: String, r2: String, pts: Path) -> String {
     let pts = pts.str();
     let dir1 = if invert { 1 } else { 0 };
     let dir2 = if invert { 0 } else { 1 };
@@ -174,6 +177,22 @@ fn a23(invert: bool) -> String {
         c = pts[2],
         d = pts[3],
     );
+}
+fn a23(invert: bool) -> String {
+    let (r1, r2, pts) = a23pts(invert);
+    return axy_to_str(invert, r1, r2, pts);
+}
+
+fn a13(invert: bool) -> String {
+    let (r1, r2, pts) = a23pts(invert);
+    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
+    return axy_to_str(invert, r1, r2, pts);
+}
+
+fn a12(invert: bool) -> String {
+    let (r1, r2, pts) = a23pts(invert);
+    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
+    return axy_to_str(invert, r1, r2, pts);
 }
 
 fn a1(invert: bool) -> String {
@@ -309,6 +328,10 @@ pub fn generate_all_shapes() {
         (0b01_000_111, a123(true)),
         (0b00_000_110, a23(false)),
         (0b01_000_110, a23(true)),
+        (0b00_000_101, a13(false)),
+        (0b01_000_101, a13(true)),
+        (0b00_000_011, a12(false)),
+        (0b01_000_011, a12(true)),
         (0b00_011_000, a4_to_5(false)),
         (0b01_011_000, a4_to_5(true)),
         (0b00_101_000, a4_to_6(false)),
