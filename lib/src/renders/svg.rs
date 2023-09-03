@@ -54,8 +54,8 @@ impl Svg {
                \n  width=\"{w}px\" height=\"{h}px\" \
                \n  xmlns=\"http://www.w3.org/2000/svg\" \
                \n  stroke-width=\"3\" \
-               \n  fill-opacity=\"0.7\" \
-               \n  stroke-opacity=\"0.3\" \
+               \n  fill-opacity=\"0.8\" \
+               \n  stroke-opacity=\"1\" \
                \n  fill=\"transparent\" \
                \n  stroke-linecap=\"butt\" \
                \n  stroke=\"transparent\" \

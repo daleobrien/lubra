@@ -72,7 +72,7 @@ impl Tile {
                 groups.push(path.unwrap());
             } else {
                 println!(
-                    "No path for bits: {:b} / {:?} @ {:?}",
+                    "No path for bits: {:06b} / {:?} @ {:?}",
                     bits, net, coordinate
                 );
             }

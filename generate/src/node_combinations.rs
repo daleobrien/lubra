@@ -52,26 +52,26 @@ impl Iterator for NodeCombinations {
                     return self.next();
                 }
 
-                // We can't contain more than 1 of these
-                if value.contains(&vec![1, 2, 3]) && value.contains(&vec![4, 5, 6]) {
-                    return self.next();
-                }
-
-                // Can't have an arc and an almost line together
-                if value.len() > 1
-                    && (value.contains(&vec![1, 2]) // Vertex lines
-          || value.contains(&vec![2, 3])
-          || value.contains(&vec![1, 3])
-          || value.contains(&vec![1, 2, 3]))
-                    && (value.contains(&vec![4, 5])  // Arcs
-          || value.contains(&vec![5, 6])
-          || value.contains(&vec![4, 6])
-          || value.contains(&vec![1, 6]) // Lines
-          || value.contains(&vec![2, 5])
-          || value.contains(&vec![3, 4]))
-                {
-                    return self.next();
-                }
+                // // We can't contain more than 1 of these
+                // if value.contains(&vec![1, 2, 3]) && value.contains(&vec![4, 5, 6]) {
+                //     return self.next();
+                // }
+                //
+                // // Can't have an arc and an almost line together
+                // if value.len() > 1
+                // //     && (value.contains(&vec![1, 2]) // Vertex lines
+                // // || value.contains(&vec![2, 3])
+                // // || value.contains(&vec![1, 3])
+                // // || value.contains(&vec![1, 2, 3]))
+                // //     && (value.contains(&vec![4, 5])  // Arcs
+                // // || value.contains(&vec![5, 6])
+                // // || value.contains(&vec![4, 6])
+                // // || value.contains(&vec![1, 6]) // Lines
+                // // || value.contains(&vec![2, 5])
+                // // || value.contains(&vec![3, 4]))
+                // {
+                //     return self.next();
+                // }
                 return Some(value);
             }
             None => return None,

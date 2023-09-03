@@ -122,29 +122,39 @@ fn a12() -> (f64, Path) {
     return (r, Path::new(vec![a, b, c, d]));
 }
 
-fn a12_to_str(invert: bool, r: f64, pts: Path) -> String {
-    let pts = pts.str();
-    let dir = if invert { 1 } else { 0 };
-    return format!(
-        "<path stroke=\\\"black\\\" d=\\\"\\n  M {a} L {b} A {r} {r} 0 0 {dir} {c} L {d}\\\"/>",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-        r = TILE_WIDTH * r,
-    );
-}
-
-fn a1_to_2(invert: bool) -> String {
+fn a123(invert: bool) -> String {
     let (r, pts) = a12();
     let pts = if invert { pts.invert() } else { pts };
 
-    let pts1 = pts.clone().rotate_ccw(invert, vec![0, 1, 2, 3]);
-    let pts2 = pts.clone().rotate_cw(invert, vec![0, 1, 2, 3]);
-    let pts3 = pts.clone();
-    return a12_to_str(invert, r, pts1)
-        + &a12_to_str(invert, r, pts2)
-        + &a12_to_str(invert, r, pts3);
+    let dir = if invert { 1 } else { 0 };
+
+    let pts1 = pts.clone().rotate_ccw(invert, vec![0, 1, 2, 3]).str();
+    let pts2 = pts.clone().rotate_cw(invert, vec![0, 1, 2, 3]).str();
+    let pts3 = pts.clone().str();
+
+    return format!(
+        "<path fill=\\\"white\\\" d=\\\"\
+          M {a1} L {b1} A {r} {r} 0 0 {dir} {c1} L {d1} \
+          L {a2} L {b2} A {r} {r} 0 0 {dir} {c2} L {d2} \
+          L {a3} L {b3} A {r} {r} 0 0 {dir} {c3} L {d3} z\\\"/>\
+        <path stroke=\\\"black\\\" d=\\\"\
+          M {a1} L {b1} A {r} {r} 0 0 {dir} {c1} L {d1} \
+          M {a2} L {b2} A {r} {r} 0 0 {dir} {c2} L {d2} \
+          M {a3} L {b3} A {r} {r} 0 0 {dir} {c3} L {d3}\\\"/>",
+        a1 = pts1[0],
+        b1 = pts1[1],
+        c1 = pts1[2],
+        d1 = pts1[3],
+        a2 = pts2[0],
+        b2 = pts2[1],
+        c2 = pts2[2],
+        d2 = pts2[3],
+        a3 = pts3[0],
+        b3 = pts3[1],
+        c3 = pts3[2],
+        d3 = pts3[3],
+        r = TILE_WIDTH * r,
+    );
 }
 
 fn a1(invert: bool) -> String {
@@ -276,8 +286,8 @@ pub fn generate_all_shapes() {
         (0b01_010_000, a5(true)),
         (0b00_100_000, a6(false)),
         (0b01_100_000, a6(true)),
-        (0b00_000_011, a1_to_2(false)),
-        (0b01_000_011, a1_to_2(true)),
+        (0b00_000_111, a123(false)),
+        (0b01_000_111, a123(true)),
         (0b00_011_000, a4_to_5(false)),
         (0b01_011_000, a4_to_5(true)),
         (0b00_101_000, a4_to_6(false)),
