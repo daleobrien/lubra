@@ -1,6 +1,6 @@
 use crate::types::point::{Point, TILE_WIDTH};
 use itertools::concat;
-use std::ops::{Add, Deref, DerefMut, Mul, Sub};
+use std::ops::{Add, Deref, DerefMut, Mul};
 
 #[derive(Debug, Clone)]
 pub struct Path {
