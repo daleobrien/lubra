@@ -89,6 +89,8 @@ impl Maze {
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         // Seed some random tiles that don't touch each other or the boundaries
+        self.tiles[(0, 0)] = Tile::new(vec![vec![4, 5]], true);
+
         for i in (2..number_of_columns - 2).step_by(3) {
             for j in (1..number_of_rows - 1).step_by(2) {
                 let tile = self.get_any_random_tile(i, j);
@@ -98,6 +100,10 @@ impl Maze {
 
         for j in 0..number_of_rows {
             for i in 0..number_of_columns {
+                // Don't need to create twice
+                if self.tiles[(j, i)].clone().initialised {
+                    continue;
+                }
                 let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
                 // println!("\n>>");
                 // self.print_surrounding(&surrounding_tiles);
@@ -117,14 +123,14 @@ impl Maze {
 
         // TODO: At the point we can remove nets that have a length of 2, since they are just mini-circle
         // It does seem that it can be very hard to join some nets!!!
-        println!("\nWe have disjoint {:?} nets:", self.nets.len());
-        for (n, nets) in self.nets.iter().enumerate() {
-            println!("{n}-> {:?}", nets);
-            if nets.len() == 2 {
-                // We can remove this net, since it is just a mini-circle
-                // self.nets.remove(n);
-            }
-        }
+        // println!("\nWe have disjoint {:?} nets:", self.nets.len());
+        // for (n, nets) in self.nets.iter().enumerate() {
+        //     println!("{n}-> {:?}", nets);
+        //     if nets.len() == 2 {
+        //         // We can remove this net, since it is just a mini-circle
+        //         // self.nets.remove(n);
+        //     }
+        // }
     }
 
     /*
@@ -388,14 +394,6 @@ impl Maze {
         surrounding_tiles: &[Option<Tile>; 12],
     ) -> Tile {
         //return Tile::new(vec![vec![1, 3]], true);
-
-        if i == 0 && j == 0 {
-            return Tile::new(vec![vec![4, 5]], true);
-        }
-        if i + 1 == self.number_of_columns && j + 1 == self.number_of_rows {
-            // TODO: Need to lookup to figure out which tile to use here
-            // return Tile::new(vec![vec![3, 4]], true);
-        }
 
         let mask = self.get_surrounding_tile_connections(surrounding_tiles);
         let nets = random_tile(mask, self.seed);
