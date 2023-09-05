@@ -88,6 +88,16 @@ impl Maze {
     }
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
+        // These don't really need surrounding ...
+        for j in (0..number_of_rows).step_by(3) {
+            for i in (0..number_of_columns).step_by(3) {
+                let coord: Coordinate = Coordinate { i, j };
+                let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
+                let tile = self.get_random_tile(i, j, &surrounding_tiles);
+                self.tiles[(j, i)] = tile;
+            }
+        }
+
         // Empty Array2D of Option<Tile>
         for j in 0..number_of_rows {
             for i in 0..number_of_columns {

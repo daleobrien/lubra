@@ -2,7 +2,7 @@ pub fn get_mass(nets: Vec<Vec<u32>>) -> u32 {
     let mut mass = 1;
     for net in nets {
         match net.len() {
-            2 => mass *= 15,
+            2 => mass *= 11,
             3 => mass *= 10,
             _ => (),
         }
