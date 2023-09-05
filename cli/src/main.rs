@@ -21,12 +21,12 @@ fn main() {
     // }
     //
     // // Great test case here
-    // let maze = Maze::new(3, 2, true, Some(102));
+    // let maze = Maze::new(3, 2, true, true, Some(102));
     // let result_f = maze.render("test-smoosh.svg".to_string());
     // println!("Finished creating Random maze {:?}", result_f.unwrap());
 
-    // Single tile
-    let maze = Maze::new(18, 9, true, None);
+    //let maze = Maze::new(18, 9, true,true, Some(1));
+    let maze = Maze::new(54, 36, true, false, Some(1));
     //let maze = Maze::new(6, 3, true, Some(5)); // ERROR
     //let maze = Maze::new(1, 2, true, Some(5));
     let result_f = maze.render("test-single.svg".to_string());

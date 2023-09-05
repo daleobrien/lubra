@@ -51,6 +51,7 @@ pub struct Maze {
     number_of_columns: usize,
     number_of_rows: usize,
     tiles: Array2D<Tile>,
+    boundaries: bool,
 }
 
 impl Maze {
@@ -58,6 +59,7 @@ impl Maze {
         number_of_columns: usize,
         number_of_rows: usize,
         randomise: bool,
+        boundaries: bool,
         seed: Option<u64>,
     ) -> Self {
         // User Maze object somehow
@@ -76,6 +78,7 @@ impl Maze {
             number_of_columns,
             number_of_rows,
             tiles,
+            boundaries,
         };
 
         if randomise {
@@ -96,7 +99,7 @@ impl Maze {
 
                 let tile = self.get_random_tile(i, j, &surrounding_tiles);
 
-                println!("Tile({i},{j}): {:?}", tile.nodes);
+                //println!("Tile({i},{j}): {:?}", tile.nodes);
                 self.tiles[(j, i)] = tile;
             }
         }
@@ -111,14 +114,14 @@ impl Maze {
 
         // TODO: At the point we can remove nets that have a length of 2, since they are just mini-circle
         // It does seem that it can be very hard to join some nets!!!
-        // println!("\nWe have disjoint {:?} nets:", self.nets.len());
-        // for (n, nets) in self.nets.iter().enumerate() {
-        //     println!("{n}-> {:?}", nets);
-        //     if nets.len() == 2 {
-        //         // We can remove this net, since it is just a mini-circle
-        //         // self.nets.remove(n);
-        //     }
-        // }
+        println!("\nWe have disjoint {:?} nets:", self.nets.len());
+        for (n, nets) in self.nets.iter().enumerate() {
+            println!("{n}-> {:?}", nets);
+            if nets.len() == 2 {
+                // We can remove this net, since it is just a mini-circle
+                // self.nets.remove(n);
+            }
+        }
     }
 
     /*
@@ -384,7 +387,7 @@ impl Maze {
         //return Tile::new(vec![vec![1, 3]], true);
 
         if i == 0 && j == 0 {
-            return Tile::new(vec![vec![2, 5]], true);
+            return Tile::new(vec![vec![4, 5]], true);
         }
         if i + 1 == self.number_of_columns && j + 1 == self.number_of_rows {
             // TODO: Need to lookup to figure out which tile to use here
@@ -426,7 +429,11 @@ impl Maze {
 
                 let tile = self.tiles[(j, i)].clone();
 
-                for (g, &frag) in tile.to_svg_groups(coord).iter().enumerate() {
+                for (g, &frag) in tile
+                    .to_svg_groups(coord, self.boundaries)
+                    .iter()
+                    .enumerate()
+                {
                     svg.add_fragment(frag, point, g);
                 }
             }

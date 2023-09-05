@@ -37,13 +37,12 @@ impl Tile {
         Tile { nodes, initialised }
     }
 
-    pub fn to_svg_groups(self, coordinate: Coordinate) -> Vec<&'static str> {
+    pub fn to_svg_groups(self, coordinate: Coordinate, boundaries: bool) -> Vec<&'static str> {
         // Build the SVG groups and return them
         let mut groups: Vec<&str> = vec![];
 
         let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
-        // ADD walls
         let mut bits = 0b10_000_000;
         if flipped {
             bits |= 0b01_000_000;
@@ -77,9 +76,12 @@ impl Tile {
                 );
             }
         }
-        let wall = MAP_PATHS.get(&bits);
-        if wall.is_some() {
-            groups.push(wall.unwrap());
+
+        if boundaries {
+            let wall = MAP_PATHS.get(&bits);
+            if wall.is_some() {
+                groups.push(wall.unwrap());
+            }
         }
 
         return groups;

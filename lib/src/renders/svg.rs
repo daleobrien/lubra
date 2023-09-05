@@ -37,6 +37,8 @@ impl Svg {
         // println!("adding fragment: {}", layer_index);
         let name = self.glyphs.add(fragment);
 
+        // TODO: May need to consider neighbours and paint those as part of this too, the bits that
+        // overlap within this cell
         self.layers[layer_index].push_str(&format!(
             "\n  <use href=\"#{name}\" x=\"{x:.2}\" y=\"{y:.2}\"/>",
             x = index.x * TILE_WIDTH / 2.0,
