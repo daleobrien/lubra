@@ -396,7 +396,7 @@ impl Maze {
         //return Tile::new(vec![vec![1, 3]], true);
 
         let mask = self.get_surrounding_tile_connections(surrounding_tiles);
-        let nets = random_tile(mask, self.seed);
+        let nets = random_tile(mask, self.seed, false);
 
         self.seed = match self.seed {
             Some(s) => Some(s.wrapping_add(1)),
@@ -411,7 +411,7 @@ impl Maze {
     }
 
     fn get_any_random_tile(&mut self, i: usize, j: usize) -> Tile {
-        let nets = random_tile(222222, self.seed);
+        let nets = random_tile(222222, self.seed, true);
 
         self.seed = match self.seed {
             Some(s) => Some(s.wrapping_add(1)),
