@@ -88,27 +88,20 @@ impl Maze {
     }
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
-        // These don't really need surrounding ...
-        for j in (0..number_of_rows).step_by(3) {
-            for i in (0..number_of_columns).step_by(3) {
-                let coord: Coordinate = Coordinate { i, j };
-                let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
-                let tile = self.get_random_tile(i, j, &surrounding_tiles);
+        // Seed some random tiles that don't touch each other or the boundaries
+        for i in (2..number_of_columns - 2).step_by(3) {
+            for j in (1..number_of_rows - 1).step_by(2) {
+                let tile = self.get_any_random_tile(i, j);
                 self.tiles[(j, i)] = tile;
             }
         }
 
-        // Empty Array2D of Option<Tile>
         for j in 0..number_of_rows {
             for i in 0..number_of_columns {
-                let coord: Coordinate = Coordinate { i, j };
-
                 let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
                 // println!("\n>>");
                 // self.print_surrounding(&surrounding_tiles);
-
                 let tile = self.get_random_tile(i, j, &surrounding_tiles);
-
                 //println!("Tile({i},{j}): {:?}", tile.nodes);
                 self.tiles[(j, i)] = tile;
             }
@@ -416,6 +409,19 @@ impl Maze {
 
         self.update_network(&tile, i, j);
 
+        return tile;
+    }
+
+    fn get_any_random_tile(&mut self, i: usize, j: usize) -> Tile {
+        let nets = random_tile(222222, self.seed);
+
+        self.seed = match self.seed {
+            Some(s) => Some(s.wrapping_add(1)),
+            _ => None,
+        };
+
+        let tile = Tile::new(nets, true);
+        self.update_network(&tile, i, j);
         return tile;
     }
 
