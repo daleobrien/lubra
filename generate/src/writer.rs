@@ -20,7 +20,7 @@ fn list_of_lists_of_list_to_rust_vector<T: ToString>(list: &[Vec<Vec<T>>]) -> St
     return list_to_rust_vector(&elements);
 }
 
-pub fn write_nets_to_file(nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>>, file_name: &str) {
+pub fn write_nets_to_file(nets_by_mask: HashMap<u32, Vec<Vec<u32>>>, file_name: &str) {
     let mut keys = nets_by_mask.keys().collect::<Vec<&u32>>();
     keys.sort();
     let mut file = File::create(file_name).expect("File Creation failed");
