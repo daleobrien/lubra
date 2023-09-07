@@ -1,4 +1,4 @@
-pub fn get_mass(nets: Vec<Vec<u32>>) -> u32 {
+pub fn get_mass(nets: &Vec<Vec<u32>>) -> u32 {
     let mut mass = 1;
     for net in nets {
         match net.len() {
@@ -6,14 +6,14 @@ pub fn get_mass(nets: Vec<Vec<u32>>) -> u32 {
             3 => mass *= 10,
             _ => (),
         }
-        if net == vec![1, 2, 3] {
+        if *net == vec![1, 2, 3] {
             mass *= 12;
         }
     }
     return mass;
 }
 
-pub fn to_bits(nets: Vec<Vec<u32>>) -> u32 {
+pub fn to_bits(nets: &Vec<Vec<u32>>) -> u32 {
     let nodes = nets.clone().into_iter().flatten().collect::<Vec<u32>>();
 
     let mut bits = 0;

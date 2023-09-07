@@ -10,8 +10,10 @@ use crate::writer::{write_mass_to_file, write_nets_to_file};
 use std::collections::HashMap;
 
 fn main() {
-    println!("Generating Rust code for all possible nets.");
+    println!("Generating Rust code for all SVG nets.");
     generate_all_shapes();
+
+    println!("Generating Rust code for all Lookups nets.");
 
     let seq = NodeCombinations::new(vec![
         vec![1], // Points
@@ -31,6 +33,12 @@ fn main() {
         vec![2, 3],
         vec![1, 3],
         vec![1, 2, 3], // All vertexes connected
+        vec![1, 4],    // Vertex to edge short
+        vec![1, 5],
+        vec![2, 4],
+        vec![2, 6],
+        vec![3, 5],
+        vec![3, 6],
     ]);
 
     let mut nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>> = HashMap::new();
@@ -41,25 +49,31 @@ fn main() {
     write_nets_to_file(nets_by_mask, "../lib/src/maze/nets_large.rs");
     write_mass_to_file(mass_by_mask, "../lib/src/maze/mass_large.rs");
 
-    let seq = NodeCombinations::new(vec![
-        vec![4, 5], // Arcs
-        vec![5, 6],
-        vec![4, 6],
-        vec![4, 5, 6],
-        vec![1, 6], // Lines
-        vec![2, 5],
-        vec![3, 4],
-        vec![1, 2], // Almost lines, vertex to vertex
-        vec![2, 3],
-        vec![1, 3],
-        vec![1, 2, 3], // All vertexes connected
-    ]);
-
-    let mut nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>> = HashMap::new();
-    let mut mass_by_mask: HashMap<u32, Vec<u32>> = HashMap::new();
-
-    lookups::create_lookups(seq, &mut nets_by_mask, &mut mass_by_mask);
-
-    write_nets_to_file(nets_by_mask, "../lib/src/maze/nets_small.rs");
-    write_mass_to_file(mass_by_mask, "../lib/src/maze/mass_small.rs");
+    // let mut nets_by_mask: HashMap<u32, Vec<Vec<Vec<u32>>>> = HashMap::new();
+    // let mut mass_by_mask: HashMap<u32, Vec<u32>> = HashMap::new();
+    //
+    // let seq = NodeCombinations::new(vec![
+    //     vec![4, 5], // Arcs
+    //     vec![5, 6],
+    //     vec![4, 6],
+    //     vec![4, 5, 6],
+    //     vec![1, 6], // Lines
+    //     vec![2, 5],
+    //     vec![3, 4],
+    //     vec![1, 2], // Almost lines, vertex to vertex
+    //     vec![2, 3],
+    //     vec![1, 3],
+    //     vec![1, 2, 3], // All vertexes connected
+    //     vec![1, 4],    // Vertex to edge short
+    //     vec![1, 5],
+    //     vec![2, 4],
+    //     vec![2, 6],
+    //     vec![3, 5],
+    //     vec![3, 6],
+    // ]);
+    //
+    // lookups::create_lookups(seq, &mut nets_by_mask, &mut mass_by_mask);
+    //
+    // write_nets_to_file(nets_by_mask, "../lib/src/maze/nets_small.rs");
+    // write_mass_to_file(mass_by_mask, "../lib/src/maze/mass_small.rs");
 }

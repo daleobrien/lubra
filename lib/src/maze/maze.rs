@@ -393,7 +393,11 @@ impl Maze {
         j: usize,
         surrounding_tiles: &[Option<Tile>; 12],
     ) -> Tile {
-        //return Tile::new(vec![vec![1, 3]], true);
+        // Test the new way to draw spanning two cell
+        if i == 0 && j == 0 {
+            return Tile::new(vec![vec![1, 5]], true);
+        }
+        return Tile::new(vec![vec![4, 5]], true);
 
         let mask = self.get_surrounding_tile_connections(surrounding_tiles);
         let nets = random_tile(mask, self.seed, false);
