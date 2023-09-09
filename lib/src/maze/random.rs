@@ -7,7 +7,7 @@ use rand::thread_rng;
 use rand_chacha::ChaCha8Rng;
 use weighted_rand::builder::{NewBuilder, WalkerTableBuilder};
 
-pub fn random_tile(mask: u32, seed: Option<u64>, reduced_lookup: bool) -> Vec<Vec<u32>> {
+pub fn random_tile(mask: u32, seed: Option<u64>, reduced_lookup: bool) -> Vec<u32> {
     let possible_nets = if reduced_lookup {
         nets_small(mask)
     } else {

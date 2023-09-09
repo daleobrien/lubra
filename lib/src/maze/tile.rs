@@ -28,12 +28,12 @@ fn rotate_number_dn(n: u32) -> u32 {
 
 #[derive(Clone)]
 pub struct Tile {
-    pub nodes: Vec<Vec<u32>>,
+    pub nodes: Vec<u32>,
     pub initialised: bool,
 }
 
 impl Tile {
-    pub fn new(nodes: Vec<Vec<u32>>, initialised: bool) -> Tile {
+    pub fn new(nodes: Vec<u32>, initialised: bool) -> Tile {
         Tile { nodes, initialised }
     }
 
@@ -194,38 +194,38 @@ mod tests {
 
     #[test]
     fn test_cw_rotation() {
-        let tile = Tile::new(vec![vec![1, 2], vec![5]], true);
+        let tile = Tile::new(vec![0b000_011, 0b010_000], true);
         let rotated_nodes = tile.rotate_cw();
-        assert_eq!(rotated_nodes, vec![vec![1, 3], vec![6]]);
+        assert_eq!(rotated_nodes, vec![0b000_101, 0b100_000]);
     }
 
     #[test]
     fn test_ccw_rotation() {
-        let tile = Tile::new(vec![vec![1, 2], vec![5]], true);
+        let tile = Tile::new(vec![0b000_011, 0b010_000], true);
         let rotated_nodes = tile.rotate_ccw();
-        assert_eq!(rotated_nodes, vec![vec![2, 3], vec![4]]);
+        assert_eq!(rotated_nodes, vec![0b000_110, 0b001_000]);
     }
 
     #[test]
     fn test_bits() {
-        let tile = Tile::new(vec![vec![1, 2], vec![5]], true);
+        let tile = Tile::new(vec![0b000_011, 0b010_000], true);
         assert_eq!(tile.bits(), 0b010011)
     }
 
     #[test]
     fn test_intersects() {
-        let tile1 = Tile::new(vec![vec![1, 2], vec![5]], true);
-        let tile2 = Tile::new(vec![vec![2, 3], vec![6]], true);
+        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
+        let tile2 = Tile::new(vec![0b000_110, 0b100_000], true);
         assert_eq!(tile1.intersects(&tile2), true);
 
-        let tile1 = Tile::new(vec![vec![1, 2], vec![5]], true);
-        let tile2 = Tile::new(vec![vec![3], vec![6]], true);
+        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
+        let tile2 = Tile::new(vec![0b000_100, 0b100_000], true);
         assert_eq!(tile1.intersects(&tile2), false);
     }
 
     #[test]
     fn test_contains() {
-        let tile1 = Tile::new(vec![vec![1, 2], vec![5]], true);
+        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
         assert_eq!(tile1.contains(1), true);
         assert_eq!(tile1.contains(2), true);
         assert_eq!(tile1.contains(3), false);
@@ -239,7 +239,7 @@ mod tests {
 
     #[test]
     fn test_is_empty() {
-        let tile1 = Tile::new(vec![vec![1, 2], vec![5]], true);
+        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
         assert_eq!(tile1.is_empty(), false);
 
         let tile1 = Tile::new(vec![], true);

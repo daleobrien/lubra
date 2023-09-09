@@ -6,7 +6,6 @@ use crate::maze::consts::NODE_TO_COORD;
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
-use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::tile::{add, Tile};
 use crate::renders::_point::Coordinate;
@@ -89,7 +88,7 @@ impl Maze {
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         // Seed some random tiles that don't touch each other or the boundaries
-        self.tiles[(0, 0)] = Tile::new(vec![vec![4, 5]], true);
+        self.tiles[(0, 0)] = Tile::new(vec![0b011_000], true);
 
         for i in (2..number_of_columns - 2).step_by(3) {
             for j in (1..number_of_rows - 1).step_by(2) {
@@ -395,9 +394,9 @@ impl Maze {
     ) -> Tile {
         // Test the new way to draw spanning two cell
         if i == 0 && j == 0 {
-            return Tile::new(vec![vec![1, 5]], true);
+            return Tile::new(vec![0b010_001], true);
         }
-        return Tile::new(vec![vec![4, 5]], true);
+        return Tile::new(vec![0b011_000], true);
 
         let mask = self.get_surrounding_tile_connections(surrounding_tiles);
         let nets = random_tile(mask, self.seed, false);
