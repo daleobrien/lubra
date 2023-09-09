@@ -2,30 +2,6 @@ use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use std::fmt;
 
-fn rotate_number_up(n: u32) -> u32 {
-    return match n {
-        1 => 3,
-        2 => 1,
-        3 => 2,
-        4 => 5,
-        5 => 6,
-        6 => 4,
-        _ => 0,
-    };
-}
-
-fn rotate_number_dn(n: u32) -> u32 {
-    return match n {
-        1 => 2,
-        2 => 3,
-        3 => 1,
-        4 => 6,
-        5 => 4,
-        6 => 5,
-        _ => 0,
-    };
-}
-
 #[derive(Clone)]
 pub struct Tile {
     pub nodes: Vec<u32>,
@@ -57,11 +33,7 @@ impl Tile {
         };
 
         for net in nodes {
-            let bits: u32 = if flipped {
-                0b1_000_000 | net.clone()
-            } else {
-                net
-            };
+            let bits: u32 = if flipped { 0b1_000_000 | net } else { net };
 
             let path = MAP_PATHS.get(&bits);
             if path.is_some() {
@@ -92,14 +64,8 @@ impl Tile {
         // Extract the bits to be rotated.
         let bits_345 = (value & 0b00111000) >> 3;
         let bits_012 = value & 0b00000111;
-
-        // Perform left rotation on bits 3, 4, 5.
         let rotated_bits_345 = ((bits_345 << 1) | (bits_345 >> 2)) & 0b00000111;
-
-        // Perform right rotation on bits 0, 1, 2.
         let rotated_bits_012 = ((bits_012 >> 1) | (bits_012 << 2)) & 0b00000111;
-
-        // Combine the rotated bits with the original value.
         return (rotated_bits_345 << 3) | rotated_bits_012;
     }
 
@@ -112,17 +78,10 @@ impl Tile {
     }
 
     fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
-        // Extract the bits to be rotated.
         let bits_345 = (value & 0b00111000) >> 3;
         let bits_012 = value & 0b00000111;
-
-        // Perform right rotation on bits 3, 4, 5.
         let rotated_bits_345 = ((bits_345 >> 1) | (bits_345 << 2)) & 0b00000111;
-
-        // Perform left rotation on bits 0, 1, 2.
         let rotated_bits_012 = ((bits_012 << 1) | (bits_012 >> 2)) & 0b00000111;
-
-        // Combine the rotated bits with the original value.
         return (rotated_bits_345 << 3) | rotated_bits_012;
     }
 

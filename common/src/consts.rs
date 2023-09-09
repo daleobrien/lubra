@@ -3,6 +3,16 @@ Each row is indexed in a strange way:  _,1,_,5,_,3,_,6,_,2,_,4
 where the _ is too the left and right of the vertex, (vertex are number 1,2 & 3).
 */
 
+pub const NODE_1: u32 = 0b00_000_001;
+pub const NODE_2: u32 = 0b00_000_010;
+pub const NODE_3: u32 = 0b00_000_100;
+pub const NODE_4: u32 = 0b00_001_000;
+pub const NODE_5: u32 = 0b00_010_000;
+pub const NODE_6: u32 = 0b00_100_000;
+pub const INVERT: u32 = 0b01_000_000;
+pub const NORMAL: u32 = 0b00_000_000;
+pub const WALL: u32 = 0b10_000_000;
+
 // For a tile in the very first position, (0,0), the coordinates are:
 const K0: [(i32, i32); 12] = [
     (0, -1),

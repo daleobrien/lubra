@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
-use crate::maze::consts::NODE_TO_COORD;
+use common::consts::{NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6, NODE_TO_COORD};
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
@@ -11,22 +11,6 @@ use crate::maze::tile::{add, Tile};
 use crate::renders::_point::Coordinate;
 use crate::renders::svg::Svg;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
-
-// Get the surrounding tiles
-// 1,2,3, 4,5,6, 1a,1b, 2a,2b, 3a,3b
-// 0 1 2  3 4 5  6  7   8  9   10 11
-const NODE_1: usize = 0usize;
-const NODE_2: usize = 1usize;
-const NODE_3: usize = 2usize;
-const NODE_4: usize = 3usize;
-const NODE_5: usize = 4usize;
-const NODE_6: usize = 5usize;
-const NODE_1L: usize = 6usize;
-const NODE_1R: usize = 7usize;
-const NODE_2L: usize = 8usize;
-const NODE_2R: usize = 9usize;
-const NODE_3L: usize = 10usize;
-const NODE_3R: usize = 11usize;
 
 #[cfg(debug_assertions)]
 fn pretty_print_int(b: u32) {
@@ -88,12 +72,14 @@ impl Maze {
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         // Seed some random tiles that don't touch each other or the boundaries
-        self.tiles[(0, 0)] = Tile::new(vec![0b011_000], true);
-
-        for i in (2..number_of_columns - 2).step_by(3) {
-            for j in (1..number_of_rows - 1).step_by(2) {
-                let tile = self.get_any_random_tile(i, j);
-                self.tiles[(j, i)] = tile;
+        self.tiles[(0, 0)] = Tile::new(vec![NODE_1 | NODE_5], true);
+        self.tiles[(0, 1)] = Tile::new(vec![], true);
+        if number_of_rows > 1 && number_of_columns > 2 {
+            for i in (2..number_of_columns - 2).step_by(3) {
+                for j in (1..number_of_rows - 1).step_by(2) {
+                    let tile = self.get_any_random_tile(i, j);
+                    self.tiles[(j, i)] = tile;
+                }
             }
         }
 
@@ -349,15 +335,27 @@ impl Maze {
     }
 
     pub fn get_surrounding_tile_connections(&self, surrounding_tiles: &[Option<Tile>; 12]) -> u32 {
+        const N1: usize = 0usize;
+        const N2: usize = 1usize;
+        const N3: usize = 2usize;
+        const N4: usize = 3usize;
+        const N5: usize = 4usize;
+        const N6: usize = 5usize;
+        const N1L: usize = 6usize;
+        const N1R: usize = 7usize;
+        const N2L: usize = 8usize;
+        const N2R: usize = 9usize;
+        const N3L: usize = 10usize;
+        const N3R: usize = 11usize;
         // Node 1
-        return self.mask_for_tile_vertex(NODE_1, [NODE_4, NODE_5, NODE_1L, NODE_1R], surrounding_tiles)
+        return self.mask_for_tile_vertex(N1, [N4, N5, N1L, N1R], surrounding_tiles)
             // Node 2
-            + self.mask_for_tile_vertex(NODE_2, [NODE_4, NODE_6, NODE_2L, NODE_2R], surrounding_tiles)
+            + self.mask_for_tile_vertex(N2, [N4, N6, N2L, N2R], surrounding_tiles)
             // Node 3
-            + self.mask_for_tile_vertex(NODE_3, [NODE_5, NODE_6, NODE_3L, NODE_3R], surrounding_tiles)
-            + self.mask_for_tile_side(NODE_4, surrounding_tiles)
-            + self.mask_for_tile_side(NODE_5, surrounding_tiles)
-            + self.mask_for_tile_side(NODE_6, surrounding_tiles);
+            + self.mask_for_tile_vertex(N3, [N5, N6, N3L, N3R], surrounding_tiles)
+            + self.mask_for_tile_side(N4, surrounding_tiles)
+            + self.mask_for_tile_side(N5, surrounding_tiles)
+            + self.mask_for_tile_side(N6, surrounding_tiles);
     }
     #[cfg(debug_assertions)]
     fn string_for_tile(&self, tile: &Option<Tile>) -> String {
@@ -393,10 +391,6 @@ impl Maze {
         surrounding_tiles: &[Option<Tile>; 12],
     ) -> Tile {
         // Test the new way to draw spanning two cell
-        if i == 0 && j == 0 {
-            return Tile::new(vec![0b010_001], true);
-        }
-        return Tile::new(vec![0b011_000], true);
 
         let mask = self.get_surrounding_tile_connections(surrounding_tiles);
         let nets = random_tile(mask, self.seed, false);

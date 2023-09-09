@@ -1,7 +1,9 @@
+use common::consts::{INVERT, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6, NORMAL, WALL};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, S4, TILE_WIDTH};
 use itertools::concat;
+use num_traits::ToPrimitive;
 use std::collections::BTreeMap;
 use std::f64::consts::FRAC_PI_3;
 use std::fs::File;
@@ -199,6 +201,31 @@ fn a1(invert: bool) -> String {
     return a1_or_6(1, invert);
 }
 
+fn a15(invert: bool) -> String {
+    let w = PATH_WIDTH;
+    let r1 = trimf64(TILE_WIDTH * (0.25 + w));
+    let r2 = trimf64(TILE_WIDTH * (0.25 - w));
+    let x1 = 0.5 - w;
+    let x2 = 1.0 + w;
+    let x3 = 1.0 - w;
+    let x4 = 0.5 + w;
+    let y = S3;
+    let a = Point { x: x1, y };
+    let b = Point { x: x2, y };
+    let c = Point { x: x3, y };
+    let d = Point { x: x4, y };
+
+    let pts = Path::new(vec![a, b, c, d]).scale();
+    println!("{:?}", pts);
+    return format!(
+        "<path stroke=\\\"black\\\" fill=\\\"white\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d}\\\" />",
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
+    );
+}
+
 fn a2(invert: bool) -> String {
     return a2_or_5(1, invert);
 }
@@ -305,45 +332,31 @@ fn a3_or_4(index: usize, invert: bool) -> String {
 pub fn generate_all_shapes() {
     let mut paths: BTreeMap<usize, String> = BTreeMap::new();
 
-    for (key, path) in [
-        (0b00_100_001, l1_to_6(false)),
-        (0b01_100_001, l1_to_6(true)),
-        (0b00_010_010, l2_to_5(false)),
-        (0b01_010_010, l2_to_5(true)),
-        (0b00_001_100, l3_to_4(false)),
-        (0b01_001_100, l3_to_4(true)),
-        (0b00_000_001, a1(false)),
-        (0b01_000_001, a1(true)),
-        (0b00_000_010, a2(false)),
-        (0b01_000_010, a2(true)),
-        (0b00_000_100, a3(false)),
-        (0b01_000_100, a3(true)),
-        (0b00_001_000, a4(false)),
-        (0b01_001_000, a4(true)),
-        (0b00_010_000, a5(false)),
-        (0b01_010_000, a5(true)),
-        (0b00_100_000, a6(false)),
-        (0b01_100_000, a6(true)),
-        (0b00_000_111, a123(false)),
-        (0b01_000_111, a123(true)),
-        (0b00_000_110, a23(false)),
-        (0b01_000_110, a23(true)),
-        (0b00_000_101, a13(false)),
-        (0b01_000_101, a13(true)),
-        (0b00_000_011, a12(false)),
-        (0b01_000_011, a12(true)),
-        (0b00_011_000, a4_to_5(false)),
-        (0b01_011_000, a4_to_5(true)),
-        (0b00_101_000, a4_to_6(false)),
-        (0b01_101_000, a4_to_6(true)),
-        (0b00_110_000, a5_to_6(false)),
-        (0b01_110_000, a5_to_6(true)),
-        (0b00_111_000, a456(false)),
-        (0b01_111_000, a456(true)),
-        (0b10_000_000, l_wall(false)),
-        (0b11_000_000, l_wall(true)),
-    ] {
-        paths.insert(key, path);
+    for direction in [INVERT, NORMAL] {
+        let invert = direction == INVERT;
+        for (key, path) in [
+            (direction | NODE_1 | NODE_6, l1_to_6(invert)),
+            (direction | NODE_2 | NODE_5, l2_to_5(invert)),
+            (direction | NODE_3 | NODE_4, l3_to_4(invert)),
+            (direction | NODE_1, a1(invert)),
+            (direction | NODE_2, a2(invert)),
+            (direction | NODE_3, a3(invert)),
+            (direction | NODE_4, a4(invert)),
+            (direction | NODE_5, a5(invert)),
+            (direction | NODE_6, a6(invert)),
+            (direction | NODE_1 | NODE_2 | NODE_3, a123(invert)),
+            (direction | NODE_2 | NODE_3, a23(invert)),
+            (direction | NODE_1 | NODE_2, a12(invert)),
+            (direction | NODE_1 | NODE_3, a13(invert)),
+            (direction | NODE_1 | NODE_5, a15(invert)),
+            (direction | NODE_4 | NODE_5, a4_to_5(invert)),
+            (direction | NODE_4 | NODE_6, a4_to_6(invert)),
+            (direction | NODE_5 | NODE_6, a5_to_6(invert)),
+            (direction | NODE_4 | NODE_5 | NODE_6, a456(invert)),
+            (direction | WALL, l_wall(invert)),
+        ] {
+            paths.insert(key.to_usize().unwrap_or_default(), path);
+        }
     }
 
     // Change this to a look up function rather than a class with a HashMap.

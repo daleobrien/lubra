@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-set -e
+set -
 
 cd generate
-cargo run
+cargo run --bin generate_svg
 cd ../cli
-cargo run
+cargo run 
