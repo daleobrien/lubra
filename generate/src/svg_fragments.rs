@@ -9,6 +9,8 @@ use std::f64::consts::FRAC_PI_3;
 use std::fs::File;
 use std::io::Write;
 
+const FILL: &str = "white";
+
 fn generate_lx(invert: bool) -> Path {
     let w = Point {
         x: PATH_WIDTH,
@@ -47,7 +49,7 @@ fn l_a_to_b(path: Path) -> String {
     let s = path.trim();
     // TODO: Replace so that we fill and stroke at the same time, like I do for A15
     return format!(
-        "<path fill=\\\"white\\\" d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
+        "<path fill=\\\"{FILL}\\\" d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
          <path stroke=\\\"black\\\" d=\\\"M{a}l{b}m{c}l{d}z\\\"/>",
         a = s[0],
         b = s[1],
@@ -130,7 +132,7 @@ fn a123(invert: bool) -> String {
     let pts3 = pts.clone().str();
 
     return format!(
-        "<path fill=\\\"white\\\" d=\\\"\
+        "<path fill=\\\"{FILL}\\\" d=\\\"\
           M {a1} L {b1} A {r} {r} 0 0 {dir} {c1} L {d1} \
           L {a2} L {b2} A {r} {r} 0 0 {dir} {c2} L {d2} \
           L {a3} L {b3} A {r} {r} 0 0 {dir} {c3} L {d3} z\\\"/>\
@@ -173,7 +175,7 @@ fn axy_to_str(invert: bool, r1: String, r2: String, pts: Path) -> String {
     let dir1 = if invert { 1 } else { 0 };
     let dir2 = if invert { 0 } else { 1 };
     return format!(
-        "<path fill=\\\"white\\\" d=\\\"M {a} A {r1} {r1} 0 0 {dir1} {b} L {c} A {r2} {r2} 0 0 {dir2} {d} z \\\" /> \
+        "<path fill=\\\"{FILL}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {dir1} {b} L {c} A {r2} {r2} 0 0 {dir2} {d} z \\\" /> \
          <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 {dir1} {b} M {c} A {r2} {r2} 0 0 {dir2} {d} \\\" />",
         a = pts[0],
         b = pts[1],
@@ -248,7 +250,7 @@ fn a15_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.scale();
     return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"white\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} M {c} A {r2} {r2} 0 0 {d2} {d}\\\" />",
+        "<path stroke=\\\"black\\\" fill=\\\"{FILL}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} M {c} A {r2} {r2} 0 0 {d2} {d}\\\" />",
         a = pts[0],
         b = pts[1],
         c = pts[2],
@@ -295,7 +297,7 @@ fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
     let pts: Vec<String> = pts.str();
 
     return format!(
-    "<path fill=\\\"white\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
+    "<path fill=\\\"{FILL}\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
          <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d} \\\" />",
     a = pts[0],
     b = pts[1],
@@ -342,7 +344,7 @@ fn a456(invert: bool) -> String {
     let p3 = p3.str();
 
     return format!(
-    "<path fill=\\\"white\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 1 {d} L {e} A {r} {r} 0 0 1 {f} z \\\" />\
+    "<path fill=\\\"{FILL}\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 1 {d} L {e} A {r} {r} 0 0 1 {f} z \\\" />\
         <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} M {c} A {r} {r} 0 0 1 {d} M {e} A {r} {r} 0 0 1 {f} \\\" />",
     a = p1[0], b = p1[1], c = p2[0], d = p2[1], e = p3[0], f = p3[1]);
 }
@@ -350,7 +352,7 @@ fn a456(invert: bool) -> String {
 fn a_x_or_y(pts: Path, r: String) -> String {
     let pts = pts.str();
     return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"white\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b}\\\" />",
+        "<path stroke=\\\"black\\\" fill=\\\"{FILL}\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b}\\\" />",
         a = pts[0],
         b = pts[1],
         r = r
