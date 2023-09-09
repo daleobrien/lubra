@@ -12,7 +12,7 @@ impl NodeCombinations {
         // TODO: Should do this dynamically, since we don't need to do all combinations now
         for k in 0..=list.len() {
             for item in list.iter().combinations(k).unique() {
-                let value: Vec<u32> = item.iter().map(|x| (**x).clone()).collect();
+                let value: Vec<u32> = item.iter().map(|x| (**x)).collect();
                 if !interects(&value) {
                     combinations.push(value);
                 }
@@ -33,12 +33,7 @@ impl Iterator for NodeCombinations {
         let item = self.list.pop();
         match item {
             Some(value) => {
-                // Make sure we don't return any duplicate values
-                let duplicated_nodes = value.iter().fold(0u32, |a, b| a & b);
-                if duplicated_nodes != 0u32 {
-                    return self.next();
-                }
-                return Some(value);
+                return self.next();
             }
             None => return None,
         }

@@ -57,14 +57,11 @@ impl Tile {
         };
 
         for net in nodes {
-            let mut bits: u32 = 0;
-            for n in net.clone() {
-                bits |= 1 << (n - 1);
-            }
-
-            if flipped {
-                bits |= 0b1_000_000;
-            }
+            let bits: u32 = if flipped {
+                0b1_000_000 | net.clone()
+            } else {
+                net
+            };
 
             let path = MAP_PATHS.get(&bits);
             if path.is_some() {
@@ -88,46 +85,53 @@ impl Tile {
     }
 
     pub fn bits(&self) -> u32 {
-        let mut bits = 0;
-        for nets in self.nodes.clone() {
-            for n in nets {
-                bits |= 1 << (n - 1);
-            }
-        }
-        return bits;
+        return self.nodes.iter().fold(0, |a, b| a | b);
     }
 
-    pub fn rotate_cw(&self) -> Vec<Vec<u32>> {
-        let mut nodes = Vec::new();
-        for nets in self.nodes.clone() {
-            let mut new_nets = Vec::new();
-            for n in nets {
-                new_nets.push(rotate_number_up(n.clone()));
-            }
-            new_nets.sort();
-            nodes.push(new_nets);
-        }
-        //nodes.sort();
-        return nodes;
+    fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
+        // Extract the bits to be rotated.
+        let bits_345 = (value & 0b00111000) >> 3;
+        let bits_012 = value & 0b00000111;
 
-        // return self
-        //     .nodes
-        //     .iter()
-        //     .map(|row| row.iter().map(|n| rotate_number_up(*n)).sorted().collect())
-        //     .collect();
+        // Perform left rotation on bits 3, 4, 5.
+        let rotated_bits_345 = ((bits_345 << 1) | (bits_345 >> 2)) & 0b00000111;
+
+        // Perform right rotation on bits 0, 1, 2.
+        let rotated_bits_012 = ((bits_012 >> 1) | (bits_012 << 2)) & 0b00000111;
+
+        // Combine the rotated bits with the original value.
+        return (rotated_bits_345 << 3) | rotated_bits_012;
     }
-    pub fn rotate_ccw(&self) -> Vec<Vec<u32>> {
-        let mut nodes = Vec::new();
-        for nets in self.nodes.clone() {
-            let mut new_nets = Vec::new();
-            for n in nets {
-                new_nets.push(rotate_number_dn(n.clone()));
-            }
-            new_nets.sort();
-            nodes.push(new_nets);
-        }
-        //nodes.sort();
-        return nodes;
+
+    pub fn rotate_cw(&self) -> Vec<u32> {
+        return self
+            .nodes
+            .iter()
+            .map(|n| Tile::rotate_bits_345_left_and_012_right(*n))
+            .collect();
+    }
+
+    fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
+        // Extract the bits to be rotated.
+        let bits_345 = (value & 0b00111000) >> 3;
+        let bits_012 = value & 0b00000111;
+
+        // Perform right rotation on bits 3, 4, 5.
+        let rotated_bits_345 = ((bits_345 >> 1) | (bits_345 << 2)) & 0b00000111;
+
+        // Perform left rotation on bits 0, 1, 2.
+        let rotated_bits_012 = ((bits_012 << 1) | (bits_012 >> 2)) & 0b00000111;
+
+        // Combine the rotated bits with the original value.
+        return (rotated_bits_345 << 3) | rotated_bits_012;
+    }
+
+    pub fn rotate_ccw(&self) -> Vec<u32> {
+        return self
+            .nodes
+            .iter()
+            .map(|n| Tile::rotate_bits_345_right_and_012_left(*n))
+            .collect();
     }
 
     pub fn intersects(&self, other: &Tile) -> bool {
@@ -141,18 +145,11 @@ impl Tile {
     }
 
     pub fn contains(&self, node_index: u32) -> bool {
-        for nets in self.nodes.clone() {
-            for n in nets {
-                if n == node_index {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return self.nodes.iter().any(|net| *net & node_index != 0u32);
     }
 
     pub fn is_empty(&self) -> bool {
-        return self.nodes.len() == 0;
+        return self.nodes.is_empty();
     }
 }
 
@@ -196,6 +193,7 @@ mod tests {
     fn test_cw_rotation() {
         let tile = Tile::new(vec![0b000_011, 0b010_000], true);
         let rotated_nodes = tile.rotate_cw();
+        println!("CW: {:#06b} {:#06b}", rotated_nodes[0], rotated_nodes[1]);
         assert_eq!(rotated_nodes, vec![0b000_101, 0b100_000]);
     }
 
@@ -226,15 +224,15 @@ mod tests {
     #[test]
     fn test_contains() {
         let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
-        assert_eq!(tile1.contains(1), true);
-        assert_eq!(tile1.contains(2), true);
-        assert_eq!(tile1.contains(3), false);
-        assert_eq!(tile1.contains(4), false);
-        assert_eq!(tile1.contains(5), true);
-        assert_eq!(tile1.contains(6), false);
+        assert_eq!(tile1.contains(0b000_001), true);
+        assert_eq!(tile1.contains(0b000_010), true);
+        assert_eq!(tile1.contains(0b000_100), false);
+        assert_eq!(tile1.contains(0b001_000), false);
+        assert_eq!(tile1.contains(0b010_000), true);
+        assert_eq!(tile1.contains(0b100_000), false);
 
         let tile1 = Tile::new(vec![], true);
-        assert_eq!(tile1.contains(1), false);
+        assert_eq!(tile1.contains(0b000_001), false);
     }
 
     #[test]

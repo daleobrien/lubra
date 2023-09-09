@@ -155,74 +155,74 @@ impl Maze {
            ▽△▽△▽      △▽△▽△
 
         */
-    fn update_network(&mut self, tile: &Tile, i: usize, j: usize) {
-        let tile_nets = tile.nodes.clone();
-
-        let mapping = NODE_TO_COORD[(i + (3 * (j % 2))) % 6];
-
-        for net in tile_nets {
-            let tile_sub_nets: HashSet<[usize; 3]> = net
-                .iter()
-                .map(|node| [i, j, node.to_usize().unwrap_or_default()])
-                .collect();
-
-            // For this sub net of the current tile, find which nets they are part of
-            let mut net_indexes: Vec<usize> = Vec::new();
-
-            for (n, nets) in self.nets.iter().enumerate() {
-                for tile_sub_net in tile_sub_nets.iter() {
-                    // Find adjacent tile so we can check if it is part of an existing net
-                    let node_idx = tile_sub_net[2];
-                    let coord = mapping[node_idx - 1];
-                    //
-                    let x = add(i, coord.0);
-                    let y = add(j, coord.1);
-
-                    match (x, y) {
-                        (Some(x), Some(y)) => {
-                            if nets.contains(&[x, y, node_idx]) && !net_indexes.contains(&n) {
-                                net_indexes.push(n);
-                                //break;
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            if net_indexes.len() == 1 {
-                // Append to an existing net
-                let n = net_indexes[0];
-                self.nets[n].extend(tile_sub_nets);
-            } else if net_indexes.len() == 0 {
-                // Add a new net
-                self.nets.push(tile_sub_nets);
-            } else if net_indexes.len() > 1 {
-                // Since this tile's subnet was part of 2 or more nets, we can say they are really
-                // the same net. So we need to merge them.
-
-                let n = net_indexes[0];
-                // Keep the net[n] and merge the other nets into it
-                let r = net_indexes[1..].to_vec();
-
-                let mut new_net = HashSet::new();
-                // Add in the bridging net
-                new_net.extend(tile_sub_nets);
-                // Add the rest of the nets
-                for i in net_indexes {
-                    new_net.extend(self.nets[i].clone());
-                }
-
-                self.nets[n] = new_net; // The new merged net
-
-                // Remove the rest of the nets since they are now merged.
-                // Note: This won't have very good performance. It might be the other nets are always towards the end of the list though
-                // which will help.
-                for i in r.iter().rev() {
-                    self.nets.remove(*i);
-                }
-            }
-        }
-    }
+    // fn update_network(&mut self, tile: &Tile, i: usize, j: usize) {
+    //     let tile_nets = tile.nodes.clone();
+    //
+    //     let mapping = NODE_TO_COORD[(i + (3 * (j % 2))) % 6];
+    //
+    //     for net in tile_nets {
+    //         let tile_sub_nets: HashSet<[usize; 3]> = net
+    //             .iter()
+    //             .map(|node| [i, j, node.to_usize().unwrap_or_default()])
+    //             .collect();
+    //
+    //         // For this sub net of the current tile, find which nets they are part of
+    //         let mut net_indexes: Vec<usize> = Vec::new();
+    //
+    //         for (n, nets) in self.nets.iter().enumerate() {
+    //             for tile_sub_net in tile_sub_nets.iter() {
+    //                 // Find adjacent tile so we can check if it is part of an existing net
+    //                 let node_idx = tile_sub_net[2];
+    //                 let coord = mapping[node_idx - 1];
+    //                 //
+    //                 let x = add(i, coord.0);
+    //                 let y = add(j, coord.1);
+    //
+    //                 match (x, y) {
+    //                     (Some(x), Some(y)) => {
+    //                         if nets.contains(&[x, y, node_idx]) && !net_indexes.contains(&n) {
+    //                             net_indexes.push(n);
+    //                             //break;
+    //                         }
+    //                     }
+    //                     _ => {}
+    //                 }
+    //             }
+    //         }
+    //         if net_indexes.len() == 1 {
+    //             // Append to an existing net
+    //             let n = net_indexes[0];
+    //             self.nets[n].extend(tile_sub_nets);
+    //         } else if net_indexes.len() == 0 {
+    //             // Add a new net
+    //             self.nets.push(tile_sub_nets);
+    //         } else if net_indexes.len() > 1 {
+    //             // Since this tile's subnet was part of 2 or more nets, we can say they are really
+    //             // the same net. So we need to merge them.
+    //
+    //             let n = net_indexes[0];
+    //             // Keep the net[n] and merge the other nets into it
+    //             let r = net_indexes[1..].to_vec();
+    //
+    //             let mut new_net = HashSet::new();
+    //             // Add in the bridging net
+    //             new_net.extend(tile_sub_nets);
+    //             // Add the rest of the nets
+    //             for i in net_indexes {
+    //                 new_net.extend(self.nets[i].clone());
+    //             }
+    //
+    //             self.nets[n] = new_net; // The new merged net
+    //
+    //             // Remove the rest of the nets since they are now merged.
+    //             // Note: This won't have very good performance. It might be the other nets are always towards the end of the list though
+    //             // which will help.
+    //             for i in r.iter().rev() {
+    //                 self.nets.remove(*i);
+    //             }
+    //         }
+    //     }
+    // }
 
     fn get_tile_relative_position(&self, pos: (usize, usize), rel: (i32, i32)) -> Option<Tile> {
         // Out of bounds, Array2D will return None if out of bounds.
@@ -408,7 +408,7 @@ impl Maze {
 
         let tile = Tile::new(nets, true);
 
-        self.update_network(&tile, i, j);
+        //self.update_network(&tile, i, j);
 
         return tile;
     }
@@ -422,7 +422,7 @@ impl Maze {
         };
 
         let tile = Tile::new(nets, true);
-        self.update_network(&tile, i, j);
+        // self.update_network(&tile, i, j);
         return tile;
     }
 
@@ -468,7 +468,7 @@ mod tests {
 
     #[test]
     fn test_surrounding_for_island() {
-        let maze = Maze::new(1, 1, false, None);
+        let maze = Maze::new(1, 1, false, false, None);
 
         let surrounding_tiles = maze.get_connected_titles_for_tile(0, 0);
 
@@ -481,7 +481,7 @@ mod tests {
 
     #[test]
     fn test_surrounding_for_x_0() {
-        let maze = Maze::new(9, 9, false, None);
+        let maze = Maze::new(9, 9, false, false, None);
 
         let expected = vec![
             vec![1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0],
