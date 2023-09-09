@@ -32,6 +32,12 @@ impl Path {
         }
     }
 
+    pub fn reflect(&self) -> Path {
+        Path {
+            points: self.iter().map(|p| p.reflect()).collect(),
+        }
+    }
+
     pub fn diff(self, invert: bool) -> Path {
         // Convert a series of points into the first point followed by series of differences
         let pts: Vec<Point> = self

@@ -202,7 +202,7 @@ fn a1(invert: bool) -> String {
     return a1_or_6(1, invert);
 }
 
-fn a15_base() -> (String, String, Path) {
+fn a15_base(invert: bool) -> (String, String, Path) {
     let w = PATH_WIDTH;
     let r1 = trimf64(TILE_WIDTH * (0.25 + w));
     let r2 = trimf64(TILE_WIDTH * (0.25 - w));
@@ -217,17 +217,15 @@ fn a15_base() -> (String, String, Path) {
     let d = Point { x: x4, y };
 
     let pts = Path::new(vec![a, b, c, d]);
-    return (r1, r2, pts);
-}
-fn a15(invert: bool) -> String {
-    let (r1, r2, pts) = a15_base();
     let pts = if invert {
         pts.invert() + Point { x: 0f64, y: 0f64 }
     } else {
         pts
     };
+    return (r1, r2, pts);
+}
+fn a15_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
-
     let pts = pts.scale();
     return format!(
         "<path stroke=\\\"black\\\" fill=\\\"white\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} M {c} A {r2} {r2} 0 0 {d2} {d}\\\" />",
@@ -236,6 +234,18 @@ fn a15(invert: bool) -> String {
         c = pts[2],
         d = pts[3],
     );
+}
+
+fn a15(invert: bool) -> String {
+    let (r1, r2, pts) = a15_base(invert);
+
+    return a15_str(invert, pts, r1, r2);
+}
+
+fn a14(invert: bool) -> String {
+    let (r1, r2, pts) = a15_base(invert);
+    let pts = pts.reflect();
+    return a15_str(invert, pts, r1, r2);
 }
 
 fn a2(invert: bool) -> String {
@@ -360,6 +370,7 @@ pub fn generate_all_shapes() {
             (direction | NODE_2 | NODE_3, a23(invert)),
             (direction | NODE_1 | NODE_2, a12(invert)),
             (direction | NODE_1 | NODE_3, a13(invert)),
+            (direction | NODE_1 | NODE_4, a14(invert)),
             (direction | NODE_1 | NODE_5, a15(invert)),
             (direction | NODE_4 | NODE_5, a4_to_5(invert)),
             (direction | NODE_4 | NODE_6, a4_to_6(invert)),

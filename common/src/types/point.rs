@@ -107,6 +107,12 @@ impl Point {
             y: S3 - self.y,
         }
     }
+    pub fn reflect(&self) -> Point {
+        Point {
+            x: 1.0 - self.x,
+            y: self.y,
+        }
+    }
 }
 
 impl fmt::Display for Point {
