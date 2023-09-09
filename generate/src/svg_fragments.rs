@@ -202,6 +202,26 @@ fn a1(invert: bool) -> String {
     return a1_or_6(1, invert);
 }
 
+fn a2(invert: bool) -> String {
+    return a2_or_5(1, invert);
+}
+
+fn a3(invert: bool) -> String {
+    return a3_or_4(1, invert);
+}
+
+fn a4(invert: bool) -> String {
+    return a3_or_4(6, invert);
+}
+
+fn a5(invert: bool) -> String {
+    return a2_or_5(6, invert);
+}
+
+fn a6(invert: bool) -> String {
+    return a1_or_6(6, invert);
+}
+
 fn a15_base(invert: bool) -> (String, String, Path) {
     let w = PATH_WIDTH;
     let r1 = trimf64(TILE_WIDTH * (0.25 + w));
@@ -248,24 +268,10 @@ fn a14(invert: bool) -> String {
     return a15_str(invert, pts, r1, r2);
 }
 
-fn a2(invert: bool) -> String {
-    return a2_or_5(1, invert);
-}
-
-fn a3(invert: bool) -> String {
-    return a3_or_4(1, invert);
-}
-
-fn a4(invert: bool) -> String {
-    return a3_or_4(6, invert);
-}
-
-fn a5(invert: bool) -> String {
-    return a2_or_5(6, invert);
-}
-
-fn a6(invert: bool) -> String {
-    return a1_or_6(6, invert);
+fn a24(invert: bool) -> String {
+    let (r1, r2, pts) = a15_base(invert);
+    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
+    return a15_str(invert, pts, r1, r2);
 }
 
 fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
@@ -372,6 +378,7 @@ pub fn generate_all_shapes() {
             (direction | NODE_1 | NODE_3, a13(invert)),
             (direction | NODE_1 | NODE_4, a14(invert)),
             (direction | NODE_1 | NODE_5, a15(invert)),
+            (direction | NODE_2 | NODE_4, a24(invert)),
             (direction | NODE_4 | NODE_5, a4_to_5(invert)),
             (direction | NODE_4 | NODE_6, a4_to_6(invert)),
             (direction | NODE_5 | NODE_6, a5_to_6(invert)),
