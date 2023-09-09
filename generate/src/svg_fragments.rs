@@ -45,6 +45,7 @@ fn l_wall(invert: bool) -> String {
 
 fn l_a_to_b(path: Path) -> String {
     let s = path.trim();
+    // TODO: Replace so that we fill and stroke at the same time, like I do for A15
     return format!(
         "<path fill=\\\"white\\\" d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
          <path stroke=\\\"black\\\" d=\\\"M{a}l{b}m{c}l{d}z\\\"/>",
@@ -201,7 +202,7 @@ fn a1(invert: bool) -> String {
     return a1_or_6(1, invert);
 }
 
-fn a15(invert: bool) -> String {
+fn a15_base() -> (String, String, Path) {
     let w = PATH_WIDTH;
     let r1 = trimf64(TILE_WIDTH * (0.25 + w));
     let r2 = trimf64(TILE_WIDTH * (0.25 - w));
@@ -215,10 +216,21 @@ fn a15(invert: bool) -> String {
     let c = Point { x: x3, y };
     let d = Point { x: x4, y };
 
-    let pts = Path::new(vec![a, b, c, d]).scale();
-    println!("{:?}", pts);
+    let pts = Path::new(vec![a, b, c, d]);
+    return (r1, r2, pts);
+}
+fn a15(invert: bool) -> String {
+    let (r1, r2, pts) = a15_base();
+    let pts = if invert {
+        pts.invert() + Point { x: 0f64, y: 0f64 }
+    } else {
+        pts
+    };
+    let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
+
+    let pts = pts.scale();
     return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"white\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d}\\\" />",
+        "<path stroke=\\\"black\\\" fill=\\\"white\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} M {c} A {r2} {r2} 0 0 {d2} {d}\\\" />",
         a = pts[0],
         b = pts[1],
         c = pts[2],
