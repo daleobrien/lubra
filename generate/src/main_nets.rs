@@ -4,16 +4,12 @@ mod lookups;
 mod node_combinations;
 mod writer;
 
-use crate::data::generate_all_shapes;
 use crate::node_combinations::NodeCombinations;
 use crate::writer::{write_mass_to_file, write_nets_to_file};
 use std::collections::HashMap;
 
 fn main() {
-    println!("Generating Rust code for all SVG nets.");
-    generate_all_shapes();
-
-    println!("Generating Rust code for all Lookups nets.");
+    println!("Generating Rust code for all lookups nets (large network).");
 
     let seq = NodeCombinations::new(vec![
         0b000_001, 0b000_010, 0b000_100, 0b001_000, 0b010_000, 0b100_000, // Points
@@ -41,6 +37,7 @@ fn main() {
     // [[u32; 6]; 6] or [u32; 36]?
     // So that would be compact, but we'd need to do a lot of bit shifting to get the values out
 
+    println!("Generating Rust code for all lookups nets (small network).");
     let seq = NodeCombinations::new(vec![
         0b011_000, 0b110_000, 0b101_000, 0b111_000, // Arcs
         0b100_001, 0b010_010, 0b001_100, // Lines
