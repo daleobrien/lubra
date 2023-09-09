@@ -279,6 +279,18 @@ fn a26(invert: bool) -> String {
     return a15_str(!invert, pts, r1, r2);
 }
 
+fn a36(invert: bool) -> String {
+    let (r1, r2, pts) = a15_base(invert);
+    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
+    return a15_str(invert, pts, r1, r2);
+}
+
+fn a35(invert: bool) -> String {
+    let (r1, r2, pts) = a15_base(invert);
+    let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
+    return a15_str(!invert, pts, r1, r2);
+}
+
 fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
     let pts: Vec<String> = pts.str();
 
@@ -385,6 +397,8 @@ pub fn generate_all_shapes() {
             (direction | NODE_1 | NODE_5, a15(invert)),
             (direction | NODE_2 | NODE_4, a24(invert)),
             (direction | NODE_2 | NODE_6, a26(invert)),
+            (direction | NODE_3 | NODE_5, a35(invert)),
+            (direction | NODE_3 | NODE_6, a36(invert)),
             (direction | NODE_4 | NODE_5, a4_to_5(invert)),
             (direction | NODE_4 | NODE_6, a4_to_6(invert)),
             (direction | NODE_5 | NODE_6, a5_to_6(invert)),
