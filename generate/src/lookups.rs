@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 pub fn create_lookups(
     seq: NodeCombinations,
-    nets_by_mask: &mut HashMap<u32, Vec<Vec<Vec<u32>>>>,
+    nets_by_mask: &mut HashMap<u32, Vec<Vec<u32>>>,
     mass_by_mask: &mut HashMap<u32, Vec<u32>>,
 ) {
     for nodes in seq {

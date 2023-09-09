@@ -34,7 +34,7 @@ pub fn write_nets_to_file(nets_by_mask: HashMap<u32, Vec<Vec<u32>>>, file_name: 
         let content = format!(
             "    {:6?} => {},\n",
             key,
-            list_of_lists_of_list_to_rust_vector(&nets_by_mask[key])
+            list_of_lists_to_rust_vector(&nets_by_mask[key])
         );
         let _ = file.write(content.as_bytes());
     }

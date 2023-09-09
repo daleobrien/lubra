@@ -1,4 +1,4 @@
-use array_tool::vec::Uniq;
+use crate::bit_utils::interects;
 use itertools::Itertools;
 
 pub struct NodeCombinations {
@@ -9,11 +9,13 @@ impl NodeCombinations {
     pub fn new(list: Vec<u32>) -> Self {
         let mut combinations: Vec<Vec<u32>> = Vec::new();
 
+        // TODO: Should do this dynamically, since we don't need to do all combinations now
         for k in 0..=list.len() {
             for item in list.iter().combinations(k).unique() {
-                // De-reference the item
-                let value = item.iter().map(|x| (**x).clone()).collect();
-                combinations.push(value);
+                let value: Vec<u32> = item.iter().map(|x| (**x).clone()).collect();
+                if !interects(&value) {
+                    combinations.push(value);
+                }
             }
         }
         combinations.sort();

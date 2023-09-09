@@ -1,26 +1,42 @@
-pub fn get_mass(nets: &Vec<Vec<u32>>) -> u32 {
+pub fn get_mass(nets: &Vec<u32>) -> u32 {
     let mut mass = 1;
     for net in nets {
-        match net.len() {
+        match net.count_ones() {
             2 => mass *= 11,
             3 => mass *= 10,
             _ => (),
         }
-        if *net == vec![1, 2, 3] {
+        if *net == 0b000_111 {
             mass *= 12;
         }
     }
     return mass;
 }
 
-pub fn to_bits(nets: &Vec<Vec<u32>>) -> u32 {
-    let nodes = nets.clone().into_iter().flatten().collect::<Vec<u32>>();
-
-    let mut bits = 0;
-    for n in nodes {
-        bits |= 1 << (n - 1);
+pub fn to_bits(nets: &Vec<u32>) -> u32 {
+    if nets.is_empty() {
+        return 0u32;
     }
-    return bits;
+    return nets.iter().fold(0, |a, b| a | b);
+}
+
+pub fn interects(nets: &Vec<u32>) -> bool {
+    if nets.is_empty() || nets.len() == 1 {
+        return false;
+    }
+    if nets.len() == 2 {
+        return nets[0] & nets[1] != 0;
+    }
+
+    for i in 0..nets.len() - 1 {
+        for j in i + 1..nets.len() {
+            if nets[i] & nets[j] != 0 {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 pub fn dont_care_to_bits(value: u32) -> u32 {
@@ -82,11 +98,12 @@ mod tests {
 
     #[test]
     fn test_to_bits() {
-        assert_eq!(to_bits(vec![]), 0);
-        assert_eq!(to_bits(vec![vec![2]]), 2);
-        assert_eq!(to_bits(vec![vec![1, 2]]), 3);
+        assert_eq!(to_bits(&vec![]), 0);
 
-        let b = to_bits(vec![vec![1, 2], vec![6]]);
+        assert_eq!(to_bits(&vec![2u32]), 2);
+        assert_eq!(to_bits(&vec![1u32, 2u32]), 3);
+
+        let b = to_bits(&vec![3, 0b100_000]);
         assert_eq!(format!("{:b}", b), "100011");
     }
 
@@ -113,6 +130,23 @@ mod tests {
 
         let b = to_base4(13414);
         assert_eq!(b, 3101212);
+    }
+
+    #[test]
+    fn test_intersections() {
+        assert_eq!(interects(&vec![]), false);
+        assert_eq!(interects(&vec![0b010_101]), false);
+        assert_eq!(interects(&vec![0b000_001, 0b000_010]), false);
+        assert_eq!(interects(&vec![0b000_001, 0b000_011]), true);
+        assert_eq!(interects(&vec![0b000_001, 0b000_010, 0b000_100]), false);
+        assert_eq!(
+            interects(&vec![0b000_001, 0b000_010, 0b000_100, 0b001_000]),
+            false
+        );
+        assert_eq!(
+            interects(&vec![0b000_001, 0b000_010, 0b001_000, 0b001_000]),
+            true
+        );
     }
 
     #[test]
