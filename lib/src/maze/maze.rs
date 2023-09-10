@@ -3,7 +3,7 @@ use std::error::Error;
 use std::fs;
 
 use common::consts::{
-    ADJ_2, ADJ_3, ADJ_4, ADJ_5, ADJ_6, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6,
+    ADJ_1, ADJ_2, ADJ_3, ADJ_4, ADJ_5, ADJ_6, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6,
     NODE_TO_COORD,
 };
 
@@ -75,10 +75,10 @@ impl Maze {
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         // Seed some random tiles that don't touch each other or the boundaries
-        self.tiles[(0, 0)] = Tile::new(vec![NODE_1 | NODE_4 | ADJ_2 | ADJ_4], true);
+        self.tiles[(0, 0)] = Tile::new(vec![NODE_2 | NODE_4 | ADJ_1 | ADJ_4], true);
         self.tiles[(0, 1)] = Tile::new(vec![], true);
         // Inverted version ...
-        self.tiles[(1, 0)] = Tile::new(vec![NODE_1 | NODE_4 | ADJ_2 | ADJ_4], true);
+        self.tiles[(1, 0)] = Tile::new(vec![NODE_2 | NODE_4 | ADJ_1 | ADJ_4], true);
         //self.tiles[(1, 0)] = Tile::new(vec![], true);
         self.tiles[(1, 1)] = Tile::new(vec![], true);
 
