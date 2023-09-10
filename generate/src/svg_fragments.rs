@@ -251,7 +251,7 @@ fn a15_base(invert: bool) -> (String, String, Path) {
 }
 fn a15_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
-    let pts = pts.scale();
+    let pts = pts.str();
     return format!(
         "<path stroke=\\\"black\\\" fill=\\\"{FILL}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} M {c} A {r2} {r2} 0 0 {d2} {d}\\\" />",
         a = pts[0],
@@ -273,11 +273,74 @@ fn a14_45(invert: bool) -> String {
     return a15_str(invert, pts, r1, r2);
 }
 
-fn a14_34(invert: bool) -> String {
-    // TODO: ...
-    let (r1, r2, pts) = a15_base(invert);
-    let pts = pts.reflect();
-    return a15_str(invert, pts, r1, r2);
+fn a15_35(invert: bool) -> String {
+    let w = PATH_WIDTH;
+    let r1 = (0.25 + w);
+    let r2 = (0.25 - w);
+
+    let a = Point { x: 0.5 - w, y: S3 };
+    let b = Point {
+        x: 0.5 - w + r1 * (1.0 - S3),
+        y: S3 - r1 / 2.0,
+    };
+    let c = Point { x: 0.5 + w, y: S3 };
+    let d = Point {
+        x: 0.5 + w + r2 * (1.0 - S3),
+        y: S3 - r2 / 2.0,
+    };
+
+    let e = Point {
+        x: 1.0 - w - r2 * (1.0 - S3),
+        y: r2 / 2.0,
+    };
+    let f = Point {
+        x: 1.0 + w - r1 * (1.0 - S3),
+        y: r1 / 2.0,
+    };
+    let g = Point {
+        x: 1.0 - w,
+        y: 0f64,
+    };
+    let h = Point {
+        x: 1.0 + w,
+        y: 0f64,
+    };
+
+    let pts = Path::new(vec![a, b, c, d, e, f, g, h]);
+
+    println!("pts: {:?}", pts.clone().trim());
+
+    let pts = if invert {
+        pts.invert() + Point { x: 0f64, y: 0f64 }
+    } else {
+        pts
+    };
+    let r1 = trimf64(TILE_WIDTH * r1);
+    let r2 = trimf64(TILE_WIDTH * r2);
+
+    let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
+    let pts = pts.str();
+    return format!(
+        "<path  fill=\\\"{FILL}\\\" d=\\\"\
+           M {a} A {r1} {r1} 0 0 {d1} {b} \
+           L {e} A {r2} {r2} 0 0 {d2} {g} \
+           L {h} A {r1} {r1} 0 0 {d1} {f} \
+           L {d} A {r2} {r2} 0 0 {d2} {c}\\\"  />\
+        <path stroke=\\\"black\\\"  d=\\\"\
+           M {a} A {r1} {r1} 0 0 {d1} {b} \
+           L {e} A {r2} {r2} 0 0 {d2} {g} \
+           M {h} A {r1} {r1} 0 0 {d1} {f} \
+           L {d} A {r2} {r2} 0 0 {d2} {c}\\\"  />\
+           ",
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
+        e = pts[4],
+        f = pts[5],
+        g = pts[6],
+        h = pts[7],
+    );
 }
 
 fn a24_46(invert: bool) -> String {
@@ -405,7 +468,7 @@ pub fn generate_all_shapes() {
             (direction | NODE_2 | NODE_3, a23(invert)),
             (direction | NODE_1 | NODE_2, a12(invert)),
             (direction | NODE_1 | NODE_3, a13(invert)),
-            (direction | NODE_1 | NODE_4 | ADJ_3 | ADJ_4, a14_34(invert)),
+            (direction | NODE_1 | NODE_5 | ADJ_3 | ADJ_5, a15_35(invert)),
             (direction | NODE_1 | NODE_4 | ADJ_4 | ADJ_5, a14_45(invert)),
             (direction | NODE_1 | NODE_5 | ADJ_4 | ADJ_5, a15_45(invert)),
             (direction | NODE_2 | NODE_4 | ADJ_4 | ADJ_6, a24_46(invert)),
