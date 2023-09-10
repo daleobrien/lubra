@@ -3,7 +3,7 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-pub fn a15_35(invert: bool) -> String {
+fn pts(invert: bool) -> (Path, String, String) {
     let w = PATH_WIDTH;
     let r1 = 0.25 + w;
     let r2 = 0.25 - w;
@@ -46,8 +46,12 @@ pub fn a15_35(invert: bool) -> String {
     let r1 = trimf64(TILE_WIDTH * r1);
     let r2 = trimf64(TILE_WIDTH * r2);
 
-    let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
+    return (pts, r1, r2);
+}
+
+fn to_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
     let pts = pts.str();
+    let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     return format!(
         "<path  fill=\\\"{FILL}\\\" d=\\\"\
            M {a} A {r1} {r1} 0 0 {d1} {b} \
@@ -70,7 +74,13 @@ pub fn a15_35(invert: bool) -> String {
         h = pts[7],
     );
 }
+pub fn a15_35(invert: bool) -> String {
+    let (pts, r1, r2) = pts(invert);
+    return to_str(invert, pts, r1, r2);
+}
 
 pub fn a14_24(invert: bool) -> String {
-    return a15_35(invert);
+    let (pts, r1, r2) = pts(invert);
+    let pts = pts.reflect();
+    return to_str(!invert, pts, r1, r2);
 }
