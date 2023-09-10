@@ -1,4 +1,4 @@
-use crate::svg_fragments;
+use crate::frag_math;
 use common::consts::FILL;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, S4, TILE_WIDTH};
@@ -11,7 +11,7 @@ fn a123pts() -> (f64, Path) {
     let y = (0.5 + w + r) * S4;
     let a = Point { x: x, y: S3 };
     let b = Point { x: x, y: y };
-    let c = svg_fragments::polar(Point { x, y }, r, 4.0 * FRAC_PI_3);
+    let c = frag_math::polar(Point { x, y }, r, 4.0 * FRAC_PI_3);
     let d = w * Point { x: -0.5, y: S3 };
     return (r, Path::new(vec![a, b, c, d]));
 }
