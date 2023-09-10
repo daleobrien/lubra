@@ -98,3 +98,17 @@ pub fn a26_36(invert: bool) -> String {
         .rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7]);
     return to_str(!invert, pts, r1, r2);
 }
+
+pub fn a36_26(invert: bool) -> String {
+    let (pts, r1, r2) = pts(invert);
+    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7]);
+    return to_str(invert, pts, r1, r2);
+}
+
+pub fn a35_15(invert: bool) -> String {
+    let (pts, r1, r2) = pts(invert);
+    let pts = pts
+        .reflect()
+        .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7]);
+    return to_str(!invert, pts, r1, r2);
+}
