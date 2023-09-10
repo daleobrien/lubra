@@ -43,7 +43,7 @@ fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
   );
 }
 
-pub fn a4_to_5(invert: bool) -> String {
+pub fn a45(invert: bool) -> String {
     // With this and others, I don't need to draw a shape, just a really fat line!
     let (arc1, r1) = frag_math::ax(2, invert);
     let (arc2, r2) = frag_math::ax(3, invert);
@@ -51,14 +51,14 @@ pub fn a4_to_5(invert: bool) -> String {
     return a_x_to_y(pts, (r1, r2));
 }
 
-pub fn a4_to_6(invert: bool) -> String {
+pub fn a46(invert: bool) -> String {
     let (arc1, r1) = frag_math::ax(2, invert);
     let (arc2, r2) = frag_math::ax(3, invert);
     let pts = concat(vec![arc1, arc2]).rotate_ccw(invert, vec![0, 1, 2, 3]);
     return a_x_to_y(pts, (r1, r2));
 }
 
-pub fn a5_to_6(invert: bool) -> String {
+pub fn a56(invert: bool) -> String {
     let (arc1, r1) = frag_math::ax(2, invert);
     let (arc2, r2) = frag_math::ax(3, invert);
     let pts = concat(vec![arc1, arc2]).rotate_cw(invert, vec![0, 1, 2, 3]);

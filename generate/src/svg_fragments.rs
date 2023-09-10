@@ -2,8 +2,9 @@ use crate::frag_12::{a12, a13, a23};
 use crate::frag_123::a123;
 use crate::frag_15_long::{a14_24, a15_35, a24_14, a26_36, a35_15, a36_26};
 use crate::frag_15_tight::{a14_45, a15_45, a24_46, a26_46, a35_56, a36_56};
-use crate::frag_16::{l1_to_6, l2_to_5, l3_to_4};
+use crate::frag_16::{l16, l25, l34};
 use crate::frag_arcs;
+use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
 use crate::frag_wall::l_wall;
 use common::consts::{
     ADJ_1, ADJ_2, ADJ_3, ADJ_4, ADJ_5, ADJ_6, INVERT, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5,
@@ -20,15 +21,15 @@ pub fn generate_all_shapes() {
     for direction in [INVERT, NORMAL] {
         let invert = direction == INVERT;
         for (key, path) in [
-            (direction | NODE_1 | NODE_6, l1_to_6(invert)),
-            (direction | NODE_2 | NODE_5, l2_to_5(invert)),
-            (direction | NODE_3 | NODE_4, l3_to_4(invert)),
-            (direction | NODE_1, frag_arcs::a1(invert)),
-            (direction | NODE_2, frag_arcs::a2(invert)),
-            (direction | NODE_3, frag_arcs::a3(invert)),
-            (direction | NODE_4, frag_arcs::a4(invert)),
-            (direction | NODE_5, frag_arcs::a5(invert)),
-            (direction | NODE_6, frag_arcs::a6(invert)),
+            (direction | NODE_1 | NODE_6, l16(invert)),
+            (direction | NODE_2 | NODE_5, l25(invert)),
+            (direction | NODE_3 | NODE_4, l34(invert)),
+            (direction | NODE_1, a1(invert)),
+            (direction | NODE_2, a2(invert)),
+            (direction | NODE_3, a3(invert)),
+            (direction | NODE_4, a4(invert)),
+            (direction | NODE_5, a5(invert)),
+            (direction | NODE_6, a6(invert)),
             (direction | NODE_1 | NODE_2 | NODE_3, a123(invert)),
             (direction | NODE_2 | NODE_3, a23(invert)),
             (direction | NODE_1 | NODE_2, a12(invert)),
@@ -45,13 +46,10 @@ pub fn generate_all_shapes() {
             (direction | NODE_3 | NODE_5 | ADJ_5 | ADJ_6, a35_56(invert)),
             (direction | NODE_3 | NODE_6 | ADJ_2 | ADJ_6, a36_26(invert)),
             (direction | NODE_3 | NODE_6 | ADJ_5 | ADJ_6, a36_56(invert)),
-            (direction | NODE_4 | NODE_5, frag_arcs::a4_to_5(invert)),
-            (direction | NODE_4 | NODE_6, frag_arcs::a4_to_6(invert)),
-            (direction | NODE_5 | NODE_6, frag_arcs::a5_to_6(invert)),
-            (
-                direction | NODE_4 | NODE_5 | NODE_6,
-                frag_arcs::a456(invert),
-            ),
+            (direction | NODE_4 | NODE_5, a45(invert)),
+            (direction | NODE_4 | NODE_6, a46(invert)),
+            (direction | NODE_5 | NODE_6, a56(invert)),
+            (direction | NODE_4 | NODE_5 | NODE_6, a456(invert)),
             (direction | WALL, l_wall(invert)),
         ] {
             paths.insert(key.to_usize().unwrap_or_default(), path);

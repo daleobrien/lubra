@@ -26,16 +26,16 @@ fn l_a_to_b(path: Path) -> String {
     );
 }
 
-pub fn l1_to_6(invert: bool) -> String {
+pub fn l16(invert: bool) -> String {
     return l_a_to_b(TILE_WIDTH * generate_lx(invert));
 }
 
-pub fn l2_to_5(invert: bool) -> String {
+pub fn l25(invert: bool) -> String {
     let pts = TILE_WIDTH * generate_lx(invert).rotate_ccw(invert, vec![0, 4]);
     return l_a_to_b(pts);
 }
 
-pub fn l3_to_4(invert: bool) -> String {
+pub fn l34(invert: bool) -> String {
     let pts = TILE_WIDTH * generate_lx(invert).rotate_cw(invert, vec![0, 4]);
     return l_a_to_b(pts);
 }
