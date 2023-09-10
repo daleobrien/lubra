@@ -13,6 +13,13 @@ pub const INVERT: u32 = 0b01_000_000;
 pub const NORMAL: u32 = 0b00_000_000;
 pub const WALL: u32 = 0b10_000_000;
 
+pub const ADJ_1: u32 = 0b00_000_001_00_000_000;
+pub const ADJ_2: u32 = 0b00_000_010_00_000_000;
+pub const ADJ_3: u32 = 0b00_000_100_00_000_000;
+pub const ADJ_4: u32 = 0b00_001_000_00_000_000;
+pub const ADJ_5: u32 = 0b00_010_000_00_000_000;
+pub const ADJ_6: u32 = 0b00_100_000_00_000_000;
+
 // For a tile in the very first position, (0,0), the coordinates are:
 const K0: [(i32, i32); 12] = [
     (0, -1),

@@ -1,4 +1,7 @@
-use common::consts::{INVERT, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6, NORMAL, WALL};
+use common::consts::{
+    ADJ_3, ADJ_4, ADJ_5, ADJ_6, INVERT, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6, NORMAL,
+    WALL,
+};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, S4, TILE_WIDTH};
@@ -258,36 +261,42 @@ fn a15_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
     );
 }
 
-fn a15(invert: bool) -> String {
+fn a15_45(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
 
     return a15_str(invert, pts, r1, r2);
 }
 
-fn a14(invert: bool) -> String {
+fn a14_45(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.reflect();
     return a15_str(invert, pts, r1, r2);
 }
 
-fn a24(invert: bool) -> String {
+fn a14_34(invert: bool) -> String {
+    let (r1, r2, pts) = a15_base(invert);
+    let pts = pts.reflect();
+    return a15_str(invert, pts, r1, r2);
+}
+
+fn a24_46(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
     return a15_str(invert, pts, r1, r2);
 }
-fn a26(invert: bool) -> String {
+fn a26_46(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3]);
     return a15_str(!invert, pts, r1, r2);
 }
 
-fn a36(invert: bool) -> String {
+fn a36_56(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
     return a15_str(invert, pts, r1, r2);
 }
 
-fn a35(invert: bool) -> String {
+fn a35_56(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
     return a15_str(!invert, pts, r1, r2);
@@ -395,12 +404,13 @@ pub fn generate_all_shapes() {
             (direction | NODE_2 | NODE_3, a23(invert)),
             (direction | NODE_1 | NODE_2, a12(invert)),
             (direction | NODE_1 | NODE_3, a13(invert)),
-            (direction | NODE_1 | NODE_4, a14(invert)),
-            (direction | NODE_1 | NODE_5, a15(invert)),
-            (direction | NODE_2 | NODE_4, a24(invert)),
-            (direction | NODE_2 | NODE_6, a26(invert)),
-            (direction | NODE_3 | NODE_5, a35(invert)),
-            (direction | NODE_3 | NODE_6, a36(invert)),
+            (direction | NODE_1 | NODE_4 | ADJ_3 | ADJ_4, a14_34(invert)),
+            (direction | NODE_1 | NODE_4 | ADJ_4 | ADJ_5, a14_45(invert)),
+            (direction | NODE_1 | NODE_5 | ADJ_4 | ADJ_5, a15_45(invert)),
+            (direction | NODE_2 | NODE_4 | ADJ_4 | ADJ_6, a24_46(invert)),
+            (direction | NODE_2 | NODE_6 | ADJ_4 | ADJ_6, a26_46(invert)),
+            (direction | NODE_3 | NODE_5 | ADJ_5 | ADJ_6, a35_56(invert)),
+            (direction | NODE_3 | NODE_6 | ADJ_5 | ADJ_6, a36_56(invert)),
             (direction | NODE_4 | NODE_5, a4_to_5(invert)),
             (direction | NODE_4 | NODE_6, a4_to_6(invert)),
             (direction | NODE_5 | NODE_6, a5_to_6(invert)),
@@ -422,26 +432,4 @@ pub fn generate_all_shapes() {
     let _ = file.write(b"};\n\n");
 
     let _ = file.flush();
-}
-
-#[cfg(test)]
-mod tests {
-    use approx::assert_ulps_eq;
-    use common::types::point::{Point, TILE_WIDTH};
-    use std::vec;
-
-    extern crate approx;
-
-    // #[test]
-    // fn test_rotate() {
-    //     use super::*;
-    //     let p = TILE_WIDTH * Point { x: 1f64, y: 0f64 };
-    //     let r = p.rotate_cw(false, 0, vec![0]);
-    //     assert_ulps_eq!(r.x, TILE_WIDTH * 0.5f64);
-    //     assert_ulps_eq!(r.y, TILE_WIDTH * S3);
-    //
-    //     let q = r.rotate_ccw(false, 0, vec![0]);
-    //     assert_ulps_eq!(q.x, TILE_WIDTH * 1f64);
-    //     assert_ulps_eq!(q.y, TILE_WIDTH * 0f64, epsilon = 0.0000000000001f64);
-    // }
 }

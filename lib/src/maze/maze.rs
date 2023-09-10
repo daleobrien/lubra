@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
-use common::consts::{NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6, NODE_TO_COORD};
+use common::consts::{ADJ_3, ADJ_4, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6, NODE_TO_COORD};
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
@@ -72,10 +72,10 @@ impl Maze {
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         // Seed some random tiles that don't touch each other or the boundaries
-        self.tiles[(0, 0)] = Tile::new(vec![NODE_3 | NODE_6], true);
+        self.tiles[(0, 0)] = Tile::new(vec![NODE_1 | NODE_4 | ADJ_3 | ADJ_4], true);
         self.tiles[(0, 1)] = Tile::new(vec![], true);
         // Inverted version ...
-        self.tiles[(1, 0)] = Tile::new(vec![NODE_3 | NODE_6], true);
+        self.tiles[(1, 0)] = Tile::new(vec![NODE_1 | NODE_4 | ADJ_3 | ADJ_4], true);
         self.tiles[(1, 1)] = Tile::new(vec![], true);
 
         if number_of_rows > 1 && number_of_columns > 2 {
