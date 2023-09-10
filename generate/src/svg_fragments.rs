@@ -3,7 +3,6 @@ use crate::frag_123::a123;
 use crate::frag_15_long::{a14_24, a15_35, a24_14, a26_36, a35_15, a36_26};
 use crate::frag_15_tight::{a14_45, a15_45, a24_46, a26_46, a35_56, a36_56};
 use crate::frag_16::{l16, l25, l34};
-use crate::frag_arcs;
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
 use crate::frag_wall::l_wall;
 use common::consts::{
