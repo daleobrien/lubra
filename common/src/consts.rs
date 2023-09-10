@@ -20,6 +20,8 @@ pub const ADJ_4: u32 = 0b00_001_000_00_000_000;
 pub const ADJ_5: u32 = 0b00_010_000_00_000_000;
 pub const ADJ_6: u32 = 0b00_100_000_00_000_000;
 
+pub const FILL: &str = "white";
+
 // For a tile in the very first position, (0,0), the coordinates are:
 const K0: [(i32, i32); 12] = [
     (0, -1),

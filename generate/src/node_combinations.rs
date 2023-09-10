@@ -33,7 +33,7 @@ impl Iterator for NodeCombinations {
         let item = self.list.pop();
         match item {
             Some(value) => {
-                return self.next();
+                return Some(value);
             }
             None => return None,
         }

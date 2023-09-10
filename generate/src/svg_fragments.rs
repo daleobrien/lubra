@@ -1,29 +1,21 @@
+use crate::frag_12::{a12, a13, a23};
+use crate::frag_123::a123;
+use crate::frag_15_long::{a14_24, a15_35};
+use crate::frag_15_tight::{a14_45, a15_45, a24_46, a26_46, a35_56, a36_56};
+use crate::frag_16::{l1_to_6, l2_to_5, l3_to_4};
 use common::consts::{
-    ADJ_3, ADJ_4, ADJ_5, ADJ_6, INVERT, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6, NORMAL,
-    WALL,
+    ADJ_2, ADJ_3, ADJ_4, ADJ_5, ADJ_6, FILL, INVERT, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5,
+    NODE_6, NORMAL, WALL,
 };
 use common::types::format::trimf64;
 use common::types::path::Path;
-use common::types::point::{Point, PATH_WIDTH, S3, S4, TILE_WIDTH};
+use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 use itertools::concat;
 use num_traits::ToPrimitive;
 use std::collections::BTreeMap;
 use std::f64::consts::FRAC_PI_3;
 use std::fs::File;
 use std::io::Write;
-
-const FILL: &str = "white";
-
-fn generate_lx(invert: bool) -> Path {
-    let w = Point {
-        x: PATH_WIDTH,
-        y: 0f64,
-    };
-    let a = Point { x: 0.5, y: S3 };
-    let b = Point { x: 0.5, y: 0.0 };
-
-    return Path::new(vec![a - w, b - w, b + w, a + w]).diff(invert);
-}
 
 fn triangle() -> Path {
     let a = Point { x: 0.0, y: 0.0 };
@@ -46,33 +38,6 @@ fn l_wall(invert: bool) -> String {
         b = s[1],
         c = s[2],
     );
-}
-
-fn l_a_to_b(path: Path) -> String {
-    let s = path.trim();
-    // TODO: Replace so that we fill and stroke at the same time, like I do for A15
-    return format!(
-        "<path fill=\\\"{FILL}\\\" d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
-         <path stroke=\\\"black\\\" d=\\\"M{a}l{b}m{c}l{d}z\\\"/>",
-        a = s[0],
-        b = s[1],
-        c = s[2],
-        d = s[3]
-    );
-}
-
-fn l1_to_6(invert: bool) -> String {
-    return l_a_to_b(TILE_WIDTH * generate_lx(invert));
-}
-
-fn l2_to_5(invert: bool) -> String {
-    let pts = TILE_WIDTH * generate_lx(invert).rotate_ccw(invert, vec![0, 4]);
-    return l_a_to_b(pts);
-}
-
-fn l3_to_4(invert: bool) -> String {
-    let pts = TILE_WIDTH * generate_lx(invert).rotate_cw(invert, vec![0, 4]);
-    return l_a_to_b(pts);
 }
 
 pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
@@ -112,97 +77,6 @@ fn ax(index: usize, invert: bool) -> (Path, String) {
     return (Path::new(vec![a, b]), r);
 }
 
-fn a123pts() -> (f64, Path) {
-    let r = PATH_WIDTH * 2.0;
-    let w = PATH_WIDTH;
-    let x = 0.5 - w;
-    let y = (0.5 + w + r) * S4;
-    let a = Point { x: x, y: S3 };
-    let b = Point { x: x, y: y };
-    let c = polar(Point { x, y }, r, 4.0 * FRAC_PI_3);
-    let d = w * Point { x: -0.5, y: S3 };
-    return (r, Path::new(vec![a, b, c, d]));
-}
-
-fn a123(invert: bool) -> String {
-    let (r, pts) = a123pts();
-    let pts = if invert { pts.invert() } else { pts };
-
-    let dir = if invert { 1 } else { 0 };
-
-    let pts1 = pts.clone().rotate_ccw(invert, vec![0, 1, 2, 3]).str();
-    let pts2 = pts.clone().rotate_cw(invert, vec![0, 1, 2, 3]).str();
-    let pts3 = pts.clone().str();
-
-    return format!(
-        "<path fill=\\\"{FILL}\\\" d=\\\"\
-          M {a1} L {b1} A {r} {r} 0 0 {dir} {c1} L {d1} \
-          L {a2} L {b2} A {r} {r} 0 0 {dir} {c2} L {d2} \
-          L {a3} L {b3} A {r} {r} 0 0 {dir} {c3} L {d3} z\\\"/>\
-        <path stroke=\\\"black\\\" d=\\\"\
-          M {a1} L {b1} A {r} {r} 0 0 {dir} {c1} L {d1} \
-          M {a2} L {b2} A {r} {r} 0 0 {dir} {c2} L {d2} \
-          M {a3} L {b3} A {r} {r} 0 0 {dir} {c3} L {d3}\\\"/>",
-        a1 = pts1[0],
-        b1 = pts1[1],
-        c1 = pts1[2],
-        d1 = pts1[3],
-        a2 = pts2[0],
-        b2 = pts2[1],
-        c2 = pts2[2],
-        d2 = pts2[3],
-        a3 = pts3[0],
-        b3 = pts3[1],
-        c3 = pts3[2],
-        d3 = pts3[3],
-        r = TILE_WIDTH * r,
-    );
-}
-
-fn a23pts(invert: bool) -> (String, String, Path) {
-    let w = PATH_WIDTH;
-    let a = w * Point { x: -0.5, y: S3 };
-    let b = w * Point { x: 0.5, y: S3 } + Point { x: 1.0, y: 0.0 };
-    let c = w * Point { x: -0.5, y: -S3 } + Point { x: 1.0, y: 0.0 };
-    let d = w * Point { x: 0.5, y: -S3 };
-
-    let r1 = trimf64(TILE_WIDTH * (1.0 + PATH_WIDTH));
-    let r2 = trimf64(TILE_WIDTH * (1.0 - PATH_WIDTH));
-    let pts = Path::new(vec![a, b, c, d]);
-    let pts = if invert { pts.invert() } else { pts };
-    return (r1, r2, pts);
-}
-
-fn axy_to_str(invert: bool, r1: String, r2: String, pts: Path) -> String {
-    let pts = pts.str();
-    let dir1 = if invert { 1 } else { 0 };
-    let dir2 = if invert { 0 } else { 1 };
-    return format!(
-        "<path fill=\\\"{FILL}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {dir1} {b} L {c} A {r2} {r2} 0 0 {dir2} {d} z \\\" /> \
-         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 {dir1} {b} M {c} A {r2} {r2} 0 0 {dir2} {d} \\\" />",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-    );
-}
-fn a23(invert: bool) -> String {
-    let (r1, r2, pts) = a23pts(invert);
-    return axy_to_str(invert, r1, r2, pts);
-}
-
-fn a13(invert: bool) -> String {
-    let (r1, r2, pts) = a23pts(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
-    return axy_to_str(invert, r1, r2, pts);
-}
-
-fn a12(invert: bool) -> String {
-    let (r1, r2, pts) = a23pts(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
-    return axy_to_str(invert, r1, r2, pts);
-}
-
 fn a1(invert: bool) -> String {
     return a1_or_6(1, invert);
 }
@@ -227,157 +101,19 @@ fn a6(invert: bool) -> String {
     return a1_or_6(6, invert);
 }
 
-fn a15_base(invert: bool) -> (String, String, Path) {
-    let w = PATH_WIDTH;
-    let r1 = trimf64(TILE_WIDTH * (0.25 + w));
-    let r2 = trimf64(TILE_WIDTH * (0.25 - w));
-    let x1 = 0.5 - w;
-    let x2 = 1.0 + w;
-    let x3 = 1.0 - w;
-    let x4 = 0.5 + w;
-    let y = S3;
-    let a = Point { x: x1, y };
-    let b = Point { x: x2, y };
-    let c = Point { x: x3, y };
-    let d = Point { x: x4, y };
-
-    let pts = Path::new(vec![a, b, c, d]);
-    let pts = if invert {
-        pts.invert() + Point { x: 0f64, y: 0f64 }
-    } else {
-        pts
-    };
-    return (r1, r2, pts);
-}
-fn a15_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
-    let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
-    let pts = pts.str();
-    return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"{FILL}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} M {c} A {r2} {r2} 0 0 {d2} {d}\\\" />",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-    );
-}
-
-fn a15_45(invert: bool) -> String {
-    let (r1, r2, pts) = a15_base(invert);
-
-    return a15_str(invert, pts, r1, r2);
-}
-
-fn a14_45(invert: bool) -> String {
-    let (r1, r2, pts) = a15_base(invert);
-    let pts = pts.reflect();
-    return a15_str(invert, pts, r1, r2);
-}
-
-fn a15_35(invert: bool) -> String {
-    let w = PATH_WIDTH;
-    let r1 = (0.25 + w);
-    let r2 = (0.25 - w);
-
-    let a = Point { x: 0.5 - w, y: S3 };
-    let b = Point {
-        x: 0.5 - w + r1 * (1.0 - S3),
-        y: S3 - r1 / 2.0,
-    };
-    let c = Point { x: 0.5 + w, y: S3 };
-    let d = Point {
-        x: 0.5 + w + r2 * (1.0 - S3),
-        y: S3 - r2 / 2.0,
-    };
-
-    let e = Point {
-        x: 1.0 - w - r2 * (1.0 - S3),
-        y: r2 / 2.0,
-    };
-    let f = Point {
-        x: 1.0 + w - r1 * (1.0 - S3),
-        y: r1 / 2.0,
-    };
-    let g = Point {
-        x: 1.0 - w,
-        y: 0f64,
-    };
-    let h = Point {
-        x: 1.0 + w,
-        y: 0f64,
-    };
-
-    let pts = Path::new(vec![a, b, c, d, e, f, g, h]);
-
-    println!("pts: {:?}", pts.clone().trim());
-
-    let pts = if invert {
-        pts.invert() + Point { x: 0f64, y: 0f64 }
-    } else {
-        pts
-    };
-    let r1 = trimf64(TILE_WIDTH * r1);
-    let r2 = trimf64(TILE_WIDTH * r2);
-
-    let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
-    let pts = pts.str();
-    return format!(
-        "<path  fill=\\\"{FILL}\\\" d=\\\"\
-           M {a} A {r1} {r1} 0 0 {d1} {b} \
-           L {e} A {r2} {r2} 0 0 {d2} {g} \
-           L {h} A {r1} {r1} 0 0 {d1} {f} \
-           L {d} A {r2} {r2} 0 0 {d2} {c}\\\"  />\
-        <path stroke=\\\"black\\\"  d=\\\"\
-           M {a} A {r1} {r1} 0 0 {d1} {b} \
-           L {e} A {r2} {r2} 0 0 {d2} {g} \
-           M {h} A {r1} {r1} 0 0 {d1} {f} \
-           L {d} A {r2} {r2} 0 0 {d2} {c}\\\"  />\
-           ",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-        e = pts[4],
-        f = pts[5],
-        g = pts[6],
-        h = pts[7],
-    );
-}
-
-fn a24_46(invert: bool) -> String {
-    let (r1, r2, pts) = a15_base(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
-    return a15_str(invert, pts, r1, r2);
-}
-fn a26_46(invert: bool) -> String {
-    let (r1, r2, pts) = a15_base(invert);
-    let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3]);
-    return a15_str(!invert, pts, r1, r2);
-}
-
-fn a36_56(invert: bool) -> String {
-    let (r1, r2, pts) = a15_base(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
-    return a15_str(invert, pts, r1, r2);
-}
-
-fn a35_56(invert: bool) -> String {
-    let (r1, r2, pts) = a15_base(invert);
-    let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
-    return a15_str(!invert, pts, r1, r2);
-}
-
 fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
     let pts: Vec<String> = pts.str();
 
     return format!(
-    "<path fill=\\\"{FILL}\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
+    "<path fill=\\\"{fill}\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
          <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d} \\\" />",
     a = pts[0],
     b = pts[1],
     c = pts[2],
     d = pts[3],
     r1 = radii.0,
-    r2 = radii.1
+    r2 = radii.1,
+    fill=FILL
   );
 }
 
@@ -469,6 +205,7 @@ pub fn generate_all_shapes() {
             (direction | NODE_1 | NODE_2, a12(invert)),
             (direction | NODE_1 | NODE_3, a13(invert)),
             (direction | NODE_1 | NODE_5 | ADJ_3 | ADJ_5, a15_35(invert)),
+            (direction | NODE_1 | NODE_4 | ADJ_2 | ADJ_4, a14_24(invert)),
             (direction | NODE_1 | NODE_4 | ADJ_4 | ADJ_5, a14_45(invert)),
             (direction | NODE_1 | NODE_5 | ADJ_4 | ADJ_5, a15_45(invert)),
             (direction | NODE_2 | NODE_4 | ADJ_4 | ADJ_6, a24_46(invert)),

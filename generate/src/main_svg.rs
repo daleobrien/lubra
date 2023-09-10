@@ -1,8 +1,12 @@
 mod bit_utils;
+mod frag_12;
+mod frag_123;
+mod frag_15_long;
+mod frag_15_tight;
+mod frag_16;
 mod lookups;
 mod node_combinations;
 mod svg_fragments;
-mod writer;
 
 use crate::svg_fragments::generate_all_shapes;
 

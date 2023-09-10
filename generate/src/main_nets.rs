@@ -1,7 +1,6 @@
 mod bit_utils;
 mod lookups;
 mod node_combinations;
-mod svg_fragments;
 mod writer;
 
 use crate::node_combinations::NodeCombinations;

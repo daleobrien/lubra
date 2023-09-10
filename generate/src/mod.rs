@@ -1,4 +1,9 @@
 pub mod bit_utils;
+pub mod frag_12;
+pub mod frag_123;
+pub mod frag_15_long;
+pub mod frag_15_tight;
+pub mod frag_16;
 pub mod node_combinations;
 pub mod svg_fragments;
 pub mod writer;
