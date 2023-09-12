@@ -46,21 +46,20 @@ pub fn a15_56(invert: bool) -> String {
 
     let pts = pts.str();
 
-    let dir1 = 1;
-    let dir2 = 0;
+    let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
 
     return format!(
         "<path fill=\\\"{fill}\\\" d=\\\"\
-           M {a} A {r1_l} {r1_l} 0 0 {dir1} {b} \
-                 A {r2_l} {r2_l} 0 0 {dir2} {c} \
-           L {d} A {r2_s} {r2_s} 0 0 {dir1} {e} \
-                 A {r1_s} {r1_s} 0 0 {dir2} {f} \
+           M {a} A {r1_l} {r1_l} 0 0 {d1} {b} \
+                 A {r2_l} {r2_l} 0 0 {d2} {c} \
+           L {d} A {r2_s} {r2_s} 0 0 {d1} {e} \
+                 A {r1_s} {r1_s} 0 0 {d2} {f} \
           \\\" />\
           <path stroke=\\\"black\\\" d=\\\"\
-           M {a} A {r1_l} {r1_l} 0 0 {dir1} {b} \
-                 A {r2_l} {r2_l} 0 0 {dir2} {c} \
-           M {d} A {r2_s} {r2_s} 0 0 {dir1} {e} \
-                 A {r1_s} {r1_s} 0 0 {dir2} {f} \
+           M {a} A {r1_l} {r1_l} 0 0 {d1} {b} \
+                 A {r2_l} {r2_l} 0 0 {d2} {c} \
+           M {d} A {r2_s} {r2_s} 0 0 {d1} {e} \
+                 A {r1_s} {r1_s} 0 0 {d2} {f} \
           \\\" />",
         a = pts[0],
         b = pts[1],
