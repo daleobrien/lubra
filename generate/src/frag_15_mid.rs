@@ -12,8 +12,8 @@ pub fn a15_56(invert: bool) -> String {
     let r1_small = r1 - w;
     let r1_large = r1 + w;
 
-    let r2_small = r2 + w;
-    let r2_large = r2 - w;
+    let r2_small = r2 - w;
+    let r2_large = r2 + w;
 
     let a = Point {
         x: 0.5f64 - w,
@@ -51,14 +51,14 @@ pub fn a15_56(invert: bool) -> String {
     return format!(
         "<path fill=\\\"{fill}\\\" d=\\\"\
            M {a} A {r1_l} {r1_l} 0 0 {d1} {b} \
-                 A {r2_l} {r2_l} 0 0 {d2} {c} \
-           L {d} A {r2_s} {r2_s} 0 0 {d1} {e} \
+                 A {r2_s} {r2_s} 0 0 {d2} {c} \
+           L {d} A {r2_l} {r2_l} 0 0 {d1} {e} \
                  A {r1_s} {r1_s} 0 0 {d2} {f} \
           \\\" />\
           <path stroke=\\\"black\\\" d=\\\"\
            M {a} A {r1_l} {r1_l} 0 0 {d1} {b} \
-                 A {r2_l} {r2_l} 0 0 {d2} {c} \
-           M {d} A {r2_s} {r2_s} 0 0 {d1} {e} \
+                 A {r2_s} {r2_s} 0 0 {d2} {c} \
+           M {d} A {r2_l} {r2_l} 0 0 {d1} {e} \
                  A {r1_s} {r1_s} 0 0 {d2} {f} \
           \\\" />",
         a = pts[0],
