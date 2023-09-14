@@ -4,6 +4,29 @@ use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
 pub fn a15_56(invert: bool) -> String {
+    let (r1_small, r1_large, r2_small, r2_large, pts) = fn_pts(invert);
+    return fn_str(invert, r1_small, r1_large, r2_small, r2_large, pts.str());
+}
+
+pub fn a24_45(invert: bool) -> String {
+    let (r1_small, r1_large, r2_small, r2_large, pts) = fn_pts(invert);
+    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
+    return fn_str(invert, r1_small, r1_large, r2_small, r2_large, pts.str());
+}
+
+pub fn a14_46(invert: bool) -> String {
+    let (r1_small, r1_large, r2_small, r2_large, pts) = fn_pts(invert);
+    let pts = pts.reflect();
+    return fn_str(invert, r1_small, r1_large, r2_small, r2_large, pts.str());
+}
+
+pub fn a26_56(invert: bool) -> String {
+    let (r1_small, r1_large, r2_small, r2_large, pts) = fn_pts(invert);
+    let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
+    return fn_str(invert, r1_small, r1_large, r2_small, r2_large, pts.str());
+}
+
+fn fn_pts(invert: bool) -> (f64, f64, f64, f64, Path) {
     let w = PATH_WIDTH;
 
     let r1 = 0.3169872981077806766181384146235319082643f64; // 1/4 (3 - Sqrt(3)
@@ -43,9 +66,17 @@ pub fn a15_56(invert: bool) -> String {
 
     let pts = Path::new(vec![a, b, c, d, e, f]);
     let pts = if invert { pts.invert() } else { pts };
+    return (r1_small, r1_large, r2_small, r2_large, pts);
+}
 
-    let pts = pts.str();
-
+fn fn_str(
+    invert: bool,
+    r1_small: f64,
+    r1_large: f64,
+    r2_small: f64,
+    r2_large: f64,
+    pts: Vec<String>,
+) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
 
     return format!(

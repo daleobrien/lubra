@@ -79,8 +79,8 @@ impl Maze {
         self.tiles[(0, 1)] = Tile::new(vec![], true);
         self.tiles[(0, 2)] = Tile::new(vec![], true);
         // Inverted version ...
-        self.tiles[(1, 0)] = Tile::new(vec![NODE_1 | NODE_5 | ADJ_5 | ADJ_6], true);
-        //self.tiles[(1, 0)] = Tile::new(vec![], true);
+        //self.tiles[(1, 0)] = Tile::new(vec![NODE_2 | NODE_6 | ADJ_5 | ADJ_6], true);
+        self.tiles[(1, 0)] = Tile::new(vec![], true);
         self.tiles[(1, 1)] = Tile::new(vec![], true);
         self.tiles[(1, 2)] = Tile::new(vec![], true);
 

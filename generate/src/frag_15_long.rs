@@ -37,12 +37,7 @@ fn pts(invert: bool) -> (Path, String, String) {
     };
 
     let pts = Path::new(vec![a, b, c, d, e, f, g, h]);
-
-    let pts = if invert {
-        pts.invert() + Point { x: 0f64, y: 0f64 }
-    } else {
-        pts
-    };
+    let pts = if invert { pts.invert() } else { pts };
     let r1 = trimf64(TILE_WIDTH * r1);
     let r2 = trimf64(TILE_WIDTH * r2);
 

@@ -18,11 +18,7 @@ fn a15_base(invert: bool) -> (String, String, Path) {
     let d = Point { x: x4, y };
 
     let pts = Path::new(vec![a, b, c, d]);
-    let pts = if invert {
-        pts.invert() + Point { x: 0f64, y: 0f64 }
-    } else {
-        pts
-    };
+    let pts = if invert { pts.invert() } else { pts };
     return (r1, r2, pts);
 }
 
@@ -30,11 +26,12 @@ pub fn a15_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"{FILL}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} M {c} A {r2} {r2} 0 0 {d2} {d}\\\" />",
+        "<path stroke=\\\"black\\\" fill=\\\"{fill}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} M {c} A {r2} {r2} 0 0 {d2} {d}\\\" />",
         a = pts[0],
         b = pts[1],
         c = pts[2],
         d = pts[3],
+        fill=FILL,
     );
 }
 
