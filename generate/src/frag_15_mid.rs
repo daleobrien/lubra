@@ -23,7 +23,7 @@ pub fn a14_46(invert: bool) -> String {
 pub fn a26_56(invert: bool) -> String {
     let (r1_small, r1_large, r2_small, r2_large, pts) = fn_pts(invert);
     let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return fn_str(invert, r1_small, r1_large, r2_small, r2_large, pts.str());
+    return fn_str(!invert, r1_small, r1_large, r2_small, r2_large, pts.str());
 }
 
 fn fn_pts(invert: bool) -> (f64, f64, f64, f64, Path) {
