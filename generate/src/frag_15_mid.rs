@@ -14,6 +14,12 @@ pub fn a24_45(invert: bool) -> String {
     return fn_str(invert, r1_small, r1_large, r2_small, r2_large, pts.str());
 }
 
+pub fn a36_46(invert: bool) -> String {
+    let (r1_small, r1_large, r2_small, r2_large, pts) = fn_pts(invert);
+    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
+    return fn_str(invert, r1_small, r1_large, r2_small, r2_large, pts.str());
+}
+
 pub fn a14_46(invert: bool) -> String {
     let (r1_small, r1_large, r2_small, r2_large, pts) = fn_pts(invert);
     let pts = pts.reflect();
