@@ -2,7 +2,7 @@ use crate::frag_12::{a12, a13, a23};
 use crate::frag_123::a123;
 use crate::frag_15_long::{a14_24, a15_35, a24_14, a26_36, a35_15, a36_26};
 use crate::frag_15_mid::{a14_46, a15_56, a24_45, a26_56, a36_45, a36_46};
-use crate::frag_15_straight::{a14_34, a15_25, a24_34, a26_16, a36_16};
+use crate::frag_15_straight::{a14_34, a15_25, a24_34, a26_16, a35_25, a36_16};
 use crate::frag_15_tight::{a14_45, a15_45, a24_46, a26_46, a35_56, a36_56};
 use crate::frag_16::{l16, l25, l34};
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
@@ -52,6 +52,7 @@ pub fn generate_all_shapes() {
             (direction | NODE_2 | NODE_6 | ADJ_4 | ADJ_6, a26_46(invert)),
             (direction | NODE_2 | NODE_6 | ADJ_5 | ADJ_6, a26_56(invert)),
             (direction | NODE_3 | NODE_5 | ADJ_1 | ADJ_5, a35_15(invert)),
+            (direction | NODE_3 | NODE_5 | ADJ_2 | ADJ_5, a35_25(invert)),
             (direction | NODE_3 | NODE_5 | ADJ_5 | ADJ_6, a35_56(invert)),
             (direction | NODE_3 | NODE_6 | ADJ_1 | ADJ_6, a36_16(invert)),
             (direction | NODE_3 | NODE_6 | ADJ_2 | ADJ_6, a36_26(invert)),
