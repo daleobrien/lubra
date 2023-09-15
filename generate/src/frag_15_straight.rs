@@ -45,8 +45,13 @@ fn fn_pts(invert: bool) -> (f64, f64, Path) {
 
 pub fn a15_25(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
-
     return fn_str(invert, r1, r2, pts);
+}
+
+pub fn a14_34(invert: bool) -> String {
+    let (r1, r2, pts) = fn_pts(invert);
+    let pts = pts.reflect();
+    return fn_str(!invert, r1, r2, pts);
 }
 
 fn fn_str(invert: bool, r1: f64, r2: f64, pts: Path) -> String {

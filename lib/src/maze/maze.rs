@@ -74,7 +74,7 @@ impl Maze {
     }
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
-        let test = NODE_1 | NODE_5 | ADJ_2 | ADJ_5;
+        let test = NODE_1 | NODE_4 | ADJ_3 | ADJ_4;
         // Seed some random tiles that don't touch each other or the boundaries
         self.tiles[(0, 0)] = Tile::new(vec![test], true);
         self.tiles[(0, 1)] = Tile::new(vec![], true);
