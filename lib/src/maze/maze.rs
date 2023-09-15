@@ -74,14 +74,14 @@ impl Maze {
     }
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
-        let test = NODE_3 | NODE_6 | ADJ_4 | ADJ_5;
+        let test = NODE_1 | NODE_5 | ADJ_2 | ADJ_5;
         // Seed some random tiles that don't touch each other or the boundaries
         self.tiles[(0, 0)] = Tile::new(vec![test], true);
         self.tiles[(0, 1)] = Tile::new(vec![], true);
         self.tiles[(0, 2)] = Tile::new(vec![], true);
         // Inverted version ...
         self.tiles[(1, 0)] = Tile::new(vec![test], true);
-        // self.tiles[(1, 0)] = Tile::new(vec![], true);
+        //self.tiles[(1, 0)] = Tile::new(vec![], true);
         self.tiles[(1, 1)] = Tile::new(vec![], true);
         self.tiles[(1, 2)] = Tile::new(vec![], true);
 
