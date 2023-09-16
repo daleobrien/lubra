@@ -1,3 +1,4 @@
+pub mod adjacent;
 pub mod mass_large;
 pub mod mass_small;
 pub mod maze;

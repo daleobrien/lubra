@@ -40,6 +40,10 @@ pub fn generate_all_shapes() {
             (direction | NODE_2 | NODE_3, a23(invert)),
             (direction | NODE_1 | NODE_2, a12(invert)),
             (direction | NODE_1 | NODE_3, a13(invert)),
+            (direction | NODE_4 | NODE_5, a45(invert)),
+            (direction | NODE_4 | NODE_6, a46(invert)),
+            (direction | NODE_5 | NODE_6, a56(invert)),
+            (direction | NODE_4 | NODE_5 | NODE_6, a456(invert)),
             (direction | NODE_1 | NODE_4 | ADJ_2 | ADJ_4, a14_24(invert)),
             (direction | NODE_1 | NODE_4 | ADJ_3 | ADJ_4, a14_34(invert)),
             (direction | NODE_1 | NODE_4 | ADJ_4 | ADJ_5, a14_45(invert)),
@@ -64,10 +68,6 @@ pub fn generate_all_shapes() {
             (direction | NODE_3 | NODE_6 | ADJ_4 | ADJ_5, a36_45(invert)),
             (direction | NODE_3 | NODE_6 | ADJ_4 | ADJ_6, a36_46(invert)),
             (direction | NODE_3 | NODE_6 | ADJ_5 | ADJ_6, a36_56(invert)),
-            (direction | NODE_4 | NODE_5, a45(invert)),
-            (direction | NODE_4 | NODE_6, a46(invert)),
-            (direction | NODE_5 | NODE_6, a56(invert)),
-            (direction | NODE_4 | NODE_5 | NODE_6, a456(invert)),
             (direction | WALL, l_wall(invert)),
         ] {
             paths.insert(key.to_usize().unwrap_or_default(), path);
@@ -88,6 +88,5 @@ pub fn generate_all_shapes() {
         );
     }
     let _ = file.write(b"};\n\n");
-
     let _ = file.flush();
 }

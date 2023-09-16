@@ -10,6 +10,7 @@ use common::consts::{
 use crate::maze::random::random_tile;
 use array2d::Array2D;
 
+use crate::maze::adjacent::get_surrounding_tile_connections;
 use crate::maze::tile::{add, Tile};
 use crate::renders::_point::Coordinate;
 use crate::renders::svg::Svg;
@@ -74,14 +75,13 @@ impl Maze {
     }
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
-        let test = NODE_3 | NODE_5 | ADJ_2 | ADJ_5;
         // Seed some random tiles that don't touch each other or the boundaries
-        self.tiles[(0, 0)] = Tile::new(vec![test], true);
-        self.tiles[(0, 1)] = Tile::new(vec![], true);
+        self.tiles[(0, 0)] = Tile::new(vec![NODE_1 | NODE_5], true);
+        self.tiles[(0, 1)] = Tile::new(vec![NODE_4 | NODE_5], true);
         self.tiles[(0, 2)] = Tile::new(vec![], true);
         // Inverted version ...
-        self.tiles[(1, 0)] = Tile::new(vec![test], true);
-        //self.tiles[(1, 0)] = Tile::new(vec![], true);
+        //self.tiles[(1, 0)] = Tile::new(vec![test], true);
+        self.tiles[(1, 0)] = Tile::new(vec![], true);
         self.tiles[(1, 1)] = Tile::new(vec![], true);
         self.tiles[(1, 2)] = Tile::new(vec![], true);
 
@@ -262,139 +262,6 @@ impl Maze {
         return NODE_TO_COORD[k % 6].map(|coord| self.get_tile_relative_position((i, j), coord));
     }
 
-    fn tile_is_empty(&self, tile: &Option<Tile>) -> bool {
-        //
-        match tile {
-            Some(t) => return !t.initialised, // A tile, may or may not be free
-            None => return false,             // It's not really empty, but it's not a tile either.
-        }
-    }
-
-    fn tile_contains(&self, tile: &Option<Tile>, node_idx: u32) -> bool {
-        match tile {
-            Some(t) => return t.contains(node_idx),
-            None => return false,
-        }
-    }
-
-    fn mask_for_tile_vertex(
-        &self,
-        relative_idx: usize,
-        idxs: [usize; 4],
-        relative_tiles: &[Option<Tile>; 12],
-    ) -> u32 {
-        let opposite = &relative_tiles[relative_idx];
-
-        let left = &relative_tiles[idxs[0]];
-        let right = &relative_tiles[idxs[1]];
-        let l_adjacent = &relative_tiles[idxs[2]];
-        let r_adjacent = &relative_tiles[idxs[3]];
-
-        let node_value = 1 + relative_idx as u32;
-
-        //
-        if self.tile_is_empty(opposite) {
-            if !self.tile_contains(left, node_value)
-                && !self.tile_contains(right, node_value)
-                && !self.tile_contains(l_adjacent, node_value)
-                && !self.tile_contains(r_adjacent, node_value)
-            {
-                // Can be anything
-                return match node_value {
-                    1 => 2,
-                    2 => 20,
-                    3 => 200,
-                    _ => 0,
-                };
-            }
-        } else if self.tile_contains(opposite, node_value) {
-            // Must be connected
-            return match node_value {
-                1 => 1,
-                2 => 10,
-                3 => 100,
-                _ => 0,
-            };
-        }
-        return 0;
-    }
-
-    fn mask_for_tile_side(&self, relative_idx: usize, relative_tiles: &[Option<Tile>; 12]) -> u32 {
-        let adjacent = &relative_tiles[relative_idx];
-
-        let node_value = 1 + relative_idx as u32;
-
-        if self.tile_is_empty(adjacent) {
-            return match node_value {
-                4 => 2000,
-                5 => 20000,
-                6 => 200000,
-                _ => 0,
-            };
-        }
-
-        if self.tile_contains(adjacent, node_value) {
-            return match node_value {
-                4 => 1000,
-                5 => 10000,
-                6 => 100000,
-                _ => 0,
-            };
-        }
-
-        return 0;
-    }
-
-    pub fn get_surrounding_tile_connections(&self, surrounding_tiles: &[Option<Tile>; 12]) -> u32 {
-        const N1: usize = 0usize;
-        const N2: usize = 1usize;
-        const N3: usize = 2usize;
-        const N4: usize = 3usize;
-        const N5: usize = 4usize;
-        const N6: usize = 5usize;
-        const N1L: usize = 6usize;
-        const N1R: usize = 7usize;
-        const N2L: usize = 8usize;
-        const N2R: usize = 9usize;
-        const N3L: usize = 10usize;
-        const N3R: usize = 11usize;
-        // Node 1
-        return self.mask_for_tile_vertex(N1, [N4, N5, N1L, N1R], surrounding_tiles)
-            // Node 2
-            + self.mask_for_tile_vertex(N2, [N4, N6, N2L, N2R], surrounding_tiles)
-            // Node 3
-            + self.mask_for_tile_vertex(N3, [N5, N6, N3L, N3R], surrounding_tiles)
-            + self.mask_for_tile_side(N4, surrounding_tiles)
-            + self.mask_for_tile_side(N5, surrounding_tiles)
-            + self.mask_for_tile_side(N6, surrounding_tiles);
-    }
-    #[cfg(debug_assertions)]
-    fn string_for_tile(&self, tile: &Option<Tile>) -> String {
-        match tile {
-            Some(t) => return t.to_string(),
-            None => return "⌀".to_string(),
-        }
-    }
-
-    #[cfg(debug_assertions)]
-    fn print_surrounding(&self, surrounding_tiles: &[Option<Tile>; 12]) {
-        // 1,2,3,4,5,6, 1a,1b,2a,2b,3a,3b
-        // 0 1 2 3 4 5  6  7  8  9  10 11
-        println!("Surrounding tiles:");
-        println!("  1: {}", self.string_for_tile(&surrounding_tiles[0]));
-        println!("  2: {}", self.string_for_tile(&surrounding_tiles[1]));
-        println!("  3: {}", self.string_for_tile(&surrounding_tiles[2]));
-        println!("  4: {}", self.string_for_tile(&surrounding_tiles[3]));
-        println!("  4: {}", self.string_for_tile(&surrounding_tiles[4]));
-        println!("  6: {}", self.string_for_tile(&surrounding_tiles[5]));
-        println!(" 1r: {}", self.string_for_tile(&surrounding_tiles[6]));
-        println!(" 1l: {}", self.string_for_tile(&surrounding_tiles[7]));
-        println!(" 2r: {}", self.string_for_tile(&surrounding_tiles[8]));
-        println!(" 2l: {}", self.string_for_tile(&surrounding_tiles[9]));
-        println!(" 3r: {}", self.string_for_tile(&surrounding_tiles[10]));
-        println!(" 3l: {}", self.string_for_tile(&surrounding_tiles[11]));
-    }
-
     fn get_random_tile(
         &mut self,
         i: usize,
@@ -403,7 +270,7 @@ impl Maze {
     ) -> Tile {
         // Test the new way to draw spanning two cell
 
-        let mask = self.get_surrounding_tile_connections(surrounding_tiles);
+        let mask = get_surrounding_tile_connections(surrounding_tiles);
         let nets = random_tile(mask, self.seed, false);
 
         self.seed = match self.seed {
@@ -450,9 +317,10 @@ impl Maze {
                 };
 
                 let tile = self.tiles[(j, i)].clone();
+                let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
 
                 for (g, &frag) in tile
-                    .to_svg_groups(coord, self.boundaries)
+                    .to_svg_groups(coord, self.boundaries, &surrounding_tiles)
                     .iter()
                     .enumerate()
                 {

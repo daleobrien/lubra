@@ -1,3 +1,6 @@
+use common::consts::{ADJ_4, ADJ_5, NODE_1, NODE_4, NODE_5};
+
+use crate::maze::adjacent::ADJ_N5;
 use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use std::fmt;
@@ -6,14 +9,25 @@ use std::fmt;
 pub struct Tile {
     pub nodes: Vec<u32>,
     pub initialised: bool,
+    pub bits: u32,
 }
 
 impl Tile {
     pub fn new(nodes: Vec<u32>, initialised: bool) -> Tile {
-        Tile { nodes, initialised }
+        let bits = nodes.iter().fold(0, |a, b| a | b);
+        return Tile {
+            nodes,
+            initialised,
+            bits,
+        };
     }
 
-    pub fn to_svg_groups(self, coordinate: Coordinate, boundaries: bool) -> Vec<&'static str> {
+    pub fn to_svg_groups(
+        self,
+        coordinate: Coordinate,
+        boundaries: bool,
+        surrounding_tiles: &[Option<Tile>; 12],
+    ) -> Vec<&'static str> {
         // Build the SVG groups and return them
         let mut groups: Vec<&str> = vec![];
 
@@ -33,12 +47,43 @@ impl Tile {
         };
 
         for net in nodes {
-            let bits: u32 = if flipped { 0b1_000_000 | net } else { net };
+            let mut bits: u32 = if flipped { 0b1_000_000 | net } else { net };
 
             let path = MAP_PATHS.get(&bits);
             if path.is_some() {
                 groups.push(path.unwrap());
             } else {
+                // Now we need to look for related tiles ...
+                if net == NODE_1 | NODE_5 {
+                    // check surrounding tiles, since that can change the mask
+                    let adj = &surrounding_tiles[ADJ_N5];
+                    println!("adj: {:?}", adj);
+                    match adj {
+                        Some(t) => {
+                            println!(
+                                "t: {:16b} == {:16b} ? {:?}",
+                                t.bits,
+                                NODE_4 | NODE_5,
+                                t.bits == NODE_4 | NODE_5
+                            );
+                            match t.bits {
+                                NODE_4 | NODE_5 => {
+                                    println!("found 4 | 5");
+                                    bits |= ADJ_4 | ADJ_5;
+                                }
+                                _ => {
+                                    println!("No match found {:10b}", t.bits);
+                                }
+                            }
+                        }
+                        None => {
+                            bits = 0b10_000_000;
+                        }
+                    }
+                }
+
+                println!("bits are now: {:016b}", bits);
+
                 println!(
                     "No path for bits: {:06b} / {:?} @ {:?}",
                     bits, net, coordinate
@@ -54,10 +99,6 @@ impl Tile {
         }
 
         return groups;
-    }
-
-    pub fn bits(&self) -> u32 {
-        return self.nodes.iter().fold(0, |a, b| a | b);
     }
 
     fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
@@ -94,17 +135,11 @@ impl Tile {
     }
 
     pub fn intersects(&self, other: &Tile) -> bool {
-        let other_bits = other.bits();
-        let bits = self.bits();
-
-        if other_bits & bits != 0 {
-            return true;
-        }
-        return false;
+        return other.bits & self.bits != 0;
     }
 
-    pub fn contains(&self, node_index: u32) -> bool {
-        return self.nodes.iter().any(|net| *net & node_index != 0u32);
+    pub fn contains(&self, node_mask: u32) -> bool {
+        return node_mask & self.bits != 0;
     }
 
     pub fn is_empty(&self) -> bool {
@@ -166,7 +201,7 @@ mod tests {
     #[test]
     fn test_bits() {
         let tile = Tile::new(vec![0b000_011, 0b010_000], true);
-        assert_eq!(tile.bits(), 0b010011)
+        assert_eq!(tile.bits, 0b010011)
     }
 
     #[test]
