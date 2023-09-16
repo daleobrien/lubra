@@ -53,6 +53,9 @@ impl Tile {
             if path.is_some() {
                 groups.push(path.unwrap());
             } else {
+                // NODE_1 | NODE_5 & ADJ_4 | ADJ_5 -> ...
+                // How to look it up .. , each adjacent tile has a list of masks ...
+                // ...
                 // Now we need to look for related tiles ...
                 if net == NODE_1 | NODE_5 {
                     // check surrounding tiles, since that can change the mask
@@ -142,6 +145,10 @@ impl Tile {
         return node_mask & self.bits != 0;
     }
 
+    pub fn contain_net(&self, net_mask: u32) -> bool {
+        return self.nodes.iter().any(|net| *net == net_mask);
+    }
+
     pub fn is_empty(&self) -> bool {
         return self.nodes.is_empty();
     }
@@ -224,6 +231,20 @@ mod tests {
         assert_eq!(tile1.contains(0b001_000), false);
         assert_eq!(tile1.contains(0b010_000), true);
         assert_eq!(tile1.contains(0b100_000), false);
+
+        let tile1 = Tile::new(vec![], true);
+        assert_eq!(tile1.contains(0b000_001), false);
+    }
+    #[test]
+    fn test_contain_net() {
+        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
+        assert_eq!(tile1.contain_net(0b000_001), false);
+        assert_eq!(tile1.contain_net(0b000_010), false);
+        assert_eq!(tile1.contain_net(0b000_011), true);
+        assert_eq!(tile1.contain_net(0b000_100), false);
+        assert_eq!(tile1.contain_net(0b001_000), false);
+        assert_eq!(tile1.contain_net(0b010_000), true);
+        assert_eq!(tile1.contain_net(0b100_000), false);
 
         let tile1 = Tile::new(vec![], true);
         assert_eq!(tile1.contains(0b000_001), false);
