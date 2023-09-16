@@ -177,4 +177,25 @@ pub fn generate_all_shapes() {
     }
     let _ = file.write(b"};\n\n");
     let _ = file.flush();
+
+    // Change this to a look up function rather than a class with a HashMap.
+    let mut file = File::create("../lib/src/maze/nets_adjacent.rs").expect("File Creation failed");
+    let _ = file.write(b"/* This file is generated. */\n");
+    let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
+    let _ = file.write(b"pub static ADJ_CHECKS: Map<u32, &'static (usize, &[u32])> = phf_map! {\n");
+    for (key, (index, masks)) in adj_paths {
+        // Extract out possible masks
+        let masks_as_string = masks
+            .iter()
+            .map(|n| n.to_string() + "u32")
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let _ = write!(
+            file,
+            "  {key}u32 =>  &({index}usize, &[{masks_as_string}]),\n"
+        );
+    }
+    let _ = file.write(b"};\n\n");
+    let _ = file.flush();
 }

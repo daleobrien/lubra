@@ -1,6 +1,7 @@
 use common::consts::{ADJ_4, ADJ_5, NODE_1, NODE_4, NODE_5};
 
 use crate::maze::adjacent::ADJ_N5;
+use crate::maze::nets_adjacent::ADJ_CHECKS;
 use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use std::fmt;
@@ -53,36 +54,27 @@ impl Tile {
             if path.is_some() {
                 groups.push(path.unwrap());
             } else {
-                // NODE_1 | NODE_5 & ADJ_4 | ADJ_5 -> ...
-                // How to look it up .. , each adjacent tile has a list of masks ...
-                // ...
                 // Now we need to look for related tiles ...
-                if net == NODE_1 | NODE_5 {
-                    // check surrounding tiles, since that can change the mask
-                    let adj = &surrounding_tiles[ADJ_N5];
-                    println!("adj: {:?}", adj);
-                    match adj {
-                        Some(t) => {
-                            println!(
-                                "t: {:16b} == {:16b} ? {:?}",
-                                t.bits,
-                                NODE_4 | NODE_5,
-                                t.bits == NODE_4 | NODE_5
-                            );
-                            match t.bits {
-                                NODE_4 | NODE_5 => {
-                                    println!("found 4 | 5");
-                                    bits |= ADJ_4 | ADJ_5;
-                                }
-                                _ => {
-                                    println!("No match found {:10b}", t.bits);
+                match ADJ_CHECKS.get(&bits) {
+                    Some(&(adj_idx, posibles_nets)) => {
+                        let adj_nets = &surrounding_tiles[*adj_idx];
+                        match adj_nets {
+                            None => {}
+                            Some(adj_tile) => {
+                                for adj_net in *posibles_nets {
+                                    if adj_tile.contain_net(*adj_net) {
+                                        bits |= (adj_net << 8);
+                                        let path = MAP_PATHS.get(&bits);
+                                        if path.is_some() {
+                                            groups.push(path.unwrap());
+                                        }
+                                        break;
+                                    }
                                 }
                             }
                         }
-                        None => {
-                            bits = 0b10_000_000;
-                        }
                     }
+                    _ => {}
                 }
 
                 println!("bits are now: {:016b}", bits);
