@@ -16,9 +16,9 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
 
-const ADJ_N1: usize = 0usize;
-const ADJ_N2: usize = 1usize;
-const ADJ_N3: usize = 2usize;
+// const ADJ_N1: usize = 0usize;
+// const ADJ_N2: usize = 1usize;
+// const ADJ_N3: usize = 2usize;
 const ADJ_N4: usize = 3usize;
 const ADJ_N5: usize = 4usize;
 const ADJ_N6: usize = 5usize;
@@ -187,13 +187,13 @@ pub fn generate_all_shapes() {
         // Extract out possible masks
         let masks_as_string = masks
             .iter()
-            .map(|n| n.to_string() + "u32")
+            .map(|n| format!("{n}u32"))
             .collect::<Vec<String>>()
             .join(", ");
 
         let _ = write!(
             file,
-            "  {key}u32 =>  &({index}usize, &[{masks_as_string}]),\n"
+            "  {key}u32 =>  &({index}usize, &[{masks_as_string}]), // {key:06b}\n"
         );
     }
     let _ = file.write(b"};\n\n");

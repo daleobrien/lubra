@@ -10,24 +10,11 @@ use common::consts::{
 use crate::maze::random::random_tile;
 use array2d::Array2D;
 
-use crate::maze::adjacent::get_surrounding_tile_connections;
+use crate::maze::adjacent::{get_surrounding_tile_connections, print_surrounding};
 use crate::maze::tile::{add, Tile};
 use crate::renders::_point::Coordinate;
 use crate::renders::svg::Svg;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
-
-#[cfg(debug_assertions)]
-fn pretty_print_int(b: u32) {
-    let mut s_iter = format!("{:b}", b);
-    let mut s = String::new();
-    for (idx, val) in s_iter.chars().rev().enumerate() {
-        if idx != 0 && idx % 2 == 0 {
-            s.insert(0, '_');
-        }
-        s.insert(0, val);
-    }
-    println!("{}", s);
-}
 
 pub struct Maze {
     pub style: Option<String>,
@@ -76,36 +63,42 @@ impl Maze {
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         // Seed some random tiles that don't touch each other or the boundaries
-        self.tiles[(0, 0)] = Tile::new(vec![NODE_1 | NODE_5], true);
-        self.tiles[(0, 1)] = Tile::new(vec![NODE_4 | NODE_5], true);
-        self.tiles[(0, 2)] = Tile::new(vec![], true);
-        // Inverted version ...
-        //self.tiles[(1, 0)] = Tile::new(vec![test], true);
-        self.tiles[(1, 0)] = Tile::new(vec![], true);
-        self.tiles[(1, 1)] = Tile::new(vec![], true);
-        self.tiles[(1, 2)] = Tile::new(vec![], true);
+        self.tiles[(0, 0)] = Tile::new(vec![NODE_2 | NODE_5], true);
+        // TEST ...
+        // self.tiles[(0, 0)] = Tile::new(vec![NODE_1 | NODE_5], true);
+        // self.tiles[(0, 1)] = Tile::new(vec![NODE_4 | NODE_5], true);
+        // self.tiles[(0, 2)] = Tile::new(vec![], true);
+        // // Inverted version ...
+        // //self.tiles[(1, 0)] = Tile::new(vec![test], true);
+        // self.tiles[(1, 0)] = Tile::new(vec![], true);
+        // self.tiles[(1, 1)] = Tile::new(vec![], true);
+        // self.tiles[(1, 2)] = Tile::new(vec![], true);
 
-        if number_of_rows > 1 && number_of_columns > 2 {
-            for i in (2..number_of_columns - 2).step_by(3) {
-                for j in (1..number_of_rows - 1).step_by(2) {
-                    let tile = self.get_any_random_tile(i, j);
-                    self.tiles[(j, i)] = tile;
-                }
-            }
-        }
+        // if number_of_rows > 1 && number_of_columns > 2 {
+        //     for i in (2..number_of_columns - 2).step_by(3) {
+        //         for j in (1..number_of_rows - 1).step_by(2) {
+        //             let tile = self.get_any_random_tile();
+        //             self.tiles[(j, i)] = tile;
+        //         }
+        //     }
+        // }
 
+        println!("Getting Random Tiles");
         for j in 0..number_of_rows {
             for i in 0..number_of_columns {
                 // Don't need to create twice
-                if self.tiles[(j, i)].clone().initialised {
+                if self.tiles[(j, i)].initialised {
                     continue;
                 }
-                let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
-                // println!("\n>>");
-                // self.print_surrounding(&surrounding_tiles);
-                let tile = self.get_random_tile(i, j, &surrounding_tiles);
+
+                let tile = self.get_random_tile(i, j);
                 //println!("Tile({i},{j}): {:?}", tile.nodes);
                 self.tiles[(j, i)] = tile;
+
+                self.seed = match self.seed {
+                    Some(s) => Some(s.wrapping_add(1)),
+                    _ => None,
+                };
             }
         }
 
@@ -221,19 +214,20 @@ impl Maze {
     //     }
     // }
 
-    fn get_tile_relative_position(&self, pos: (usize, usize), rel: (i32, i32)) -> Option<Tile> {
+    fn get_tile_relative_position(&self, pos: (usize, usize), rel: (i32, i32)) -> Option<&Tile> {
         // Out of bounds, Array2D will return None if out of bounds.
 
         let x = add(pos.0, rel.0);
         let y = add(pos.1, rel.1);
 
-        return match (x, y) {
-            (Some(x), Some(y)) => self.tiles.get(y, x).cloned(),
+        let result = match (x, y) {
+            (Some(x), Some(y)) => self.tiles.get(y, x),
             _ => None, // Out of bounds, not possible tile
         };
+        return result;
     }
 
-    fn get_connected_titles_for_tile(&self, i: usize, j: usize) -> [Option<Tile>; 12] {
+    fn get_connected_titles_for_tile(&self, i: usize, j: usize) -> [Option<&Tile>; 12] {
         let k = i + (3 * (j % 2));
         /*
         We only have six different ways a tile can be rotated/flipped
@@ -262,21 +256,16 @@ impl Maze {
         return NODE_TO_COORD[k % 6].map(|coord| self.get_tile_relative_position((i, j), coord));
     }
 
-    fn get_random_tile(
-        &mut self,
-        i: usize,
-        j: usize,
-        surrounding_tiles: &[Option<Tile>; 12],
-    ) -> Tile {
+    fn get_random_tile(&mut self, i: usize, j: usize) -> Tile {
         // Test the new way to draw spanning two cell
 
-        let mask = get_surrounding_tile_connections(surrounding_tiles);
-        let nets = random_tile(mask, self.seed, false);
+        //println!("\n>> ({i},{j})");
+        let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
+        //print_surrounding(&surrounding_tiles);
 
-        self.seed = match self.seed {
-            Some(s) => Some(s.wrapping_add(1)),
-            _ => None,
-        };
+        let mask = get_surrounding_tile_connections(&surrounding_tiles);
+        //println!("MASK ({i},{j}) {:06}", mask);
+        let nets = random_tile(mask, self.seed, false);
 
         let tile = Tile::new(nets, true);
 
@@ -285,7 +274,7 @@ impl Maze {
         return tile;
     }
 
-    fn get_any_random_tile(&mut self, i: usize, j: usize) -> Tile {
+    fn get_any_random_tile(&mut self) -> Tile {
         let nets = random_tile(222222, self.seed, true);
 
         self.seed = match self.seed {
@@ -365,7 +354,6 @@ mod tests {
             vec![1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
         ];
         for i in 0..6 {
-            println!("=> ({}, 0)", i);
             let surrounding_tiles = maze.get_connected_titles_for_tile(i, 0);
 
             let result: Vec<usize> = surrounding_tiles

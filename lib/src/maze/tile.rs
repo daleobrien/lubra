@@ -13,6 +13,19 @@ pub struct Tile {
     pub bits: u32,
 }
 
+#[cfg(debug_assertions)]
+fn pretty_print_int(b: &u32) -> String {
+    let number_as_string = format!("{:08b}", *b);
+    let mut s = String::new();
+    for (idx, val) in number_as_string.chars().rev().enumerate() {
+        if idx != 0 && idx % 3 == 0 {
+            s.insert(0, '_');
+        }
+        s.insert(0, val);
+    }
+    return s;
+}
+
 impl Tile {
     pub fn new(nodes: Vec<u32>, initialised: bool) -> Tile {
         let bits = nodes.iter().fold(0, |a, b| a | b);
@@ -23,11 +36,21 @@ impl Tile {
         };
     }
 
+    pub fn to_string_vec(self) -> Vec<String> {
+        if self.nodes.is_empty() {
+            return vec!["-".to_string()];
+        }
+        self.nodes
+            .iter()
+            .map(|n| format!("{:?}", pretty_print_int(n)))
+            .collect::<Vec<String>>()
+    }
+
     pub fn to_svg_groups(
         self,
         coordinate: Coordinate,
         boundaries: bool,
-        surrounding_tiles: &[Option<Tile>; 12],
+        surrounding_tiles: &[Option<&Tile>; 12],
     ) -> Vec<&'static str> {
         // Build the SVG groups and return them
         let mut groups: Vec<&str> = vec![];
@@ -39,6 +62,12 @@ impl Tile {
             bits |= 0b01_000_000;
         }
 
+        println!(
+            "Tile: {:?} @ {:?}",
+            coordinate,
+            self.clone().to_string_vec()
+        );
+
         let index = coordinate.i % 3;
         let nodes = match index {
             0 => self.nodes,
@@ -48,22 +77,29 @@ impl Tile {
         };
 
         for net in nodes {
-            let mut bits: u32 = if flipped { 0b1_000_000 | net } else { net };
+            let bits: u32 = if flipped { 0b1_000_000 | net } else { net };
 
             let path = MAP_PATHS.get(&bits);
             if path.is_some() {
+                // TODO: Check if we don't want to render this!
+                // Could be a simple lookup?
                 groups.push(path.unwrap());
             } else {
                 // Now we need to look for related tiles ...
-                match ADJ_CHECKS.get(&bits) {
+                match ADJ_CHECKS.get(&net) {
                     Some(&(adj_idx, posibles_nets)) => {
-                        let adj_nets = &surrounding_tiles[*adj_idx];
+                        // TODO: We need to check is this is rendered? or is it always rendered!
+                        let &adj_nets = &surrounding_tiles[*adj_idx];
+
                         match adj_nets {
                             None => {}
                             Some(adj_tile) => {
                                 for adj_net in *posibles_nets {
                                     if adj_tile.contain_net(*adj_net) {
-                                        bits |= (adj_net << 8);
+                                        let mut bits: u32 = (adj_net << 8) | net;
+                                        if flipped {
+                                            bits |= 0b1_000_000;
+                                        }
                                         let path = MAP_PATHS.get(&bits);
                                         if path.is_some() {
                                             groups.push(path.unwrap());
@@ -74,15 +110,10 @@ impl Tile {
                             }
                         }
                     }
-                    _ => {}
+                    None => {
+                        println!("No path for bits: {:016b} @ {:?}", net, coordinate);
+                    }
                 }
-
-                println!("bits are now: {:016b}", bits);
-
-                println!(
-                    "No path for bits: {:06b} / {:?} @ {:?}",
-                    bits, net, coordinate
-                );
             }
         }
 
@@ -151,7 +182,7 @@ impl fmt::Debug for Tile {
         if self.initialised {
             write!(f, "{:?}", self.nodes)
         } else {
-            write!(f, "-")
+            write!(f, "uninitialised")
         }
     }
 }
