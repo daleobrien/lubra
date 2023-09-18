@@ -1,6 +1,6 @@
 use common::consts::{ADJ_4, ADJ_5, NODE_1, NODE_4, NODE_5};
 
-use crate::maze::adjacent::ADJ_N5;
+use crate::maze::adjacent::{print_surrounding, ADJ_N5};
 use crate::maze::nets_adjacent::ADJ_CHECKS;
 use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
@@ -62,11 +62,11 @@ impl Tile {
             bits |= 0b01_000_000;
         }
 
-        println!(
-            "Tile: {:?} @ {:?}",
-            coordinate,
-            self.clone().to_string_vec()
-        );
+        // println!(
+        //     "Tile: {:?} @ {:?}",
+        //     coordinate,
+        //     self.clone().to_string_vec()
+        // );
 
         let index = coordinate.i % 3;
         let nodes = match index {
@@ -85,11 +85,19 @@ impl Tile {
                 // Could be a simple lookup?
                 groups.push(path.unwrap());
             } else {
+                println!(
+                    "Missed ({i},{j}) {:06b}",
+                    net,
+                    i = coordinate.i,
+                    j = coordinate.j
+                );
                 // Now we need to look for related tiles ...
                 match ADJ_CHECKS.get(&net) {
                     Some(&(adj_idx, posibles_nets)) => {
                         // TODO: We need to check is this is rendered? or is it always rendered!
                         let &adj_nets = &surrounding_tiles[*adj_idx];
+                        print_surrounding(surrounding_tiles);
+                        println!("adj >>> {adj_nets:?}");
 
                         match adj_nets {
                             None => {}
