@@ -1,6 +1,6 @@
 use crate::frag_12::{a12, a13, a23};
 use crate::frag_123::a123;
-use crate::frag_15_dot::a15_5;
+use crate::frag_15_dot::{a14_4, a15_5};
 use crate::frag_15_long::{a14_24, a15_35, a24_14, a26_36, a35_15, a36_26};
 use crate::frag_15_mid::{a14_46, a15_56, a24_45, a26_56, a35_45, a36_46};
 use crate::frag_15_straight::{a14_34, a15_25, a24_34, a26_16, a35_25, a36_16};
@@ -54,6 +54,7 @@ pub fn generate_all_shapes() {
             (direction | NODE_4 | NODE_5 | NODE_6, a456(invert)),
             (direction | NODE_1 | NODE_4 | ADJ_2 | ADJ_4, a14_24(invert)),
             (direction | NODE_1 | NODE_4 | ADJ_3 | ADJ_4, a14_34(invert)),
+            (direction | NODE_1 | NODE_4 | ADJ_4, a14_4(invert)),
             (direction | NODE_1 | NODE_4 | ADJ_4 | ADJ_5, a14_45(invert)),
             (direction | NODE_1 | NODE_4 | ADJ_4 | ADJ_6, a14_46(invert)),
             (direction | NODE_1 | NODE_5 | ADJ_2 | ADJ_5, a15_25(invert)),
@@ -93,6 +94,7 @@ pub fn generate_all_shapes() {
         (
             ADJ_N4, // Adjacent tile to look up
             vec![
+                NODE_4,
                 NODE_2 | NODE_4,
                 NODE_3 | NODE_4,
                 NODE_4 | NODE_5,

@@ -32,6 +32,12 @@ pub fn a15_5(invert: bool) -> String {
     return a_str(invert, pts.str(), r1, r2);
 }
 
+pub fn a14_4(invert: bool) -> String {
+    let (r1, r2, pts) = a_base(invert);
+    let pts = pts.reflect();
+    return a_str(!invert, pts.str(), r1, r2);
+}
+
 fn a_str(invert: bool, pts: Vec<String>, r1: f64, r2: f64) -> String {
     let (d1, d2, d3) = if invert { (0, 1, 0) } else { (1, 0, 1) };
 
