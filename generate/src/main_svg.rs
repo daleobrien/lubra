@@ -1,6 +1,7 @@
 mod bit_utils;
 mod frag_12;
 mod frag_123;
+mod frag_15_dot;
 mod frag_15_long;
 mod frag_15_mid;
 mod frag_15_straight;
