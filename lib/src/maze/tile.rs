@@ -62,11 +62,11 @@ impl Tile {
             bits |= 0b01_000_000;
         }
 
-        // println!(
-        //     "Tile: {:?} @ {:?}",
-        //     coordinate,
-        //     self.clone().to_string_vec()
-        // );
+        println!(
+            "Tile: {:?} @ {:?}",
+            coordinate,
+            self.clone().to_string_vec()
+        );
 
         let index = coordinate.i % 3;
         let nodes = match index {
