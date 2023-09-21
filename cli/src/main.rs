@@ -20,19 +20,12 @@ fn main() {
     //     println!("Finished creating Random maze {:?}", result_f.unwrap());
     // }
     //
-    // // Great test case here
-    // let maze = Maze::new(3, 2, true, true, Some(102));
-    // let result_f = maze.render("test-smoosh.svg".to_string());
-    // println!("Finished creating Random maze {:?}", result_f.unwrap());
 
-    let maze = Maze::new(18, 9, true, true, Some(1));
-    //let maze = Maze::new(4, 3, true, true, Some(13));
-    let result_f = maze.render("test-large.svg".to_string());
+    let maze = Maze::new(4, 3, true, true, Some(1));
+    let result_f = maze.render("test-small.svg".to_string());
     println!("Finished creating Random maze {:?}", result_f.unwrap());
 
-    for i in 1..31 {
-        let maze = Maze::new(4, 3, true, true, Some(i));
-        let result_f = maze.render(format!("test-{i:02}.svg").to_string());
-        println!("Finished creating Random maze {:?}", result_f.unwrap());
-    }
+    let maze = Maze::new(54, 36, true, true, Some(1));
+    let result_f = maze.render("test-large.svg".to_string());
+    println!("Finished creating Random maze {:?}", result_f.unwrap());
 }

@@ -76,14 +76,14 @@ impl Maze {
         // self.tiles[(2, 3)] = Tile::new(vec![NODE_1 | NODE_4], true);
         // self.tiles[(2, 2)] = Tile::new(vec![NODE_4 | NODE_5], true);
 
-        // if number_of_rows > 1 && number_of_columns > 2 {
-        //     for i in (2..number_of_columns - 2).step_by(3) {
-        //         for j in (1..number_of_rows - 1).step_by(2) {
-        //             let tile = self.get_any_random_tile();
-        //             self.tiles[(j, i)] = tile;
-        //         }
-        //     }
-        // }
+        if number_of_rows > 1 && number_of_columns > 2 {
+            for i in (2..number_of_columns - 2).step_by(3) {
+                for j in (1..number_of_rows - 1).step_by(2) {
+                    let tile = self.get_any_random_tile();
+                    self.tiles[(j, i)] = tile;
+                }
+            }
+        }
 
         println!("Getting Random Tiles");
         for j in 0..number_of_rows {
