@@ -26,6 +26,38 @@ fn pretty_print_int(b: &u32) -> String {
     return s;
 }
 
+fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
+    // Extract the bits to be rotated.
+    let bits_345_1 = value >> 2 & 0b00_001_000_00_001_000;
+    let bits_345_2 = value << 1 & 0b00_110_000_00_110_000;
+    let bits_012_1 = value << 2 & 0b00_000_100_00_000_100;
+    let bits_012_2 = value >> 1 & 0b00_000_011_00_000_011;
+    return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
+}
+
+fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
+    let bits_345_1 = value >> 1 & 0b00_011_000_00_011_000;
+    let bits_345_2 = value << 2 & 0b00_100_000_00_100_000;
+    let bits_012_1 = value << 1 & 0b00_000_110_00_000_110;
+    let bits_012_2 = value >> 2 & 0b00_000_001_00_000_001;
+    return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
+}
+
+fn transform_tile_orientation(value: u32, index: usize, flipped: bool) -> u32 {
+    let rotated_net = match index {
+        0 => value,
+        1 => rotate_bits_345_right_and_012_left(value),
+        2 => rotate_bits_345_left_and_012_right(value),
+        _ => panic!("Invalid rotation"),
+    };
+    let bits: u32 = if flipped {
+        0b00_000_000_01_000_000 | rotated_net
+    } else {
+        rotated_net
+    };
+    return bits;
+}
+
 impl Tile {
     pub fn new(nodes: Vec<u32>, initialised: bool) -> Tile {
         let bits = nodes.iter().fold(0, |a, b| a | b);
@@ -69,45 +101,35 @@ impl Tile {
         );
 
         let index = coordinate.i % 3;
-        let nodes = match index {
-            0 => self.nodes,
-            1 => self.rotate_ccw(),
-            2 => self.rotate_cw(),
-            _ => panic!("Invalid rotation"),
-        };
 
-        for net in nodes {
-            let bits: u32 = if flipped { 0b1_000_000 | net } else { net };
-
+        for net in self.nodes {
+            let bits = transform_tile_orientation(net, index, flipped);
             let path = MAP_PATHS.get(&bits);
             if path.is_some() {
                 // TODO: Check if we don't want to render this!
                 // Could be a simple lookup?
                 groups.push(path.unwrap());
             } else {
-                println!(
-                    "Missed ({i},{j}) {:06b}",
-                    net,
-                    i = coordinate.i,
-                    j = coordinate.j
-                );
                 // Now we need to look for related tiles ...
                 match ADJ_CHECKS.get(&net) {
-                    Some(&(adj_idx, posibles_nets)) => {
+                    Some(&(adj_idx, possibles_nets)) => {
                         // TODO: We need to check is this is rendered? or is it always rendered!
                         let &adj_nets = &surrounding_tiles[*adj_idx];
                         print_surrounding(surrounding_tiles);
-                        println!("adj >>> {adj_nets:?}");
 
                         match adj_nets {
-                            None => {}
+                            None => {
+                                println!("No adjacent tile for bits <1>: {:016b}", net);
+                            }
                             Some(adj_tile) => {
-                                for adj_net in *posibles_nets {
+                                for adj_net in *possibles_nets {
                                     if adj_tile.contain_net(*adj_net) {
-                                        let mut bits: u32 = (adj_net << 8) | net;
-                                        if flipped {
-                                            bits |= 0b1_000_000;
-                                        }
+                                        let bits = transform_tile_orientation(
+                                            (adj_net << 8) | net,
+                                            index,
+                                            flipped,
+                                        );
+
                                         let path = MAP_PATHS.get(&bits);
                                         if path.is_some() {
                                             groups.push(path.unwrap());
@@ -135,36 +157,19 @@ impl Tile {
         return groups;
     }
 
-    fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
-        // Extract the bits to be rotated.
-        let bits_345 = (value & 0b00111000) >> 3;
-        let bits_012 = value & 0b00000111;
-        let rotated_bits_345 = ((bits_345 << 1) | (bits_345 >> 2)) & 0b00000111;
-        let rotated_bits_012 = ((bits_012 >> 1) | (bits_012 << 2)) & 0b00000111;
-        return (rotated_bits_345 << 3) | rotated_bits_012;
-    }
-
     pub fn rotate_cw(&self) -> Vec<u32> {
         return self
             .nodes
             .iter()
-            .map(|n| Tile::rotate_bits_345_left_and_012_right(*n))
+            .map(|n| rotate_bits_345_left_and_012_right(*n))
             .collect();
-    }
-
-    fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
-        let bits_345 = (value & 0b00111000) >> 3;
-        let bits_012 = value & 0b00000111;
-        let rotated_bits_345 = ((bits_345 >> 1) | (bits_345 << 2)) & 0b00000111;
-        let rotated_bits_012 = ((bits_012 << 1) | (bits_012 >> 2)) & 0b00000111;
-        return (rotated_bits_345 << 3) | rotated_bits_012;
     }
 
     pub fn rotate_ccw(&self) -> Vec<u32> {
         return self
             .nodes
             .iter()
-            .map(|n| Tile::rotate_bits_345_right_and_012_left(*n))
+            .map(|n| rotate_bits_345_right_and_012_left(*n))
             .collect();
     }
 
