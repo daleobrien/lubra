@@ -26,6 +26,6 @@ fn main() {
     println!("Finished creating Random maze {:?}", result_f.unwrap());
 
     let maze = Maze::new(54, 36, true, true, Some(1));
-    let result_f = maze.render("test-large.svg".to_string());
+    let result_f = maze.render("Maze Version X.svg".to_string());
     println!("Finished creating Random maze {:?}", result_f.unwrap());
 }
