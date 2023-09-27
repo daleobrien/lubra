@@ -65,15 +65,17 @@ impl Maze {
         // Seed some random tiles that don't touch each other or the boundaries
         self.tiles[(0, 0)] = Tile::new(vec![NODE_2 | NODE_5], true);
 
-        // // TEST ...
-        // for j in 0..number_of_rows {
-        //     for i in 0..number_of_columns {
-        //         self.tiles[(j, i)] = Tile::new(vec![], true);
-        //     }
-        // }
-        // self.tiles[(0, 0)] = Tile::new(vec![NODE_1 | NODE_5], true);
-        // self.tiles[(0, 1)] = Tile::new(vec![NODE_5 | NODE_6], true);
-        // //self.tiles[(0, 2)] = Tile::new(vec![NODE_4 | NODE_6], true);
+        // TEST ...
+        for j in 0..number_of_rows {
+            for i in 0..number_of_columns {
+                self.tiles[(j, i)] = Tile::new(vec![], true);
+            }
+        }
+
+        self.tiles[(0, 0)] = Tile::new(vec![NODE_4 | NODE_5 | ADJ_3 | ADJ_5], true);
+
+        self.tiles[(0, 0)] = Tile::new(vec![NODE_1 | NODE_5], true);
+        self.tiles[(0, 1)] = Tile::new(vec![NODE_5 | NODE_6], true);
 
         if number_of_rows > 1 && number_of_columns > 2 {
             for i in (2..number_of_columns - 2).step_by(3) {
