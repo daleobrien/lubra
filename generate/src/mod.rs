@@ -7,6 +7,7 @@ pub mod frag_15_mid;
 pub mod frag_15_straight;
 pub mod frag_15_tight;
 pub mod frag_16;
+pub mod frag_45_halfs;
 pub mod frag_arcs;
 pub mod frag_math;
 pub mod frag_wall;

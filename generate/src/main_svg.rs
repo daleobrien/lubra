@@ -8,6 +8,7 @@ mod frag_15_mid;
 mod frag_15_straight;
 mod frag_15_tight;
 mod frag_16;
+mod frag_45_halfs;
 mod frag_arcs;
 mod frag_math;
 mod frag_wall;
