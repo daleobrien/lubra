@@ -7,7 +7,7 @@ use crate::frag_15_mid::{a14_46, a15_56, a24_45, a26_56, a35_45, a36_46};
 use crate::frag_15_straight::{a14_34, a15_25, a24_34, a26_16, a35_25, a36_16};
 use crate::frag_15_tight::{a14_45, a15_45, a24_46, a26_46, a35_56, a36_56};
 use crate::frag_16::{l16, l25, l34};
-use crate::frag_45_halfs::{a45_24, a45_35, a46_14, a46_36};
+use crate::frag_45_halfs::{a45_24, a45_35, a46_14, a46_36, a56_15, a56_26};
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
 use crate::frag_wall::l_wall;
 use common::consts::{
@@ -97,6 +97,8 @@ pub fn generate_all_shapes() {
             (direction | NODE_4 | NODE_5 | ADJ_2 | ADJ_4, a45_24(invert)),
             (direction | NODE_4 | NODE_6 | ADJ_1 | ADJ_4, a46_14(invert)),
             (direction | NODE_4 | NODE_6 | ADJ_3 | ADJ_6, a46_36(invert)),
+            (direction | NODE_5 | NODE_6 | ADJ_1 | ADJ_5, a56_15(invert)),
+            (direction | NODE_5 | NODE_6 | ADJ_2 | ADJ_6, a56_26(invert)),
             //
             (direction | NODE_3 | NODE_6 | ADJ_6, a36_6(invert)),
             (direction | NODE_1 | NODE_4, a14(invert)),
@@ -182,6 +184,10 @@ pub fn generate_all_shapes() {
     adj_paths.insert(
         NODE_4 | NODE_6,
         vec![(ADJ_N4, NODE_1 | NODE_4), (ADJ_N6, NODE_3 | NODE_6)],
+    );
+    adj_paths.insert(
+        NODE_5 | NODE_6,
+        vec![(ADJ_N5, NODE_1 | NODE_5), (ADJ_N6, NODE_2 | NODE_6)],
     );
 
     // Change this to a look up function rather than a class with a HashMap.
