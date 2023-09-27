@@ -101,18 +101,18 @@ impl Tile {
             println!("net: {:016b}", net);
             // Now we need to look for related tiles ...
             match ADJ_CHECKS.get(&net) {
-                Some(&(adj_idx, possibles_nets)) => {
-                    // TODO: We need to check is this is rendered? or is it always rendered!
-                    let &adj_nets = &surrounding_tiles[*adj_idx];
-                    print_surrounding(surrounding_tiles);
-                    println!("adj_nets: {:?}", adj_nets);
+                // Iterated over each adj index and net
+                Some(&adj_and_nets) => {
+                    for (adj_idx, adj_net) in adj_and_nets {
+                        let &adj_nets = &surrounding_tiles[*adj_idx];
+                        print_surrounding(surrounding_tiles);
+                        println!("adj_idx: {adj_idx}, adj_nets: {adj_nets:?}");
 
-                    match adj_nets {
-                        None => {
-                            println!("No adjacent tile for bits <1>: {:016b}", net);
-                        }
-                        Some(adj_tile) => {
-                            for adj_net in *possibles_nets {
+                        match adj_nets {
+                            None => {
+                                println!("No adjacent tile for bits <1>: {:016b}", net);
+                            }
+                            Some(adj_tile) => {
                                 if adj_tile.contain_net(*adj_net) {
                                     let bits = transform_tile_orientation(
                                         (adj_net << 8) | net,
