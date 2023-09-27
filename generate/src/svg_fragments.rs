@@ -7,7 +7,7 @@ use crate::frag_15_mid::{a14_46, a15_56, a24_45, a26_56, a35_45, a36_46};
 use crate::frag_15_straight::{a14_34, a15_25, a24_34, a26_16, a35_25, a36_16};
 use crate::frag_15_tight::{a14_45, a15_45, a24_46, a26_46, a35_56, a36_56};
 use crate::frag_16::{l16, l25, l34};
-use crate::frag_45_halfs::{a45_24, a45_35};
+use crate::frag_45_halfs::{a45_24, a45_35, a46_16, a46_26};
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
 use crate::frag_wall::l_wall;
 use common::consts::{
@@ -92,9 +92,11 @@ pub fn generate_all_shapes() {
             (direction | NODE_3 | NODE_6 | ADJ_2 | ADJ_6, a36_26(invert)),
             (direction | NODE_3 | NODE_6 | ADJ_4 | ADJ_6, a36_46(invert)),
             (direction | NODE_3 | NODE_6 | ADJ_5 | ADJ_6, a36_56(invert)),
-            //
+            // Half arcs
             (direction | NODE_4 | NODE_5 | ADJ_3 | ADJ_5, a45_35(invert)),
             (direction | NODE_4 | NODE_5 | ADJ_2 | ADJ_4, a45_24(invert)),
+            (direction | NODE_4 | NODE_6 | ADJ_1 | ADJ_6, a46_16(invert)),
+            (direction | NODE_4 | NODE_6 | ADJ_2 | ADJ_6, a46_26(invert)),
             //
             (direction | NODE_3 | NODE_6 | ADJ_6, a36_6(invert)),
             (direction | NODE_1 | NODE_4, a14(invert)),
@@ -172,9 +174,14 @@ pub fn generate_all_shapes() {
         ],
     );
 
+    // TODO: Figure out a way to check 2 adjs at once!
     adj_paths.insert(
         NODE_4 | NODE_5,
         vec![(ADJ_N5, NODE_3 | NODE_5), (ADJ_N4, NODE_2 | NODE_4)],
+    );
+    adj_paths.insert(
+        NODE_4 | NODE_6,
+        vec![(ADJ_N4, NODE_1 | NODE_6), (ADJ_N6, NODE_2 | NODE_6)],
     );
 
     // Change this to a look up function rather than a class with a HashMap.
@@ -200,8 +207,6 @@ pub fn generate_all_shapes() {
     let _ = file.write(b"pub static ADJ_CHECKS: Map<u32, &'static [(usize,u32)]> = phf_map! {\n");
     for (key, index_and_masks) in adj_paths {
         // Extract out possible masks
-        // 9u32 =>  &(3usize, &[8u32, 10u32, 12u32, 24u32, 40u32]), // 001001
-        // 9u32 =>   &[(3usize,8u32), (3u,10u32), (3u,12u32)],
         let masks_as_string = index_and_masks
             .iter()
             .map(|(i, n)| format!("({i}usize, {n}u32)"))
