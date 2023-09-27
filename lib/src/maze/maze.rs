@@ -72,10 +72,10 @@ impl Maze {
             }
         }
 
-        //self.tiles[(0, 0)] = Tile::new(vec![NODE_4 | NODE_5 | ADJ_3 | ADJ_5], true);
+        self.tiles[(0, 0)] = Tile::new(vec![NODE_4 | NODE_5 | ADJ_2 | ADJ_4], true);
 
-        self.tiles[(0, 0)] = Tile::new(vec![NODE_4 | NODE_5], true);
-        self.tiles[(0, 1)] = Tile::new(vec![NODE_3 | NODE_5], true);
+        // self.tiles[(0, 0)] = Tile::new(vec![NODE_4 | NODE_5], true);
+        // self.tiles[(0, 1)] = Tile::new(vec![NODE_3 | NODE_5], true);
 
         if number_of_rows > 1 && number_of_columns > 2 {
             for i in (2..number_of_columns - 2).step_by(3) {

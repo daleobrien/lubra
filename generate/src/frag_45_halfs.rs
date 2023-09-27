@@ -43,7 +43,7 @@ pub fn a45_35(invert: bool) -> String {
 pub fn a45_24(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts();
     let pts = pts.reflect();
-    return fn_str(invert, pts, r1, r2);
+    return fn_str(!invert, pts, r1, r2);
 }
 
 pub fn fn_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
