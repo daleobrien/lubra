@@ -55,7 +55,7 @@ impl Svg {
                \n  viewBox=\"{m} {m} {w} {h}\" \
                \n  width=\"{w}px\" height=\"{h}px\" \
                \n  xmlns=\"http://www.w3.org/2000/svg\" \
-               \n  stroke-width=\"3\" \
+               \n  stroke-width=\"5\" \
                \n  fill-opacity=\"0.8\" \
                \n  stroke-opacity=\"1\" \
                \n  fill=\"transparent\" \

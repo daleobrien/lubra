@@ -89,13 +89,8 @@ impl Tile {
 
         let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
-        let mut bits = 0b10_000_000;
-        if flipped {
-            bits |= 0b01_000_000;
-        }
-
         println!(
-            "Tile: {:?} @ {:?}",
+            "Render Tile: {:?} @ {:?}",
             coordinate,
             self.clone().to_string_vec()
         );
@@ -103,44 +98,45 @@ impl Tile {
         let index = coordinate.i % 3;
 
         for net in self.nodes {
-            let bits = transform_tile_orientation(net, index, flipped);
-            let path = MAP_PATHS.get(&bits);
-            if path.is_some() {
-                // TODO: Check if we don't want to render this!
-                // Could be a simple lookup?
-                groups.push(path.unwrap());
-            } else {
-                // Now we need to look for related tiles ...
-                match ADJ_CHECKS.get(&net) {
-                    Some(&(adj_idx, possibles_nets)) => {
-                        // TODO: We need to check is this is rendered? or is it always rendered!
-                        let &adj_nets = &surrounding_tiles[*adj_idx];
-                        print_surrounding(surrounding_tiles);
+            println!("net: {:016b}", net);
+            // Now we need to look for related tiles ...
+            match ADJ_CHECKS.get(&net) {
+                Some(&(adj_idx, possibles_nets)) => {
+                    // TODO: We need to check is this is rendered? or is it always rendered!
+                    let &adj_nets = &surrounding_tiles[*adj_idx];
+                    print_surrounding(surrounding_tiles);
+                    println!("adj_nets: {:?}", adj_nets);
 
-                        match adj_nets {
-                            None => {
-                                println!("No adjacent tile for bits <1>: {:016b}", net);
-                            }
-                            Some(adj_tile) => {
-                                for adj_net in *possibles_nets {
-                                    if adj_tile.contain_net(*adj_net) {
-                                        let bits = transform_tile_orientation(
-                                            (adj_net << 8) | net,
-                                            index,
-                                            flipped,
-                                        );
+                    match adj_nets {
+                        None => {
+                            println!("No adjacent tile for bits <1>: {:016b}", net);
+                        }
+                        Some(adj_tile) => {
+                            for adj_net in *possibles_nets {
+                                if adj_tile.contain_net(*adj_net) {
+                                    let bits = transform_tile_orientation(
+                                        (adj_net << 8) | net,
+                                        index,
+                                        flipped,
+                                    );
 
-                                        let path = MAP_PATHS.get(&bits);
-                                        if path.is_some() {
-                                            groups.push(path.unwrap());
-                                        }
-                                        break;
+                                    let path = MAP_PATHS.get(&bits);
+                                    if path.is_some() {
+                                        groups.push(path.unwrap());
                                     }
+                                    break;
                                 }
                             }
                         }
                     }
-                    None => {
+                }
+                None => {
+                    let bits = transform_tile_orientation(net, index, flipped);
+                    let path = MAP_PATHS.get(&bits);
+                    // A simple tile with no adjacent tiles to worry about?
+                    if path.is_some() {
+                        groups.push(path.unwrap());
+                    } else {
                         println!("No path for bits: {:016b} @ {:?}", net, coordinate);
                     }
                 }
@@ -148,6 +144,7 @@ impl Tile {
         }
 
         if boundaries {
+            let bits = if flipped { 0b11_000_000 } else { 0b10_000_000 };
             let wall = MAP_PATHS.get(&bits);
             if wall.is_some() {
                 groups.push(wall.unwrap());
