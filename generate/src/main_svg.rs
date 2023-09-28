@@ -10,6 +10,7 @@ mod frag_15_tight;
 mod frag_16;
 mod frag_45_halfs;
 mod frag_arcs;
+mod frag_blank;
 mod frag_math;
 mod frag_wall;
 mod lookups;
