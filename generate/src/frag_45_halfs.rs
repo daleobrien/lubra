@@ -3,7 +3,7 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-pub fn fn_pts() -> (String, String, Path) {
+pub fn fn_pts(invert: bool) -> (String, String, Path) {
     let w = PATH_WIDTH;
 
     let r1 = 0.5 + w;
@@ -32,40 +32,41 @@ pub fn fn_pts() -> (String, String, Path) {
     let r2 = trimf64(TILE_WIDTH * r2);
 
     let pts = Path::new(vec![a, b, c, d]);
+    let pts = if invert { pts.invert() } else { pts };
     return (r1, r2, pts);
 }
 
 pub fn a45_35(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts();
+    let (r1, r2, pts) = fn_pts(invert);
     return fn_str(invert, pts, r1, r2);
 }
 
 pub fn a46_14(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts();
+    let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
     return fn_str(invert, pts, r1, r2);
 }
 
 pub fn a56_26(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts();
+    let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
     return fn_str(invert, pts, r1, r2);
 }
 
 pub fn a45_24(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts();
+    let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect();
     return fn_str(!invert, pts, r1, r2);
 }
 
 pub fn a46_36(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts();
+    let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3]);
     return fn_str(!invert, pts, r1, r2);
 }
 
 pub fn a56_15(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts();
+    let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
     return fn_str(!invert, pts, r1, r2);
 }
