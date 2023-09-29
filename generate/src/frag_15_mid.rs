@@ -68,7 +68,9 @@ pub fn fn_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"{fill}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} L {c} M {d} L {e} A {r2} {r2} 0 0 {d2} {f} \\\" />",
+        "<path fill=\\\"{fill}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} L {c} L {d} L {e} A {r2} {r2} 0 0 {d2} {f} \\\" />\
+         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} L {c} M {d} L {e} A {r2} {r2} 0 0 {d2} {f} \\\" />
+        ",
         a = pts[0],
         b = pts[1],
         c = pts[2],
