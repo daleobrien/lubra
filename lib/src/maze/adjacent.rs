@@ -110,8 +110,7 @@ pub fn get_surrounding_tile_connections(surrounding_tiles: &[Option<&Tile>; 12])
 fn string_for_tile(tile: Option<&Tile>) -> String {
     match tile {
         Some(t) => {
-            let v = t.clone().to_string_vec();
-            return v.join(",");
+            return t.clone().to_string_vec();
         }
         None => return "⌀".to_string(),
     }

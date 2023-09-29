@@ -15,10 +15,18 @@ pub struct Tile {
 
 #[cfg(debug_assertions)]
 fn pretty_print_int(b: &u32) -> String {
-    let number_as_string = format!("{:08b}", *b);
+    let places = vec![3usize, 6usize, 8usize, 11usize, 14usize, 16usize];
+    let number_as_string = if *b < 257u32 {
+        format!("{:08b}", *b)
+    } else {
+        format!("{:016b}", *b)
+    };
     let mut s = String::new();
     for (idx, val) in number_as_string.chars().rev().enumerate() {
-        if idx != 0 && idx % 3 == 0 {
+        if places.contains(&idx) {
+            s.insert(0, '_');
+        }
+        if idx == 8 {
             s.insert(0, '_');
         }
         s.insert(0, val);
@@ -68,14 +76,18 @@ impl Tile {
         };
     }
 
-    pub fn to_string_vec(self) -> Vec<String> {
+    pub fn to_string_vec(self) -> String {
         if self.nodes.is_empty() {
-            return vec!["-".to_string()];
+            return "-".to_string();
         }
-        self.nodes
+        let s: String = self
+            .nodes
             .iter()
             .map(|n| format!("{:?}", pretty_print_int(n)))
             .collect::<Vec<String>>()
+            .join(", ");
+
+        return format!("[{s}]", s = s.replace("\"", ""));
     }
 
     pub fn to_svg_groups(
@@ -90,7 +102,7 @@ impl Tile {
         let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
         println!(
-            "Render Tile: {:?} @ {:?}",
+            "\n\nRender Tile: {:?} @ {:?}",
             coordinate,
             self.clone().to_string_vec()
         );
@@ -98,47 +110,58 @@ impl Tile {
         let index = coordinate.i % 3;
 
         for net in self.nodes {
-            println!("net: {:016b}", net);
+            println!("net: {}", pretty_print_int(&net));
             // Now we need to look for related tiles ...
-            match ADJ_CHECKS.get(&net) {
-                // Iterated over each adj index and net
-                Some(&adj_and_nets) => {
-                    for (adj_idx, adj_net) in adj_and_nets {
-                        let &adj_nets = &surrounding_tiles[*adj_idx];
-                        print_surrounding(surrounding_tiles);
-                        println!("adj_idx: {adj_idx}, adj_nets: {adj_nets:?}");
 
-                        match adj_nets {
-                            None => {
-                                println!("No adjacent tile for bits <1>: {:016b}", net);
-                            }
-                            Some(adj_tile) => {
-                                if adj_tile.contain_net(*adj_net) {
-                                    let bits = transform_tile_orientation(
-                                        (adj_net << 8) | net,
-                                        index,
-                                        flipped,
-                                    );
+            let mut found = false;
+            let adj_and_nets = ADJ_CHECKS.get(&net);
+            if adj_and_nets.is_some() {
+                for (adj_idx, adj_net) in adj_and_nets.unwrap().iter() {
+                    let &adj_nets = &surrounding_tiles[*adj_idx];
+                    print_surrounding(surrounding_tiles);
 
-                                    let path = MAP_PATHS.get(&bits);
-                                    if path.is_some() {
-                                        groups.push(path.unwrap());
-                                    }
-                                    break;
+                    match adj_nets {
+                        None => {
+                            println!("No adjacent tile for bits <1>: {}", pretty_print_int(&net));
+                        }
+                        Some(adj_tile) => {
+                            println!(
+                                "net {x}, adj_idx: {adj_idx}, adj_nets: {n}",
+                                x = pretty_print_int(&net),
+                                n = pretty_print_int(&(*adj_tile).bits)
+                            );
+                            if adj_tile.contain_net(*adj_net) {
+                                let bits = transform_tile_orientation(
+                                    (adj_net << 8) | net,
+                                    index,
+                                    flipped,
+                                );
+
+                                let path = MAP_PATHS.get(&bits.clone());
+                                println!(
+                                    "transformed net:{} -> {} ({bits:?})",
+                                    pretty_print_int(&((adj_net << 8) | net)),
+                                    pretty_print_int(&bits)
+                                );
+                                if path.is_some() {
+                                    groups.push(path.unwrap());
+                                    found = true;
                                 }
+                                break;
                             }
                         }
                     }
                 }
-                None => {
-                    let bits = transform_tile_orientation(net, index, flipped);
-                    let path = MAP_PATHS.get(&bits);
-                    // A simple tile with no adjacent tiles to worry about?
-                    if path.is_some() {
-                        groups.push(path.unwrap());
-                    } else {
-                        println!("No path for bits: {:016b} @ {:?}", net, coordinate);
-                    }
+            }
+            //
+            if !found {
+                let bits = transform_tile_orientation(net, index, flipped);
+                let path = MAP_PATHS.get(&bits);
+                // A simple tile with no adjacent tiles to worry about?
+                if path.is_some() {
+                    groups.push(path.unwrap());
+                } else {
+                    println!("No path for bits: {:016b} @ {:?}", net, coordinate);
                 }
             }
         }
@@ -222,6 +245,7 @@ pub fn add(u: usize, i: i32) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use crate::maze::tile::Tile;
+    use std::{assert_eq, println, vec};
 
     #[test]
     fn test_cw_rotation() {
