@@ -2,6 +2,7 @@ use common::consts::{ADJ_4, ADJ_5, NODE_1, NODE_4, NODE_5};
 
 use crate::maze::adjacent::{print_surrounding, ADJ_N5};
 use crate::maze::nets_adjacent::ADJ_CHECKS;
+use crate::maze::nets_blank::BLANK_CHECKS;
 use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use std::fmt;
@@ -110,15 +111,50 @@ impl Tile {
         let index = coordinate.i % 3;
 
         for net in self.nodes {
-            println!("net: {}", pretty_print_int(&net));
+            println!("net: {} / {net}", pretty_print_int(&net));
             // Now we need to look for related tiles ...
 
             let mut found = false;
+
+            // First check if the tile should be blanked out, i.e. adjancent will render.
+            let adj_and_nets = BLANK_CHECKS.get(&net);
+            if adj_and_nets.is_some() {
+                println!("Check BLANKS");
+                for (adj1_idx, pattern1, adj2_idx, pattern2) in adj_and_nets.unwrap().iter() {
+                    let &adj1_tile = &surrounding_tiles[*adj1_idx];
+                    let &adj2_tile = &surrounding_tiles[*adj2_idx];
+
+                    match (adj1_tile, adj2_tile) {
+                        (Some(a), Some(b)) => {
+                            println!(
+                                "adj1_tile[{adj1_idx}]: {}, adj2_tile[{adj2_idx}]: {}\n \
+                                 pattern1: {p1}, pattern2: {p2}",
+                                a.clone().to_string_vec(),
+                                b.clone().to_string_vec(),
+                                p1 = pretty_print_int(pattern1),
+                                p2 = pretty_print_int(pattern2),
+                            );
+
+                            if a.contain_net(*pattern1) && b.contain_net(*pattern2) {
+                                println!("Blanking out tile: {}", pretty_print_int(&net));
+                                found = true;
+                                break;
+                            }
+                        }
+                        (_, _) => {}
+                    }
+                }
+            }
+
+            if found {
+                continue;
+            }
+
             let adj_and_nets = ADJ_CHECKS.get(&net);
             if adj_and_nets.is_some() {
                 for (adj_idx, adj_net) in adj_and_nets.unwrap().iter() {
                     let &adj_nets = &surrounding_tiles[*adj_idx];
-                    print_surrounding(surrounding_tiles);
+                    // print_surrounding(surrounding_tiles);
 
                     match adj_nets {
                         None => {

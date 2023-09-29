@@ -123,8 +123,10 @@ pub fn generate_all_shapes() {
         }
     }
 
-    // This is used to look up mathcing adjacent paths.
+    // This is used to look up matching adjacent paths.
     let mut adj_paths: BTreeMap<u32, Vec<(usize, u32)>> = BTreeMap::new();
+    let mut blank_paths: BTreeMap<u32, Vec<(usize, u32, usize, u32)>> = BTreeMap::new();
+
     // e.g. for a NODE_1-4 we can handle a few different matching tiles
     adj_paths.insert(
         NODE_1 | NODE_4,
@@ -233,6 +235,20 @@ pub fn generate_all_shapes() {
         ],
     );
 
+    //
+    blank_paths.insert(
+        NODE_4 | NODE_5,
+        vec![(ADJ_N4, NODE_2 | NODE_4, ADJ_N5, NODE_3 | NODE_5)],
+    );
+    blank_paths.insert(
+        NODE_4 | NODE_6,
+        vec![(ADJ_N4, NODE_1 | NODE_4, ADJ_N6, NODE_3 | NODE_6)],
+    );
+    blank_paths.insert(
+        NODE_5 | NODE_6,
+        vec![(ADJ_N5, NODE_1 | NODE_5, ADJ_N6, NODE_2 | NODE_6)],
+    );
+
     // Change this to a look up function rather than a class with a HashMap.
     let mut file = File::create("../lib/src/renders/fragment.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
@@ -259,6 +275,26 @@ pub fn generate_all_shapes() {
         let masks_as_string = index_and_masks
             .iter()
             .map(|(i, n)| format!("({i}usize, {n}u32)"))
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let _ = write!(file, "  {key}u32 =>  &[{masks_as_string}], // {key:06b}\n");
+    }
+    let _ = file.write(b"};\n\n");
+    let _ = file.flush();
+
+    // Change this to a look up function rather than a class with a HashMap.
+    let mut file = File::create("../lib/src/maze/nets_blank.rs").expect("File Creation failed");
+    let _ = file.write(b"/* This file is generated. */\n");
+    let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
+    let _ = file.write(
+        b"pub static BLANK_CHECKS: Map<u32, &'static [(usize,u32,usize,u32)]> = phf_map! {\n",
+    );
+    for (key, index_and_masks) in blank_paths {
+        // Extract out possible masks
+        let masks_as_string = index_and_masks
+            .iter()
+            .map(|(i, n, j, m)| format!("({i}usize, {n}u32, {j}usize, {m}u32)"))
             .collect::<Vec<String>>()
             .join(", ");
 

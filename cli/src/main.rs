@@ -1,7 +1,7 @@
 use lib::maze::maze::Maze;
 
 fn main() {
-    let seed = 3;
+    let seed = 2;
     let maze = Maze::new(3, 2, true, true, Some(seed));
     let name = format!("sample.svg");
     let result_f = maze.render(name.to_string());
