@@ -20,6 +20,13 @@ pub const ADJ_4: u32 = 0b00_001_000_00_000_000;
 pub const ADJ_5: u32 = 0b00_010_000_00_000_000;
 pub const ADJ_6: u32 = 0b00_100_000_00_000_000;
 
+pub const ADJ_N1: usize = 0usize;
+pub const ADJ_N2: usize = 1usize;
+pub const ADJ_N3: usize = 2usize;
+pub const ADJ_N4: usize = 3usize;
+pub const ADJ_N5: usize = 4usize;
+pub const ADJ_N6: usize = 5usize;
+
 pub const FILL: &str = "white";
 
 // For a tile in the very first position, (0,0), the coordinates are:

@@ -1,8 +1,5 @@
-use common::consts::{ADJ_4, ADJ_5, NODE_1, NODE_4, NODE_5};
-
-use crate::maze::adjacent::{print_surrounding, ADJ_N5};
 use crate::maze::nets_adjacent::ADJ_CHECKS;
-use crate::maze::nets_blank::BLANK_CHECKS;
+use crate::maze::nets_blank::BLANK_CHECK_PATHS;
 use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use std::fmt;
@@ -114,41 +111,11 @@ impl Tile {
             println!("net: {} / {net}", pretty_print_int(&net));
             // Now we need to look for related tiles ...
 
-            let mut found = false;
-
-            // First check if the tile should be blanked out, i.e. adjancent will render.
-            let adj_and_nets = BLANK_CHECKS.get(&net);
-            if adj_and_nets.is_some() {
-                println!("Check BLANKS");
-                for (adj1_idx, pattern1, adj2_idx, pattern2) in adj_and_nets.unwrap().iter() {
-                    let &adj1_tile = &surrounding_tiles[*adj1_idx];
-                    let &adj2_tile = &surrounding_tiles[*adj2_idx];
-
-                    match (adj1_tile, adj2_tile) {
-                        (Some(a), Some(b)) => {
-                            println!(
-                                "adj1_tile[{adj1_idx}]: {}, adj2_tile[{adj2_idx}]: {}\n \
-                                 pattern1: {p1}, pattern2: {p2}",
-                                a.clone().to_string_vec(),
-                                b.clone().to_string_vec(),
-                                p1 = pretty_print_int(pattern1),
-                                p2 = pretty_print_int(pattern2),
-                            );
-
-                            if a.contain_net(*pattern1) && b.contain_net(*pattern2) {
-                                println!("Blanking out tile: {}", pretty_print_int(&net));
-                                found = true;
-                                break;
-                            }
-                        }
-                        (_, _) => {}
-                    }
-                }
-            }
-
-            if found {
+            if Self::can_be_hidden(surrounding_tiles, &net) {
                 continue;
-            }
+            };
+
+            let mut found = false;
 
             let adj_and_nets = ADJ_CHECKS.get(&net);
             if adj_and_nets.is_some() {
@@ -211,6 +178,36 @@ impl Tile {
         }
 
         return groups;
+    }
+
+    fn can_be_hidden(surrounding_tiles: &[Option<&Tile>; 12], net: &u32) -> bool {
+        // First check if the tile should be blanked out, i.e. adjacent will render.
+        let list_of_adj_and_nets = BLANK_CHECK_PATHS.get(&net);
+
+        if list_of_adj_and_nets.is_some() {
+            for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
+                let mut all_matched = true;
+                // All the adjacent tiles must contain the net to be considered hidden.
+                for (adj_idx, pattern) in adj_and_nets.iter() {
+                    let &adj_tile = &surrounding_tiles[*adj_idx];
+
+                    match adj_tile {
+                        Some(a) => {
+                            if !a.contain_net(*pattern) {
+                                all_matched = false;
+                            }
+                        }
+                        _ => {
+                            all_matched = false;
+                        }
+                    }
+                }
+                if all_matched {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     pub fn rotate_cw(&self) -> Vec<u32> {

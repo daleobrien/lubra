@@ -1,17 +1,17 @@
 use lib::maze::maze::Maze;
 
 fn main() {
-    let seed = 2;
-    let maze = Maze::new(3, 2, true, true, Some(seed));
-    let name = format!("sample.svg");
-    let result_f = maze.render(name.to_string());
-    println!("Finished creating Random maze {:?}", result_f.unwrap());
+    // let seed = 1;
+    // let maze = Maze::new(4, 3, true, true, Some(seed));
+    // let name = format!("sample.svg");
+    // let result_f = maze.render(name.to_string());
+    // println!("Finished creating Random maze {:?}", result_f.unwrap());
 
     const C: usize = 54; // 9, 54;
     const R: usize = 36; // 6, 36;
 
     for i in 1..50 {
-        let maze = Maze::new(3, 2, true, true, Some(i));
+        let maze = Maze::new(4, 3, true, true, Some(i));
         let name = format!("test/random-{}.svg", i);
         let result_f = maze.render(name.to_string());
         println!("Finished creating Random maze {:?}", result_f.unwrap());

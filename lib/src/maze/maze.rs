@@ -2,10 +2,7 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
-use common::consts::{
-    ADJ_1, ADJ_2, ADJ_3, ADJ_4, ADJ_5, ADJ_6, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6,
-    NODE_TO_COORD,
-};
+use common::consts::NODE_TO_COORD;
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;

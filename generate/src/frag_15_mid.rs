@@ -1,7 +1,7 @@
 use common::consts::FILL;
 use common::types::format::trimf64;
 use common::types::path::Path;
-use common::types::point::{Point, PATH_WIDTH, S3, S4, S5, TILE_WIDTH};
+use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
 pub fn a15_56(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
