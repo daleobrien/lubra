@@ -8,11 +8,11 @@ pub static ADJ_CHECKS: Map<u32, &'static [(usize,u32)]> = phf_map! {
   16u32 =>  &[(4usize, 17u32), (4usize, 20u32)], // 010000
   17u32 =>  &[(4usize, 16u32), (4usize, 18u32), (4usize, 20u32), (4usize, 24u32), (4usize, 48u32)], // 010001
   20u32 =>  &[(4usize, 16u32), (4usize, 17u32), (4usize, 18u32), (4usize, 48u32), (4usize, 24u32)], // 010100
-  24u32 =>  &[(4usize, 20u32), (3usize, 10u32)], // 011000
+  24u32 =>  &[(4usize, 20u32), (3usize, 10u32), (3usize, 9u32), (4usize, 17u32)], // 011000
   32u32 =>  &[(5usize, 34u32), (5usize, 36u32)], // 100000
   34u32 =>  &[(5usize, 32u32), (5usize, 33u32), (5usize, 36u32), (5usize, 40u32), (5usize, 48u32)], // 100010
   36u32 =>  &[(5usize, 32u32), (5usize, 33u32), (5usize, 34u32), (5usize, 40u32), (5usize, 48u32)], // 100100
-  40u32 =>  &[(3usize, 9u32), (5usize, 36u32)], // 101000
-  48u32 =>  &[(4usize, 17u32), (5usize, 34u32)], // 110000
+  40u32 =>  &[(3usize, 9u32), (5usize, 36u32), (3usize, 10u32), (5usize, 34u32)], // 101000
+  48u32 =>  &[(4usize, 17u32), (5usize, 34u32), (4usize, 20u32), (5usize, 36u32)], // 110000
 };
 

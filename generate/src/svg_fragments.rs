@@ -107,6 +107,13 @@ pub fn generate_all_shapes() {
             (direction | NODE_5 | ADJ_3 | ADJ_5, blank(invert)),
             (direction | NODE_6 | ADJ_2 | ADJ_6, blank(invert)),
             (direction | NODE_6 | ADJ_3 | ADJ_6, blank(invert)),
+            // Arc blanking
+            (direction | NODE_4 | NODE_5 | ADJ_1 | ADJ_4, blank(invert)),
+            (direction | NODE_4 | NODE_5 | ADJ_1 | ADJ_5, blank(invert)),
+            (direction | NODE_4 | NODE_6 | ADJ_2 | ADJ_4, blank(invert)),
+            (direction | NODE_4 | NODE_6 | ADJ_2 | ADJ_6, blank(invert)),
+            (direction | NODE_5 | NODE_6 | ADJ_3 | ADJ_5, blank(invert)),
+            (direction | NODE_5 | NODE_6 | ADJ_3 | ADJ_6, blank(invert)),
             //
             (direction | NODE_3 | NODE_6 | ADJ_6, a36_6(invert)),
             (direction | NODE_1 | NODE_4, a14(invert)),
@@ -200,15 +207,30 @@ pub fn generate_all_shapes() {
     // TODO: Figure out a way to check 2 adjs at once!
     adj_paths.insert(
         NODE_4 | NODE_5,
-        vec![(ADJ_N5, NODE_3 | NODE_5), (ADJ_N4, NODE_2 | NODE_4)],
+        vec![
+            (ADJ_N5, NODE_3 | NODE_5),
+            (ADJ_N4, NODE_2 | NODE_4),
+            (ADJ_N4, NODE_1 | NODE_4), // Blank
+            (ADJ_N5, NODE_1 | NODE_5), // Blank
+        ],
     );
     adj_paths.insert(
         NODE_4 | NODE_6,
-        vec![(ADJ_N4, NODE_1 | NODE_4), (ADJ_N6, NODE_3 | NODE_6)],
+        vec![
+            (ADJ_N4, NODE_1 | NODE_4),
+            (ADJ_N6, NODE_3 | NODE_6),
+            (ADJ_N4, NODE_2 | NODE_4), // Blank
+            (ADJ_N6, NODE_2 | NODE_6), // Blank
+        ],
     );
     adj_paths.insert(
         NODE_5 | NODE_6,
-        vec![(ADJ_N5, NODE_1 | NODE_5), (ADJ_N6, NODE_2 | NODE_6)],
+        vec![
+            (ADJ_N5, NODE_1 | NODE_5),
+            (ADJ_N6, NODE_2 | NODE_6),
+            (ADJ_N5, NODE_3 | NODE_5), // Blank
+            (ADJ_N6, NODE_3 | NODE_6), // Blank
+        ],
     );
 
     // Change this to a look up function rather than a class with a HashMap.
