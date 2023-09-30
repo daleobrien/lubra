@@ -1,6 +1,7 @@
 use crate::frag_12::{a12, a13, a23};
 use crate::frag_123::a123;
 use crate::frag_15::{a14, a15, a24, a26, a35, a36};
+use crate::frag_155::a144;
 use crate::frag_15_dot::{a14_4, a15_5, a24_4, a26_6, a35_5, a36_6};
 use crate::frag_15_long::{a14_24, a15_35, a24_14, a26_36, a35_15, a36_26};
 use crate::frag_15_mid::{a14_46, a15_56, a24_45, a26_56, a35_45, a36_46};
@@ -92,6 +93,11 @@ pub fn generate_all_shapes() {
             (direction | NODE_4 | NODE_6 | ADJ_3 | ADJ_6, a46_36(invert)),
             (direction | NODE_5 | NODE_6 | ADJ_1 | ADJ_5, a56_15(invert)),
             (direction | NODE_5 | NODE_6 | ADJ_2 | ADJ_6, a56_26(invert)),
+            // Longer half arc
+            (
+                direction | NODE_4 | NODE_5 | ADJ_1 | ADJ_3 | ADJ_4 | ADJ_5, // Really 1|4 , 3|5
+                a144(invert),
+            ),
             //
             (direction | NODE_3 | NODE_6 | ADJ_6, a36_6(invert)),
             (direction | NODE_1 | NODE_4, a14(invert)),

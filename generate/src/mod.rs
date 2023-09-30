@@ -1,6 +1,7 @@
 pub mod bit_utils;
 pub mod frag_12;
 pub mod frag_123;
+pub mod frag_155;
 pub mod frag_15_dot;
 pub mod frag_15_long;
 pub mod frag_15_mid;
@@ -9,7 +10,6 @@ pub mod frag_15_tight;
 pub mod frag_16;
 pub mod frag_45_halfs;
 pub mod frag_arcs;
-pub mod frag_blank;
 pub mod frag_math;
 pub mod frag_wall;
 pub mod node_combinations;

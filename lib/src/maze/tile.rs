@@ -111,51 +111,12 @@ impl Tile {
             println!("net: {} / {net}", pretty_print_int(&net));
             // Now we need to look for related tiles ...
 
-            if Self::can_be_hidden(surrounding_tiles, &net) {
-                continue;
-            };
+            // if Self::can_be_hidden(surrounding_tiles, &net) {
+            //     println!("HIDDEN");
+            //     continue;
+            // };
 
-            let mut found = false;
-
-            let adj_and_nets = ADJ_CHECKS.get(&net);
-            if adj_and_nets.is_some() {
-                for (adj_idx, adj_net) in adj_and_nets.unwrap().iter() {
-                    let &adj_nets = &surrounding_tiles[*adj_idx];
-                    // print_surrounding(surrounding_tiles);
-
-                    match adj_nets {
-                        None => {
-                            println!("No adjacent tile for bits <1>: {}", pretty_print_int(&net));
-                        }
-                        Some(adj_tile) => {
-                            println!(
-                                "net {x}, adj_idx: {adj_idx}, adj_nets: {n}",
-                                x = pretty_print_int(&net),
-                                n = pretty_print_int(&(*adj_tile).bits)
-                            );
-                            if adj_tile.contain_net(*adj_net) {
-                                let bits = transform_tile_orientation(
-                                    (adj_net << 8) | net,
-                                    index,
-                                    flipped,
-                                );
-
-                                let path = MAP_PATHS.get(&bits.clone());
-                                println!(
-                                    "transformed net:{} -> {} ({bits:?})",
-                                    pretty_print_int(&((adj_net << 8) | net)),
-                                    pretty_print_int(&bits)
-                                );
-                                if path.is_some() {
-                                    groups.push(path.unwrap());
-                                    found = true;
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            let found = Self::render_complex(&surrounding_tiles, &mut groups, flipped, index, &net);
             //
             if !found {
                 let bits = transform_tile_orientation(net, index, flipped);
@@ -180,34 +141,86 @@ impl Tile {
         return groups;
     }
 
+    fn render_complex(
+        surrounding_tiles: &&[Option<&Tile>; 12],
+        groups: &mut Vec<&str>,
+        flipped: bool,
+        index: usize,
+        net: &u32,
+    ) -> bool {
+        let mut found: bool = false;
+
+        let list_of_adj_and_nets = ADJ_CHECKS.get(&net);
+        println!("list {list_of_adj_and_nets:?}");
+
+        if list_of_adj_and_nets.is_some() {
+            for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
+                println!(" ------ searching ");
+                if Self::all_match(surrounding_tiles, adj_and_nets) {
+                    // return true;
+                    println!("FOUND MATCH");
+                    let adj_net = adj_and_nets.iter().map(|(_, n)| n).fold(0, |a, b| a | b);
+                    for (i, n) in adj_and_nets {
+                        println!("\t[{k}] -> {n}", k = i + 1, n = pretty_print_int(n));
+                    }
+                    println!("\t     -> {n} ", n = pretty_print_int(&adj_net));
+                    let bits = transform_tile_orientation((adj_net << 8) | net, index, flipped);
+                    let path = MAP_PATHS.get(&bits.clone());
+                    println!(
+                        "transformed net:{} -> {} ({bits:?})",
+                        pretty_print_int(&((adj_net << 8) | net)),
+                        pretty_print_int(&bits)
+                    );
+                    if path.is_some() {
+                        groups.push(path.unwrap());
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return found;
+    }
+
     fn can_be_hidden(surrounding_tiles: &[Option<&Tile>; 12], net: &u32) -> bool {
         // First check if the tile should be blanked out, i.e. adjacent will render.
         let list_of_adj_and_nets = BLANK_CHECK_PATHS.get(&net);
 
         if list_of_adj_and_nets.is_some() {
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
-                let mut all_matched = true;
-                // All the adjacent tiles must contain the net to be considered hidden.
-                for (adj_idx, pattern) in adj_and_nets.iter() {
-                    let &adj_tile = &surrounding_tiles[*adj_idx];
-
-                    match adj_tile {
-                        Some(a) => {
-                            if !a.contain_net(*pattern) {
-                                all_matched = false;
-                            }
-                        }
-                        _ => {
-                            all_matched = false;
-                        }
-                    }
-                }
-                if all_matched {
+                if Self::all_match(surrounding_tiles, adj_and_nets) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    fn all_match(surrounding_tiles: &[Option<&Tile>; 12], adj_and_nets: &[(usize, u32)]) -> bool {
+        let mut all_matched = true;
+
+        // All the adjacent tiles must contain the net to be considered hidden.
+        for (adj_idx, pattern) in adj_and_nets.iter() {
+            let &adj_tile = &surrounding_tiles[*adj_idx];
+
+            match adj_tile {
+                Some(a) => {
+                    println!(
+                        "m      {:?} -> {:?} / {:?}",
+                        adj_idx,
+                        pretty_print_int(&a.bits),
+                        pretty_print_int(pattern)
+                    );
+                    if !a.contain_net(*pattern) {
+                        all_matched = false;
+                    }
+                }
+                _ => {
+                    all_matched = false;
+                }
+            }
+        }
+        all_matched
     }
 
     pub fn rotate_cw(&self) -> Vec<u32> {
