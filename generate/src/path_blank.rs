@@ -5,55 +5,76 @@ use std::fs::File;
 use std::io::Write;
 
 pub fn generate_blank_paths() {
-    let mut blank_paths: BTreeMap<u32, Vec<Vec<(usize, u32)>>> = BTreeMap::new();
+    let mut blank_paths: BTreeMap<u32, Vec<Vec<(usize, bool, u32)>>> = BTreeMap::new();
     // Arc
     blank_paths.insert(
         NODE_4 | NODE_5,
         vec![
-            vec![(ADJ_N4, NODE_2 | NODE_4), (ADJ_N5, NODE_3 | NODE_5)],
-            vec![(ADJ_N4, NODE_1 | NODE_4)],
-            vec![(ADJ_N5, NODE_1 | NODE_5)],
+            vec![
+                (ADJ_N4, true, NODE_1 | NODE_4),
+                (ADJ_N5, true, NODE_3 | NODE_5),
+            ],
+            vec![
+                (ADJ_N4, true, NODE_2 | NODE_4),
+                (ADJ_N5, true, NODE_3 | NODE_5),
+            ],
+            vec![(ADJ_N4, true, NODE_1 | NODE_4)],
+            vec![(ADJ_N5, true, NODE_1 | NODE_5)],
         ],
     );
+    //
+    // blank_paths.insert(
+    //     NODE_4 | NODE_6,
+    //     vec![
+    //         vec![
+    //             (ADJ_N4, true, NODE_1 | NODE_4),
+    //             (ADJ_N6, true, NODE_3 | NODE_6),
+    //         ],
+    //         vec![(ADJ_N4, true, NODE_2 | NODE_4)],
+    //         vec![(ADJ_N6, true, NODE_2 | NODE_6)],
+    //     ],
+    // );
+    //
+    // blank_paths.insert(
+    //     NODE_5 | NODE_6,
+    //     vec![
+    //         vec![
+    //             (ADJ_N5, true, NODE_1 | NODE_5),
+    //             (ADJ_N6, true, NODE_2 | NODE_6),
+    //         ],
+    //         vec![(ADJ_N5, true, NODE_3 | NODE_5)],
+    //         vec![(ADJ_N6, true, NODE_3 | NODE_6)],
+    //     ],
+    // );
 
-    blank_paths.insert(
-        NODE_4 | NODE_6,
-        vec![
-            vec![(ADJ_N4, NODE_1 | NODE_4), (ADJ_N6, NODE_3 | NODE_6)],
-            vec![(ADJ_N4, NODE_2 | NODE_4)],
-            vec![(ADJ_N6, NODE_2 | NODE_6)],
-        ],
-    );
-
-    blank_paths.insert(
-        NODE_5 | NODE_6,
-        vec![
-            vec![(ADJ_N5, NODE_1 | NODE_5), (ADJ_N6, NODE_2 | NODE_6)],
-            vec![(ADJ_N5, NODE_3 | NODE_5)],
-            vec![(ADJ_N6, NODE_3 | NODE_6)],
-        ],
-    );
+    //  Tight Curve when connecting to an arc, we will draw that from the arcs point of view
+    blank_paths.insert(NODE_1 | NODE_4, vec![vec![(ADJ_N4, true, NODE_4 | NODE_5)]]);
+    blank_paths.insert(NODE_1 | NODE_5, vec![vec![(ADJ_N5, true, NODE_4 | NODE_5)]]);
+    blank_paths.insert(NODE_2 | NODE_4, vec![vec![(ADJ_N4, true, NODE_4 | NODE_6)]]);
+    blank_paths.insert(NODE_2 | NODE_6, vec![vec![(ADJ_N6, true, NODE_4 | NODE_6)]]);
+    blank_paths.insert(NODE_3 | NODE_5, vec![vec![(ADJ_N5, true, NODE_5 | NODE_6)]]);
+    blank_paths.insert(NODE_3 | NODE_6, vec![vec![(ADJ_N6, true, NODE_5 | NODE_6)]]);
 
     // straight line through one vertex
     blank_paths.insert(
         NODE_1 | NODE_6,
         vec![
-            vec![(ADJ_N6, NODE_2 | NODE_6)],
-            vec![(ADJ_N6, NODE_3 | NODE_6)],
+            vec![(ADJ_N6, true, NODE_2 | NODE_6)],
+            vec![(ADJ_N6, true, NODE_3 | NODE_6)],
         ],
     );
     blank_paths.insert(
         NODE_2 | NODE_5,
         vec![
-            vec![(ADJ_N5, NODE_1 | NODE_5)],
-            vec![(ADJ_N5, NODE_3 | NODE_5)],
+            vec![(ADJ_N5, true, NODE_1 | NODE_5)],
+            vec![(ADJ_N5, true, NODE_3 | NODE_5)],
         ],
     );
     blank_paths.insert(
         NODE_3 | NODE_4,
         vec![
-            vec![(ADJ_N4, NODE_1 | NODE_4)],
-            vec![(ADJ_N4, NODE_2 | NODE_4)],
+            vec![(ADJ_N4, true, NODE_1 | NODE_4)],
+            vec![(ADJ_N4, true, NODE_2 | NODE_4)],
         ],
     );
 
@@ -61,22 +82,22 @@ pub fn generate_blank_paths() {
     blank_paths.insert(
         NODE_4,
         vec![
-            vec![(ADJ_N4, NODE_1 | NODE_4)],
-            vec![(ADJ_N4, NODE_2 | NODE_4)],
+            vec![(ADJ_N4, true, NODE_1 | NODE_4)],
+            vec![(ADJ_N4, true, NODE_2 | NODE_4)],
         ],
     );
     blank_paths.insert(
         NODE_5,
         vec![
-            vec![(ADJ_N5, NODE_1 | NODE_5)],
-            vec![(ADJ_N5, NODE_3 | NODE_5)],
+            vec![(ADJ_N5, true, NODE_1 | NODE_5)],
+            vec![(ADJ_N5, true, NODE_3 | NODE_5)],
         ],
     );
     blank_paths.insert(
         NODE_6,
         vec![
-            vec![(ADJ_N6, NODE_2 | NODE_6)],
-            vec![(ADJ_N6, NODE_3 | NODE_6)],
+            vec![(ADJ_N6, true, NODE_2 | NODE_6)],
+            vec![(ADJ_N6, true, NODE_3 | NODE_6)],
         ],
     );
 
@@ -85,7 +106,7 @@ pub fn generate_blank_paths() {
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
     let _ = file.write(
-        b"pub static BLANK_CHECK_PATHS: Map<u32, &'static [&'static [(usize, u32)]]> = phf_map! {\n",
+        b"pub static BLANK_CHECK_PATHS: Map<u32, &'static [&'static [(usize, bool, u32)]]> = phf_map! {\n",
     );
     for (key, list_index_and_masks) in blank_paths {
         // Extract out possible masks
@@ -95,7 +116,7 @@ pub fn generate_blank_paths() {
         for index_and_masks in list_index_and_masks {
             let masks_as_string = index_and_masks
                 .iter()
-                .map(|(i, n)| format!("({i}usize, {n}u32)"))
+                .map(|(i, include, n)| format!("({i}usize, {include}, {n}u32)"))
                 .collect::<Vec<String>>()
                 .join(", ");
             subs.push(format!("&[{masks_as_string}]"));

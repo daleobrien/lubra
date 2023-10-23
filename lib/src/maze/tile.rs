@@ -111,13 +111,13 @@ impl Tile {
             println!("net: {} / {net}", pretty_print_int(&net));
             // Now we need to look for related tiles ...
 
+            let found = Self::render_complex(&surrounding_tiles, &mut groups, flipped, index, &net);
+            //
             // if Self::can_be_hidden(surrounding_tiles, &net) {
             //     println!("HIDDEN");
             //     continue;
             // };
 
-            let found = Self::render_complex(&surrounding_tiles, &mut groups, flipped, index, &net);
-            //
             if !found {
                 let bits = transform_tile_orientation(net, index, flipped);
                 let path = MAP_PATHS.get(&bits);
@@ -159,9 +159,9 @@ impl Tile {
                 if Self::all_match(surrounding_tiles, adj_and_nets) {
                     // return true;
                     println!("FOUND MATCH");
-                    let adj_net = adj_and_nets.iter().map(|(_, n)| n).fold(0, |a, b| a | b);
-                    for (i, n) in adj_and_nets {
-                        println!("\t[{k}] -> {n}", k = i + 1, n = pretty_print_int(n));
+                    let adj_net = adj_and_nets.iter().map(|(_, m, n)| n).fold(0, |a, b| a | b);
+                    for (i, m, n) in adj_and_nets {
+                        println!("\t[{k}] <{m}>-> {n}", k = i + 1, n = pretty_print_int(n));
                     }
                     println!("\t     -> {n} ", n = pretty_print_int(&adj_net));
                     let bits = transform_tile_orientation((adj_net << 8) | net, index, flipped);
@@ -174,6 +174,7 @@ impl Tile {
                     if path.is_some() {
                         groups.push(path.unwrap());
                         found = true;
+                        // Stop at the first , match, there may be others
                         break;
                     }
                 }
@@ -196,11 +197,14 @@ impl Tile {
         return false;
     }
 
-    fn all_match(surrounding_tiles: &[Option<&Tile>; 12], adj_and_nets: &[(usize, u32)]) -> bool {
+    fn all_match(
+        surrounding_tiles: &[Option<&Tile>; 12],
+        adj_and_nets: &[(usize, bool, u32)],
+    ) -> bool {
         let mut all_matched = true;
 
         // All the adjacent tiles must contain the net to be considered hidden.
-        for (adj_idx, pattern) in adj_and_nets.iter() {
+        for (adj_idx, same, pattern) in adj_and_nets.iter() {
             let &adj_tile = &surrounding_tiles[*adj_idx];
 
             match adj_tile {
@@ -211,7 +215,7 @@ impl Tile {
                         pretty_print_int(&a.bits),
                         pretty_print_int(pattern)
                     );
-                    if !a.contain_net(*pattern) {
+                    if *same != a.contain_net(*pattern) {
                         all_matched = false;
                     }
                 }

@@ -3,36 +3,36 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-pub fn a15_56(invert: bool) -> String {
+pub fn a45_35_long(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     return fn_str(invert, pts, r1, r2);
 }
 
-pub fn a24_45(invert: bool) -> String {
+pub fn a56_26_long(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
     return fn_str(invert, pts, r1, r2);
 }
 
-pub fn a36_46(invert: bool) -> String {
+pub fn a46_14_long(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
     return fn_str(invert, pts, r1, r2);
 }
 
-pub fn a14_46(invert: bool) -> String {
+pub fn a45_24_long(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect();
     return fn_str(!invert, pts, r1, r2);
 }
 
-pub fn a26_56(invert: bool) -> String {
+pub fn a56_15_long(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
     return fn_str(!invert, pts, r1, r2);
 }
 
-pub fn a35_45(invert: bool) -> String {
+pub fn a46_36_long(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
     return fn_str(!invert, pts, r1, r2);
@@ -58,7 +58,16 @@ fn fn_pts(invert: bool) -> (String, String, Path) {
 
     let pts = Path::new(vec![a, b, c, d, e, f]);
 
-    let pts = if invert { pts.invert() } else { pts };
+    // Move it around to make it relative to the the ARC
+    let pts = if !invert { pts.invert() } else { pts };
+    let pts = Path::new(
+        pts.iter()
+            .map(|p| Point {
+                x: 1.5 - p.x,
+                y: p.y,
+            })
+            .collect(),
+    );
     let r1 = trimf64(TILE_WIDTH * (r + w));
     let r2 = trimf64(TILE_WIDTH * (r - w));
     return (r1, r2, pts);

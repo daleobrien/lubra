@@ -36,36 +36,36 @@ pub fn fn_pts(invert: bool) -> (String, String, Path) {
     return (r1, r2, pts);
 }
 
-pub fn a45_35(invert: bool) -> String {
+pub fn a45_35_half(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     return fn_str(invert, pts, r1, r2);
 }
 
-pub fn a46_14(invert: bool) -> String {
+pub fn a46_14_half(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
     return fn_str(invert, pts, r1, r2);
 }
 
-pub fn a56_26(invert: bool) -> String {
+pub fn a56_26_half(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
     return fn_str(invert, pts, r1, r2);
 }
 
-pub fn a45_24(invert: bool) -> String {
+pub fn a45_24_half(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect();
     return fn_str(!invert, pts, r1, r2);
 }
 
-pub fn a46_36(invert: bool) -> String {
+pub fn a46_36_half(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3]);
     return fn_str(!invert, pts, r1, r2);
 }
 
-pub fn a56_15(invert: bool) -> String {
+pub fn a56_15_half(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
     return fn_str(!invert, pts, r1, r2);
