@@ -7,6 +7,9 @@ members = [
     "common"
 ]
 
+[build]
+rustflags = ["-Z", "threads=12"]
+
 [profile.release]
 opt-level = 3
 debug = false
