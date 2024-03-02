@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
-set -
+set -e
 
-cd generate
+FOLDER=$(cd `dirname $0` && pwd)
+
+echo "${FOLDER}"
+
+cd ${FOLDER}/document
+cargo run
+
+cd ${FOLDER}/generate
 cargo run --bin generate_svg
-cd ../cli
-cargo run 
+
+cd ${FOLDER}/cli
+cargo run

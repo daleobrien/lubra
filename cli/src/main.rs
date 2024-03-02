@@ -1,6 +1,16 @@
+use clap::Parser;
 use lib::maze::maze::Maze;
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    // #[arg(short = 'd', long, default_value_t = false)]
+    // document: bool,
+}
+
 fn main() {
+    // TODO: use args ...
+
     let seed = 15;
     let maze = Maze::new(8, 1, true, true, Some(seed));
     let name = format!("sample.svg");

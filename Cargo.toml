@@ -4,11 +4,13 @@ members = [
     "lib",
     "cli",
     "generate",
-    "common"
+    "common",
+    "document"
 ]
 
-[build]
-rustflags = ["-Z", "threads=12"]
+[profile.dev]
+codegen-units = 16 # faster builds
+incremental = true
 
 [profile.release]
 opt-level = 3
@@ -16,7 +18,7 @@ debug = false
 rpath = false
 lto = false
 debug-assertions = false
-codegen-units = 16
+codegen-units = 1 # faster build, slower code, set to 1
 panic = 'unwind'
 incremental = false
 overflow-checks = false
