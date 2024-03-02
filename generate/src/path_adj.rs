@@ -1,4 +1,4 @@
-use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6};
+use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
@@ -9,145 +9,112 @@ pub fn generate_adjacent_paths() {
 
     // e.g. for a NODE_1-4 we can handle a few different matching tiles
     adj_paths.insert(
-        NODE_1 | NODE_4,
+        N1 | N4,
         vec![
-            vec![(ADJ_N4, true, NODE_4)], // Adjacent tile to look up, then the expected tile
-            vec![(ADJ_N4, true, NODE_4)],
-            vec![(ADJ_N4, true, NODE_2 | NODE_4)],
-            vec![(ADJ_N4, true, NODE_3 | NODE_4)],
-            vec![(ADJ_N4, true, NODE_4 | NODE_5)],
-            vec![(ADJ_N4, true, NODE_4 | NODE_6)],
+            vec![(ADJ_N4, true, N4)], // Adjacent tile to look up, then the expected tile
+            vec![(ADJ_N4, true, N4)],
+            vec![(ADJ_N4, true, N2 | N4)],
+            vec![(ADJ_N4, true, N3 | N4)],
+            vec![(ADJ_N4, true, N4 | N5)],
+            vec![(ADJ_N4, true, N4 | N6)],
         ],
     );
     adj_paths.insert(
-        NODE_1 | NODE_5,
+        N1 | N5,
         vec![
-            vec![(ADJ_N5, true, NODE_5)],
-            vec![(ADJ_N5, true, NODE_2 | NODE_5)],
-            vec![(ADJ_N5, true, NODE_3 | NODE_5)],
+            vec![(ADJ_N5, true, N5)],
+            vec![(ADJ_N5, true, N2 | N5)],
+            vec![(ADJ_N5, true, N3 | N5)],
             //vec![(ADJ_N5, true, NODE_4 | NODE_5)],
-            vec![(ADJ_N5, true, NODE_5 | NODE_6)],
+            vec![(ADJ_N5, true, N5 | N6)],
         ],
     );
 
     adj_paths.insert(
-        NODE_2 | NODE_4,
+        N2 | N4,
         vec![
-            vec![(ADJ_N4, true, NODE_4)],
-            vec![(ADJ_N4, true, NODE_1 | NODE_4)],
-            vec![(ADJ_N4, true, NODE_3 | NODE_4)],
-            vec![(ADJ_N4, true, NODE_4 | NODE_5)],
-            vec![(ADJ_N4, true, NODE_4 | NODE_6)],
+            vec![(ADJ_N4, true, N4)],
+            vec![(ADJ_N4, true, N1 | N4)],
+            vec![(ADJ_N4, true, N3 | N4)],
+            vec![(ADJ_N4, true, N4 | N5)],
+            vec![(ADJ_N4, true, N4 | N6)],
         ],
     );
 
     adj_paths.insert(
-        NODE_2 | NODE_6,
+        N2 | N6,
         vec![
-            vec![(ADJ_N6, true, NODE_6)],
-            vec![(ADJ_N6, true, NODE_1 | NODE_6)],
-            vec![(ADJ_N6, true, NODE_3 | NODE_6)],
-            vec![(ADJ_N6, true, NODE_4 | NODE_6)],
-            vec![(ADJ_N6, true, NODE_5 | NODE_6)],
+            vec![(ADJ_N6, true, N6)],
+            vec![(ADJ_N6, true, N1 | N6)],
+            vec![(ADJ_N6, true, N3 | N6)],
+            vec![(ADJ_N6, true, N4 | N6)],
+            vec![(ADJ_N6, true, N5 | N6)],
         ],
     );
 
     adj_paths.insert(
-        NODE_3 | NODE_5,
+        N3 | N5,
         vec![
-            vec![(ADJ_N5, true, NODE_5)],
-            vec![(ADJ_N5, true, NODE_1 | NODE_5)],
-            vec![(ADJ_N5, true, NODE_2 | NODE_5)],
-            vec![(ADJ_N5, true, NODE_5 | NODE_6)],
-            vec![(ADJ_N5, true, NODE_4 | NODE_5)],
+            vec![(ADJ_N5, true, N5)],
+            vec![(ADJ_N5, true, N1 | N5)],
+            vec![(ADJ_N5, true, N2 | N5)],
+            vec![(ADJ_N5, true, N5 | N6)],
+            vec![(ADJ_N5, true, N4 | N5)],
         ],
     );
     adj_paths.insert(
-        NODE_3 | NODE_6,
+        N3 | N6,
         vec![
-            vec![(ADJ_N6, true, NODE_6)],
-            vec![(ADJ_N6, true, NODE_1 | NODE_6)],
-            vec![(ADJ_N6, true, NODE_2 | NODE_6)],
-            vec![(ADJ_N6, true, NODE_4 | NODE_6)],
-            vec![(ADJ_N6, true, NODE_5 | NODE_6)],
+            vec![(ADJ_N6, true, N6)],
+            vec![(ADJ_N6, true, N1 | N6)],
+            vec![(ADJ_N6, true, N2 | N6)],
+            vec![(ADJ_N6, true, N4 | N6)],
+            vec![(ADJ_N6, true, N5 | N6)],
         ],
     );
 
     // Blanks
     adj_paths.insert(
-        NODE_6,
-        vec![
-            vec![(ADJ_N6, true, NODE_2 | NODE_6)],
-            vec![(ADJ_N6, true, NODE_3 | NODE_6)],
-        ],
+        N6,
+        vec![vec![(ADJ_N6, true, N2 | N6)], vec![(ADJ_N6, true, N3 | N6)]],
     );
     adj_paths.insert(
-        NODE_5,
-        vec![
-            vec![(ADJ_N5, true, NODE_1 | NODE_5)],
-            vec![(ADJ_N5, true, NODE_3 | NODE_5)],
-        ],
+        N5,
+        vec![vec![(ADJ_N5, true, N1 | N5)], vec![(ADJ_N5, true, N3 | N5)]],
     );
     adj_paths.insert(
-        NODE_4,
-        vec![
-            vec![(ADJ_N4, true, NODE_1 | NODE_4)],
-            vec![(ADJ_N4, true, NODE_2 | NODE_4)],
-        ],
+        N4,
+        vec![vec![(ADJ_N4, true, N1 | N4)], vec![(ADJ_N4, true, N2 | N4)]],
     );
     adj_paths.insert(
-        NODE_4 | NODE_5,
+        N4 | N5,
         vec![
+            vec![(ADJ_N4, true, N1 | N4), (ADJ_N5, true, N3 | N5)],
+            vec![(ADJ_N4, true, N2 | N4), (ADJ_N5, true, N1 | N5)],
+            vec![(ADJ_N4, false, N1 | N4), (ADJ_N5, true, N3 | N5)],
+            vec![(ADJ_N5, false, N1 | N5), (ADJ_N4, true, N2 | N4)],
             vec![
-                (ADJ_N4, true, NODE_1 | NODE_4),
-                (ADJ_N5, true, NODE_3 | NODE_5),
-            ],
-            vec![
-                (ADJ_N4, true, NODE_2 | NODE_4),
-                (ADJ_N5, true, NODE_1 | NODE_5),
-            ],
-            vec![
-                (ADJ_N4, false, NODE_1 | NODE_4),
-                (ADJ_N5, true, NODE_3 | NODE_5),
-            ],
-            vec![
-                (ADJ_N5, false, NODE_1 | NODE_5),
-                (ADJ_N4, true, NODE_2 | NODE_4),
-            ],
-            vec![
-                (ADJ_N4, true, NODE_1 | NODE_4),
+                (ADJ_N4, true, N1 | N4),
                 //(ADJ_N5, false, NODE_3 | NODE_5),
             ],
         ],
     );
     adj_paths.insert(
-        NODE_4 | NODE_6,
+        N4 | N6,
         vec![
-            vec![
-                (ADJ_N4, true, NODE_2 | NODE_4),
-                (ADJ_N6, true, NODE_3 | NODE_6),
-            ],
-            vec![
-                (ADJ_N4, true, NODE_1 | NODE_4),
-                (ADJ_N6, true, NODE_2 | NODE_6),
-            ],
-            vec![(ADJ_N4, true, NODE_1 | NODE_4)],
-            vec![(ADJ_N6, true, NODE_3 | NODE_6)],
+            vec![(ADJ_N4, true, N2 | N4), (ADJ_N6, true, N3 | N6)],
+            vec![(ADJ_N4, true, N1 | N4), (ADJ_N6, true, N2 | N6)],
+            vec![(ADJ_N4, true, N1 | N4)],
+            vec![(ADJ_N6, true, N3 | N6)],
         ],
     );
     adj_paths.insert(
-        NODE_5 | NODE_6,
+        N5 | N6,
         vec![
-            vec![
-                (ADJ_N5, true, NODE_1 | NODE_5),
-                (ADJ_N6, true, NODE_3 | NODE_6),
-            ],
-            vec![
-                (ADJ_N5, true, NODE_3 | NODE_5),
-                (ADJ_N6, true, NODE_2 | NODE_6),
-            ],
-            vec![(ADJ_N5, true, NODE_1 | NODE_5)],
-            vec![(ADJ_N6, true, NODE_2 | NODE_6)],
+            vec![(ADJ_N5, true, N1 | N5), (ADJ_N6, true, N3 | N6)],
+            vec![(ADJ_N5, true, N3 | N5), (ADJ_N6, true, N2 | N6)],
+            vec![(ADJ_N5, true, N1 | N5)],
+            vec![(ADJ_N6, true, N2 | N6)],
         ],
     );
     // Change this to a look up function rather than a class with a HashMap.

@@ -18,10 +18,7 @@ use crate::frag_arc_semi::{
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
 use crate::frag_complex_arcs::{a_14_45_15, a_14_45_35};
 use crate::frag_wall::l_wall;
-use common::consts::{
-    ADJ_1, ADJ_2, ADJ_3, ADJ_4, ADJ_5, ADJ_6, INVERT, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5,
-    NODE_6, NORMAL, WALL,
-};
+use common::consts::{A1, A2, A3, A4, A5, A6, INVERT, N1, N2, N3, N4, N5, N6, NORMAL, WALL};
 use num_traits::ToPrimitive;
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -35,140 +32,83 @@ pub fn trim_whitespace(s: &str) -> String {
 pub fn generate_all_shapes() {
     let mut paths: BTreeMap<usize, String> = BTreeMap::new();
 
-    for direction in [INVERT, NORMAL] {
-        let invert = direction == INVERT;
+    for dir in [INVERT, NORMAL] {
+        let invert = dir == INVERT;
         for (key, path) in [
-            (direction | NODE_1 | NODE_6, l16(invert)),
-            (direction | NODE_2 | NODE_5, l25(invert)),
-            (direction | NODE_3 | NODE_4, l34(invert)),
-            (direction | NODE_1, a1(invert)),
-            (direction | NODE_2, a2(invert)),
-            (direction | NODE_3, a3(invert)),
-            (direction | NODE_4, a4(invert)),
-            (direction | NODE_5, a5(invert)),
-            (direction | NODE_6, a6(invert)),
-            (direction | NODE_1 | NODE_2 | NODE_3, a123(invert)),
-            (direction | NODE_1 | NODE_2, a12(invert)),
-            (direction | NODE_1 | NODE_3, a13(invert)),
-            (direction | NODE_2 | NODE_3, a23(invert)),
-            (direction | NODE_2 | NODE_4, a24(invert)),
-            (direction | NODE_2 | NODE_6, a26(invert)),
-            (direction | NODE_3 | NODE_5, a35(invert)),
-            (direction | NODE_3 | NODE_6, a36(invert)),
-            (direction | NODE_4 | NODE_6, a46(invert)),
-            (direction | NODE_5 | NODE_6, a56(invert)),
-            (direction | NODE_1 | NODE_5, a15(invert)),
+            (dir | N1 | N6, l16(invert)),
+            (dir | N2 | N5, l25(invert)),
+            (dir | N3 | N4, l34(invert)),
+            (dir | N1, a1(invert)),
+            (dir | N2, a2(invert)),
+            (dir | N3, a3(invert)),
+            (dir | N4, a4(invert)),
+            (dir | N5, a5(invert)),
+            (dir | N6, a6(invert)),
+            (dir | N1 | N2 | N3, a123(invert)),
+            (dir | N1 | N2, a12(invert)),
+            (dir | N1 | N3, a13(invert)),
+            (dir | N2 | N3, a23(invert)),
+            (dir | N2 | N4, a24(invert)),
+            (dir | N2 | N6, a26(invert)),
+            (dir | N3 | N5, a35(invert)),
+            (dir | N3 | N6, a36(invert)),
+            (dir | N4 | N6, a46(invert)),
+            (dir | N5 | N6, a56(invert)),
+            (dir | N1 | N5, a15(invert)),
             // Complex
-            (direction | NODE_1 | NODE_4 | ADJ_2 | ADJ_4, a14_24(invert)),
-            (direction | NODE_1 | NODE_4 | ADJ_3 | ADJ_4, a14_34(invert)),
-            (direction | NODE_1 | NODE_4 | ADJ_4, a14_4(invert)),
-            (
-                direction | NODE_1 | NODE_4 | ADJ_4 | ADJ_6,
-                a45_24_long(invert),
-            ),
-            (direction | NODE_1 | NODE_5 | ADJ_2 | ADJ_5, a15_25(invert)),
-            (direction | NODE_1 | NODE_5 | ADJ_3 | ADJ_5, a15_35(invert)),
-            (direction | NODE_1 | NODE_5 | ADJ_5, a15_5(invert)),
-            (direction | NODE_2 | NODE_4 | ADJ_1 | ADJ_4, a24_14(invert)),
-            (direction | NODE_2 | NODE_4 | ADJ_3 | ADJ_4, a24_34(invert)),
-            (direction | NODE_2 | NODE_4 | ADJ_4, a24_4(invert)),
-            (
-                direction | NODE_2 | NODE_4 | ADJ_4 | ADJ_5,
-                a56_26_long(invert),
-            ),
-            (direction | NODE_2 | NODE_6 | ADJ_1 | ADJ_6, a26_16(invert)),
-            (direction | NODE_2 | NODE_6 | ADJ_3 | ADJ_6, a26_36(invert)),
-            (
-                direction | NODE_2 | NODE_6 | ADJ_5 | ADJ_6,
-                a56_15_long(invert),
-            ),
-            (direction | NODE_2 | NODE_6 | ADJ_6, a26_6(invert)),
+            (dir | N1 | N4 | A2 | A4, a14_24(invert)),
+            (dir | N1 | N4 | A3 | A4, a14_34(invert)),
+            (dir | N1 | N4 | A4, a14_4(invert)),
+            (dir | N1 | N4 | A4 | A6, a45_24_long(invert)),
+            (dir | N1 | N5 | A2 | A5, a15_25(invert)),
+            (dir | N1 | N5 | A3 | A5, a15_35(invert)),
+            (dir | N1 | N5 | A5, a15_5(invert)),
+            (dir | N2 | N4 | A1 | A4, a24_14(invert)),
+            (dir | N2 | N4 | A3 | A4, a24_34(invert)),
+            (dir | N2 | N4 | A4, a24_4(invert)),
+            (dir | N2 | N4 | A4 | A5, a56_26_long(invert)),
+            (dir | N2 | N6 | A1 | A6, a26_16(invert)),
+            (dir | N2 | N6 | A3 | A6, a26_36(invert)),
+            (dir | N2 | N6 | A5 | A6, a56_15_long(invert)),
+            (dir | N2 | N6 | A6, a26_6(invert)),
             //
-            (direction | NODE_3 | NODE_5 | ADJ_1 | ADJ_5, a35_15(invert)),
-            (direction | NODE_3 | NODE_5 | ADJ_2 | ADJ_5, a35_25(invert)),
-            (direction | NODE_3 | NODE_5 | ADJ_5, a35_5(invert)),
-            (
-                direction | NODE_3 | NODE_5 | ADJ_4 | ADJ_5,
-                a46_36_long(invert),
-            ),
+            (dir | N3 | N5 | A1 | A5, a35_15(invert)),
+            (dir | N3 | N5 | A2 | A5, a35_25(invert)),
+            (dir | N3 | N5 | A5, a35_5(invert)),
+            (dir | N3 | N5 | A4 | A5, a46_36_long(invert)),
             //
-            (direction | NODE_3 | NODE_6 | ADJ_1 | ADJ_6, a36_16(invert)),
-            (direction | NODE_3 | NODE_6 | ADJ_2 | ADJ_6, a36_26(invert)),
-            (
-                direction | NODE_3 | NODE_6 | ADJ_4 | ADJ_6,
-                a46_14_long(invert),
-            ),
+            (dir | N3 | N6 | A1 | A6, a36_16(invert)),
+            (dir | N3 | N6 | A2 | A6, a36_26(invert)),
+            (dir | N3 | N6 | A4 | A6, a46_14_long(invert)),
             // arcs
-            (
-                direction | NODE_4 | NODE_5 | ADJ_1 | ADJ_3 | ADJ_4 | ADJ_5,
-                a_14_45_35(invert),
-            ),
-            (
-                direction | NODE_4 | NODE_5 | ADJ_1 | ADJ_4 | ADJ_5,
-                a_14_45_15(invert),
-            ),
-            (direction | NODE_4 | NODE_5, a45(invert)),
-            (direction | NODE_4 | NODE_5 | NODE_6, a456(invert)),
-            (direction | NODE_4 | NODE_5 | NODE_6, a456(invert)),
+            (dir | N4 | N5 | A1 | A3 | A4 | A5, a_14_45_35(invert)),
+            (dir | N4 | N5 | A1 | A4 | A5, a_14_45_15(invert)),
+            (dir | N4 | N5, a45(invert)),
+            (dir | N4 | N5 | N6, a456(invert)),
+            (dir | N4 | N5 | N6, a456(invert)),
             // TODO:
             // (
-            //     direction | NODE_1 | NODE_5 | ADJ_5 | ADJ_6,
+            //     direction | N1 | N5 | A5 | A6,
             //     a45_35_long(invert),
             // ),
             // Half arcs
-            (
-                direction | NODE_4 | NODE_5 | ADJ_3 | ADJ_5,
-                a45_35_half(invert),
-            ),
-            (
-                direction | NODE_4 | NODE_5 | ADJ_2 | ADJ_4,
-                a45_24_half(invert),
-            ),
-            (
-                direction | NODE_4 | NODE_5 | ADJ_1 | ADJ_4,
-                a45_14_semi(invert),
-            ), // New
-            (
-                direction | NODE_4 | NODE_5 | ADJ_1 | ADJ_5,
-                a45_15_semi(invert),
-            ), // New
+            (dir | N4 | N5 | A3 | A5, a45_35_half(invert)),
+            (dir | N4 | N5 | A2 | A4, a45_24_half(invert)),
+            (dir | N4 | N5 | A1 | A4, a45_14_semi(invert)), // New
+            (dir | N4 | N5 | A1 | A5, a45_15_semi(invert)), // New
             //
-            (
-                direction | NODE_4 | NODE_6 | ADJ_1 | ADJ_4,
-                a46_14_half(invert),
-            ),
-            (
-                direction | NODE_4 | NODE_6 | ADJ_3 | ADJ_6,
-                a46_36_half(invert),
-            ),
-            (
-                direction | NODE_4 | NODE_6 | ADJ_2 | ADJ_4,
-                a46_24_semi(invert),
-            ), // New
-            (
-                direction | NODE_4 | NODE_6 | ADJ_2 | ADJ_6,
-                a46_26_semi(invert),
-            ), // New
-            (
-                direction | NODE_5 | NODE_6 | ADJ_1 | ADJ_5,
-                a56_15_half(invert),
-            ),
-            (
-                direction | NODE_5 | NODE_6 | ADJ_2 | ADJ_6,
-                a56_26_half(invert),
-            ),
-            (
-                direction | NODE_5 | NODE_6 | ADJ_3 | ADJ_5,
-                a56_35_semi(invert),
-            ), // New
-            (
-                direction | NODE_5 | NODE_6 | ADJ_3 | ADJ_6,
-                a56_36_semi(invert),
-            ), // New
+            (dir | N4 | N6 | A1 | A4, a46_14_half(invert)),
+            (dir | N4 | N6 | A3 | A6, a46_36_half(invert)),
+            (dir | N4 | N6 | A2 | A4, a46_24_semi(invert)), // New
+            (dir | N4 | N6 | A2 | A6, a46_26_semi(invert)), // New
+            (dir | N5 | N6 | A1 | A5, a56_15_half(invert)),
+            (dir | N5 | N6 | A2 | A6, a56_26_half(invert)),
+            (dir | N5 | N6 | A3 | A5, a56_35_semi(invert)), // New
+            (dir | N5 | N6 | A3 | A6, a56_36_semi(invert)), // New
             //
-            (direction | NODE_3 | NODE_6 | ADJ_6, a36_6(invert)),
-            (direction | NODE_1 | NODE_4, a14(invert)),
-            (direction | WALL, l_wall(invert)),
+            (dir | N3 | N6 | A6, a36_6(invert)),
+            (dir | N1 | N4, a14(invert)),
+            (dir | WALL, l_wall(invert)),
         ] {
             paths.insert(key.to_usize().unwrap_or_default(), path);
         }

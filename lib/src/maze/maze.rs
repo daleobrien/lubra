@@ -2,10 +2,7 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
-use common::consts::{
-    ADJ_1, ADJ_2, ADJ_3, ADJ_4, ADJ_5, ADJ_6, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6,
-    NODE_TO_COORD,
-};
+use common::consts::{A1, A2, A3, A4, A5, A6, N1, N2, N3, N4, N5, N6, NODE_TO_COORD};
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
@@ -71,11 +68,11 @@ impl Maze {
                 self.tiles[(j, i)] = Tile::new(vec![], true);
             }
         }
-        self.tiles[(0, 0)] = Tile::new(vec![NODE_4 | NODE_5 | ADJ_1 | ADJ_4 | ADJ_5], true);
+        self.tiles[(0, 0)] = Tile::new(vec![N4 | N5 | A1 | A4 | A5], true);
 
-        self.tiles[(0, 5)] = Tile::new(vec![NODE_1 | NODE_4], true);
-        self.tiles[(0, 6)] = Tile::new(vec![NODE_4 | NODE_5], true);
-        self.tiles[(0, 7)] = Tile::new(vec![NODE_3 | NODE_5], true);
+        self.tiles[(0, 5)] = Tile::new(vec![N1 | N4], true);
+        self.tiles[(0, 6)] = Tile::new(vec![N4 | N5], true);
+        self.tiles[(0, 7)] = Tile::new(vec![N3 | N5], true);
 
         if number_of_rows > 1 && number_of_columns > 2 {
             for i in (2..number_of_columns - 2).step_by(3) {

@@ -1,4 +1,4 @@
-use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, NODE_1, NODE_2, NODE_3, NODE_4, NODE_5, NODE_6};
+use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 use itertools::Itertools;
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -8,18 +8,12 @@ pub fn generate_blank_paths() {
     let mut blank_paths: BTreeMap<u32, Vec<Vec<(usize, bool, u32)>>> = BTreeMap::new();
     // Arc
     blank_paths.insert(
-        NODE_4 | NODE_5,
+        N4 | N5,
         vec![
-            vec![
-                (ADJ_N4, true, NODE_1 | NODE_4),
-                (ADJ_N5, true, NODE_3 | NODE_5),
-            ],
-            vec![
-                (ADJ_N4, true, NODE_2 | NODE_4),
-                (ADJ_N5, true, NODE_3 | NODE_5),
-            ],
-            vec![(ADJ_N4, true, NODE_1 | NODE_4)],
-            vec![(ADJ_N5, true, NODE_1 | NODE_5)],
+            vec![(ADJ_N4, true, N1 | N4), (ADJ_N5, true, N3 | N5)],
+            vec![(ADJ_N4, true, N2 | N4), (ADJ_N5, true, N3 | N5)],
+            vec![(ADJ_N4, true, N1 | N4)],
+            vec![(ADJ_N5, true, N1 | N5)],
         ],
     );
     //
@@ -48,57 +42,39 @@ pub fn generate_blank_paths() {
     // );
 
     //  Tight Curve when connecting to an arc, we will draw that from the arcs point of view
-    blank_paths.insert(NODE_1 | NODE_4, vec![vec![(ADJ_N4, true, NODE_4 | NODE_5)]]);
-    blank_paths.insert(NODE_1 | NODE_5, vec![vec![(ADJ_N5, true, NODE_4 | NODE_5)]]);
-    blank_paths.insert(NODE_2 | NODE_4, vec![vec![(ADJ_N4, true, NODE_4 | NODE_6)]]);
-    blank_paths.insert(NODE_2 | NODE_6, vec![vec![(ADJ_N6, true, NODE_4 | NODE_6)]]);
-    blank_paths.insert(NODE_3 | NODE_5, vec![vec![(ADJ_N5, true, NODE_5 | NODE_6)]]);
-    blank_paths.insert(NODE_3 | NODE_6, vec![vec![(ADJ_N6, true, NODE_5 | NODE_6)]]);
+    blank_paths.insert(N1 | N4, vec![vec![(ADJ_N4, true, N4 | N5)]]);
+    blank_paths.insert(N1 | N5, vec![vec![(ADJ_N5, true, N4 | N5)]]);
+    blank_paths.insert(N2 | N4, vec![vec![(ADJ_N4, true, N4 | N6)]]);
+    blank_paths.insert(N2 | N6, vec![vec![(ADJ_N6, true, N4 | N6)]]);
+    blank_paths.insert(N3 | N5, vec![vec![(ADJ_N5, true, N5 | N6)]]);
+    blank_paths.insert(N3 | N6, vec![vec![(ADJ_N6, true, N5 | N6)]]);
 
     // straight line through one vertex
     blank_paths.insert(
-        NODE_1 | NODE_6,
-        vec![
-            vec![(ADJ_N6, true, NODE_2 | NODE_6)],
-            vec![(ADJ_N6, true, NODE_3 | NODE_6)],
-        ],
+        N1 | N6,
+        vec![vec![(ADJ_N6, true, N2 | N6)], vec![(ADJ_N6, true, N3 | N6)]],
     );
     blank_paths.insert(
-        NODE_2 | NODE_5,
-        vec![
-            vec![(ADJ_N5, true, NODE_1 | NODE_5)],
-            vec![(ADJ_N5, true, NODE_3 | NODE_5)],
-        ],
+        N2 | N5,
+        vec![vec![(ADJ_N5, true, N1 | N5)], vec![(ADJ_N5, true, N3 | N5)]],
     );
     blank_paths.insert(
-        NODE_3 | NODE_4,
-        vec![
-            vec![(ADJ_N4, true, NODE_1 | NODE_4)],
-            vec![(ADJ_N4, true, NODE_2 | NODE_4)],
-        ],
+        N3 | N4,
+        vec![vec![(ADJ_N4, true, N1 | N4)], vec![(ADJ_N4, true, N2 | N4)]],
     );
 
     // Point
     blank_paths.insert(
-        NODE_4,
-        vec![
-            vec![(ADJ_N4, true, NODE_1 | NODE_4)],
-            vec![(ADJ_N4, true, NODE_2 | NODE_4)],
-        ],
+        N4,
+        vec![vec![(ADJ_N4, true, N1 | N4)], vec![(ADJ_N4, true, N2 | N4)]],
     );
     blank_paths.insert(
-        NODE_5,
-        vec![
-            vec![(ADJ_N5, true, NODE_1 | NODE_5)],
-            vec![(ADJ_N5, true, NODE_3 | NODE_5)],
-        ],
+        N5,
+        vec![vec![(ADJ_N5, true, N1 | N5)], vec![(ADJ_N5, true, N3 | N5)]],
     );
     blank_paths.insert(
-        NODE_6,
-        vec![
-            vec![(ADJ_N6, true, NODE_2 | NODE_6)],
-            vec![(ADJ_N6, true, NODE_3 | NODE_6)],
-        ],
+        N6,
+        vec![vec![(ADJ_N6, true, N2 | N6)], vec![(ADJ_N6, true, N3 | N6)]],
     );
 
     // Change this to a look up function rather than a class with a HashMap.
