@@ -16,7 +16,7 @@ fn a123pts() -> (f64, Path) {
     return (r, Path::new(vec![a, b, c, d]));
 }
 
-pub fn a123(invert: bool) -> String {
+pub fn n123(invert: bool) -> String {
     let (r, pts) = a123pts();
     let pts = if invert { pts.invert() } else { pts };
 

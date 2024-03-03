@@ -43,7 +43,7 @@ pub fn a13(invert: bool) -> String {
     return axy_to_str(invert, r1, r2, pts);
 }
 
-pub fn a12(invert: bool) -> String {
+pub fn n12(invert: bool) -> String {
     let (r1, r2, pts) = a23pts(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
     return axy_to_str(invert, r1, r2, pts);
