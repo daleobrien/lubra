@@ -5,7 +5,6 @@ use lib::renders::svg::Svg;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
-use std::ops::Bound::Included;
 
 fn main() {
     println!("Loading fragments and generating, SVG");
@@ -31,7 +30,7 @@ fn main() {
         svg.add_fragment(
             value,
             Point {
-                x: 0f64, //TILE_WIDTH / 2f64,
+                x: 2f64, //TILE_WIDTH / 2f64,
                 y: 0f64, //TILE_HEIGHT / 2f64,
             },
             0,
@@ -39,12 +38,12 @@ fn main() {
 
         add_wall(key, &mut svg);
 
-        add_text(&mut svg, 1u32, 1f64, 1f64, invert);
-        add_text(&mut svg, 2u32, 0f64, 0f64, invert);
-        add_text(&mut svg, 3u32, 2f64, 0f64, invert);
-        add_text(&mut svg, 4u32, 0.5f64, 0.5f64, invert);
-        add_text(&mut svg, 5u32, 1.5f64, 0.5f64, invert);
-        add_text(&mut svg, 6u32, 1f64, 0f64, invert);
+        add_text(&mut svg, 1u32, 3f64, 1f64, invert);
+        add_text(&mut svg, 2u32, 2f64, 0f64, invert);
+        add_text(&mut svg, 3u32, 4f64, 0f64, invert);
+        add_text(&mut svg, 4u32, 2.5f64, 0.5f64, invert);
+        add_text(&mut svg, 5u32, 3.5f64, 0.5f64, invert);
+        add_text(&mut svg, 6u32, 3f64, 0f64, invert);
 
         let content = svg.to_string();
 
@@ -102,13 +101,13 @@ fn main() {
 fn add_wall(key: u32, svg: &mut Svg) {
     let wall_key = (INVERT & key) | WALL;
     let wall = MAP_PATHS.get(&wall_key).unwrap();
-    svg.add_fragment(wall, Point { x: 0f64, y: 0f64 }, 0);
     svg.add_fragment(wall, Point { x: 2f64, y: 0f64 }, 0);
-    svg.add_fragment(wall, Point { x: -2f64, y: 0f64 }, 0);
-    svg.add_fragment(wall, Point { x: -1f64, y: 1f64 }, 0);
-    svg.add_fragment(wall, Point { x: -1f64, y: -1f64 }, 0);
+    svg.add_fragment(wall, Point { x: 4f64, y: 0f64 }, 0);
+    svg.add_fragment(wall, Point { x: 0f64, y: 0f64 }, 0);
     svg.add_fragment(wall, Point { x: 1f64, y: 1f64 }, 0);
     svg.add_fragment(wall, Point { x: 1f64, y: -1f64 }, 0);
+    svg.add_fragment(wall, Point { x: 3f64, y: 1f64 }, 0);
+    svg.add_fragment(wall, Point { x: 3f64, y: -1f64 }, 0);
 }
 
 fn add_text(svg: &mut Svg, n: u32, x: f64, y: f64, invert: bool) {
