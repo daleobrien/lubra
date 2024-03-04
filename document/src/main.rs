@@ -44,6 +44,11 @@ fn main() {
             },
             0,
         );
+
+        text(&mut svg, 1u32, 1f64, 1f64);
+        text(&mut svg, 2u32, 0f64, 0f64);
+        text(&mut svg, 3u32, 2f64, 0f64);
+
         let content = svg.to_string();
 
         let mut file_name_part_1: Vec<String> = vec![];
@@ -95,4 +100,12 @@ fn main() {
         let mut f = File::create(format!("./svgs/{filename}.svg")).expect("File Creation failed");
         let _ = f.write_all(content.as_bytes());
     }
+}
+
+fn text(svg: &mut Svg, n: u32, x: f64, y: f64) {
+    svg.add_fragment(
+        &format!("<text fill=\"red\" x=\"-5\" y=\"5\" transform=\"scale(1, -1)\">{n}</text>"),
+        Point { x, y },
+        0,
+    );
 }

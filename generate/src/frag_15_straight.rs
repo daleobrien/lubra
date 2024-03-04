@@ -82,6 +82,7 @@ fn fn_str(invert: bool, r1: f64, r2: f64, pts: Path) -> String {
     let pts = pts.str();
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
 
+    // TODO: user r#""# to escape quotes
     return format!(
         "<path fill=\\\"{fill}\\\" d=\\\"\
            M {a} A {r1} {r1} 0 0 {d1} {b} \
