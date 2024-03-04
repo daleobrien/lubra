@@ -26,7 +26,8 @@ fn main() {
         }
 
         let invert = key & INVERT == INVERT;
-        let mut svg = Svg::new(3f64 * TILE_WIDTH, 4f64 * TILE_HEIGHT);
+        let mut svg = Svg::new(4f64 * TILE_WIDTH, 4f64 * TILE_HEIGHT);
+
         svg.add_fragment(
             value,
             Point {
@@ -36,16 +37,14 @@ fn main() {
             0,
         );
 
-        let wall_key = (INVERT & key) | WALL;
-        let wall = MAP_PATHS.get(&wall_key).unwrap();
-        svg.add_fragment(wall, Point { x: 0f64, y: 0f64 }, 0);
+        add_wall(key, &mut svg);
 
-        text(&mut svg, 1u32, 1f64, 1f64, invert);
-        text(&mut svg, 2u32, 0f64, 0f64, invert);
-        text(&mut svg, 3u32, 2f64, 0f64, invert);
-        text(&mut svg, 4u32, 0.5f64, 0.5f64, invert);
-        text(&mut svg, 5u32, 1.5f64, 0.5f64, invert);
-        text(&mut svg, 6u32, 1f64, 0f64, invert);
+        add_text(&mut svg, 1u32, 1f64, 1f64, invert);
+        add_text(&mut svg, 2u32, 0f64, 0f64, invert);
+        add_text(&mut svg, 3u32, 2f64, 0f64, invert);
+        add_text(&mut svg, 4u32, 0.5f64, 0.5f64, invert);
+        add_text(&mut svg, 5u32, 1.5f64, 0.5f64, invert);
+        add_text(&mut svg, 6u32, 1f64, 0f64, invert);
 
         let content = svg.to_string();
 
@@ -100,7 +99,19 @@ fn main() {
     }
 }
 
-fn text(svg: &mut Svg, n: u32, x: f64, y: f64, invert: bool) {
+fn add_wall(key: u32, svg: &mut Svg) {
+    let wall_key = (INVERT & key) | WALL;
+    let wall = MAP_PATHS.get(&wall_key).unwrap();
+    svg.add_fragment(wall, Point { x: 0f64, y: 0f64 }, 0);
+    svg.add_fragment(wall, Point { x: 2f64, y: 0f64 }, 0);
+    svg.add_fragment(wall, Point { x: -2f64, y: 0f64 }, 0);
+    svg.add_fragment(wall, Point { x: -1f64, y: 1f64 }, 0);
+    svg.add_fragment(wall, Point { x: -1f64, y: -1f64 }, 0);
+    svg.add_fragment(wall, Point { x: 1f64, y: 1f64 }, 0);
+    svg.add_fragment(wall, Point { x: 1f64, y: -1f64 }, 0);
+}
+
+fn add_text(svg: &mut Svg, n: u32, x: f64, y: f64, invert: bool) {
     let y = if invert { 1f64 - y } else { y };
     svg.add_fragment(
         &format!("<text fill=\"red\" x=\"-5\" y=\"5\" transform=\"scale(1, -1)\">{n}</text>"),
