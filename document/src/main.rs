@@ -1,5 +1,6 @@
 use common::consts::{A1, A2, A3, A4, A5, A6, INVERT, N1, N2, N3, N4, N5, N6, WALL};
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use itertools::Itertools;
 use lib::renders::fragment::MAP_PATHS;
 use lib::renders::svg::Svg;
 use std::fs;
@@ -19,7 +20,7 @@ fn main() {
         }
     }
 
-    for (i, (&key, value)) in MAP_PATHS.into_iter().enumerate() {
+    for (i, (&key, value)) in MAP_PATHS.into_iter().sorted_by_key(|x| x.0).enumerate() {
         if key & WALL != 0u32 {
             continue;
         }
@@ -66,9 +67,7 @@ fn main() {
 
         let mut filename: Vec<String> = vec![];
         if key & INVERT == INVERT {
-            filename.push("u".to_string());
-        } else {
-            filename.push("d".to_string());
+            filename.push("i".to_string());
         }
 
         if !file_name_part_1.is_empty() {
@@ -79,7 +78,8 @@ fn main() {
         }
 
         let filename = filename.join("-");
-        let mut f = File::create(format!("./svgs/{filename}.svg")).expect("File Creation failed");
+        let mut f =
+            File::create(format!("./svgs/{i:03}-{filename}.svg")).expect("File Creation failed");
         let _ = f.write_all(content.as_bytes());
     }
 }
@@ -87,37 +87,109 @@ fn main() {
 fn add_walls(key: u32, svg: &mut Svg) {
     let wall_key = (INVERT & key) | WALL;
     let wall = MAP_PATHS.get(&wall_key).unwrap();
+
+    // Draw this a few times to highlight the walls of the centre tile.
     svg.add_fragment(wall, Point { x: 2f64, y: 1f64 }, 0);
+    svg.add_fragment(wall, Point { x: 2f64, y: 1f64 }, 0);
+    svg.add_fragment(wall, Point { x: 2f64, y: 1f64 }, 0);
+
     svg.add_fragment(wall, Point { x: 4f64, y: 1f64 }, 0);
     svg.add_fragment(wall, Point { x: 0f64, y: 1f64 }, 0);
     svg.add_fragment(wall, Point { x: 1f64, y: 2f64 }, 0);
     svg.add_fragment(wall, Point { x: 1f64, y: 0f64 }, 0);
     svg.add_fragment(wall, Point { x: 3f64, y: 2f64 }, 0);
     svg.add_fragment(wall, Point { x: 3f64, y: 0f64 }, 0);
+
+    let invert = key & INVERT == INVERT;
+    let y1 = 0f64;
+    let y1 = if invert { 1f64 * TILE_HEIGHT - y1 } else { y1 };
+
+    svg.add_fragment(
+        &format!(
+            "<path stroke-opacity=\"0.1\" stroke=\"red\" d=\"M{},{}l{},{}\"/>",
+            0,
+            y1,
+            TILE_WIDTH / 2f64,
+            if invert { TILE_HEIGHT } else { -TILE_HEIGHT }
+        ),
+        Point { x: 0f64, y: 1f64 },
+        0,
+    );
+    svg.add_fragment(
+        &format!(
+            "<path stroke-opacity=\"0.1\" stroke=\"red\" d=\"M{},{}l{},{}\"/>",
+            0,
+            y1,
+            -TILE_WIDTH / 2f64,
+            if invert { TILE_HEIGHT } else { -TILE_HEIGHT }
+        ),
+        Point { x: 6f64, y: 1f64 },
+        0,
+    );
+
+    svg.add_fragment(
+        &format!(
+            "<path stroke-opacity=\"0.1\" stroke=\"red\" d=\"M{},{}l{},{}\"/>",
+            0, TILE_HEIGHT, TILE_WIDTH, 0
+        ),
+        Point {
+            x: 2f64,
+            y: if invert { -1f64 } else { 2f64 },
+        },
+        0,
+    );
 }
 
 fn add_indexes(key: u32, svg: &mut Svg) {
-    add_text(svg, 1u32, 3f64, 2f64, key);
+    add_text(svg, 3u32, 1f64, 0f64, key);
+    add_text(svg, 5u32, 2f64, 0f64, key);
     add_text(svg, 1u32, 3f64, 0f64, key);
+    add_text(svg, 4u32, 4f64, 0f64, key);
+    add_text(svg, 2u32, 5f64, 0f64, key);
 
+    add_text(svg, 5u32, 0.5f64, 0.5f64, key);
+    add_text(svg, 6u32, 1.5f64, 0.5f64, key);
+    add_text(svg, 4u32, 2.5f64, 0.5f64, key);
+    add_text(svg, 5u32, 3.5f64, 0.5f64, key);
+    add_text(svg, 6u32, 4.5f64, 0.5f64, key);
+    add_text(svg, 4u32, 5.5f64, 0.5f64, key);
+
+    add_text(svg, 1u32, 0f64, 1f64, key);
+    add_text(svg, 4u32, 1f64, 1f64, key);
     add_text(svg, 2u32, 2f64, 1f64, key);
-    add_text(svg, 2u32, 2f64, 3f64, key);
-
+    add_text(svg, 6u32, 3f64, 1f64, key);
     add_text(svg, 3u32, 4f64, 1f64, key);
-    add_text(svg, 3u32, 4f64, 3f64, key);
+    add_text(svg, 5u32, 5f64, 1f64, key);
+    add_text(svg, 1u32, 6f64, 1f64, key);
 
+    add_text(svg, 5u32, 0.5f64, 1.5f64, key);
+    add_text(svg, 6u32, 1.5f64, 1.5f64, key);
     add_text(svg, 4u32, 2.5f64, 1.5f64, key);
     add_text(svg, 5u32, 3.5f64, 1.5f64, key);
+    add_text(svg, 6u32, 4.5f64, 1.5f64, key);
+    add_text(svg, 4u32, 5.5f64, 1.5f64, key);
 
-    add_text(svg, 6u32, 3f64, 1f64, key);
+    add_text(svg, 3u32, 1f64, 2f64, key);
+    add_text(svg, 5u32, 2f64, 2f64, key);
+    add_text(svg, 1u32, 3f64, 2f64, key);
+    add_text(svg, 4u32, 4f64, 2f64, key);
+    add_text(svg, 2u32, 5f64, 2f64, key);
+
+    add_text(svg, 6u32, 1.5f64, 2.5f64, key);
+    add_text(svg, 4u32, 2.5f64, 2.5f64, key);
+    add_text(svg, 5u32, 3.5f64, 2.5f64, key);
+    add_text(svg, 6u32, 4.5f64, 2.5f64, key);
+
+    add_text(svg, 2u32, 2f64, 3f64, key);
     add_text(svg, 6u32, 3f64, 3f64, key);
+    add_text(svg, 3u32, 4f64, 3f64, key);
 }
 
 fn add_text(svg: &mut Svg, n: u32, x: f64, y: f64, key: u32) {
     let invert = key & INVERT == INVERT;
     let y = if invert { 3f64 - y } else { y };
     svg.add_fragment(
-        &format!("<text fill=\"red\" x=\"-5\" y=\"5\" transform=\"scale(1, -1)\">{n}</text>"),
+        &format!("<text fill=\"blue\" x=\"-5\" y=\"5\" transform=\"scale(1, -1)\">{n}</text>"),
         Point { x, y },
         0,
     );
