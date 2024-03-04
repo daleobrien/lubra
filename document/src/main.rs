@@ -48,6 +48,9 @@ fn main() {
         text(&mut svg, 1u32, 1f64, 1f64);
         text(&mut svg, 2u32, 0f64, 0f64);
         text(&mut svg, 3u32, 2f64, 0f64);
+        text(&mut svg, 4u32, 0.5f64, 0.5f64);
+        text(&mut svg, 5u32, 1.5f64, 0.5f64);
+        text(&mut svg, 6u32, 1f64, 0f64);
 
         let content = svg.to_string();
 
