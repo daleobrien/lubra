@@ -140,55 +140,55 @@ fn add_walls(key: u32, svg: &mut Svg) {
 }
 
 fn add_indexes(key: u32, svg: &mut Svg) {
-    add_text(svg, 3u32, 1f64, 0f64, key);
-    add_text(svg, 5u32, 2f64, 0f64, key);
-    add_text(svg, 1u32, 3f64, 0f64, key);
-    add_text(svg, 4u32, 4f64, 0f64, key);
-    add_text(svg, 2u32, 5f64, 0f64, key);
+    add_text(svg, "③".to_string(), 1f64, 0f64, key);
+    add_text(svg, "⑤".to_string(), 2f64, 0f64, key);
+    add_text(svg, "①".to_string(), 3f64, 0f64, key);
+    add_text(svg, "④".to_string(), 4f64, 0f64, key);
+    add_text(svg, "②".to_string(), 5f64, 0f64, key);
 
-    add_text(svg, 5u32, 0.5f64, 0.5f64, key);
-    add_text(svg, 6u32, 1.5f64, 0.5f64, key);
-    add_text(svg, 4u32, 2.5f64, 0.5f64, key);
-    add_text(svg, 5u32, 3.5f64, 0.5f64, key);
-    add_text(svg, 6u32, 4.5f64, 0.5f64, key);
-    add_text(svg, 4u32, 5.5f64, 0.5f64, key);
+    add_text(svg, "⑤".to_string(), 0.5f64, 0.5f64, key);
+    add_text(svg, "⑥".to_string(), 1.5f64, 0.5f64, key);
+    add_text(svg, "④".to_string(), 2.5f64, 0.5f64, key);
+    add_text(svg, "⑤".to_string(), 3.5f64, 0.5f64, key);
+    add_text(svg, "⑥".to_string(), 4.5f64, 0.5f64, key);
+    add_text(svg, "④".to_string(), 5.5f64, 0.5f64, key);
 
-    add_text(svg, 1u32, 0f64, 1f64, key);
-    add_text(svg, 4u32, 1f64, 1f64, key);
-    add_text(svg, 2u32, 2f64, 1f64, key);
-    add_text(svg, 6u32, 3f64, 1f64, key);
-    add_text(svg, 3u32, 4f64, 1f64, key);
-    add_text(svg, 5u32, 5f64, 1f64, key);
-    add_text(svg, 1u32, 6f64, 1f64, key);
+    add_text(svg, "①".to_string(), 0f64, 1f64, key);
+    add_text(svg, "④".to_string(), 1f64, 1f64, key);
+    add_text(svg, "②".to_string(), 2f64, 1f64, key);
+    add_text(svg, "⑥".to_string(), 3f64, 1f64, key);
+    add_text(svg, "③".to_string(), 4f64, 1f64, key);
+    add_text(svg, "⑤".to_string(), 5f64, 1f64, key);
+    add_text(svg, "①".to_string(), 6f64, 1f64, key);
 
-    add_text(svg, 5u32, 0.5f64, 1.5f64, key);
-    add_text(svg, 6u32, 1.5f64, 1.5f64, key);
-    add_text(svg, 4u32, 2.5f64, 1.5f64, key);
-    add_text(svg, 5u32, 3.5f64, 1.5f64, key);
-    add_text(svg, 6u32, 4.5f64, 1.5f64, key);
-    add_text(svg, 4u32, 5.5f64, 1.5f64, key);
+    add_text(svg, "⑤".to_string(), 0.5f64, 1.5f64, key);
+    add_text(svg, "⑥".to_string(), 1.5f64, 1.5f64, key);
+    add_text(svg, "④".to_string(), 2.5f64, 1.5f64, key);
+    add_text(svg, "⑤".to_string(), 3.5f64, 1.5f64, key);
+    add_text(svg, "⑥".to_string(), 4.5f64, 1.5f64, key);
+    add_text(svg, "④".to_string(), 5.5f64, 1.5f64, key);
 
-    add_text(svg, 3u32, 1f64, 2f64, key);
-    add_text(svg, 5u32, 2f64, 2f64, key);
-    add_text(svg, 1u32, 3f64, 2f64, key);
-    add_text(svg, 4u32, 4f64, 2f64, key);
-    add_text(svg, 2u32, 5f64, 2f64, key);
+    add_text(svg, "③".to_string(), 1f64, 2f64, key);
+    add_text(svg, "⑤".to_string(), 2f64, 2f64, key);
+    add_text(svg, "①".to_string(), 3f64, 2f64, key);
+    add_text(svg, "④".to_string(), 4f64, 2f64, key);
+    add_text(svg, "②".to_string(), 5f64, 2f64, key);
 
-    add_text(svg, 6u32, 1.5f64, 2.5f64, key);
-    add_text(svg, 4u32, 2.5f64, 2.5f64, key);
-    add_text(svg, 5u32, 3.5f64, 2.5f64, key);
-    add_text(svg, 6u32, 4.5f64, 2.5f64, key);
+    add_text(svg, "⑥".to_string(), 1.5f64, 2.5f64, key);
+    add_text(svg, "④".to_string(), 2.5f64, 2.5f64, key);
+    add_text(svg, "⑤".to_string(), 3.5f64, 2.5f64, key);
+    add_text(svg, "⑥".to_string(), 4.5f64, 2.5f64, key);
 
-    add_text(svg, 2u32, 2f64, 3f64, key);
-    add_text(svg, 6u32, 3f64, 3f64, key);
-    add_text(svg, 3u32, 4f64, 3f64, key);
+    add_text(svg, "②".to_string(), 2f64, 3f64, key);
+    add_text(svg, "⑥".to_string(), 3f64, 3f64, key);
+    add_text(svg, "③".to_string(), 4f64, 3f64, key);
 }
 
-fn add_text(svg: &mut Svg, n: u32, x: f64, y: f64, key: u32) {
+fn add_text(svg: &mut Svg, n: String, x: f64, y: f64, key: u32) {
     let invert = key & INVERT == INVERT;
     let y = if invert { 3f64 - y } else { y };
     svg.add_fragment(
-        &format!("<text fill=\"blue\" x=\"-5\" y=\"5\" transform=\"scale(1, -1)\">{n}</text>"),
+        &format!("<text font-size=\"1.2em\" fill=\"black\" x=\"-8\" y=\"5\" transform=\"scale(1, -1)\">{n}</text>"),
         Point { x, y },
         0,
     );
