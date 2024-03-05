@@ -20,10 +20,12 @@ fn main() {
         }
     }
 
-    for (i, (&key, value)) in MAP_PATHS.into_iter().sorted_by_key(|x| x.0).enumerate() {
+    let mut i = 0;
+    for (&key, value) in MAP_PATHS.into_iter().sorted_by_key(|x| x.0.reverse_bits()) {
         if key & WALL != 0u32 {
             continue;
         }
+        i += 1u32;
 
         let mut svg = Svg::new(4f64 * TILE_WIDTH, 4f64 * TILE_HEIGHT);
 
@@ -66,12 +68,9 @@ fn main() {
         let file_name_part_2 = file_name_part_2.join("");
 
         let mut filename: Vec<String> = vec![];
-        if key & INVERT == INVERT {
-            filename.push("i".to_string());
-        }
-
         if !file_name_part_1.is_empty() {
-            filename.push(format!("n{file_name_part_1}"));
+            let prefix = if key & INVERT == INVERT { "i" } else { "n" };
+            filename.push(format!("{prefix}{file_name_part_1}"));
         }
         if !file_name_part_2.is_empty() {
             filename.push(format!("a{file_name_part_2}"));

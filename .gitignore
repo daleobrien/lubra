@@ -12,3 +12,4 @@ cli/test-one-tile.svg
 *.svg
 .idea/inspectionProfiles/Project_Default.xml
 .idea/runConfigurations/Run_Maze.xml
+typst/Maze.pdf
