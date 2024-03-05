@@ -188,7 +188,7 @@ fn add_text(svg: &mut Svg, n: String, x: f64, y: f64, key: u32) {
     let invert = key & INVERT == INVERT;
     let y = if invert { 3f64 - y } else { y };
     svg.add_fragment(
-        &format!("<text font-size=\"1.2em\" fill=\"black\" x=\"-8\" y=\"5\" transform=\"scale(1, -1)\">{n}</text>"),
+        &format!("<text font-size=\"1.3em\" fill=\"black\" x=\"-8\" y=\"5\" transform=\"scale(1, -1)\">{n}</text>"),
         Point { x, y },
         0,
     );
