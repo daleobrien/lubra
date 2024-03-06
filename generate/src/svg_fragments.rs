@@ -29,6 +29,12 @@ pub fn trim_whitespace(s: &str) -> String {
     return words.join(" ");
 }
 
+fn axxx(invert: bool) -> String {
+    let mut s = String::new();
+    s.push_str(&a155(invert));
+    s.push_str(&a45_24_long(invert));
+    return s;
+}
 pub fn generate_all_shapes() {
     let mut paths: BTreeMap<usize, String> = BTreeMap::new();
 
@@ -42,7 +48,7 @@ pub fn generate_all_shapes() {
             (dir | N1 | N4 | A3 | A4, a14_34(invert)),
             (dir | N1 | N4 | A4 | A6, a45_24_long(invert)),
             (dir | N1 | N4 | A4, a14_4(invert)),
-            (dir | N1 | N4 | A1 | A2 | A3 | A4 | A5, a144(invert)),
+            (dir | N1 | N4 | A1 | A2 | A3 | A4 | A5, axxx(invert)),
             (dir | N1 | N4 | A1 | A2 | A3 | A4 | A6, a155(invert)),
             (dir | N1 | N4, a14(invert)),
             (dir | N1 | N5 | A2 | A5, a15_25(invert)),
