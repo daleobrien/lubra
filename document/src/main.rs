@@ -1,4 +1,6 @@
-use common::consts::{A1, A2, A3, A4, A5, A6, INVERT, N1, N2, N3, N4, N5, N6, WALL};
+use common::consts::{
+    A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, WA,
+};
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use itertools::Itertools;
 use lib::renders::fragment::MAP_PATHS;
@@ -26,11 +28,11 @@ fn main() {
         .sorted_by_key(|x| x.0.reverse_bits())
         .rev()
     {
-        if key & WALL != 0u32 {
+        if key & WA != 0u32 {
             continue;
         }
-        // Skip INVERT for now
-        if key & INVERT == INVERT {
+        // Skip Inverted for now
+        if key & IN == IN {
             continue;
         }
         i += 1u32;
@@ -46,6 +48,7 @@ fn main() {
 
         let mut file_name_part_1: Vec<String> = vec![];
         let mut file_name_part_2: Vec<String> = vec![];
+        let mut file_name_part_3: Vec<String> = vec![];
         let keys_to_check = [
             (N1, "1"),
             (N2, "2"),
@@ -72,16 +75,34 @@ fn main() {
                 file_name_part_2.push(name.to_string());
             }
         }
+        let keys_to_check = [
+            (B1, "1"),
+            (B2, "2"),
+            (B3, "3"),
+            (B4, "4"),
+            (B5, "5"),
+            (B6, "6"),
+        ];
+        for &(key_value, name) in &keys_to_check {
+            if key & key_value == key_value {
+                file_name_part_3.push(name.to_string());
+            }
+        }
+
         let file_name_part_1 = file_name_part_1.join("");
         let file_name_part_2 = file_name_part_2.join("");
+        let file_name_part_3 = file_name_part_3.join("");
 
         let mut filename: Vec<String> = vec![];
         if !file_name_part_1.is_empty() {
-            let prefix = if key & INVERT == INVERT { "i" } else { "n" };
+            let prefix = if key & IN == IN { "i" } else { "n" };
             filename.push(format!("{prefix}{file_name_part_1}"));
         }
         if !file_name_part_2.is_empty() {
             filename.push(format!("a{file_name_part_2}"));
+        }
+        if !file_name_part_3.is_empty() {
+            filename.push(format!("b{file_name_part_3}"));
         }
 
         let filename = filename.join("-");
@@ -92,7 +113,8 @@ fn main() {
 }
 
 fn add_walls(key: u32, svg: &mut Svg) {
-    let wall_key = (INVERT & key) | WALL;
+    let invert = key & IN == IN;
+    let wall_key = (IN & key) | WA;
     let wall = MAP_PATHS.get(&wall_key).unwrap();
 
     // Draw this a few times to highlight the walls of the centre tile.
@@ -107,7 +129,6 @@ fn add_walls(key: u32, svg: &mut Svg) {
     svg.add_fragment(wall, Point { x: 3f64, y: 2f64 }, 0);
     svg.add_fragment(wall, Point { x: 3f64, y: 0f64 }, 0);
 
-    let invert = key & INVERT == INVERT;
     let y1 = 0f64;
     let y1 = if invert { 1f64 * TILE_HEIGHT - y1 } else { y1 };
 
@@ -193,7 +214,7 @@ fn add_indexes(key: u32, svg: &mut Svg) {
 }
 
 fn add_text(svg: &mut Svg, n: String, x: f64, y: f64, key: u32) {
-    let invert = key & INVERT == INVERT;
+    let invert = key & IN == IN;
     let y = if invert { 3f64 - y } else { y };
     svg.add_fragment(
         &format!("<text font-size=\"1.7em\" fill=\"black\" x=\"-13.5\" y=\"8.5\" transform=\"scale(1, -1)\">{n}</text>"),

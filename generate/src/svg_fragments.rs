@@ -16,9 +16,9 @@ use crate::frag_arc_semi::{
     a45_14_semi, a45_15_semi, a46_24_semi, a46_26_semi, a56_35_semi, a56_36_semi,
 };
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
-use crate::frag_complex_arcs::{a_14_45_15, a_14_45_35};
+use crate::frag_complex_arcs::{a_14_45_15, n45_14_35, n45_24_15};
 use crate::frag_wall::l_wall;
-use common::consts::{A1, A2, A3, A4, A5, A6, INVERT, N1, N2, N3, N4, N5, N6, NORMAL, WALL};
+use common::consts::{A1, A2, A3, A4, A5, A6, B1, B3, B5, IN, N1, N2, N3, N4, N5, N6, NO, WA};
 use num_traits::ToPrimitive;
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -29,27 +29,20 @@ pub fn trim_whitespace(s: &str) -> String {
     return words.join(" ");
 }
 
-fn axxx(invert: bool) -> String {
-    let mut s = String::new();
-    s.push_str(&a155(invert));
-    s.push_str(&a45_24_long(invert));
-    return s;
-}
 pub fn generate_all_shapes() {
     let mut paths: BTreeMap<usize, String> = BTreeMap::new();
 
-    for dir in [INVERT, NORMAL] {
-        let invert = dir == INVERT;
+    for dir in [IN, NO] {
+        let invert = dir == IN;
         for (key, path) in [
             (dir | N1 | N2 | N3, n123(invert)),
             (dir | N1 | N2, n12(invert)),
             (dir | N1 | N3, n13(invert)),
+            (dir | N1 | N4 | A1 | A2 | A3 | A4 | A6, a155(invert)),
             (dir | N1 | N4 | A2 | A4, a14_24(invert)),
             (dir | N1 | N4 | A3 | A4, a14_34(invert)),
             (dir | N1 | N4 | A4 | A6, a45_24_long(invert)),
             (dir | N1 | N4 | A4, a14_4(invert)),
-            (dir | N1 | N4 | A1 | A2 | A3 | A4 | A5, axxx(invert)),
-            (dir | N1 | N4 | A1 | A2 | A3 | A4 | A6, a155(invert)),
             (dir | N1 | N4, a14(invert)),
             (dir | N1 | N5 | A2 | A5, a15_25(invert)),
             (dir | N1 | N5 | A3 | A5, a15_35(invert)),
@@ -82,10 +75,11 @@ pub fn generate_all_shapes() {
             (dir | N3 | N6 | A6, a36_6(invert)),
             (dir | N3 | N6, a36(invert)),
             (dir | N3, a3(invert)),
-            (dir | N4 | N5 | A1 | A3 | A4 | A5, a_14_45_35(invert)),
             (dir | N4 | N5 | A1 | A4 | A5, a_14_45_15(invert)),
-            (dir | N4 | N5 | A1 | A4, a45_14_semi(invert)), // New
-            (dir | N4 | N5 | A1 | A5, a45_15_semi(invert)), // New
+            (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
+            (dir | N4 | N5 | A1 | A4, a45_14_semi(invert)),
+            (dir | N4 | N5 | A1 | A5, a45_15_semi(invert)),
+            (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
             (dir | N4 | N5 | A2 | A4, a45_24_half(invert)),
             (dir | N4 | N5 | A3 | A5, a45_35_half(invert)),
             (dir | N4 | N5 | N6, a456(invert)),
@@ -104,7 +98,7 @@ pub fn generate_all_shapes() {
             (dir | N5 | N6, a56(invert)),
             (dir | N5, a5(invert)),
             (dir | N6, a6(invert)),
-            (dir | WALL, l_wall(invert)),
+            (dir | WA, l_wall(invert)),
         ] {
             paths.insert(key.to_usize().unwrap_or_default(), path);
         }
