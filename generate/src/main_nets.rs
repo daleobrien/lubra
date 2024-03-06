@@ -40,9 +40,9 @@ fn main() {
     let seq = NodeCombinations::new(vec![
         0b011_000, 0b110_000, 0b101_000, 0b111_000, // Arcs
         0b100_001, 0b010_010, 0b001_100, // Lines
-        //0b000_011, 0b000_110, 0b000_101, // Almost lines, vertex to vertex
-        0b000_111, // All vertexes connected
-                   // 0b001_001, 0b010_001, 0b001_010, 0b100_010, 0b010_100, 0b100_100,
+        0b000_011, 0b000_110, 0b000_101, // Almost lines, vertex to vertex
+        0b000_111, // All vertexes connecte
+        0b001_001, 0b010_001, 0b001_010, 0b100_010, 0b010_100, 0b100_100,
     ]);
 
     let mut nets_by_mask: HashMap<u32, Vec<Vec<u32>>> = HashMap::new();
