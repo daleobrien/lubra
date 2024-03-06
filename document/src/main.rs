@@ -25,6 +25,10 @@ fn main() {
         if key & WALL != 0u32 {
             continue;
         }
+        // Skip INVERT for now
+        if key & INVERT == INVERT {
+            continue;
+        }
         i += 1u32;
 
         let mut svg = Svg::new(4f64 * TILE_WIDTH, 4f64 * TILE_HEIGHT);
@@ -188,7 +192,7 @@ fn add_text(svg: &mut Svg, n: String, x: f64, y: f64, key: u32) {
     let invert = key & INVERT == INVERT;
     let y = if invert { 3f64 - y } else { y };
     svg.add_fragment(
-        &format!("<text font-size=\"1.7em\" fill=\"black\" x=\"-8\" y=\"5\" transform=\"scale(1, -1)\">{n}</text>"),
+        &format!("<text font-size=\"1.7em\" fill=\"black\" x=\"-13.5\" y=\"8.5\" transform=\"scale(1, -1)\">{n}</text>"),
         Point { x, y },
         0,
     );
