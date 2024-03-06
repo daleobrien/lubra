@@ -21,7 +21,11 @@ fn main() {
     }
 
     let mut i = 0;
-    for (&key, value) in MAP_PATHS.into_iter().sorted_by_key(|x| x.0.reverse_bits()) {
+    for (&key, value) in MAP_PATHS
+        .into_iter()
+        .sorted_by_key(|x| x.0.reverse_bits())
+        .rev()
+    {
         if key & WALL != 0u32 {
             continue;
         }
