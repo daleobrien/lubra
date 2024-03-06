@@ -13,7 +13,7 @@ fn main() {
     println!("Loading fragments and generating, SVG");
 
     // Clean folder first
-    for entry in fs::read_dir("./svgs").unwrap() {
+    for entry in fs::read_dir("./../typst/svgs/").unwrap() {
         let entry = entry.unwrap();
         let path = entry.path();
 
@@ -106,8 +106,8 @@ fn main() {
         }
 
         let filename = filename.join("-");
-        let mut f =
-            File::create(format!("./svgs/{i:03}-{filename}.svg")).expect("File Creation failed");
+        let mut f = File::create(format!("./../typst/svgs/{i:03}-{filename}.svg"))
+            .expect("File Creation failed");
         let _ = f.write_all(content.as_bytes());
     }
 }

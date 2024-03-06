@@ -16,7 +16,7 @@ use crate::frag_arc_semi::{
     a45_14_semi, a45_15_semi, a46_24_semi, a46_26_semi, a56_35_semi, a56_36_semi,
 };
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
-use crate::frag_complex_arcs::{a_14_45_15, n45_14_35, n45_24_15};
+use crate::frag_complex_arcs::{n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35};
 use crate::frag_wall::l_wall;
 use common::consts::{A1, A2, A3, A4, A5, A6, B1, B3, B5, IN, N1, N2, N3, N4, N5, N6, NO, WA};
 use num_traits::ToPrimitive;
@@ -75,13 +75,13 @@ pub fn generate_all_shapes() {
             (dir | N3 | N6 | A6, a36_6(invert)),
             (dir | N3 | N6, a36(invert)),
             (dir | N3, a3(invert)),
-            (dir | N4 | N5 | A1 | A4 | A5, a_14_45_15(invert)),
             (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
             (dir | N4 | N5 | A1 | A4, a45_14_semi(invert)),
             (dir | N4 | N5 | A1 | A5, a45_15_semi(invert)),
             (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
-            (dir | N4 | N5 | A2 | A4, a45_24_half(invert)),
-            (dir | N4 | N5 | A3 | A5, a45_35_half(invert)),
+            (dir | N4 | N5 | A2 | A4 | B3 | B5, n45_24_35(invert)),
+            (dir | N4 | N5 | A2 | A4, n45_24(invert)),
+            (dir | N4 | N5 | A3 | A5, n45_35(invert)),
             (dir | N4 | N5 | N6, a456(invert)),
             (dir | N4 | N5 | N6, a456(invert)),
             (dir | N4 | N5, a45(invert)),
