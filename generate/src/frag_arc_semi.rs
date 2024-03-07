@@ -54,12 +54,12 @@ pub fn a45_15(invert: bool) -> String {
     return a15_str(!invert, pts, r1, r2);
 }
 //
-pub fn a46_24_semi(invert: bool) -> String {
+pub fn a46_26(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
     return a15_str(invert, pts, r1, r2);
 }
-pub fn a46_26_semi(invert: bool) -> String {
+pub fn a46_24(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3]);
     return a15_str(!invert, pts, r1, r2);
