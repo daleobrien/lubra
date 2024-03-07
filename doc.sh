@@ -8,3 +8,6 @@ cargo run --bin generate_svg
 
 cd ${FOLDER}/document
 cargo run
+
+cd ${FOLDER}/typst
+typst compile main.typ

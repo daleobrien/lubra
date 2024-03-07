@@ -13,3 +13,4 @@ cli/test-one-tile.svg
 .idea/inspectionProfiles/Project_Default.xml
 .idea/runConfigurations/Run_Maze.xml
 typst/Maze.pdf
+typst/main.pdf
