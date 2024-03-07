@@ -55,6 +55,12 @@ pub fn a144(invert: bool) -> String {
     return fn_str(invert, pts, r1, r2);
 }
 
+pub fn a266(invert: bool) -> String {
+    let (r1, r2, pts) = fn_pts(invert);
+    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
+    return fn_str(invert, pts, r1, r2);
+}
+
 pub fn a155(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect();

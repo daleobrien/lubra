@@ -9,14 +9,16 @@ use crate::frag_16::{l16, l25, l34};
 use crate::frag_arc_halfs::{
     a45_24_half, a45_35_half, a46_14_half, a46_36_half, a56_15_half, a56_26_half,
 };
-use crate::frag_arc_long::{
-    a45_24_long, a45_35_long, a46_14_long, a46_36_long, a56_15_long, a56_26_long,
-};
+use crate::frag_arc_long::{a45_24_long, a46_14_long, a46_36_long, a56_15_long, a56_26_long};
 use crate::frag_arc_semi::{a45_14, a45_15, a46_24, a46_26, a56_35_semi, a56_36_semi};
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
-use crate::frag_complex_arcs::{n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35};
+use crate::frag_complex_arcs::{
+    n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14_26, n46_14_36,
+};
 use crate::frag_wall::l_wall;
-use common::consts::{A1, A2, A3, A4, A5, A6, B1, B3, B5, IN, N1, N2, N3, N4, N5, N6, NO, WA};
+use common::consts::{
+    A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
+};
 use num_traits::ToPrimitive;
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -74,20 +76,22 @@ pub fn generate_all_shapes() {
             (dir | N3 | N6, a36(invert)),
             (dir | N3, a3(invert)),
             // 4-5
-            (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
+            (dir | N4 | N5, a45(invert)),
             (dir | N4 | N5 | A1 | A4, a45_14(invert)),
             (dir | N4 | N5 | A1 | A5, a45_15(invert)),
-            (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
             (dir | N4 | N5 | A2 | A4 | B3 | B5, n45_24_35(invert)),
+            (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
+            (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
             (dir | N4 | N5 | A2 | A4, n45_24(invert)),
             (dir | N4 | N5 | A3 | A5, n45_35(invert)),
-            (dir | N4 | N5, a45(invert)),
             // 4-6
-            (dir | N4 | N6 | A1 | A4, a46_14_half(invert)),
+            (dir | N4 | N6, a46(invert)),
             (dir | N4 | N6 | A2 | A6, a46_26(invert)),
             (dir | N4 | N6 | A2 | A4, a46_24(invert)),
+            (dir | N4 | N6 | A1 | A4 | B3 | B6, n46_14_36(invert)),
+            (dir | N4 | N6 | A1 | A4 | B2 | B6, n46_14_26(invert)),
+            (dir | N4 | N6 | A1 | A4, a46_14_half(invert)),
             (dir | N4 | N6 | A3 | A6, a46_36_half(invert)),
-            (dir | N4 | N6, a46(invert)),
             //
             (dir | N4 | N5 | N6, a456(invert)),
             //
