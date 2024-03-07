@@ -22,7 +22,6 @@ fn main() {
         }
     }
 
-    let mut i = 0;
     for (&key, value) in MAP_PATHS
         .into_iter()
         .sorted_by_key(|x| x.0.reverse_bits())
@@ -35,7 +34,6 @@ fn main() {
         if key & IN == IN {
             continue;
         }
-        i += 1u32;
 
         let mut svg = Svg::new(4f64 * TILE_WIDTH, 4f64 * TILE_HEIGHT);
 
@@ -106,8 +104,8 @@ fn main() {
         }
 
         let filename = filename.join("-");
-        let mut f = File::create(format!("./../typst/svgs/{i:03}-{filename}.svg"))
-            .expect("File Creation failed");
+        let mut f =
+            File::create(format!("./../typst/svgs/{filename}.svg")).expect("File Creation failed");
         let _ = f.write_all(content.as_bytes());
     }
 }
