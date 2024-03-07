@@ -12,9 +12,7 @@ use crate::frag_arc_halfs::{
 use crate::frag_arc_long::{
     a45_24_long, a45_35_long, a46_14_long, a46_36_long, a56_15_long, a56_26_long,
 };
-use crate::frag_arc_semi::{
-    a45_14_semi, a45_15_semi, a46_24_semi, a46_26_semi, a56_35_semi, a56_36_semi,
-};
+use crate::frag_arc_semi::{a45_14, a45_15, a46_24_semi, a46_26_semi, a56_35_semi, a56_36_semi};
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
 use crate::frag_complex_arcs::{n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35};
 use crate::frag_wall::l_wall;
@@ -76,8 +74,8 @@ pub fn generate_all_shapes() {
             (dir | N3 | N6, a36(invert)),
             (dir | N3, a3(invert)),
             (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
-            (dir | N4 | N5 | A1 | A4, a45_14_semi(invert)),
-            (dir | N4 | N5 | A1 | A5, a45_15_semi(invert)),
+            (dir | N4 | N5 | A1 | A4, a45_14(invert)),
+            (dir | N4 | N5 | A1 | A5, a45_15(invert)),
             (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
             (dir | N4 | N5 | A2 | A4 | B3 | B5, n45_24_35(invert)),
             (dir | N4 | N5 | A2 | A4, n45_24(invert)),
