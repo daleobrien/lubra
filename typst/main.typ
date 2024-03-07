@@ -9,49 +9,27 @@
   title: "Maze"
 )
 
-// #let make(name, caption) = {
-//     rect(width: 10mm, height: 5mm)[
-//         #text(body)
-//     ]
-// }
+ #let make(name, caption) = {
+     figure(
+       supplement: none,
+       image(name, width: 100%),
+       caption: [#caption],
+      )
+ }
 
 = Shapes
 
 #grid(
   columns: 4,
 
-    figure(
-    image("svgs/049-n45.svg", width: 100%),
-    caption: [4-5],
-  ),
-  figure(
-    image("svgs/043-n45-a14.svg", width: 100%),
-    caption: [4-5/1-4],
-  ),
-  figure(
-    image("svgs/044-n45-a15.svg", width: 100%),
-    caption: [4-5/1-5],
-  ),
-  figure(
-    image("svgs/042-n45-a14-b35.svg", width: 100%),
-    caption: [4-5/1-5/3-5],
-  ),
-  figure(
-    image("svgs/045-n45-a24-b15.svg", width: 100%),
-    caption: [4-5/2-4/1-5],
-  ),
-  figure(
-    image("svgs/046-n45-a24-b35.svg", width: 100%),
-    caption: [4-6/2-4/3-5],
-  ),
-   figure(
-    image("svgs/047-n45-a24.svg", width: 100%),
-    caption: [4-6/2-4],
-  ),
-  figure(
-    image("svgs/048-n45-a35.svg", width: 100%),
-    caption: [4-5/3-5],
-  ),
+  make("svgs/049-n45.svg", "4-5"),
+  make("svgs/043-n45-a14.svg", "4-5/1-4"),
+  make("svgs/044-n45-a15.svg", "4-5/1-5"),
+  make("svgs/042-n45-a14-b35.svg", "4-5/1-5/3-5"),
+  make("svgs/045-n45-a24-b15.svg", "4-5/2-4/1-5"),
+  make("svgs/046-n45-a24-b35.svg", "4-6/2-4/3-5"),
+  make("svgs/047-n45-a24.svg", "4-6/2-4"),
+  make("svgs/048-n45-a35.svg", "4-5/3-5"),
 )
 
 
