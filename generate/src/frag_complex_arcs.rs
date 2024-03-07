@@ -1,5 +1,5 @@
 use crate::frag_155::{a144, a155, a244, a266};
-use crate::frag_arc_halfs::{a45_24_half, a45_35_half};
+use crate::frag_arc_halfs::{a45_24_half, a45_35_half, a46_14_half, a46_36_half};
 use crate::frag_arc_long::{a45_24_long, a45_35_long, a46_14_long, a46_36_long};
 
 // TODO: These could be a large arc instead
@@ -30,4 +30,10 @@ pub fn n46_14_26(invert: bool) -> String {
 }
 pub fn n46_24_36(invert: bool) -> String {
     return format!("{}{}", a244(invert), a46_36_long(invert));
+}
+pub fn n46_14(invert: bool) -> String {
+    return format!("{}{}", a46_14_long(invert), a46_14_half(invert));
+}
+pub fn n46_35(invert: bool) -> String {
+    return format!("{}{}", a46_36_half(invert), a46_36_long(invert));
 }
