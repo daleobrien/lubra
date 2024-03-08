@@ -26,7 +26,7 @@ fn l_a_to_b(path: Path) -> String {
     );
 }
 
-pub fn l16(invert: bool) -> String {
+pub fn n16(invert: bool) -> String {
     return l_a_to_b(TILE_WIDTH * generate_lx(invert));
 }
 

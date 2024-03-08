@@ -32,7 +32,7 @@ fn axy_to_str(invert: bool, r1: String, r2: String, pts: Path) -> String {
     );
 }
 
-pub fn a23(invert: bool) -> String {
+pub fn n23(invert: bool) -> String {
     let (r1, r2, pts) = a23pts(invert);
     return axy_to_str(invert, r1, r2, pts);
 }

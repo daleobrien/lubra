@@ -53,7 +53,7 @@ pub fn n15(invert: bool) -> String {
     return a15_str(invert, pts, r1, r2);
 }
 
-pub fn a24(invert: bool) -> String {
+pub fn n24(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
     return a15_str(invert, pts, r1, r2);
