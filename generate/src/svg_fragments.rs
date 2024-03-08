@@ -6,13 +6,12 @@ use crate::frag_15_dot::{a14_4, a15_5, a24_4, a26_6, a35_5, a36_6};
 use crate::frag_15_long::{a14_24, a15_35, a24_14, a26_36, a35_15, a36_26};
 use crate::frag_15_straight::{a14_34, a15_25, a24_34, a26_16, a35_25, a36_16};
 use crate::frag_16::{l16, l25, l34};
-use crate::frag_arc_halfs::{a56_15_half, a56_26_half};
 use crate::frag_arc_long::{a45_24_long, a46_14_long, a46_36_long, a56_15_long, a56_26_long};
 use crate::frag_arc_semi::{a45_14, a45_15, a46_24, a46_26, a56_35_semi, a56_36_semi};
 use crate::frag_arcs::{a1, a2, a3, a4, a45, a456, a46, a5, a56, a6};
 use crate::frag_complex_arcs::{
-    n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_24_36,
-    n46_35, n56_15_36, n56_35_26,
+    n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
+    n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
 };
 use crate::frag_wall::l_wall;
 use common::consts::{
@@ -100,12 +99,13 @@ pub fn generate_all_shapes() {
             (dir | N4 | N6 | A3 | A6, n46_35(invert)),
             // 5-6
             (dir | N5 | N6, a56(invert)),
-            (dir | N5 | N6 | A1 | A5, a56_15_half(invert)),
-            (dir | N5 | N6 | A2 | A6, a56_26_half(invert)),
-            (dir | N5 | N6 | A3 | A5 | B2 | B6, n56_35_26(invert)),
-            (dir | N5 | N6 | A1 | A5 | B3 | B6, n56_15_36(invert)),
             (dir | N5 | N6 | A3 | A5, a56_35_semi(invert)),
             (dir | N5 | N6 | A3 | A6, a56_36_semi(invert)),
+            (dir | N5 | N6 | A1 | A5 | B2 | B6, n46_15_26(invert)),
+            (dir | N5 | N6 | A3 | A5 | B2 | B6, n56_35_26(invert)),
+            (dir | N5 | N6 | A1 | A5 | B3 | B6, n56_15_36(invert)),
+            (dir | N5 | N6 | A1 | A5, n56_15(invert)),
+            (dir | N5 | N6 | A2 | A6, n56_26(invert)),
         ] {
             paths.insert(key.to_usize().unwrap_or_default(), path);
         }
