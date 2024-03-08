@@ -65,7 +65,7 @@ pub fn a56(invert: bool) -> String {
     return a_x_to_y(pts, (r1, r2));
 }
 
-pub fn a456(invert: bool) -> String {
+pub fn n456(invert: bool) -> String {
     let (pts1, r) = frag_math::ax(2, invert);
     let pts2 = pts1.clone().rotate_ccw(invert, vec![0, 1]);
     let pts3 = pts1.clone().rotate_cw(invert, vec![0, 1]);
