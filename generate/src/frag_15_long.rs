@@ -80,7 +80,7 @@ pub fn a14_24(invert: bool) -> String {
     return to_str(!invert, pts, r1, r2);
 }
 
-pub fn a24_14(invert: bool) -> String {
+pub fn n24_14(invert: bool) -> String {
     let (pts, r1, r2) = pts(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7]);
     return to_str(invert, pts, r1, r2);

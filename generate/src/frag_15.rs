@@ -48,7 +48,7 @@ pub fn a15_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
   );
 }
 
-pub fn a15(invert: bool) -> String {
+pub fn n15(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     return a15_str(invert, pts, r1, r2);
 }
@@ -64,7 +64,7 @@ pub fn a36(invert: bool) -> String {
     return a15_str(invert, pts, r1, r2);
 }
 
-pub fn a14(invert: bool) -> String {
+pub fn n14(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.reflect();
     return a15_str(!invert, pts, r1, r2);
