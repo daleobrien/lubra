@@ -1,13 +1,13 @@
 use crate::frag_12::{a23, n12, n13};
 use crate::frag_123::n123;
 use crate::frag_15::{a14, a15, a24, a26, a35, a36};
-use crate::frag_155::{a144, a155};
+use crate::frag_155::{a155};
 use crate::frag_15_dot::{a14_4, a15_5, a24_4, a26_6, a35_5, a36_6};
 use crate::frag_15_long::{a14_24, a15_35, a24_14, a26_36, a35_15, a36_26};
 use crate::frag_15_straight::{a14_34, a15_25, a24_34, a26_16, a35_25, a36_16};
 use crate::frag_16::{l16, l25, l34};
 use crate::frag_arc_halfs::{
-    a45_24_half, a45_35_half, a46_14_half, a46_36_half, a56_15_half, a56_26_half,
+    a56_15_half, a56_26_half,
 };
 use crate::frag_arc_long::{a45_24_long, a46_14_long, a46_36_long, a56_15_long, a56_26_long};
 use crate::frag_arc_semi::{a45_14, a45_15, a46_24, a46_26, a56_35_semi, a56_36_semi};
@@ -18,7 +18,7 @@ use crate::frag_complex_arcs::{
 };
 use crate::frag_wall::l_wall;
 use common::consts::{
-    A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
+    A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
 };
 use num_traits::ToPrimitive;
 use std::collections::BTreeMap;
