@@ -17,10 +17,6 @@
       )
  }
 
-= Shapes
-
-#include "more.typ"
-
 = Introduction
 
 Maze is based upon a trianglar shaped tile with size nodes as shown.

@@ -10,4 +10,6 @@ cd ${FOLDER}/document
 cargo run
 
 cd ${FOLDER}/typst
+typst compile shapes.typ
 typst compile main.typ
+  
