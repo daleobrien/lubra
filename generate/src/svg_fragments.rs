@@ -45,10 +45,9 @@ pub fn generate_all_shapes() {
             //
             (dir | N1 | N2, n12(invert)),
             (dir | N1 | N3, n13(invert)),
-            (dir | N1 | N4 | A1 | A2 | A3 | A4 | A6, a155(invert)),
             (dir | N1 | N4 | A2 | A4, a14_24(invert)),
             (dir | N1 | N4 | A3 | A4, a14_34(invert)),
-            (dir | N1 | N4 | A4 | A6, a45_24_long(invert)),
+            (dir | N1 | N4 | A4 | A6, "".to_string()), // Equivalent to 4-6/1-4
             (dir | N1 | N4 | A4, a14_4(invert)),
             (dir | N1 | N4, a14(invert)),
             (dir | N1 | N5 | A2 | A5, a15_25(invert)),
@@ -59,24 +58,24 @@ pub fn generate_all_shapes() {
             (dir | N2 | N3, a23(invert)),
             (dir | N2 | N4 | A1 | A4, a24_14(invert)),
             (dir | N2 | N4 | A3 | A4, a24_34(invert)),
-            (dir | N2 | N4 | A4 | A5, a56_26_long(invert)),
+            (dir | N2 | N4 | A4 | A5, "".to_string()), // Equivalent to 4-5/2-4
             (dir | N2 | N4 | A4, a24_4(invert)),
             (dir | N2 | N4, a24(invert)),
             (dir | N2 | N5, l25(invert)),
             (dir | N2 | N6 | A1 | A6, a26_16(invert)),
             (dir | N2 | N6 | A3 | A6, a26_36(invert)),
-            (dir | N2 | N6 | A5 | A6, a56_15_long(invert)),
+            (dir | N2 | N6 | A5 | A6, "".to_string()), // Equivalent to 5-6/2-6
             (dir | N2 | N6 | A6, a26_6(invert)),
             (dir | N2 | N6, a26(invert)),
             (dir | N3 | N4, l34(invert)),
             (dir | N3 | N5 | A1 | A5, a35_15(invert)),
             (dir | N3 | N5 | A2 | A5, a35_25(invert)),
-            (dir | N3 | N5 | A4 | A5, a46_36_long(invert)),
+            (dir | N3 | N5 | A4 | A5, "".to_string()), // Equivalent to 4-6/3-5
             (dir | N3 | N5 | A5, a35_5(invert)),
             (dir | N3 | N5, a35(invert)),
             (dir | N3 | N6 | A1 | A6, a36_16(invert)),
             (dir | N3 | N6 | A2 | A6, a36_26(invert)),
-            (dir | N3 | N6 | A4 | A6, a46_14_long(invert)),
+            (dir | N3 | N6 | A4 | A6, "".to_string()), // Equivalent to 4-6/3-6
             (dir | N3 | N6 | A6, a36_6(invert)),
             (dir | N3 | N6, a36(invert)),
             // 4-5

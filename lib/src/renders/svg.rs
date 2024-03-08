@@ -34,7 +34,11 @@ impl Svg {
 
     pub fn add_fragment(&mut self, fragment: &str, index: Point, layer_index: usize) {
         // let name = fragment;
-        // println!("adding fragment: {}", layer_index);
+        if fragment.is_empty() {
+            // Sometimes we don't draw anything
+            return;
+        }
+
         let name = self.glyphs.add(fragment);
 
         // TODO: May need to consider neighbours and paint those as part of this too, the bits that

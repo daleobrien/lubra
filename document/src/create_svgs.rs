@@ -26,6 +26,10 @@ pub fn create_svgs() {
         .sorted_by_key(|x| x.0.reverse_bits())
         .rev()
     {
+        if value.is_empty() {
+            continue;
+        }
+
         if key & WA != 0u32 {
             continue;
         }
@@ -99,6 +103,7 @@ pub fn create_svgs() {
         }
 
         let filename = filename.join("-");
+
         let mut f =
             File::create(format!("./../typst/svgs/{filename}.svg")).expect("File Creation failed");
         let _ = f.write_all(content.as_bytes());
