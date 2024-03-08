@@ -30,12 +30,12 @@ pub fn n16(invert: bool) -> String {
     return l_a_to_b(TILE_WIDTH * generate_lx(invert));
 }
 
-pub fn l25(invert: bool) -> String {
+pub fn n25(invert: bool) -> String {
     let pts = TILE_WIDTH * generate_lx(invert).rotate_ccw(invert, vec![0, 4]);
     return l_a_to_b(pts);
 }
 
-pub fn l34(invert: bool) -> String {
+pub fn n34(invert: bool) -> String {
     let pts = TILE_WIDTH * generate_lx(invert).rotate_cw(invert, vec![0, 4]);
     return l_a_to_b(pts);
 }

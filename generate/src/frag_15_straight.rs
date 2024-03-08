@@ -60,7 +60,7 @@ pub fn a36_16(invert: bool) -> String {
     return fn_str(invert, r1, r2, pts);
 }
 
-pub fn a14_34(invert: bool) -> String {
+pub fn n14_34(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect();
     return fn_str(!invert, r1, r2, pts);

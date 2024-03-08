@@ -44,7 +44,7 @@ pub fn a36_6(invert: bool) -> String {
     return a_str(invert, pts.str(), r1, r2);
 }
 
-pub fn a14_4(invert: bool) -> String {
+pub fn n14_4(invert: bool) -> String {
     let (r1, r2, pts) = a_base(invert);
     let pts = pts.reflect();
     return a_str(!invert, pts.str(), r1, r2);

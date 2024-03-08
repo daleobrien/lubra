@@ -74,7 +74,7 @@ pub fn a15_35(invert: bool) -> String {
     return to_str(invert, pts, r1, r2);
 }
 
-pub fn a14_24(invert: bool) -> String {
+pub fn n14_24(invert: bool) -> String {
     let (pts, r1, r2) = pts(invert);
     let pts = pts.reflect();
     return to_str(!invert, pts, r1, r2);

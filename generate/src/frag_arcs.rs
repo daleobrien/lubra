@@ -3,27 +3,27 @@ use common::consts::FILL;
 use common::types::path::Path;
 use itertools::concat;
 
-pub fn a1(invert: bool) -> String {
+pub fn n1(invert: bool) -> String {
     return a1_or_6(1, invert);
 }
 
-pub fn a2(invert: bool) -> String {
+pub fn n2(invert: bool) -> String {
     return a2_or_5(1, invert);
 }
 
-pub fn a3(invert: bool) -> String {
+pub fn n3(invert: bool) -> String {
     return a3_or_4(1, invert);
 }
 
-pub fn a4(invert: bool) -> String {
+pub fn n4(invert: bool) -> String {
     return a3_or_4(6, invert);
 }
 
-pub fn a5(invert: bool) -> String {
+pub fn n5(invert: bool) -> String {
     return a2_or_5(6, invert);
 }
 
-pub fn a6(invert: bool) -> String {
+pub fn n6(invert: bool) -> String {
     return a1_or_6(6, invert);
 }
 
