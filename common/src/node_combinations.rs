@@ -1,6 +1,7 @@
 use crate::bit_utils::interects;
 use itertools::Itertools;
 
+#[derive(Debug, Clone)]
 pub struct NodeCombinations {
     list: Vec<Vec<u32>>,
 }

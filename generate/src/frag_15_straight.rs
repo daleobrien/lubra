@@ -43,18 +43,18 @@ fn fn_pts(invert: bool) -> (f64, f64, Path) {
     return (r + w, r - w, pts);
 }
 
-pub fn a15_25(invert: bool) -> String {
+pub fn n15_25(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     return fn_str(invert, r1, r2, pts);
 }
 
-pub fn a24_34(invert: bool) -> String {
+pub fn n24_34(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
     return fn_str(invert, r1, r2, pts);
 }
 
-pub fn a36_16(invert: bool) -> String {
+pub fn n36_16(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
     return fn_str(invert, r1, r2, pts);
@@ -66,13 +66,13 @@ pub fn n14_34(invert: bool) -> String {
     return fn_str(!invert, r1, r2, pts);
 }
 
-pub fn a26_16(invert: bool) -> String {
+pub fn n26_16(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
     return fn_str(!invert, r1, r2, pts);
 }
 
-pub fn a35_25(invert: bool) -> String {
+pub fn n35_25(invert: bool) -> String {
     let (r1, r2, pts) = fn_pts(invert);
     let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
     return fn_str(!invert, r1, r2, pts);

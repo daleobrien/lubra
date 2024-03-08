@@ -160,17 +160,21 @@ impl Tile {
                     // return true;
                     println!("FOUND MATCH");
                     let adj_net = adj_and_nets.iter().map(|(_, m, n)| n).fold(0, |a, b| a | b);
-                    for (i, m, n) in adj_and_nets {
-                        println!("\t[{k}] <{m}>-> {n}", k = i + 1, n = pretty_print_int(n));
+                    if cfg!(debug_assertions) {
+                        for (i, m, n) in adj_and_nets {
+                            println!("\t[{k}] <{m}>-> {n}", k = i + 1, n = pretty_print_int(n));
+                        }
+                        println!("\t     -> {n} ", n = pretty_print_int(&adj_net));
                     }
-                    println!("\t     -> {n} ", n = pretty_print_int(&adj_net));
                     let bits = transform_tile_orientation((adj_net << 8) | net, index, flipped);
                     let path = MAP_PATHS.get(&bits.clone());
-                    println!(
-                        "transformed net:{} -> {} ({bits:?})",
-                        pretty_print_int(&((adj_net << 8) | net)),
-                        pretty_print_int(&bits)
-                    );
+                    if cfg!(debug_assertions) {
+                        println!(
+                            "transformed net:{} -> {} ({bits:?})",
+                            pretty_print_int(&((adj_net << 8) | net)),
+                            pretty_print_int(&bits)
+                        );
+                    }
                     if path.is_some() {
                         groups.push(path.unwrap());
                         found = true;
@@ -209,12 +213,14 @@ impl Tile {
 
             match adj_tile {
                 Some(a) => {
-                    println!(
-                        "m      {:?} -> {:?} / {:?}",
-                        adj_idx,
-                        pretty_print_int(&a.bits),
-                        pretty_print_int(pattern)
-                    );
+                    if cfg!(debug_assertions) {
+                        println!(
+                            "m      {:?} -> {:?} / {:?}",
+                            adj_idx,
+                            pretty_print_int(&a.bits),
+                            pretty_print_int(pattern)
+                        );
+                    }
                     if *same != a.contain_net(*pattern) {
                         all_matched = false;
                     }

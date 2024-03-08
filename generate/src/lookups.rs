@@ -1,5 +1,5 @@
-use crate::bit_utils::{bit_sequence, get_mass, mask_to_bits, to_base4, to_bits};
-use crate::node_combinations::NodeCombinations;
+use common::bit_utils::{bit_sequence, get_mass, mask_to_bits, to_base4, to_bits};
+use common::node_combinations::NodeCombinations;
 use std::collections::HashMap;
 
 pub fn create_lookups(

@@ -1,4 +1,3 @@
-mod bit_utils;
 mod frag_12;
 mod frag_123;
 mod frag_15;
@@ -15,7 +14,6 @@ mod frag_complex_arcs;
 mod frag_math;
 mod frag_wall;
 mod lookups;
-mod node_combinations;
 mod path_adj;
 mod path_blank;
 mod svg_fragments;

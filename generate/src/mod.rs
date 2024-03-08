@@ -1,4 +1,3 @@
-pub mod bit_utils;
 pub mod frag_12;
 pub mod frag_123;
 pub mod frag_155;
@@ -13,6 +12,5 @@ pub mod frag_arcs;
 pub mod frag_complex_arcs;
 pub mod frag_math;
 pub mod frag_wall;
-pub mod node_combinations;
 pub mod svg_fragments;
 pub mod writer;

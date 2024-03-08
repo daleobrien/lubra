@@ -43,35 +43,35 @@ pub fn a15_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
     );
 }
 
-pub fn a45_14(invert: bool) -> String {
+pub fn n45_14(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     return a15_str(invert, pts, r1, r2);
 }
 
-pub fn a45_15(invert: bool) -> String {
+pub fn n45_15(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.reflect();
     return a15_str(!invert, pts, r1, r2);
 }
 //
-pub fn a46_26(invert: bool) -> String {
+pub fn n46_26(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
     return a15_str(invert, pts, r1, r2);
 }
-pub fn a46_24(invert: bool) -> String {
+pub fn n46_24(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3]);
     return a15_str(!invert, pts, r1, r2);
 }
 
-pub fn a56_36_semi(invert: bool) -> String {
+pub fn n56_36(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
     return a15_str(invert, pts, r1, r2);
 }
 
-pub fn a56_35_semi(invert: bool) -> String {
+pub fn n56_35(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
     return a15_str(!invert, pts, r1, r2);

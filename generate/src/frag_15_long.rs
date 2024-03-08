@@ -69,7 +69,7 @@ fn to_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
         h = pts[7],
     );
 }
-pub fn a15_35(invert: bool) -> String {
+pub fn n15_35(invert: bool) -> String {
     let (pts, r1, r2) = pts(invert);
     return to_str(invert, pts, r1, r2);
 }
@@ -86,7 +86,7 @@ pub fn n24_14(invert: bool) -> String {
     return to_str(invert, pts, r1, r2);
 }
 
-pub fn a26_36(invert: bool) -> String {
+pub fn n26_36(invert: bool) -> String {
     let (pts, r1, r2) = pts(invert);
     let pts = pts
         .reflect()
@@ -94,13 +94,13 @@ pub fn a26_36(invert: bool) -> String {
     return to_str(!invert, pts, r1, r2);
 }
 
-pub fn a36_26(invert: bool) -> String {
+pub fn n36_26(invert: bool) -> String {
     let (pts, r1, r2) = pts(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7]);
     return to_str(invert, pts, r1, r2);
 }
 
-pub fn a35_15(invert: bool) -> String {
+pub fn n35_15(invert: bool) -> String {
     let (pts, r1, r2) = pts(invert);
     let pts = pts
         .reflect()

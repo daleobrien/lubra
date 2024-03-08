@@ -1,12 +1,12 @@
 use crate::frag_12::{n12, n13, n23};
 use crate::frag_123::n123;
 use crate::frag_15::{n14, n15, n24, n26, n35, n36};
-use crate::frag_15_dot::{a15_5, a24_4, a26_6, a35_5, a36_6, n14_4};
-use crate::frag_15_long::{a15_35, a26_36, a35_15, a36_26, n14_24, n24_14};
-use crate::frag_15_straight::{a15_25, a24_34, a26_16, a35_25, a36_16, n14_34};
+use crate::frag_15_dot::{n14_4, n15_5, n24_4, n26_6, n35_5, n36_6};
+use crate::frag_15_long::{n14_24, n15_35, n24_14, n26_36, n35_15, n36_26};
+use crate::frag_15_straight::{n14_34, n15_25, n24_34, n26_16, n35_25, n36_16};
 use crate::frag_16::{n16, n25, n34};
-use crate::frag_arc_semi::{a45_14, a45_15, a46_24, a46_26, a56_35_semi, a56_36_semi};
-use crate::frag_arcs::{a45, a46, a56, n1, n2, n3, n4, n456, n5, n6};
+use crate::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
+use crate::frag_arcs::{a46, n1, n2, n3, n4, n45, n456, n5, n56, n6};
 use crate::frag_complex_arcs::{
     n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
     n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
@@ -61,34 +61,34 @@ pub fn generate_all_shapes() {
             (dir | N1 | N4 | A4 | A6, "".to_string()), // Equivalent to 4-6/1-4
             (dir | N1 | N4 | A4, n14_4(invert)),
             //
-            (dir | N1 | N5 | A2 | A5, a15_25(invert)),
-            (dir | N1 | N5 | A3 | A5, a15_35(invert)),
+            (dir | N1 | N5 | A2 | A5, n15_25(invert)),
+            (dir | N1 | N5 | A3 | A5, n15_35(invert)),
             (dir | N1 | N5 | A5 | A6, "".to_string()), // Equivalent to 2-5/5-6
-            (dir | N1 | N5 | A5, a15_5(invert)),
+            (dir | N1 | N5 | A5, n15_5(invert)),
             //
             (dir | N2 | N4 | A1 | A4, n24_14(invert)),
-            (dir | N2 | N4 | A3 | A4, a24_34(invert)),
+            (dir | N2 | N4 | A3 | A4, n24_34(invert)),
             (dir | N2 | N4 | A4 | A5, "".to_string()), // Equivalent to 4-5/2-4
-            (dir | N2 | N4 | A4, a24_4(invert)),
+            (dir | N2 | N4 | A4, n24_4(invert)),
             //
-            (dir | N2 | N6 | A1 | A6, a26_16(invert)),
-            (dir | N2 | N6 | A3 | A6, a26_36(invert)),
+            (dir | N2 | N6 | A1 | A6, n26_16(invert)),
+            (dir | N2 | N6 | A3 | A6, n26_36(invert)),
             (dir | N2 | N6 | A5 | A6, "".to_string()), // Equivalent to 5-6/2-6
-            (dir | N2 | N6 | A6, a26_6(invert)),
+            (dir | N2 | N6 | A6, n26_6(invert)),
             //
-            (dir | N3 | N5 | A1 | A5, a35_15(invert)),
-            (dir | N3 | N5 | A2 | A5, a35_25(invert)),
+            (dir | N3 | N5 | A1 | A5, n35_15(invert)),
+            (dir | N3 | N5 | A2 | A5, n35_25(invert)),
             (dir | N3 | N5 | A4 | A5, "".to_string()), // Equivalent to 4-6/3-5
-            (dir | N3 | N5 | A5, a35_5(invert)),
+            (dir | N3 | N5 | A5, n35_5(invert)),
             //
-            (dir | N3 | N6 | A1 | A6, a36_16(invert)),
-            (dir | N3 | N6 | A2 | A6, a36_26(invert)),
+            (dir | N3 | N6 | A1 | A6, n36_16(invert)),
+            (dir | N3 | N6 | A2 | A6, n36_26(invert)),
             (dir | N3 | N6 | A4 | A6, "".to_string()), // Equivalent to 4-6/3-6
-            (dir | N3 | N6 | A6, a36_6(invert)),
+            (dir | N3 | N6 | A6, n36_6(invert)),
             // 4-5
-            (dir | N4 | N5, a45(invert)),
-            (dir | N4 | N5 | A1 | A4, a45_14(invert)),
-            (dir | N4 | N5 | A1 | A5, a45_15(invert)),
+            (dir | N4 | N5, n45(invert)),
+            (dir | N4 | N5 | A1 | A4, n45_14(invert)),
+            (dir | N4 | N5 | A1 | A5, n45_15(invert)),
             (dir | N4 | N5 | A2 | A4 | B3 | B5, n45_24_35(invert)),
             (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
             (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
@@ -96,17 +96,17 @@ pub fn generate_all_shapes() {
             (dir | N4 | N5 | A3 | A5, n45_35(invert)),
             // 4-6
             (dir | N4 | N6, a46(invert)),
-            (dir | N4 | N6 | A2 | A6, a46_26(invert)),
-            (dir | N4 | N6 | A2 | A4, a46_24(invert)),
+            (dir | N4 | N6 | A2 | A6, n46_26(invert)),
+            (dir | N4 | N6 | A2 | A4, n46_24(invert)),
             (dir | N4 | N6 | A1 | A4 | B3 | B6, n46_14_36(invert)),
             (dir | N4 | N6 | A1 | A4 | B2 | B6, n46_14_26(invert)),
             (dir | N4 | N6 | A2 | A4 | B3 | B6, n46_24_36(invert)),
             (dir | N4 | N6 | A1 | A4, n46_14(invert)),
             (dir | N4 | N6 | A3 | A6, n46_35(invert)),
             // 5-6
-            (dir | N5 | N6, a56(invert)),
-            (dir | N5 | N6 | A3 | A5, a56_35_semi(invert)),
-            (dir | N5 | N6 | A3 | A6, a56_36_semi(invert)),
+            (dir | N5 | N6, n56(invert)),
+            (dir | N5 | N6 | A3 | A5, n56_35(invert)),
+            (dir | N5 | N6 | A3 | A6, n56_36(invert)),
             (dir | N5 | N6 | A1 | A5 | B2 | B6, n46_15_26(invert)),
             (dir | N5 | N6 | A3 | A5 | B2 | B6, n56_35_26(invert)),
             (dir | N5 | N6 | A1 | A5 | B3 | B6, n56_15_36(invert)),
