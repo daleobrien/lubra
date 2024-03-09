@@ -15,8 +15,6 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N4, true, N4)], // Adjacent tile to look up, then the expected tile
             vec![(ADJ_N4, true, N2 | N4)],
             vec![(ADJ_N4, true, N3 | N4)],
-            // vec![(ADJ_N4, true, N4 | N5)],
-            // vec![(ADJ_N4, true, N4 | N6)],
         ],
     );
     adj_paths.insert(
@@ -25,8 +23,6 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N5, true, N5)],
             vec![(ADJ_N5, true, N2 | N5)],
             vec![(ADJ_N5, true, N3 | N5)],
-            //vec![(ADJ_N5, true, NODE_4 | NODE_5)],
-            // vec![(ADJ_N5, true, N5 | N6)],
         ],
     );
 
@@ -36,8 +32,6 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N4, true, N4)],
             vec![(ADJ_N4, true, N1 | N4)],
             vec![(ADJ_N4, true, N3 | N4)],
-            // vec![(ADJ_N4, true, N4 | N5)],
-            // vec![(ADJ_N4, true, N4 | N6)],
         ],
     );
 
@@ -47,8 +41,6 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N6, true, N6)],
             vec![(ADJ_N6, true, N1 | N6)],
             vec![(ADJ_N6, true, N3 | N6)],
-            //vec![(ADJ_N6, true, N4 | N6)],
-            //vec![(ADJ_N6, true, N5 | N6)],
         ],
     );
 
@@ -58,8 +50,6 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N5, true, N5)],
             vec![(ADJ_N5, true, N1 | N5)],
             vec![(ADJ_N5, true, N2 | N5)],
-            //vec![(ADJ_N5, true, N5 | N6)],
-            //vec![(ADJ_N5, true, N4 | N5)],
         ],
     );
     adj_paths.insert(
@@ -68,8 +58,6 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N6, true, N6)],
             vec![(ADJ_N6, true, N1 | N6)],
             vec![(ADJ_N6, true, N2 | N6)],
-            //vec![(ADJ_N6, true, N4 | N6)],
-            //vec![(ADJ_N6, true, N5 | N6)],
         ],
     );
 
