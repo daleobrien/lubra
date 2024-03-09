@@ -135,15 +135,19 @@ pub fn generate_all_shapes() {
             key,
             trim_whitespace(value.as_str())
         );
+
+        // if value.is_empty() {
+        //     continue;
+        // }
         // Store to documentation library
-        let value = key.to_u32().unwrap();
-        let index = value & (IN | N1 | N2 | N3 | N4 | N5 | N6);
+        let key_as_u32 = key.to_u32().unwrap();
+        let index = key_as_u32 & (IN | N1 | N2 | N3 | N4 | N5 | N6);
 
         if !keys.contains_key(&index) {
-            keys.entry(index).or_insert_with(Vec::new).push(value);
+            keys.entry(index).or_insert_with(Vec::new).push(key_as_u32);
         } else {
-            if !keys[&index].contains(&value) {
-                keys.entry(index).or_insert_with(Vec::new).push(value);
+            if !keys[&index].contains(&key_as_u32) {
+                keys.entry(index).or_insert_with(Vec::new).push(key_as_u32);
             }
         }
     }

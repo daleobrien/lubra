@@ -1,10 +1,11 @@
 use crate::variants::list_of_variants;
-use common::bit_utils::to_bits;
-use common::consts::WA;
+use common::consts::{A1, A2, A3, WA};
 use common::node_combinations::NodeCombinations;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use itertools::Itertools;
 use lib::renders::fragment::MAP_PATHS;
 use lib::renders::svg::Svg;
+use std::collections::HashSet;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -36,7 +37,10 @@ pub fn create_tiles() {
         "Generating All tiles code for {:#?} tiles",
         sequences.clone().count()
     );
-    let mut index = 0;
+
+    let mut hashes_written: HashSet<String> = HashSet::new();
+    let mut index = 1;
+
     for nets in sequences {
         let len = nets.clone().len();
 
@@ -49,25 +53,93 @@ pub fn create_tiles() {
         let nets_variants = NodeCombinations::new(all_variants, len);
 
         for variant in nets_variants {
-            index += 1;
-            save_nets_to_svg(variant, index);
+            // Check the variant is valid, e.g. a vertex isn't used by more than 1 net
+            let hash = variant
+                .clone()
+                .iter()
+                .sorted()
+                .map(|x| format!("{x}"))
+                .join("-");
+
+            if hashes_written.contains(&hash.clone()) {
+                continue;
+            }
+            hashes_written.insert(hash.clone());
+
+            if nets_are_valid(variant.clone()) {
+                if save_nets_to_svg(variant, index) {
+                    index += 1;
+                }
+            }
         }
     }
+    println!("Set: {:#?}", hashes_written.len());
 }
 
-pub fn save_nets_to_svg(nets: Vec<u32>, index: usize) {
+pub fn save_nets_to_svg(nets: Vec<u32>, index: usize) -> bool {
     let mut svg = Svg::new(4f64 * TILE_WIDTH, 4f64 * TILE_HEIGHT);
 
     let wall = MAP_PATHS.get(&WA).unwrap();
     svg.add_fragment(wall, Point { x: 1f64, y: 1f64 }, 0);
 
-    for net in nets {
-        // TODO: Look for variants too! (expand the list of nets into a list of list of nets
+    let mut fragment_count = 0;
+    for net in nets.clone() {
+        // Skip Empty nets, some are drawn by their neighbours
         let path = MAP_PATHS.get(&net).unwrap();
+        if path.len() == 0 {
+            continue;
+        }
+        fragment_count += 1;
         svg.add_fragment(path, Point { x: 1f64, y: 1f64 }, 0);
     }
+
+    if index == 517 || index == 623 {
+        println!("IDX {index} count {:#?} nets {:?}", fragment_count, nets);
+    }
+
+    if fragment_count == 0 {
+        return false;
+    }
     let content = svg.to_string();
+    // Check if this content has been used before ... if so, don't save it
     let mut f =
         File::create(format!("./../typst/tiles/{index:04}.svg")).expect("File Creation failed");
     let _ = f.write_all(content.as_bytes());
+    return true;
+}
+
+fn nets_are_valid(nets: Vec<u32>) -> bool {
+    let mut v1 = 0;
+    let mut v2 = 0;
+    let mut v3 = 0;
+
+    for net in nets.clone() {
+        if net & A1 == A1 {
+            v1 += 1;
+        }
+        if net & A2 == A2 {
+            v2 += 1;
+        }
+        if net & A3 == A3 {
+            v3 += 1;
+        }
+        if v1 > 1 || v2 > 1 || v3 > 1 {
+            println!("Blocked {:#?}", nets);
+            return false;
+        }
+    }
+    return true;
+}
+
+// Add tests here
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use common::consts::B1;
+
+    #[test]
+    fn test_valild_match() {
+        assert_eq!(nets_are_valid(vec![A1 | B1, A2, A3, A1 | B1]), false);
+        assert_eq!(nets_are_valid(vec![A1 | B1, A2, A3]), true);
+    }
 }
