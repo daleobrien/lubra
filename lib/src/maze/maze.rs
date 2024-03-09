@@ -63,16 +63,16 @@ impl Maze {
         //self.tiles[(0, 0)] = Tile::new(vec![NODE_2 | NODE_5], true);
 
         // // // TEST ...
-        for j in 0..number_of_rows {
-            for i in 0..number_of_columns {
-                self.tiles[(j, i)] = Tile::new(vec![], true);
-            }
-        }
-        self.tiles[(0, 0)] = Tile::new(vec![N4 | N5 | A1 | A4 | A5], true);
-
-        self.tiles[(0, 5)] = Tile::new(vec![N1 | N4], true);
-        self.tiles[(0, 6)] = Tile::new(vec![N4 | N5], true);
-        self.tiles[(0, 7)] = Tile::new(vec![N3 | N5], true);
+        // for j in 0..number_of_rows {
+        //     for i in 0..number_of_columns {
+        //         self.tiles[(j, i)] = Tile::new(vec![], true);
+        //     }
+        // }
+        // self.tiles[(0, 0)] = Tile::new(vec![N4 | N5 | A1 | A4 | A5], true);
+        //
+        // self.tiles[(0, 5)] = Tile::new(vec![N1 | N4], true);
+        // self.tiles[(0, 6)] = Tile::new(vec![N4 | N5], true);
+        // self.tiles[(0, 7)] = Tile::new(vec![N3 | N5], true);
 
         if number_of_rows > 1 && number_of_columns > 2 {
             for i in (2..number_of_columns - 2).step_by(3) {
