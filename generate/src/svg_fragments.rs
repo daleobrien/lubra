@@ -186,7 +186,8 @@ pub fn generate_all_shapes() {
         b"pub fn empty_fragments (mask:u32) -> bool {
   match mask {\n",
     );
-    for key in emptyFragments {
+
+    for key in emptyFragments.iter().sorted() {
         let _ = write!(file, "    {} =>  true,\n", to_6bit_binary(&key));
     }
     let _ = file.write(b"    _ => false\n   }\n");
