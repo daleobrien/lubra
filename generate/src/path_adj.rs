@@ -1,3 +1,4 @@
+use common::bit_utils::to_6bit_binary;
 use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -12,11 +13,10 @@ pub fn generate_adjacent_paths() {
         N1 | N4,
         vec![
             vec![(ADJ_N4, true, N4)], // Adjacent tile to look up, then the expected tile
-            vec![(ADJ_N4, true, N4)],
             vec![(ADJ_N4, true, N2 | N4)],
             vec![(ADJ_N4, true, N3 | N4)],
-            vec![(ADJ_N4, true, N4 | N5)],
-            vec![(ADJ_N4, true, N4 | N6)],
+            // vec![(ADJ_N4, true, N4 | N5)],
+            // vec![(ADJ_N4, true, N4 | N6)],
         ],
     );
     adj_paths.insert(
@@ -26,7 +26,7 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N5, true, N2 | N5)],
             vec![(ADJ_N5, true, N3 | N5)],
             //vec![(ADJ_N5, true, NODE_4 | NODE_5)],
-            vec![(ADJ_N5, true, N5 | N6)],
+            // vec![(ADJ_N5, true, N5 | N6)],
         ],
     );
 
@@ -36,8 +36,8 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N4, true, N4)],
             vec![(ADJ_N4, true, N1 | N4)],
             vec![(ADJ_N4, true, N3 | N4)],
-            vec![(ADJ_N4, true, N4 | N5)],
-            vec![(ADJ_N4, true, N4 | N6)],
+            // vec![(ADJ_N4, true, N4 | N5)],
+            // vec![(ADJ_N4, true, N4 | N6)],
         ],
     );
 
@@ -47,8 +47,8 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N6, true, N6)],
             vec![(ADJ_N6, true, N1 | N6)],
             vec![(ADJ_N6, true, N3 | N6)],
-            vec![(ADJ_N6, true, N4 | N6)],
-            vec![(ADJ_N6, true, N5 | N6)],
+            //vec![(ADJ_N6, true, N4 | N6)],
+            //vec![(ADJ_N6, true, N5 | N6)],
         ],
     );
 
@@ -58,8 +58,8 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N5, true, N5)],
             vec![(ADJ_N5, true, N1 | N5)],
             vec![(ADJ_N5, true, N2 | N5)],
-            vec![(ADJ_N5, true, N5 | N6)],
-            vec![(ADJ_N5, true, N4 | N5)],
+            //vec![(ADJ_N5, true, N5 | N6)],
+            //vec![(ADJ_N5, true, N4 | N5)],
         ],
     );
     adj_paths.insert(
@@ -68,55 +68,48 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N6, true, N6)],
             vec![(ADJ_N6, true, N1 | N6)],
             vec![(ADJ_N6, true, N2 | N6)],
-            vec![(ADJ_N6, true, N4 | N6)],
-            vec![(ADJ_N6, true, N5 | N6)],
+            //vec![(ADJ_N6, true, N4 | N6)],
+            //vec![(ADJ_N6, true, N5 | N6)],
         ],
     );
 
-    // Blanks
-    adj_paths.insert(
-        N6,
-        vec![vec![(ADJ_N6, true, N2 | N6)], vec![(ADJ_N6, true, N3 | N6)]],
-    );
-    adj_paths.insert(
-        N5,
-        vec![vec![(ADJ_N5, true, N1 | N5)], vec![(ADJ_N5, true, N3 | N5)]],
-    );
-    adj_paths.insert(
-        N4,
-        vec![vec![(ADJ_N4, true, N1 | N4)], vec![(ADJ_N4, true, N2 | N4)]],
-    );
     adj_paths.insert(
         N4 | N5,
         vec![
             vec![(ADJ_N4, true, N1 | N4), (ADJ_N5, true, N3 | N5)],
             vec![(ADJ_N4, true, N2 | N4), (ADJ_N5, true, N1 | N5)],
-            vec![(ADJ_N4, false, N1 | N4), (ADJ_N5, true, N3 | N5)],
-            vec![(ADJ_N5, false, N1 | N5), (ADJ_N4, true, N2 | N4)],
-            vec![
-                (ADJ_N4, true, N1 | N4),
-                //(ADJ_N5, false, NODE_3 | NODE_5),
-            ],
+            vec![(ADJ_N4, false, N2 | N4), (ADJ_N5, true, N3 | N5)],
+            vec![(ADJ_N4, true, N1 | N4)],
+            vec![(ADJ_N5, true, N1 | N5)],
+            vec![(ADJ_N4, true, N2 | N4)],
+            vec![(ADJ_N5, true, N3 | N5)],
         ],
     );
     adj_paths.insert(
         N4 | N6,
         vec![
-            vec![(ADJ_N4, true, N2 | N4), (ADJ_N6, true, N3 | N6)],
             vec![(ADJ_N4, true, N1 | N4), (ADJ_N6, true, N2 | N6)],
+            vec![(ADJ_N4, true, N1 | N4), (ADJ_N6, true, N3 | N6)],
+            vec![(ADJ_N4, true, N2 | N4), (ADJ_N6, true, N3 | N6)],
             vec![(ADJ_N4, true, N1 | N4)],
+            vec![(ADJ_N4, true, N2 | N4)],
+            vec![(ADJ_N6, true, N2 | N6)],
             vec![(ADJ_N6, true, N3 | N6)],
         ],
     );
     adj_paths.insert(
         N5 | N6,
         vec![
+            vec![(ADJ_N5, true, N1 | N5), (ADJ_N6, true, N2 | N6)],
             vec![(ADJ_N5, true, N1 | N5), (ADJ_N6, true, N3 | N6)],
             vec![(ADJ_N5, true, N3 | N5), (ADJ_N6, true, N2 | N6)],
             vec![(ADJ_N5, true, N1 | N5)],
             vec![(ADJ_N6, true, N2 | N6)],
+            vec![(ADJ_N5, true, N3 | N5)],
+            vec![(ADJ_N6, true, N3 | N6)],
         ],
     );
+
     // Change this to a look up function rather than a class with a HashMap.
     let mut file = File::create("../lib/src/maze/nets_adjacent.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
@@ -137,8 +130,9 @@ pub fn generate_adjacent_paths() {
         }
         let _ = write!(
             file,
-            "  {key}u32 =>  &[{subs}], // {key:06b}\n",
-            subs = subs.join(", ")
+            "  /* {key6bit} */{key}u32 =>  &[{subs}],\n",
+            subs = subs.join(", "),
+            key6bit = to_6bit_binary(&key)
         );
     }
     let _ = file.write(b"};\n\n");

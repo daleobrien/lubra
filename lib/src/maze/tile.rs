@@ -92,11 +92,6 @@ impl Tile {
             // Now we need to look for related tiles ...
 
             let found = Self::render_complex(&surrounding_tiles, &mut groups, flipped, index, &net);
-            //
-            // if Self::can_be_hidden(surrounding_tiles, &net) {
-            //     println!("HIDDEN");
-            //     continue;
-            // };
 
             if !found {
                 let bits = transform_tile_orientation(net, index, flipped);
@@ -135,11 +130,11 @@ impl Tile {
         let mut found: bool = false;
 
         let list_of_adj_and_nets = ADJ_CHECKS.get(&net);
-        println!("list {list_of_adj_and_nets:?}");
 
         if list_of_adj_and_nets.is_some() {
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
-                println!(" ------ searching ");
+                println!(" ------ searching {:?}", adj_and_nets);
+
                 if Self::all_match(surrounding_tiles, adj_and_nets) {
                     // return true;
                     println!("FOUND MATCH");
@@ -195,6 +190,11 @@ impl Tile {
         for (adj_idx, same, pattern) in adj_and_nets.iter() {
             let &adj_tile = &surrounding_tiles[*adj_idx];
 
+            // println!(
+            //     "<{}> -> {:?} / {:?} ::: {:?}",
+            //     adj_idx, same, pattern, adj_tile
+            // );
+            //
             match adj_tile {
                 Some(a) => {
                     if cfg!(debug_assertions) {
