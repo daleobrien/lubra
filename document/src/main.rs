@@ -9,5 +9,5 @@ fn main() {
     create_svgs::create_svgs();
     create_tiles::create_tiles();
     create_typst::create_typst_doc("svgs", "fragments.typ", 4, "1");
-    create_typst::create_typst_doc("tiles", "tiles_grid.typ", 8, "2");
+    create_typst::create_typst_doc("tiles", "tiles_grid.typ", 7, "2");
 }

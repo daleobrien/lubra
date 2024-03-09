@@ -45,6 +45,11 @@ pub fn create_tiles() {
 
     for nets in sequences {
         let len = nets.clone().len();
+        // Only interested in 2 or more nets, e.g. tiles with 1 net are not interesting
+        // as we can see those in another document
+        if len < 2 {
+            continue;
+        }
 
         let mut all_variants = vec![];
         for net in nets.clone() {
