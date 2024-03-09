@@ -18,7 +18,7 @@ use common::consts::{
 };
 use itertools::Itertools;
 use num_traits::ToPrimitive;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
 use std::io::Write;
 
@@ -126,9 +126,11 @@ pub fn generate_all_shapes() {
     let _ = file.write(b"pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {\n");
 
     let mut keys: HashMap<u32, Vec<u32>> = HashMap::new();
+    let mut emptyFragments: HashSet<u32> = HashSet::new();
 
     for (key, value) in paths {
         // Store to render library
+        let key_as_u32 = key.to_u32().unwrap();
         let _ = write!(
             file,
             "  {}u32 =>  \"{}\",\n",
@@ -136,11 +138,12 @@ pub fn generate_all_shapes() {
             trim_whitespace(value.as_str())
         );
 
-        // if value.is_empty() {
-        //     continue;
-        // }
+        if value.is_empty() {
+            emptyFragments.insert(key_as_u32);
+            continue;
+        }
+
         // Store to documentation library
-        let key_as_u32 = key.to_u32().unwrap();
         let index = key_as_u32 & (IN | N1 | N2 | N3 | N4 | N5 | N6);
 
         if !keys.contains_key(&index) {
@@ -172,9 +175,19 @@ pub fn generate_all_shapes() {
             .unique()
             .join(", ");
 
-        let _ = write!(file, "  {} =>  vec![{}],\n", to_6bit_binary(&key), value,);
+        let _ = write!(file, "    {} =>  vec![{}],\n", to_6bit_binary(&key), value,);
     }
     let _ = file.write(b"    _ => vec![mask]\n   }\n");
+    let _ = file.write(b"}\n\n");
+    // Add in empty fragments, by key
+    let _ = file.write(
+        b"pub fn empty_fragments (mask:u32) -> bool {
+  match mask {\n",
+    );
+    for key in emptyFragments {
+        let _ = write!(file, "    {} =>  true,\n", to_6bit_binary(&key));
+    }
+    let _ = file.write(b"    _ => false\n   }\n");
     let _ = file.write(b"}\n\n");
     let _ = file.flush();
 }
