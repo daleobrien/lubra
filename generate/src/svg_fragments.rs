@@ -165,7 +165,9 @@ pub fn generate_all_shapes() {
   match mask {\n",
     );
 
-    for (key, value) in keys {
+    let variant_keys = keys.keys().sorted().collect::<Vec<_>>();
+    for key in variant_keys {
+        let value = keys.get(&key).unwrap();
         // Store to render library
 
         let value = value
