@@ -2,10 +2,10 @@ use itertools::Itertools;
 use std::fs;
 use std::io::BufRead;
 
-pub fn create_typst_doc() {
+pub fn create_typst_doc(path_name: &str, typst_filename: &str, columns: usize) {
     //let mut file = std::fs::File::create("./../typst/fragments.typ").unwrap();
 
-    let mut paths: Vec<_> = std::fs::read_dir("./../typst/svgs/")
+    let mut paths: Vec<_> = std::fs::read_dir(format!("./../typst/{path_name}/"))
         .unwrap()
         .map(|r| r.unwrap())
         .collect();
@@ -24,10 +24,11 @@ pub fn create_typst_doc() {
                 .chars()
                 .filter(|c| c.is_digit(10) || c.is_whitespace())
                 .collect::<String>();
-            format!("  make(\"svgs/{}\", \"{}\")", file_name, name)
+            format!("  make(\"{path_name}/{file_name}\", \"{name}\")")
         })
         .join(",\n");
 
-    let commands = format!("#import \"helper.typ\": *\n\n#grid(\n  columns: 4,\n{commands},\n)");
-    fs::write("./../typst/fragments.typ", commands).expect("Unable to write file");
+    let commands =
+        format!("#import \"helper.typ\": *\n\n#grid(\n  columns: {columns},\n{commands},\n)");
+    fs::write(format!("./../typst/{typst_filename}"), commands).expect("Unable to write file");
 }

@@ -2,12 +2,12 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
-use common::consts::{A1, A2, A3, A4, A5, A6, N1, N2, N3, N4, N5, N6, NODE_TO_COORD};
+use common::consts::{A1, A4, A5, N1, N3, N4, N5, NODE_TO_COORD};
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
 
-use crate::maze::adjacent::{get_surrounding_tile_connections, print_surrounding};
+use crate::maze::adjacent::get_surrounding_tile_connections;
 use crate::maze::tile::{add, Tile};
 use crate::renders::_point::Coordinate;
 use crate::renders::svg::Svg;

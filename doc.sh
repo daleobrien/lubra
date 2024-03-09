@@ -7,8 +7,9 @@ cd ${FOLDER}/generate
 cargo run --bin generate_svg
 
 cd ${FOLDER}/document
-cargo run --release
+cargo run
 
 cd ${FOLDER}/typst
 typst compile shapes.typ
+typst compile tiles.typ
 typst compile main.typ

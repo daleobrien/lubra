@@ -8,6 +8,7 @@ mod variants;
 fn main() {
     println!("Loading fragments and generating svg for each fragment");
     create_svgs::create_svgs();
-    create_typst::create_typst_doc();
     create_tiles::create_tiles();
+    create_typst::create_typst_doc("svgs", "fragments.typ", 4);
+    create_typst::create_typst_doc("tiles", "tiles_grid.typ", 8);
 }

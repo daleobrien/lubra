@@ -1,10 +1,8 @@
 #import "template.typ": *
 
 #show: project.with(
-  title: "Maze"
+  title: "Shapes"
 )
-
-= Shapes
 
 #include "fragments.typ"
 
