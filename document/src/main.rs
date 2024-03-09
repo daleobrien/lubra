@@ -1,5 +1,3 @@
-use itertools::Itertools;
-use std::io::Write;
 
 mod add_nodes;
 mod create_svgs;

@@ -2,7 +2,6 @@ use common::consts::WA;
 use common::node_combinations::NodeCombinations;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use itertools::enumerate;
-use lib::maze::tile::Tile;
 use lib::renders::fragment::MAP_PATHS;
 use lib::renders::svg::Svg;
 use std::fs;
