@@ -24,7 +24,8 @@ pub fn create_tiles() {
 
     let sequences = NodeCombinations::new(
         vec![
-            0b000_001, 0b000_010, 0b000_100, 0b001_000, 0b010_000, 0b100_000, // Points
+            // Skip points, they are no interesting to look at
+            // 0b000_001, 0b000_010, 0b000_100, 0b001_000, 0b010_000, 0b100_000, // Points
             0b011_000, 0b110_000, 0b101_000, 0b111_000, // Arcs
             0b100_001, 0b010_010, 0b001_100, // Lines
             0b000_011, 0b000_110, 0b000_101, // Almost lines, vertex to vertex
@@ -79,7 +80,7 @@ pub fn create_tiles() {
 }
 
 pub fn save_nets_to_svg(nets: Vec<u32>, index: usize) -> bool {
-    let mut svg = Svg::new(4f64 * TILE_WIDTH, 4f64 * TILE_HEIGHT);
+    let mut svg = Svg::new(3f64 * TILE_WIDTH, 3f64 * TILE_HEIGHT);
 
     let wall = MAP_PATHS.get(&WA).unwrap();
     svg.add_fragment(wall, Point { x: 1f64, y: 1f64 }, 0);

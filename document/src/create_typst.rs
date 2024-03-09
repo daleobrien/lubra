@@ -2,7 +2,7 @@ use itertools::Itertools;
 use std::fs;
 use std::io::BufRead;
 
-pub fn create_typst_doc(path_name: &str, typst_filename: &str, columns: usize) {
+pub fn create_typst_doc(path_name: &str, typst_filename: &str, columns: usize, version: &str) {
     //let mut file = std::fs::File::create("./../typst/fragments.typ").unwrap();
 
     let mut paths: Vec<_> = std::fs::read_dir(format!("./../typst/{path_name}/"))
@@ -24,11 +24,11 @@ pub fn create_typst_doc(path_name: &str, typst_filename: &str, columns: usize) {
                 .chars()
                 .filter(|c| c.is_digit(10) || c.is_whitespace())
                 .collect::<String>();
-            format!("  make(\"{path_name}/{file_name}\", \"{name}\")")
+            format!("  make{version}(\"{path_name}/{file_name}\", \"{name}\")")
         })
         .join(",\n");
 
     let commands =
-        format!("#import \"helper.typ\": *\n\n#grid(\n  columns: {columns},\n{commands},\n)");
+        format!("#import \"helper.typ\": *\n\n#grid(\n    gutter: 0pt,\n   columns: {columns},\n{commands},\n)");
     fs::write(format!("./../typst/{typst_filename}"), commands).expect("Unable to write file");
 }
