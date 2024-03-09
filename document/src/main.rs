@@ -1,9 +1,9 @@
-
 mod add_nodes;
 mod create_svgs;
 mod create_tiles;
 mod create_typst;
 mod draw_walls;
+mod variants;
 
 fn main() {
     println!("Loading fragments and generating svg for each fragment");

@@ -12,11 +12,13 @@ use crate::frag_complex_arcs::{
     n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
 };
 use crate::frag_wall::l_wall;
+use common::bit_utils::to_6bit_binary;
 use common::consts::{
     A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
 };
+use itertools::Itertools;
 use num_traits::ToPrimitive;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
 use std::io::Write;
 
@@ -122,14 +124,53 @@ pub fn generate_all_shapes() {
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
     let _ = file.write(b"pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {\n");
+
+    let mut keys: HashMap<u32, Vec<u32>> = HashMap::new();
+
     for (key, value) in paths {
+        // Store to render library
         let _ = write!(
             file,
             "  {}u32 =>  \"{}\",\n",
             key,
             trim_whitespace(value.as_str())
         );
+        // Store to documentation library
+        let value = key.to_u32().unwrap();
+        let index = value & (IN | N1 | N2 | N3 | N4 | N5 | N6);
+
+        if !keys.contains_key(&index) {
+            keys.entry(index).or_insert_with(Vec::new).push(value);
+        } else {
+            if !keys[&index].contains(&value) {
+                keys.entry(index).or_insert_with(Vec::new).push(value);
+            }
+        }
     }
+    let _ = file.write(b"};\n\n");
+    let _ = file.flush();
+
+    println!("Generating variants.rs");
+    let mut file = File::create("../document/src/variants.rs").expect("File Creation failed");
+    let _ = file.write(b"/* This file is generated. */\n");
+    let _ = file.write(
+        b"pub fn list_of_variants (mask:u32) -> Vec<u32> {
+  match mask {\n",
+    );
+
+    for (key, value) in keys {
+        // Store to render library
+
+        let value = value
+            .iter()
+            .map(|x| to_6bit_binary(x))
+            .sorted()
+            .unique()
+            .join(", ");
+
+        let _ = write!(file, "  {} =>  vec![{}],\n", to_6bit_binary(&key), value,);
+    }
+    let _ = file.write(b"    _ => vec![mask]\n   }\n");
     let _ = file.write(b"};\n\n");
     let _ = file.flush();
 }

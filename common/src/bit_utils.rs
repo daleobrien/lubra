@@ -91,6 +91,17 @@ pub fn bit_sequence(n: u32) -> Vec<(u32, u32)> {
         .collect();
 }
 
+pub fn to_6bit_binary(value: &u32) -> String {
+    let mut s = format!("{:032b}", value);
+    let len = s.len();
+    for i in (0..len).rev() {
+        if i % 7 == 2 {
+            s.insert(len - i, '_');
+        }
+    }
+    return format!("0b{}", s);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
