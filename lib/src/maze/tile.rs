@@ -1,6 +1,7 @@
 use crate::maze::nets_adjacent::ADJ_CHECKS;
 use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
+use common::consts::{IN, WA};
 use std::fmt;
 
 #[derive(Clone)]
@@ -130,7 +131,7 @@ impl Tile {
         }
 
         if boundaries {
-            let bits = if flipped { 0b11_000_000 } else { 0b10_000_000 };
+            let bits = if flipped { WA | IN } else { WA };
             let wall = MAP_PATHS.get(&bits);
             if wall.is_some() {
                 groups.push(wall.unwrap());
