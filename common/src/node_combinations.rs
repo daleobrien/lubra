@@ -7,11 +7,11 @@ pub struct NodeCombinations {
 }
 
 impl NodeCombinations {
-    pub fn new(list: Vec<u32>) -> Self {
+    pub fn new(list: Vec<u32>, min_k: usize) -> Self {
         let mut combinations: Vec<Vec<u32>> = Vec::new();
 
         // TODO: Should do this dynamically, since we don't need to do all combinations now
-        for k in 0..=list.len() {
+        for k in min_k..=list.len() {
             for item in list.iter().combinations(k).unique() {
                 let value: Vec<u32> = item.iter().map(|x| (**x)).collect();
                 if !interects(&value) {

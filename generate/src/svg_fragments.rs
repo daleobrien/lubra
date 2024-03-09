@@ -171,6 +171,6 @@ pub fn generate_all_shapes() {
         let _ = write!(file, "  {} =>  vec![{}],\n", to_6bit_binary(&key), value,);
     }
     let _ = file.write(b"    _ => vec![mask]\n   }\n");
-    let _ = file.write(b"};\n\n");
+    let _ = file.write(b"}\n\n");
     let _ = file.flush();
 }
