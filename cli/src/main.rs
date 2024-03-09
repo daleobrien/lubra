@@ -11,7 +11,7 @@ struct Args {
 fn main() {
     // TODO: use args ...
 
-    let seed = 15;
+    let seed = 1;
     let maze = Maze::new(8, 8, true, true, Some(seed));
     let name = format!("sample.svg");
     let result_f = maze.render(name.to_string());

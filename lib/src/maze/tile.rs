@@ -1,5 +1,4 @@
 use crate::maze::nets_adjacent::ADJ_CHECKS;
-use crate::maze::nets_blank::BLANK_CHECK_PATHS;
 use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use std::fmt;
@@ -187,19 +186,19 @@ impl Tile {
         return found;
     }
 
-    fn can_be_hidden(surrounding_tiles: &[Option<&Tile>; 12], net: &u32) -> bool {
-        // First check if the tile should be blanked out, i.e. adjacent will render.
-        let list_of_adj_and_nets = BLANK_CHECK_PATHS.get(&net);
-
-        if list_of_adj_and_nets.is_some() {
-            for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
-                if Self::all_match(surrounding_tiles, adj_and_nets) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+    // fn can_be_hidden(surrounding_tiles: &[Option<&Tile>; 12], net: &u32) -> bool {
+    //     // First check if the tile should be blanked out, i.e. adjacent will render.
+    //     let list_of_adj_and_nets = BLANK_CHECK_PATHS.get(&net);
+    //
+    //     if list_of_adj_and_nets.is_some() {
+    //         for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
+    //             if Self::all_match(surrounding_tiles, adj_and_nets) {
+    //                 return true;
+    //             }
+    //         }
+    //     }
+    //     return false;
+    // }
 
     fn all_match(
         surrounding_tiles: &[Option<&Tile>; 12],
