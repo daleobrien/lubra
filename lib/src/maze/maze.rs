@@ -287,8 +287,6 @@ impl Maze {
         return tile;
     }
 
-    // Path commands
-    // https://github.com/bodoni/svg/blob/master/src/node/element/path/data.rs
     pub fn render(self, file_name: String) -> Result<(), Box<dyn Error>> {
         let margin = 5.0;
         let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;
@@ -313,6 +311,7 @@ impl Maze {
                     .iter()
                     .enumerate()
                 {
+                    println!("index: {g}, frag: {:?}", frag);
                     svg.add_fragment(frag, point, g);
                 }
             }

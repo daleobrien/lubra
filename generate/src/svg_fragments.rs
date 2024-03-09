@@ -133,7 +133,8 @@ pub fn generate_all_shapes() {
         let key_as_u32 = key.to_u32().unwrap();
         let _ = write!(
             file,
-            "  {}u32 =>  \"{}\",\n",
+            " /* {} */ {}u32 =>  \"{}\",\n",
+            to_6bit_binary(&key_as_u32),
             key,
             trim_whitespace(value.as_str())
         );

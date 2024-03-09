@@ -1,6 +1,7 @@
 use crate::maze::nets_adjacent::ADJ_CHECKS;
 use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
+use common::bit_utils::to_6bit_binary;
 use common::consts::{IN, WA};
 use std::fmt;
 
@@ -9,27 +10,6 @@ pub struct Tile {
     pub nodes: Vec<u32>,
     pub initialised: bool,
     pub bits: u32,
-}
-
-#[cfg(debug_assertions)]
-fn pretty_print_int(b: &u32) -> String {
-    let places = vec![3usize, 6usize, 8usize, 11usize, 14usize, 16usize];
-    let number_as_string = if *b < 257u32 {
-        format!("{:08b}", *b)
-    } else {
-        format!("{:016b}", *b)
-    };
-    let mut s = String::new();
-    for (idx, val) in number_as_string.chars().rev().enumerate() {
-        if places.contains(&idx) {
-            s.insert(0, '_');
-        }
-        if idx == 8 {
-            s.insert(0, '_');
-        }
-        s.insert(0, val);
-    }
-    return s;
 }
 
 fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
@@ -81,7 +61,7 @@ impl Tile {
         let s: String = self
             .nodes
             .iter()
-            .map(|n| format!("{:?}", pretty_print_int(n)))
+            .map(|n| to_6bit_binary(n))
             .collect::<Vec<String>>()
             .join(", ");
 
@@ -108,7 +88,7 @@ impl Tile {
         let index = coordinate.i % 3;
 
         for net in self.nodes {
-            println!("net: {} / {net}", pretty_print_int(&net));
+            println!("net: {} / {net}", to_6bit_binary(&net));
             // Now we need to look for related tiles ...
 
             let found = Self::render_complex(&surrounding_tiles, &mut groups, flipped, index, &net);
@@ -125,7 +105,11 @@ impl Tile {
                 if path.is_some() {
                     groups.push(path.unwrap());
                 } else {
-                    println!("No path for bits: {:016b} @ {:?}", net, coordinate);
+                    println!(
+                        "No path for bits: {} @ {:?}",
+                        to_6bit_binary(&net),
+                        coordinate
+                    );
                 }
             }
         }
@@ -162,17 +146,17 @@ impl Tile {
                     let adj_net = adj_and_nets.iter().map(|(_, m, n)| n).fold(0, |a, b| a | b);
                     if cfg!(debug_assertions) {
                         for (i, m, n) in adj_and_nets {
-                            println!("\t[{k}] <{m}>-> {n}", k = i + 1, n = pretty_print_int(n));
+                            println!("\t[{k}] <{m}>-> {n}", k = i + 1, n = to_6bit_binary(n));
                         }
-                        println!("\t     -> {n} ", n = pretty_print_int(&adj_net));
+                        println!("\t     -> {n} ", n = to_6bit_binary(&adj_net));
                     }
                     let bits = transform_tile_orientation((adj_net << 8) | net, index, flipped);
                     let path = MAP_PATHS.get(&bits.clone());
                     if cfg!(debug_assertions) {
                         println!(
                             "transformed net:{} -> {} ({bits:?})",
-                            pretty_print_int(&((adj_net << 8) | net)),
-                            pretty_print_int(&bits)
+                            to_6bit_binary(&((adj_net << 8) | net)),
+                            to_6bit_binary(&bits)
                         );
                     }
                     if path.is_some() {
@@ -217,8 +201,8 @@ impl Tile {
                         println!(
                             "m      {:?} -> {:?} / {:?}",
                             adj_idx,
-                            pretty_print_int(&a.bits),
-                            pretty_print_int(pattern)
+                            to_6bit_binary(&a.bits),
+                            to_6bit_binary(pattern)
                         );
                     }
                     if *same != a.contain_net(*pattern) {
