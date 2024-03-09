@@ -1,5 +1,6 @@
-use crate::variants::list_of_variants;
-use common::consts::{A1, A2, A3, WA};
+use crate::variants::{empty_fragments, list_of_variants};
+use common::bit_utils::to_6bit_binary;
+use common::consts::{A1, A2, A3, B1, B2, B3, N1, N2, N3, WA};
 use common::node_combinations::NodeCombinations;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use itertools::Itertools;
@@ -23,11 +24,11 @@ pub fn create_tiles() {
 
     let sequences = NodeCombinations::new(
         vec![
-            //0b000_001, 0b000_010, 0b000_100, 0b001_000, 0b010_000, 0b100_000, // Points
+            0b000_001, 0b000_010, 0b000_100, 0b001_000, 0b010_000, 0b100_000, // Points
             0b011_000, 0b110_000, 0b101_000, 0b111_000, // Arcs
-            //0b100_001, 0b010_010, 0b001_100, // Lines
+            0b100_001, 0b010_010, 0b001_100, // Lines
             0b000_011, 0b000_110, 0b000_101, // Almost lines, vertex to vertex
-            //0b000_111, // All vertexes connected
+            0b000_111, // All vertexes connected
             0b010_001, 0b001_001, 0b001_010, 0b100_010, 0b010_100, 0b100_100,
         ],
         0,
@@ -57,6 +58,7 @@ pub fn create_tiles() {
             let hash = variant
                 .clone()
                 .iter()
+                .filter(|&x| !empty_fragments(*x))
                 .sorted()
                 .map(|x| format!("{x}"))
                 .join("-");
@@ -93,10 +95,6 @@ pub fn save_nets_to_svg(nets: Vec<u32>, index: usize) -> bool {
         svg.add_fragment(path, Point { x: 1f64, y: 1f64 }, 0);
     }
 
-    if index == 517 || index == 623 {
-        println!("IDX {index} count {:#?} nets {:?}", fragment_count, nets);
-    }
-
     if fragment_count == 0 {
         return false;
     }
@@ -114,17 +112,16 @@ fn nets_are_valid(nets: Vec<u32>) -> bool {
     let mut v3 = 0;
 
     for net in nets.clone() {
-        if net & A1 == A1 {
+        if net & A1 == A1 || net & B1 == B1 || net & N1 == N1 {
             v1 += 1;
         }
-        if net & A2 == A2 {
+        if net & A2 == A2 || net & B2 == B2 || net & N2 == N2 {
             v2 += 1;
         }
-        if net & A3 == A3 {
+        if net & A3 == A3 || net & B3 == B3 || net & N3 == N3 {
             v3 += 1;
         }
         if v1 > 1 || v2 > 1 || v3 > 1 {
-            println!("Blocked {:#?}", nets);
             return false;
         }
     }
