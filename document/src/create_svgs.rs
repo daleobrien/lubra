@@ -34,6 +34,12 @@ pub fn create_svgs() {
             continue;
         }
 
+        // Don't draw tiles with only 1 node
+        let lower = key & (N1 | N2 | N3 | N4 | N5 | N6);
+        if lower == N1 || lower == N2 || lower == N3 || lower == N4 || lower == N5 || lower == N6 {
+            continue;
+        }
+
         let mut svg = Svg::new(4f64 * TILE_WIDTH, 4f64 * TILE_HEIGHT);
 
         svg.add_fragment(value, Point { x: 2f64, y: 1f64 }, 0);

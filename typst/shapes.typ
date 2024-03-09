@@ -1,8 +1,4 @@
-#import "template.typ": *
-
-#show: project.with(
-  title: "Shapes"
-)
-
+#set page("a4")
+#set page(margin: (outside: 1cm, inside: 1cm, top: 1cm, bottom: 1cm))
 #include "fragments.typ"
 
