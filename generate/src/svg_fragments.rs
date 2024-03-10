@@ -42,6 +42,7 @@ pub fn generate_all_shapes() {
             (dir | N5, n5(invert)),
             (dir | N6, n6(invert)),
             //
+            //
             (dir | N1 | N2 | N3, n123(invert)),
             (dir | N4 | N5 | N6, n456(invert)),
             //
@@ -57,6 +58,13 @@ pub fn generate_all_shapes() {
             (dir | N3 | N4, n34(invert)),
             (dir | N3 | N5, n35(invert)),
             (dir | N3 | N6, n36(invert)),
+            //
+            (dir | N1 | N6 | A2 | A6, "".to_string()),
+            (dir | N1 | N6 | A3 | A6, "".to_string()),
+            (dir | N2 | N5 | A1 | A5, "".to_string()),
+            (dir | N2 | N5 | A3 | A5, "".to_string()),
+            (dir | N3 | N4 | A1 | A4, "".to_string()),
+            (dir | N3 | N4 | A2 | A4, "".to_string()),
             //
             (dir | N1 | N4 | A2 | A4, n14_24(invert)),
             (dir | N1 | N4 | A3 | A4, n14_34(invert)),
@@ -189,6 +197,10 @@ pub fn generate_all_shapes() {
     let _ = file.write(b"    _ => vec![mask]\n   }\n");
     let _ = file.write(b"}\n\n");
     // Add in empty fragments, by key
+
+    let mut file = File::create("../document/src/empty.rs").expect("File Creation failed");
+    let _ = file.write(b"/* This file is generated. */\n");
+
     let _ = file.write(
         b"pub fn empty_fragments (mask:u32) -> bool {
   match mask {\n",

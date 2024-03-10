@@ -1,5 +1,5 @@
-use crate::variants::{empty_fragments, list_of_variants};
-use common::bit_utils::to_6bit_binary;
+use crate::empty::empty_fragments;
+use crate::variants::list_of_variants;
 use common::consts::{A1, A2, A3, B1, B2, B3, N1, N2, N3, WA};
 use common::node_combinations::NodeCombinations;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};

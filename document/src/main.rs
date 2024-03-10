@@ -3,6 +3,7 @@ mod create_svgs;
 mod create_tiles;
 mod create_typst;
 mod draw_walls;
+mod empty;
 mod variants;
 
 fn main() {
