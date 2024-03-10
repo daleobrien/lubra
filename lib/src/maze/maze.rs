@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
-use common::consts::{A1, A4, A5, N1, N3, N4, N5, NODE_TO_COORD};
+use common::consts::NODE_TO_COORD;
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;

@@ -37,7 +37,7 @@ fn transform_tile_orientation(value: u32, index: usize, flipped: bool) -> u32 {
         _ => panic!("Invalid rotation"),
     };
     let bits: u32 = if flipped {
-        0b00_000_000_01_000_000 | rotated_net
+        IN | rotated_net
     } else {
         rotated_net
     };
@@ -94,8 +94,10 @@ impl Tile {
             let found = Self::render_complex(&surrounding_tiles, &mut groups, flipped, index, &net);
 
             if !found {
+                // No complex path found, so we need to look for simple paths.
                 let bits = transform_tile_orientation(net, index, flipped);
                 let path = MAP_PATHS.get(&bits);
+                println!("Simple path: {} / {:?}", to_6bit_binary(&bits), path);
                 // A simple tile with no adjacent tiles to worry about?
                 if path.is_some() {
                     groups.push(path.unwrap());
