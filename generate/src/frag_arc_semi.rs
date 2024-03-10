@@ -65,13 +65,13 @@ pub fn n46_24(invert: bool) -> String {
     return a15_str(!invert, pts, r1, r2);
 }
 
-pub fn n56_36(invert: bool) -> String {
+pub fn n56_35(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
     return a15_str(invert, pts, r1, r2);
 }
 
-pub fn n56_35(invert: bool) -> String {
+pub fn n56_36(invert: bool) -> String {
     let (r1, r2, pts) = a15_base(invert);
     let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
     return a15_str(!invert, pts, r1, r2);
