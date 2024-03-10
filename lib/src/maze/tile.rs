@@ -14,18 +14,18 @@ pub struct Tile {
 
 fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
     // Extract the bits to be rotated.
-    let bits_345_1 = value >> 2 & 0b00_001_000_00_001_000;
-    let bits_345_2 = value << 1 & 0b00_110_000_00_110_000;
-    let bits_012_1 = value << 2 & 0b00_000_100_00_000_100;
-    let bits_012_2 = value >> 1 & 0b00_000_011_00_000_011;
+    let bits_345_1 = value >> 2 & 0b001_000_001_000_001_000;
+    let bits_345_2 = value << 1 & 0b110_000_110_000_110_000;
+    let bits_012_1 = value << 2 & 0b000_100_000_100_000_100;
+    let bits_012_2 = value >> 1 & 0b000_011_000_011_000_011;
     return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
 }
 
 fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
-    let bits_345_1 = value >> 1 & 0b00_011_000_00_011_000;
-    let bits_345_2 = value << 2 & 0b00_100_000_00_100_000;
-    let bits_012_1 = value << 1 & 0b00_000_110_00_000_110;
-    let bits_012_2 = value >> 2 & 0b00_000_001_00_000_001;
+    let bits_345_1 = value >> 1 & 0b011_000_011_000_011_000;
+    let bits_345_2 = value << 2 & 0b100_000_100_000_100_000;
+    let bits_012_1 = value << 1 & 0b000_110_000_110_000_110;
+    let bits_012_2 = value >> 2 & 0b000_001_000_001_000_001;
     return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
 }
 
@@ -93,8 +93,10 @@ impl Tile {
 
             let found = Self::render_complex(&surrounding_tiles, &mut groups, flipped, index, &net);
 
-            if !found {
-                // No complex path found, so we need to look for simple paths.
+            if found {
+                println!("Complex path found !");
+            } else {
+                // Simple path
                 let bits = transform_tile_orientation(net, index, flipped);
                 let path = MAP_PATHS.get(&bits);
                 println!("Simple path: {} / {:?}", to_6bit_binary(&bits), path);
@@ -135,28 +137,27 @@ impl Tile {
 
         if list_of_adj_and_nets.is_some() {
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
-                println!(" ------ searching {:?}", adj_and_nets);
+                //println!(" ------ searching {:?}", adj_and_nets);
 
                 if Self::all_match(surrounding_tiles, adj_and_nets) {
                     // return true;
-                    println!("FOUND MATCH");
-                    let adj_net = adj_and_nets.iter().map(|(_, m, n)| n).fold(0, |a, b| a | b);
-                    if cfg!(debug_assertions) {
-                        for (i, m, n) in adj_and_nets {
-                            println!("\t[{k}] <{m}>-> {n}", k = i + 1, n = to_6bit_binary(n));
-                        }
-                        println!("\t     -> {n} ", n = to_6bit_binary(&adj_net));
-                    }
-                    let bits = transform_tile_orientation((adj_net << 8) | net, index, flipped);
+                    println!("FOUND MATCH, {:?}", adj_and_nets);
+                    let adj_net = adj_and_nets
+                        .iter()
+                        .map(|(_, _m, n)| n)
+                        .fold(0, |a, b| a | b);
+
+                    println!("as  bits {}", to_6bit_binary(&adj_net));
+                    let new_bits = (adj_net << 6) | net;
+                    println!("new bits {}", to_6bit_binary(&new_bits));
+                    let bits = transform_tile_orientation(new_bits, index, flipped);
+                    println!("trn bits {}", to_6bit_binary(&bits));
                     let path = MAP_PATHS.get(&bits.clone());
-                    if cfg!(debug_assertions) {
-                        println!(
-                            "transformed net:{} -> {} ({bits:?})",
-                            to_6bit_binary(&((adj_net << 8) | net)),
-                            to_6bit_binary(&bits)
-                        );
-                    }
+
                     if path.is_some() {
+                        if cfg!(debug_assertions) {
+                            println!("transformed net-> {}", to_6bit_binary(&bits));
+                        }
                         groups.push(path.unwrap());
                         found = true;
                         // Stop at the first , match, there may be others
@@ -199,14 +200,6 @@ impl Tile {
             //
             match adj_tile {
                 Some(a) => {
-                    if cfg!(debug_assertions) {
-                        println!(
-                            "m      {:?} -> {:?} / {:?}",
-                            adj_idx,
-                            to_6bit_binary(&a.bits),
-                            to_6bit_binary(pattern)
-                        );
-                    }
                     if *same != a.contain_net(*pattern) {
                         all_matched = false;
                     }

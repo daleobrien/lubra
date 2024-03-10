@@ -311,14 +311,13 @@ impl Maze {
                     .iter()
                     .enumerate()
                 {
-                    println!("index: {g}, frag: {:?}", frag);
+                    //println!("index: {g}, frag: {:?}", frag);
                     svg.add_fragment(frag, point, g);
                 }
             }
         }
 
-        println!("svg: {}", file_name);
-        fs::write(file_name, svg.to_string())?;
+        let r = fs::write(file_name, svg.to_string()).expect("Unable to write file");
         Ok(())
     }
 }
