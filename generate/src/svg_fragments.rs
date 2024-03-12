@@ -35,12 +35,18 @@ pub fn generate_all_shapes() {
         for (key, path) in [
             (dir | WA, l_wall(invert)),
             //
-            (dir | N1, n1(invert)),
-            (dir | N2, n2(invert)),
-            (dir | N3, n3(invert)),
-            (dir | N4, n4(invert)),
-            (dir | N5, n5(invert)),
-            (dir | N6, n6(invert)),
+            (dir | N1 | A1, "".to_string()),
+            // (dir | N1, n1(invert)),
+            (dir | N2 | A2, "".to_string()),
+            // (dir | N2, n2(invert)),
+            (dir | N3 | A3, "".to_string()),
+            // (dir | N3, n3(invert)),
+            (dir | N4 | A4, "".to_string()),
+            // (dir | N4, n4(invert)),
+            (dir | N5 | A5, "".to_string()),
+            // (dir | N5, n5(invert)),
+            (dir | N6 | A6, "".to_string()),
+            // (dir | N6, n6(invert)),
             //
             //
             (dir | N1 | N2 | N3, n123(invert)),
@@ -103,6 +109,8 @@ pub fn generate_all_shapes() {
             (dir | N3 | N6 | A6, n36_6(invert)),
             // 4-5
             (dir | N4 | N5, n45(invert)),
+            (dir | N4 | N5 | A4, n45(invert) + &*n4(invert)),
+            (dir | N4 | N5 | A5, n45(invert) + &*n5(invert)),
             (dir | N4 | N5 | A1 | A4, n45_14(invert)),
             (dir | N4 | N5 | A1 | A5, n45_15(invert)),
             (dir | N4 | N5 | A2 | A4 | B3 | B5, n45_24_35(invert)),

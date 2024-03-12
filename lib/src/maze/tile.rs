@@ -3,6 +3,8 @@ use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use common::bit_utils::to_6bit_binary;
 use common::consts::{IN, WA};
+use rand_distr::num_traits::Signed;
+use serde::__private::de::Content::Some;
 use std::fmt;
 
 #[derive(Clone)]
@@ -87,6 +89,8 @@ impl Tile {
 
         let index = coordinate.i % 3;
 
+        let mut current_nets: Vec<u32> = vec![];
+
         for net in self.nodes {
             println!("net: {} / {net}", to_6bit_binary(&net));
             // Now we need to look for related tiles ...
@@ -95,6 +99,12 @@ impl Tile {
 
             if found {
                 println!("Complex path found !");
+                // TODO: Need to remove any neighbouring tiles that no longer needed.
+                // We could add a new `duplicate` set that are used say it's not to be drawn.
+                // Thus when we add a comolex tile, we can add the adjacent tiles to duplicate set.
+                // We really only need to store the coordinate of the tile, and the net.
+                // We could also do a two pass system, a 2nd pass to remove any tiles that are not needed.
+                // A pass to add in the paths, given the nets
             } else {
                 // Simple path
                 let bits = transform_tile_orientation(net, index, flipped);
