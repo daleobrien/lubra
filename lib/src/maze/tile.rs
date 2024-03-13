@@ -4,7 +4,6 @@ use crate::renders::fragment::MAP_PATHS;
 use common::bit_utils::to_6bit_binary;
 use common::consts::{IN, WA};
 use rand_distr::num_traits::Signed;
-use serde::__private::de::Content::Some;
 use std::fmt;
 
 #[derive(Clone)]
@@ -89,27 +88,30 @@ impl Tile {
 
         let index = coordinate.i % 3;
 
-        let mut current_nets: Vec<u32> = vec![];
+        // i,j = nets
+        //let mut current_nets: Vec<(u32, u32, u32)> = vec![];
 
         for net in self.nodes {
             println!("net: {} / {net}", to_6bit_binary(&net));
             // Now we need to look for related tiles ...
 
-            let found = Self::render_complex(&surrounding_tiles, &mut groups, flipped, index, &net);
+            // This needs to return a net to use, and a list of adjacent nets to remove.
+            let complex_bits = Self::find_best_path(&surrounding_tiles, flipped, index, &net);
 
-            if found {
-                println!("Complex path found !");
+            if complex_bits.is_some() {
+                groups.push(MAP_PATHS.get(&complex_bits.unwrap()).unwrap());
                 // TODO: Need to remove any neighbouring tiles that no longer needed.
+                //
                 // We could add a new `duplicate` set that are used say it's not to be drawn.
-                // Thus when we add a comolex tile, we can add the adjacent tiles to duplicate set.
+                // Thus when we add a complex tile, we can add the adjacent tiles to duplicate set.
                 // We really only need to store the coordinate of the tile, and the net.
                 // We could also do a two pass system, a 2nd pass to remove any tiles that are not needed.
-                // A pass to add in the paths, given the nets
+                // ...
             } else {
                 // Simple path
                 let bits = transform_tile_orientation(net, index, flipped);
                 let path = MAP_PATHS.get(&bits);
-                println!("Simple path: {} / {:?}", to_6bit_binary(&bits), path);
+
                 // A simple tile with no adjacent tiles to worry about?
                 if path.is_some() {
                     groups.push(path.unwrap());
@@ -134,49 +136,31 @@ impl Tile {
         return groups;
     }
 
-    fn render_complex(
+    fn find_best_path(
         surrounding_tiles: &&[Option<&Tile>; 12],
-        groups: &mut Vec<&str>,
         flipped: bool,
         index: usize,
         net: &u32,
-    ) -> bool {
-        let mut found: bool = false;
-
+    ) -> Option<u32> {
         let list_of_adj_and_nets = ADJ_CHECKS.get(&net);
 
         if list_of_adj_and_nets.is_some() {
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
-                //println!(" ------ searching {:?}", adj_and_nets);
-
                 if Self::all_match(surrounding_tiles, adj_and_nets) {
-                    // return true;
-                    println!("FOUND MATCH, {:?}", adj_and_nets);
                     let adj_net = adj_and_nets
                         .iter()
                         .map(|(_, _m, n)| n)
                         .fold(0, |a, b| a | b);
 
-                    println!("as  bits {}", to_6bit_binary(&adj_net));
                     let new_bits = (adj_net << 6) | net;
-                    println!("new bits {}", to_6bit_binary(&new_bits));
                     let bits = transform_tile_orientation(new_bits, index, flipped);
-                    println!("trn bits {}", to_6bit_binary(&bits));
-                    let path = MAP_PATHS.get(&bits.clone());
-
-                    if path.is_some() {
-                        if cfg!(debug_assertions) {
-                            println!("transformed net-> {}", to_6bit_binary(&bits));
-                        }
-                        groups.push(path.unwrap());
-                        found = true;
-                        // Stop at the first , match, there may be others
-                        break;
+                    if MAP_PATHS.contains_key(&bits) {
+                        return Some(bits);
                     }
                 }
             }
         }
-        return found;
+        return None;
     }
 
     // fn can_be_hidden(surrounding_tiles: &[Option<&Tile>; 12], net: &u32) -> bool {
