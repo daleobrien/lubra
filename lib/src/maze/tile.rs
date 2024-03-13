@@ -155,6 +155,13 @@ impl Tile {
                     let new_bits = (adj_net << 6) | net;
                     let bits = transform_tile_orientation(new_bits, index, flipped);
                     if MAP_PATHS.contains_key(&bits) {
+                        // Figure out the adjacent nets to remove.
+                        println!(
+                            "Found complex path: {:?} -> {:?} -> {:?}",
+                            to_6bit_binary(&adj_net),
+                            to_6bit_binary(&net),
+                            to_6bit_binary(&bits)
+                        );
                         return Some(bits);
                     }
                 }
