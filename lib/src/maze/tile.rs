@@ -3,7 +3,6 @@ use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use common::bit_utils::to_6bit_binary;
 use common::consts::{IN, WA};
-use rand_distr::num_traits::Signed;
 use std::fmt;
 
 #[derive(Clone)]
