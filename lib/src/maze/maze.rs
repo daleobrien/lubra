@@ -6,6 +6,7 @@ use common::consts::NODE_TO_COORD;
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
+use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::adjacent::get_surrounding_tile_connections;
 use crate::maze::tile::{add, Tile};
