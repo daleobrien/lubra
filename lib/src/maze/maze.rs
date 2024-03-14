@@ -235,6 +235,7 @@ impl Maze {
     }
 
     fn get_connected_coords_for_tile(&self, i: usize, j: usize) -> [Coordinate; 12] {
+        // TODO: I don't need all 12, just the 6 tiles that are adjacent to the current tile
         let k = i + (3 * (j % 2));
         return NODE_TO_COORD[k % 6].map(|coord| Coordinate {
             i: i + coord.0.to_usize().unwrap(),
@@ -303,7 +304,7 @@ impl Maze {
             }
         }
 
-        let r = fs::write(file_name, svg.to_string()).expect("Unable to write file");
+        let _ = fs::write(file_name, svg.to_string()).expect("Unable to write file");
         Ok(())
     }
 }

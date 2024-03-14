@@ -123,3 +123,5 @@ const K5: [(i32, i32); 12] = [
 ];
 
 pub const NODE_TO_COORD: [[(i32, i32); 12]; 6] = [K3, K4, K5, K0, K1, K2];
+
+// TODO: Add const for node to relative coordinate of current tile
