@@ -96,7 +96,8 @@ impl Tile {
             // Now we need to look for related tiles ...
 
             // This needs to return a net to use, and a list of adjacent nets to remove.
-            let complex_bits = Self::find_best_path(&surrounding_tiles, flipped, index, &net);
+            let complex_bits =
+                Self::find_best_path(coordinate, &surrounding_tiles, flipped, index, &net);
 
             if complex_bits.is_some() {
                 groups.push(MAP_PATHS.get(&complex_bits.unwrap()).unwrap());
@@ -137,6 +138,7 @@ impl Tile {
     }
 
     fn find_best_path(
+        coordinate: Coordinate,
         surrounding_tiles: &&[Option<&Tile>; 12],
         flipped: bool,
         index: usize,
@@ -156,6 +158,52 @@ impl Tile {
                     let bits = transform_tile_orientation(new_bits, index, flipped);
                     if MAP_PATHS.contains_key(&bits) {
                         // Figure out the adjacent nets to remove.
+                        /*
+                          let mut remove_nets: Vec<u32> = vec![];
+
+                        */
+                        let adj_nets_1 = (bits >> 6) & 0b111_111;
+                        let adj_nets_2 = (bits >> 12) & 0b111_111;
+
+                        match adj_nets_1.count_ones() {
+                            0 => { // no need to remove any nets
+                            }
+                            1 => {
+                                println!(
+                                    "XXXXXXXX coord: {coordinate:?} adj: {:?}",
+                                    to_6bit_binary(&adj_nets_1)
+                                );
+                                // Always remove the adj_nets_1 in this case
+                                match adj_nets_1 {
+                                    0b000_001 => {
+                                        // Get the adjacent tile and remove the 0b001_000
+
+                                        //let net = surrounding_tiles[0].unwrap().nodes[0];
+                                    }
+                                    0b000_010 => {
+                                        // remove
+                                    }
+                                    0b000_100 => {
+                                        // remove
+                                    }
+                                    0b001_000 => {
+                                        // remove
+                                    }
+                                    0b010_000 => {
+                                        // remove
+                                    }
+                                    0b100_000 => {
+                                        // remove
+                                    }
+                                    _ => {}
+                                }
+                            }
+                            2 => {}
+                            _ => {
+                                // remove the adj_nets_1
+                            }
+                        }
+
                         println!(
                             "Found complex path: {:?} -> {:?} -> {:?}",
                             to_6bit_binary(&adj_net),
