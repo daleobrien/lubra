@@ -15,18 +15,18 @@ pub struct Tile {
 
 fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
     // Extract the bits to be rotated.
-    let bits_345_1 = value >> 2 & 0b001_000_001_000_001_000;
-    let bits_345_2 = value << 1 & 0b110_000_110_000_110_000;
-    let bits_012_1 = value << 2 & 0b000_100_000_100_000_100;
-    let bits_012_2 = value >> 1 & 0b000_011_000_011_000_011;
+    let bits_345_1 = value >> 2 & 0b001_000_001_000_001_000_001_000_001_000;
+    let bits_345_2 = value << 1 & 0b110_000_110_000_110_000_110_000_110_000;
+    let bits_012_1 = value << 2 & 0b000_100_000_100_000_100_000_100_000_100;
+    let bits_012_2 = value >> 1 & 0b000_011_000_011_000_011_000_011_000_011;
     return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
 }
 
 fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
-    let bits_345_1 = value >> 1 & 0b011_000_011_000_011_000;
-    let bits_345_2 = value << 2 & 0b100_000_100_000_100_000;
-    let bits_012_1 = value << 1 & 0b000_110_000_110_000_110;
-    let bits_012_2 = value >> 2 & 0b000_001_000_001_000_001;
+    let bits_345_1 = value >> 1 & 0b011_000_011_000_011_000_011_000_011_000;
+    let bits_345_2 = value << 2 & 0b100_000_100_000_100_000_100_000_100_000;
+    let bits_012_1 = value << 1 & 0b000_110_000_110_000_110_000_110_000_110;
+    let bits_012_2 = value >> 2 & 0b000_001_000_001_000_001_000_001_000_001;
     return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
 }
 
@@ -177,7 +177,8 @@ impl Tile {
                                 match adj_nets_1 {
                                     0b000_001 => {
                                         // Get the adjacent tile and remove the 0b001_000
-
+                                        // surrounding_tiles[0]; ?
+                                        // Need to look at adjacent.rs and get the relative coordinates
                                         //let net = surrounding_tiles[0].unwrap().nodes[0];
                                     }
                                     0b000_010 => {
