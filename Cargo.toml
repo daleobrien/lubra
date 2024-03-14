@@ -9,8 +9,10 @@ members = [
 ]
 
 [profile.dev]
-codegen-units = 16 # faster builds
-incremental = true
+codegen-units = 1 # faster builds
+incremental = false
+lto = true
+panic = "abort"
 
 [profile.release]
 opt-level = 3
