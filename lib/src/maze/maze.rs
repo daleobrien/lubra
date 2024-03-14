@@ -60,30 +60,7 @@ impl Maze {
 
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         // Seed some random tiles that don't touch each other or the boundaries
-        //self.tiles[(0, 0)] = Tile::new(vec![NODE_2 | NODE_5], true);
 
-        // // // TEST ...
-        // for j in 0..number_of_rows {
-        //     for i in 0..number_of_columns {
-        //         self.tiles[(j, i)] = Tile::new(vec![], true);
-        //     }
-        // }
-        // self.tiles[(0, 0)] = Tile::new(vec![N4 | N5 | A1 | A4 | A5], true);
-        //
-        // self.tiles[(0, 5)] = Tile::new(vec![N1 | N4], true);
-        // self.tiles[(0, 6)] = Tile::new(vec![N4 | N5], true);
-        // self.tiles[(0, 7)] = Tile::new(vec![N3 | N5], true);
-
-        // if number_of_rows > 1 && number_of_columns > 2 {
-        //     for i in (2..number_of_columns - 2).step_by(3) {
-        //         for j in (1..number_of_rows - 1).step_by(2) {
-        //             let tile = self.get_any_random_tile();
-        //             self.tiles[(j, i)] = tile;
-        //         }
-        //     }
-        // }
-
-        println!("Getting Random Tiles");
         for j in 0..number_of_rows {
             for i in 0..number_of_columns {
                 // Don't need to create twice
@@ -254,6 +231,14 @@ impl Maze {
         */
 
         return NODE_TO_COORD[k % 6].map(|coord| self.get_tile_relative_position((i, j), coord));
+    }
+
+    fn get_connected_coords_for_tile(&self, i: usize, j: usize) -> [Coordinate; 12] {
+        let k = i + (3 * (j % 2));
+        return NODE_TO_COORD[k % 6].map(|coord| Coordinate {
+            i: i + coord.0.to_usize().unwrap(),
+            j: j + coord.1.to_usize().unwrap(),
+        });
     }
 
     fn get_random_tile(&mut self, i: usize, j: usize) -> Tile {

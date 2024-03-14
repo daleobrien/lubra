@@ -178,6 +178,7 @@ impl Tile {
                                     0b000_001 => {
                                         // Get the adjacent tile and remove the 0b001_000
                                         // surrounding_tiles[0]; ?
+                                        // see title::get_connected_coords_for_tile(i,j)
                                         // Need to look at adjacent.rs and get the relative coordinates
                                         //let net = surrounding_tiles[0].unwrap().nodes[0];
                                     }
