@@ -6,11 +6,12 @@ use common::consts::NODE_TO_COORD;
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
+use common::types::coordinate::{add, CataloguedNet, Coordinate};
 use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::adjacent::get_surrounding_tile_connections;
-use crate::maze::tile::{add, Tile};
-use crate::renders::_point::Coordinate;
+use crate::maze::tile::Tile;
+use crate::renders::fragment::MAP_PATHS;
 use crate::renders::svg::Svg;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 
@@ -213,7 +214,7 @@ impl Maze {
         for each node index within the tile at {i,j}.
 
         So each k % 6 matches a rotation of the tile
-        Each row is indexed:  1,2,3,4,5,6,1l,1r,2l,2r,3l,3r
+        Additionally, each row is indexed:  1,2,3,4,5,6,1l,1r,2l,2r,3l,3r
 
         k % 6 ->
         {
@@ -232,15 +233,6 @@ impl Maze {
         */
 
         return NODE_TO_COORD[k % 6].map(|coord| self.get_tile_relative_position((i, j), coord));
-    }
-
-    fn get_connected_coords_for_tile(&self, i: usize, j: usize) -> [Coordinate; 12] {
-        // TODO: I don't need all 12, just the 6 tiles that are adjacent to the current tile
-        let k = i + (3 * (j % 2));
-        return NODE_TO_COORD[k % 6].map(|coord| Coordinate {
-            i: i + coord.0.to_usize().unwrap(),
-            j: j + coord.1.to_usize().unwrap(),
-        });
     }
 
     fn get_random_tile(&mut self, i: usize, j: usize) -> Tile {
@@ -282,26 +274,42 @@ impl Maze {
         // Create header and so on
         let mut svg = Svg::new(w, h);
 
+        let mut all_catorised_nets: CataloguedNet = CataloguedNet::new();
+
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
                 let coord: Coordinate = Coordinate { i, j };
-                let point: Point = Point {
-                    x: i as f64,
-                    y: j as f64,
-                };
 
                 let tile = self.tiles[(j, i)].clone();
                 let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
 
-                for (g, &frag) in tile
-                    .to_svg_groups(coord, self.boundaries, &surrounding_tiles)
-                    .iter()
-                    .enumerate()
-                {
-                    //println!("index: {g}, frag: {:?}", frag);
-                    svg.add_fragment(frag, point, g);
-                }
+                // First, we build a list of nets (masks) and hidden nets at each coordinate
+                // Then we use the still visible ones to build the SVG
+                let cat_nets = tile.generate_hidden_and_visible_nets(
+                    coord,
+                    self.boundaries,
+                    &surrounding_tiles,
+                );
+                all_catorised_nets.extend(cat_nets);
             }
+        }
+
+        for coordinate_and_net in all_catorised_nets.visible.iter() {
+            // We don't want to draw the hidden nets
+            if all_catorised_nets.hidden.contains(coordinate_and_net) {
+                continue;
+            }
+            let frag = MAP_PATHS.get(&coordinate_and_net.net);
+            if frag.is_none() {
+                continue;
+            }
+
+            let point: Point = Point {
+                x: coordinate_and_net.coordinate.i as f64,
+                y: coordinate_and_net.coordinate.j as f64,
+            };
+
+            svg.add_fragment(frag.unwrap(), point, 1);
         }
 
         let _ = fs::write(file_name, svg.to_string()).expect("Unable to write file");

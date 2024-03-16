@@ -1,47 +1,18 @@
 use crate::maze::nets_adjacent::ADJ_CHECKS;
-use crate::renders::_point::Coordinate;
 use crate::renders::fragment::MAP_PATHS;
 use common::bit_utils::to_6bit_binary;
 use common::consts::{IN, WA};
+use common::nodes::get_connected_coords_at_coords;
+use common::types::bits;
+use common::types::coordinate::{CataloguedNet, ComplexNet, Coordinate, CoordinateAndNet};
 use std::fmt;
+use std::hash::{Hash, Hasher};
 
 #[derive(Clone)]
 pub struct Tile {
     pub nodes: Vec<u32>,
     pub initialised: bool,
     pub bits: u32,
-}
-
-fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
-    // Extract the bits to be rotated.
-    let bits_345_1 = value >> 2 & 0b001_000_001_000_001_000_001_000_001_000;
-    let bits_345_2 = value << 1 & 0b110_000_110_000_110_000_110_000_110_000;
-    let bits_012_1 = value << 2 & 0b000_100_000_100_000_100_000_100_000_100;
-    let bits_012_2 = value >> 1 & 0b000_011_000_011_000_011_000_011_000_011;
-    return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
-}
-
-fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
-    let bits_345_1 = value >> 1 & 0b011_000_011_000_011_000_011_000_011_000;
-    let bits_345_2 = value << 2 & 0b100_000_100_000_100_000_100_000_100_000;
-    let bits_012_1 = value << 1 & 0b000_110_000_110_000_110_000_110_000_110;
-    let bits_012_2 = value >> 2 & 0b000_001_000_001_000_001_000_001_000_001;
-    return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
-}
-
-fn transform_tile_orientation(value: u32, index: usize, flipped: bool) -> u32 {
-    let rotated_net = match index {
-        0 => value,
-        1 => rotate_bits_345_right_and_012_left(value),
-        2 => rotate_bits_345_left_and_012_right(value),
-        _ => panic!("Invalid rotation"),
-    };
-    let bits: u32 = if flipped {
-        IN | rotated_net
-    } else {
-        rotated_net
-    };
-    return bits;
 }
 
 impl Tile {
@@ -68,15 +39,12 @@ impl Tile {
         return format!("[{s}]", s = s.replace("\"", ""));
     }
 
-    pub fn to_svg_groups(
+    pub fn generate_hidden_and_visible_nets(
         self,
         coordinate: Coordinate,
         boundaries: bool,
         surrounding_tiles: &[Option<&Tile>; 12],
-    ) -> Vec<&'static str> {
-        // Build the SVG groups and return them
-        let mut groups: Vec<&str> = vec![];
-
+    ) -> CataloguedNet {
         let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
         println!(
@@ -87,34 +55,29 @@ impl Tile {
 
         let index = coordinate.i % 3;
 
-        // i,j = nets
-        //let mut current_nets: Vec<(u32, u32, u32)> = vec![];
+        let mut render_nets = CataloguedNet::new();
 
         for net in self.nodes {
             println!("net: {} / {net}", to_6bit_binary(&net));
             // Now we need to look for related tiles ...
 
             // This needs to return a net to use, and a list of adjacent nets to remove.
-            let complex_bits =
+            let complex_net =
                 Self::find_best_path(coordinate, &surrounding_tiles, flipped, index, &net);
 
-            if complex_bits.is_some() {
-                groups.push(MAP_PATHS.get(&complex_bits.unwrap()).unwrap());
-                // TODO: Need to remove any neighbouring tiles that no longer needed.
-                //
-                // We could add a new `duplicate` set that are used say it's not to be drawn.
-                // Thus when we add a complex tile, we can add the adjacent tiles to duplicate set.
-                // We really only need to store the coordinate of the tile, and the net.
-                // We could also do a two pass system, a 2nd pass to remove any tiles that are not needed.
-                // ...
+            if complex_net.is_some() {
+                let complex_net = complex_net.unwrap();
+                render_nets.add(complex_net);
             } else {
                 // Simple path
-                let bits = transform_tile_orientation(net, index, flipped);
+                let bits = bits::transform_tile_orientation(net, index, flipped);
                 let path = MAP_PATHS.get(&bits);
 
                 // A simple tile with no adjacent tiles to worry about?
                 if path.is_some() {
-                    groups.push(path.unwrap());
+                    render_nets
+                        .visible
+                        .push(CoordinateAndNet::new(coordinate, bits));
                 } else {
                     println!(
                         "No path for bits: {} @ {:?}",
@@ -129,11 +92,13 @@ impl Tile {
             let bits = if flipped { WA | IN } else { WA };
             let wall = MAP_PATHS.get(&bits);
             if wall.is_some() {
-                groups.push(wall.unwrap());
+                render_nets
+                    .visible
+                    .push(CoordinateAndNet::new(coordinate, bits));
             }
         }
 
-        return groups;
+        return render_nets;
     }
 
     fn find_best_path(
@@ -142,8 +107,10 @@ impl Tile {
         flipped: bool,
         index: usize,
         net: &u32,
-    ) -> Option<u32> {
+    ) -> Option<ComplexNet> {
         let list_of_adj_and_nets = ADJ_CHECKS.get(&net);
+
+        let mut complex_net: ComplexNet = ComplexNet::new();
 
         if list_of_adj_and_nets.is_some() {
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
@@ -154,7 +121,7 @@ impl Tile {
                         .fold(0, |a, b| a | b);
 
                     let new_bits = (adj_net << 6) | net;
-                    let bits = transform_tile_orientation(new_bits, index, flipped);
+                    let bits = bits::transform_tile_orientation(new_bits, index, flipped);
                     if MAP_PATHS.contains_key(&bits) {
                         // Figure out the adjacent nets to remove.
                         /*
@@ -162,39 +129,54 @@ impl Tile {
 
                         */
                         let adj_nets_1 = (bits >> 6) & 0b111_111;
-                        let adj_nets_2 = (bits >> 12) & 0b111_111;
+                        //let adj_nets_2 = (bits >> 12) & 0b111_111;
 
                         match adj_nets_1.count_ones() {
                             0 => { // no need to remove any nets
                             }
                             1 => {
-                                println!(
-                                    "XXXXXXXX coord: {coordinate:?} adj: {:?}",
-                                    to_6bit_binary(&adj_nets_1)
-                                );
                                 // Always remove the adj_nets_1 in this case
                                 match adj_nets_1 {
                                     0b000_001 => {
-                                        // Get the adjacent tile and remove the 0b001_000
-                                        // surrounding_tiles[0]; ?
-                                        // see title::get_connected_coords_for_tile(i,j)
-                                        // Need to look at adjacent.rs and get the relative coordinates
-                                        //let net = surrounding_tiles[0].unwrap().nodes[0];
+                                        let coord = get_connected_coords_at_coords(coordinate, 0);
+                                        complex_net
+                                            .hidden_neighbours
+                                            .insert(CoordinateAndNet::new(coord, 0b000_001));
                                     }
                                     0b000_010 => {
                                         // remove
+                                        let coord = get_connected_coords_at_coords(coordinate, 1);
+                                        complex_net
+                                            .hidden_neighbours
+                                            .insert(CoordinateAndNet::new(coord, 0b000_010));
                                     }
                                     0b000_100 => {
                                         // remove
+                                        let coord = get_connected_coords_at_coords(coordinate, 2);
+                                        complex_net
+                                            .hidden_neighbours
+                                            .insert(CoordinateAndNet::new(coord, 0b000_100));
                                     }
                                     0b001_000 => {
                                         // remove
+                                        let coord = get_connected_coords_at_coords(coordinate, 3);
+                                        complex_net
+                                            .hidden_neighbours
+                                            .insert(CoordinateAndNet::new(coord, 0b001_000));
                                     }
                                     0b010_000 => {
                                         // remove
+                                        let coord = get_connected_coords_at_coords(coordinate, 4);
+                                        complex_net
+                                            .hidden_neighbours
+                                            .insert(CoordinateAndNet::new(coord, 0b010_000));
                                     }
                                     0b100_000 => {
                                         // remove
+                                        let coord = get_connected_coords_at_coords(coordinate, 5);
+                                        complex_net
+                                            .hidden_neighbours
+                                            .insert(CoordinateAndNet::new(coord, 0b100_000));
                                     }
                                     _ => {}
                                 }
@@ -211,7 +193,9 @@ impl Tile {
                             to_6bit_binary(&net),
                             to_6bit_binary(&bits)
                         );
-                        return Some(bits);
+
+                        complex_net.complex_net = CoordinateAndNet::new(coordinate, bits);
+                        return Some(complex_net);
                     }
                 }
             }
@@ -266,7 +250,7 @@ impl Tile {
         return self
             .nodes
             .iter()
-            .map(|n| rotate_bits_345_left_and_012_right(*n))
+            .map(|n| bits::rotate_bits_345_left_and_012_right(*n))
             .collect();
     }
 
@@ -274,7 +258,7 @@ impl Tile {
         return self
             .nodes
             .iter()
-            .map(|n| rotate_bits_345_right_and_012_left(*n))
+            .map(|n| bits::rotate_bits_345_right_and_012_left(*n))
             .collect();
     }
 
@@ -313,18 +297,6 @@ impl fmt::Display for Tile {
             write!(f, "?")
         }
     }
-}
-
-pub fn add(u: usize, i: i32) -> Option<usize> {
-    if i.is_negative() {
-        if u < i.wrapping_abs() as u32 as usize {
-            return None;
-        }
-        let r = u - i.wrapping_abs() as u32 as usize;
-        return Some(r);
-    }
-    let r = u + i as usize;
-    return Some(r);
 }
 
 #[cfg(test)]
