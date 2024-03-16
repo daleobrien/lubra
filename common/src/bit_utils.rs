@@ -99,7 +99,19 @@ pub fn to_6bit_binary(value: &u32) -> String {
             s.insert(len - i, '_');
         }
     }
-    return format!("0b{}", s);
+    let mut text = format!("0b{}", s);
+    for s in vec![
+        "0b00_000000_000000_000000_000000_",
+        "0b00_000000_000000_000000_",
+        "0b00_000000_000000_",
+        "0b00_000000_",
+    ] {
+        if text.starts_with(s) {
+            text = text.replace(s, "0b00_..._");
+        }
+    }
+
+    return text;
 }
 
 #[cfg(test)]

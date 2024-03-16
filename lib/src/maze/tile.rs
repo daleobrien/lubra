@@ -113,6 +113,18 @@ impl Tile {
 
         if list_of_adj_and_nets.is_some() {
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
+                //
+                let text = adj_and_nets
+                    .iter()
+                    .map(|(i, d, n)| format!("{i} {d} {}", to_6bit_binary(n)))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+
+                println!(
+                    "Checking {coordinate:?} {:?} with {text}",
+                    to_6bit_binary(net)
+                );
+
                 if Self::all_match(surrounding_tiles, adj_and_nets) {
                     let adj_net = adj_and_nets
                         .iter()
@@ -123,15 +135,20 @@ impl Tile {
                     let bits = bits::transform_tile_orientation(new_bits, index, flipped);
 
                     if MAP_PATHS.contains_key(&bits) {
-                        // Figure out the adjacent nets to remove.
-                        /*
-                          let mut remove_nets: Vec<u32> = vec![];
-                        */
+                        println!(
+                            "Found path for bits: {} @ {} for {}",
+                            to_6bit_binary(&bits),
+                            coordinate,
+                            to_6bit_binary(&net)
+                        );
+                        // Adjacent tiles masks
                         let adj_nets_1 = (bits >> 6) & 0b111_111;
                         let adj_nets_2 = (bits >> 12) & 0b111_111;
+                        let adj_nets_3 = (bits >> 18) & 0b111_111;
+                        let adj_nets_4 = (bits >> 24) & 0b111_111;
 
-                        for adj_net in vec![adj_nets_1, adj_nets_2] {
-                            if adj_net.count_ones() == 1 {
+                        for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
+                            if adj_net != 0 && adj_net.count_ones() == 1 {
                                 Self::add_single_node_to_hidden(
                                     coordinate,
                                     &mut complex_net,
