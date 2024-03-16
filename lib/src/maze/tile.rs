@@ -121,64 +121,27 @@ impl Tile {
 
                     let new_bits = (adj_net << 6) | net;
                     let bits = bits::transform_tile_orientation(new_bits, index, flipped);
+
                     if MAP_PATHS.contains_key(&bits) {
                         // Figure out the adjacent nets to remove.
                         /*
                           let mut remove_nets: Vec<u32> = vec![];
                         */
                         let adj_nets_1 = (bits >> 6) & 0b111_111;
-                        //let adj_nets_2 = (bits >> 12) & 0b111_111;
+                        let adj_nets_2 = (bits >> 12) & 0b111_111;
 
+                        for adj_net in vec![adj_nets_1, adj_nets_2] {
+                            if adj_net.count_ones() == 1 {
+                                Self::add_single_node_to_hidden(
+                                    coordinate,
+                                    &mut complex_net,
+                                    adj_nets_1,
+                                );
+                            }
+                        }
                         match adj_nets_1.count_ones() {
-                            0 => { // no need to remove any nets
-                            }
-                            1 => {
-                                // Always remove the adj_nets_1 in this case
-                                match adj_nets_1 {
-                                    0b000_001 => {
-                                        let coord = get_connected_coords_at_coords(coordinate, 0);
-                                        complex_net
-                                            .hidden_neighbours
-                                            .insert(CoordinateAndNet::new(coord, 0b000_001));
-                                    }
-                                    0b000_010 => {
-                                        // remove
-                                        let coord = get_connected_coords_at_coords(coordinate, 1);
-                                        complex_net
-                                            .hidden_neighbours
-                                            .insert(CoordinateAndNet::new(coord, 0b000_010));
-                                    }
-                                    0b000_100 => {
-                                        // remove
-                                        let coord = get_connected_coords_at_coords(coordinate, 2);
-                                        complex_net
-                                            .hidden_neighbours
-                                            .insert(CoordinateAndNet::new(coord, 0b000_100));
-                                    }
-                                    0b001_000 => {
-                                        // remove
-                                        let coord = get_connected_coords_at_coords(coordinate, 3);
-                                        complex_net
-                                            .hidden_neighbours
-                                            .insert(CoordinateAndNet::new(coord, 0b001_000));
-                                    }
-                                    0b010_000 => {
-                                        // remove
-                                        let coord = get_connected_coords_at_coords(coordinate, 4);
-                                        complex_net
-                                            .hidden_neighbours
-                                            .insert(CoordinateAndNet::new(coord, 0b010_000));
-                                    }
-                                    0b100_000 => {
-                                        // remove
-                                        let coord = get_connected_coords_at_coords(coordinate, 5);
-                                        complex_net
-                                            .hidden_neighbours
-                                            .insert(CoordinateAndNet::new(coord, 0b100_000));
-                                    }
-                                    _ => {}
-                                }
-                            }
+                            0 => { /* nothing to do */ }
+                            1 => { /* See above */ }
                             2 => {}
                             _ => {
                                 // remove the adj_nets_1
@@ -192,6 +155,22 @@ impl Tile {
             }
         }
         return None;
+    }
+
+    fn add_single_node_to_hidden(
+        coordinate: Coordinate,
+        complex_net: &mut ComplexNet,
+        adj_nets: u32,
+    ) {
+        let index = adj_nets.trailing_zeros() as usize;
+        let coord = get_connected_coords_at_coords(coordinate, index);
+        let index = coord.i % 3;
+        let flipped = (coord.j + coord.i) % 2 == 1;
+        let adj_bits = bits::transform_tile_orientation(adj_nets, index, flipped);
+
+        complex_net
+            .hidden_neighbours
+            .insert(CoordinateAndNet::new(coord, adj_bits));
     }
 
     // fn can_be_hidden(surrounding_tiles: &[Option<&Tile>; 12], net: &u32) -> bool {

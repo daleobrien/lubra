@@ -14,7 +14,7 @@ use crate::frag_complex_arcs::{
 use crate::frag_wall::l_wall;
 use common::bit_utils::to_6bit_binary;
 use common::consts::{
-    A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
+    A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
 };
 use itertools::Itertools;
 use num_traits::ToPrimitive;
@@ -115,7 +115,10 @@ pub fn generate_all_shapes() {
             (dir | N4 | N5 | A1 | A5, n45_15(invert)),
             (dir | N4 | N5 | A2 | A4 | B3 | B5, n45_24_35(invert)),
             (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
+            //
             (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
+            (dir | N4 | N5 | A1 | A5 | B2 | B4, n45_24_15(invert)),
+            //
             (dir | N4 | N5 | A2 | A4, n45_24(invert)),
             (dir | N4 | N5 | A3 | A5, n45_35(invert)),
             // 4-6
