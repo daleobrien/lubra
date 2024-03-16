@@ -11,8 +11,8 @@ struct Args {
 fn main() {
     // TODO: use args ...
 
-    let maze = Maze::new(16, 9, true, true, Some(1));
-    //let maze = Maze::new(5, 2, true, true, Some(1));
+    //let maze = Maze::new(16, 9, true, true, Some(1));
+    let maze = Maze::new(5, 2, true, true, Some(2));
     let name = format!("sample.svg");
     let result_f = maze.render(name.to_string());
     println!("Finished creating Random maze {:?}", result_f.unwrap());

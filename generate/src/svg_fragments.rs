@@ -104,8 +104,8 @@ pub fn generate_all_shapes() {
             //
             (dir | N3 | N6 | A1 | A6, n36_16(invert)),
             (dir | N3 | N6 | A2 | A6, n36_26(invert)),
-            (dir | N3 | N6 | A4 | A6, "".to_string()), //
-            (dir | N3 | N6 | A5 | A6, "".to_string()), //
+            //(dir | N3 | N6 | A4 | A6, "".to_string()), //
+            //(dir | N3 | N6 | A5 | A6, "".to_string()), // Equivalent to 5-6/3-6
             (dir | N3 | N6 | A6, n36_6(invert)),
             // 4-5
             (dir | N4 | N5, n45(invert)),

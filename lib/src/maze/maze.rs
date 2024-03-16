@@ -13,7 +13,7 @@ use crate::maze::adjacent::get_surrounding_tile_connections;
 use crate::maze::tile::Tile;
 use crate::renders::fragment::MAP_PATHS;
 use crate::renders::svg::Svg;
-use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use common::types::point::{Point, PATH_WIDTH, S2, S4, TILE_HEIGHT, TILE_WIDTH};
 
 pub struct Maze {
     pub style: Option<String>,
@@ -294,21 +294,35 @@ impl Maze {
             }
         }
 
+        println!("");
+        println!("Render ...");
+        println!("");
+        for coordinate_and_net in all_catorised_nets.hidden.iter() {
+            println!("_ Hidden {}", coordinate_and_net);
+        }
+        println!("");
         for coordinate_and_net in all_catorised_nets.visible.iter() {
             // We don't want to draw the hidden nets
             let masked_net: CoordinateAndNet = CoordinateAndNet {
-                // Remove IN & WA
+                // IN & WA
                 net: coordinate_and_net.net & NX,
                 coordinate: coordinate_and_net.coordinate,
             };
             if all_catorised_nets.hidden.contains(&masked_net) {
+                println!("_ Nope   {}", masked_net);
                 continue;
             }
 
             let frag = MAP_PATHS.get(&coordinate_and_net.net);
             if frag.is_none() {
+                println!("_ Blank  {}", masked_net);
                 continue;
             }
+            if frag.unwrap().is_empty() {
+                println!("_ Empty  {}", masked_net);
+                continue;
+            }
+            println!("_ Yes    {}", masked_net);
 
             let point: Point = Point {
                 x: coordinate_and_net.coordinate.i as f64,
@@ -318,6 +332,14 @@ impl Maze {
             svg.add_fragment(frag.unwrap(), point, 1);
         }
 
+        let circle = format!(
+            "<circle stroke=\"black\" fill=\"red\" cx=\"{w:.2}\" cy=\"{h:.2}\" r=\"{r:.2}\" />",
+            r = TILE_WIDTH / 10f64,
+            w = TILE_WIDTH / 2f64,
+            //h = TILE_HEIGHT - TILE_HEIGHT / S2
+            h = TILE_HEIGHT / S2
+        );
+        svg.add_fragment(&circle, Point { x: 1.0, y: 0.0 }, 1);
         let _ = fs::write(file_name, svg.to_string()).expect("Unable to write file");
         Ok(())
     }

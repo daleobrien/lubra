@@ -185,15 +185,6 @@ impl Tile {
                             }
                         }
 
-                        // println!(
-                        //     "FOUND complex path @ {coordinate:?} {:?} -> {:?} -> {:?}\n   {:?}\n   hidden: {:?}",
-                        //     to_6bit_binary(&adj_net),
-                        //     to_6bit_binary(&net),
-                        //     to_6bit_binary(&bits),
-                        //     to_6bit_binary(&adj_nets_1),
-                        //     complex_net.hidden_neighbours
-                        // );
-
                         complex_net.complex_net = CoordinateAndNet::new(coordinate, bits);
                         return Some(complex_net);
                     }

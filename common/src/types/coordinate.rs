@@ -1,4 +1,6 @@
+use crate::bit_utils::to_6bit_binary;
 use std::collections::HashSet;
+use std::fmt;
 use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Copy, Debug)]
@@ -7,12 +9,31 @@ pub struct Coordinate {
     pub j: usize,
 }
 
+impl fmt::Display for Coordinate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "coord:({},{})", self.i, self.j,)
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct CoordinateAndNet {
     pub coordinate: Coordinate,
     pub net: u32,
 }
 
+impl fmt::Display for CoordinateAndNet {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "({},{}):{}",
+            self.coordinate.i,
+            self.coordinate.j,
+            to_6bit_binary(&self.net)
+        )
+    }
+}
+
+#[derive(Debug)]
 pub struct CataloguedNet {
     pub hidden: HashSet<CoordinateAndNet>,
     pub visible: Vec<CoordinateAndNet>,
@@ -102,5 +123,11 @@ impl CataloguedNet {
     pub fn extend(&mut self, catalogued_net: CataloguedNet) {
         self.hidden.extend(&catalogued_net.hidden);
         self.visible.extend(catalogued_net.visible);
+    }
+}
+
+impl fmt::Display for CataloguedNet {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "visible: {:?} ,hidden: {:?}", self.visible, self.hidden,)
     }
 }
