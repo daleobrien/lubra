@@ -12,6 +12,7 @@ pub const N6: u32 = 0b00_000_000_000_000_000_000_000_000_100_000;
 pub const IN: u32 = 0b01_000_000_000_000_000_000_000_000_000_000; // Inverted
 pub const NO: u32 = 0b00_000_000_000_000_000_000_000_000_000_000; // Normal
 pub const WA: u32 = 0b10_000_000_000_000_000_000_000_000_000_000; // Indicates it's a wall
+pub const NX: u32 = 0b00_111_111_111_111_111_111_111_111_111_111;
 
 pub const A1: u32 = 0b00_000_000_000_000_000_000_000_001_000_000;
 pub const A2: u32 = 0b00_000_000_000_000_000_000_000_010_000_000;
@@ -123,5 +124,3 @@ const K5: [(i32, i32); 12] = [
 ];
 
 pub const NODE_TO_COORD: [[(i32, i32); 12]; 6] = [K3, K4, K5, K0, K1, K2];
-
-// TODO: Add const for node to relative coordinate of current tile

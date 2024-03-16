@@ -1,12 +1,12 @@
-use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
+use std::{collections::HashSet, os::unix::net};
 
-use common::consts::NODE_TO_COORD;
+use common::consts::{NODE_TO_COORD, NX};
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
-use common::types::coordinate::{add, CataloguedNet, Coordinate};
+use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
 use rand_distr::num_traits::ToPrimitive;
 
 use crate::maze::adjacent::get_surrounding_tile_connections;
@@ -294,12 +294,17 @@ impl Maze {
             }
         }
 
-        println!("Hidden nets {:?}", all_catorised_nets.hidden);
         for coordinate_and_net in all_catorised_nets.visible.iter() {
             // We don't want to draw the hidden nets
-            if all_catorised_nets.hidden.contains(coordinate_and_net) {
+            let masked_net: CoordinateAndNet = CoordinateAndNet {
+                // Remove IN & WA
+                net: coordinate_and_net.net & NX,
+                coordinate: coordinate_and_net.coordinate,
+            };
+            if all_catorised_nets.hidden.contains(&masked_net) {
                 continue;
             }
+
             let frag = MAP_PATHS.get(&coordinate_and_net.net);
             if frag.is_none() {
                 continue;

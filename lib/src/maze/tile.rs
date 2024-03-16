@@ -47,18 +47,18 @@ impl Tile {
     ) -> CataloguedNet {
         let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
-        println!(
-            "\n\nRender Tile: {:?} @ {:?}",
-            coordinate,
-            self.clone().to_string_vec()
-        );
+        // println!(
+        //     "\n\nRender Tile: {:?} @ {:?}",
+        //     coordinate,
+        //     self.clone().to_string_vec()
+        // );
 
         let index = coordinate.i % 3;
 
         let mut render_nets = CataloguedNet::new();
 
         for net in self.nodes {
-            println!("net: {} / {net}", to_6bit_binary(&net));
+            // println!("net: {} / {net}", to_6bit_binary(&net));
             // Now we need to look for related tiles ...
 
             // This needs to return a net to use, and a list of adjacent nets to remove.
@@ -66,8 +66,6 @@ impl Tile {
                 Self::find_best_path(coordinate, &surrounding_tiles, flipped, index, &net);
 
             if complex_net.is_some() {
-                // Push match and hidden nets at the same time.
-                let complex_net = complex_net.unwrap();
                 render_nets.add(complex_net.unwrap());
             } else {
                 // Simple path
@@ -127,7 +125,6 @@ impl Tile {
                         // Figure out the adjacent nets to remove.
                         /*
                           let mut remove_nets: Vec<u32> = vec![];
-
                         */
                         let adj_nets_1 = (bits >> 6) & 0b111_111;
                         //let adj_nets_2 = (bits >> 12) & 0b111_111;
@@ -143,10 +140,6 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b000_001));
-                                        println!(
-                                            "Hidden: 0b000_0001 {coordinate:?} {:?}",
-                                            complex_net.hidden_neighbours
-                                        );
                                     }
                                     0b000_010 => {
                                         // remove
@@ -154,7 +147,6 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b000_010));
-                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     0b000_100 => {
                                         // remove
@@ -162,7 +154,6 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b000_100));
-                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     0b001_000 => {
                                         // remove
@@ -170,7 +161,6 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b001_000));
-                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     0b010_000 => {
                                         // remove
@@ -178,7 +168,6 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b010_000));
-                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     0b100_000 => {
                                         // remove
@@ -186,7 +175,6 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b100_000));
-                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     _ => {}
                                 }
@@ -197,12 +185,14 @@ impl Tile {
                             }
                         }
 
-                        println!(
-                            "Found complex path: {:?} -> {:?} -> {:?}",
-                            to_6bit_binary(&adj_net),
-                            to_6bit_binary(&net),
-                            to_6bit_binary(&bits)
-                        );
+                        // println!(
+                        //     "FOUND complex path @ {coordinate:?} {:?} -> {:?} -> {:?}\n   {:?}\n   hidden: {:?}",
+                        //     to_6bit_binary(&adj_net),
+                        //     to_6bit_binary(&net),
+                        //     to_6bit_binary(&bits),
+                        //     to_6bit_binary(&adj_nets_1),
+                        //     complex_net.hidden_neighbours
+                        // );
 
                         complex_net.complex_net = CoordinateAndNet::new(coordinate, bits);
                         return Some(complex_net);
