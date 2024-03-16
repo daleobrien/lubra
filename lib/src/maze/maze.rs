@@ -294,6 +294,7 @@ impl Maze {
             }
         }
 
+        println!("Hidden nets {:?}", all_catorised_nets.hidden);
         for coordinate_and_net in all_catorised_nets.visible.iter() {
             // We don't want to draw the hidden nets
             if all_catorised_nets.hidden.contains(coordinate_and_net) {

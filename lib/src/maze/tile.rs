@@ -66,8 +66,9 @@ impl Tile {
                 Self::find_best_path(coordinate, &surrounding_tiles, flipped, index, &net);
 
             if complex_net.is_some() {
+                // Push match and hidden nets at the same time.
                 let complex_net = complex_net.unwrap();
-                render_nets.add(complex_net);
+                render_nets.add(complex_net.unwrap());
             } else {
                 // Simple path
                 let bits = bits::transform_tile_orientation(net, index, flipped);
@@ -142,6 +143,10 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b000_001));
+                                        println!(
+                                            "Hidden: 0b000_0001 {coordinate:?} {:?}",
+                                            complex_net.hidden_neighbours
+                                        );
                                     }
                                     0b000_010 => {
                                         // remove
@@ -149,6 +154,7 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b000_010));
+                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     0b000_100 => {
                                         // remove
@@ -156,6 +162,7 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b000_100));
+                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     0b001_000 => {
                                         // remove
@@ -163,6 +170,7 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b001_000));
+                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     0b010_000 => {
                                         // remove
@@ -170,6 +178,7 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b010_000));
+                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     0b100_000 => {
                                         // remove
@@ -177,6 +186,7 @@ impl Tile {
                                         complex_net
                                             .hidden_neighbours
                                             .insert(CoordinateAndNet::new(coord, 0b100_000));
+                                        println!("Hidden: {:?}", complex_net.hidden_neighbours);
                                     }
                                     _ => {}
                                 }

@@ -95,12 +95,12 @@ impl CataloguedNet {
     }
 
     pub fn add(&mut self, complex_net: ComplexNet) {
-        self.hidden.union(&complex_net.hidden_neighbours);
+        self.hidden.extend(&complex_net.hidden_neighbours.clone());
         self.visible.push(complex_net.complex_net);
     }
 
     pub fn extend(&mut self, catalogued_net: CataloguedNet) {
+        self.hidden.extend(&catalogued_net.hidden);
         self.visible.extend(catalogued_net.visible);
-        self.hidden.union(&catalogued_net.hidden);
     }
 }
