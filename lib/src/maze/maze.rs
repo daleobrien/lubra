@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fs;
 use std::{collections::HashSet, os::unix::net};
 
-use common::consts::{NODE_TO_COORD, NX};
+use common::consts::{N4, N5, N6, NODE_TO_COORD, NX};
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
@@ -71,8 +71,8 @@ impl Maze {
                 }
 
                 let tile = self.get_random_tile(i, j);
-                //println!("Tile({i},{j}): {:?}", tile.nodes);
                 self.tiles[(j, i)] = tile;
+                //self.tiles[(j, i)]= Tile::new(vec![N6], true);
 
                 self.seed = match self.seed {
                     Some(s) => Some(s.wrapping_add(1)),
@@ -308,6 +308,7 @@ impl Maze {
                 net: coordinate_and_net.net & NX,
                 coordinate: coordinate_and_net.coordinate,
             };
+
             if all_catorised_nets.hidden.contains(&masked_net) {
                 println!("_ Nope   {}", masked_net);
                 continue;
@@ -328,7 +329,9 @@ impl Maze {
                 x: coordinate_and_net.coordinate.i as f64,
                 y: coordinate_and_net.coordinate.j as f64,
             };
-
+            if coordinate_and_net.coordinate.i == 1 && coordinate_and_net.coordinate.j == 1 {
+                continue;
+            }
             svg.add_fragment(frag.unwrap(), point, 1);
         }
 

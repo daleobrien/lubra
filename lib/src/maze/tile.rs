@@ -47,12 +47,6 @@ impl Tile {
     ) -> CataloguedNet {
         let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
-        // println!(
-        //     "\n\nRender Tile: {:?} @ {:?}",
-        //     coordinate,
-        //     self.clone().to_string_vec()
-        // );
-
         let index = coordinate.i % 3;
 
         let mut render_nets = CataloguedNet::new();
@@ -141,6 +135,13 @@ impl Tile {
                         let adj_nets_4 = (bits >> 24) & 0b111_111;
 
                         for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
+                            if adj_net != 0 {
+                                println!(
+                                    "Hide? {:?} / {:?} ",
+                                    coordinate,
+                                    to_6bit_binary(&adj_net)
+                                );
+                            }
                             if adj_net != 0 && adj_net.count_ones() == 1 {
                                 Self::add_single_node_to_hidden(
                                     coordinate,
@@ -177,27 +178,18 @@ impl Tile {
         // let index = coord.i % 3;
         // let flipped = (coord.j + coord.i) % 2 == 1;
         // let adj_bits = bits::transform_tile_orientation(adj_nets, index, flipped);
-        let adj_bits = adj_nets;
 
-        println!("Hidden: {:?} -> {:?} / {:?} ", coordinate, coord, adj_bits);
+        let adj_bits = adj_nets;
+        println!(
+            "Hidden: {:?} -> {:?} / {:?} ",
+            coordinate,
+            coord,
+            to_6bit_binary(&adj_bits)
+        );
         complex_net
             .hidden_neighbours
             .insert(CoordinateAndNet::new(coord, adj_bits));
     }
-
-    // fn can_be_hidden(surrounding_tiles: &[Option<&Tile>; 12], net: &u32) -> bool {
-    //     // First check if the tile should be blanked out, i.e. adjacent will render.
-    //     let list_of_adj_and_nets = BLANK_CHECK_PATHS.get(&net);
-    //
-    //     if list_of_adj_and_nets.is_some() {
-    //         for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
-    //             if Self::all_match(surrounding_tiles, adj_and_nets) {
-    //                 return true;
-    //             }
-    //         }
-    //     }
-    //     return false;
-    // }
 
     fn all_match(
         surrounding_tiles: &[Option<&Tile>; 12],
