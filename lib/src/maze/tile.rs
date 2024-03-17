@@ -111,9 +111,6 @@ impl Tile {
 
         let mut complex_net: ComplexNet = ComplexNet::new();
 
-        let of_intest = Coordinate { i: 1, j: 1 };
-        let debug = if coordinate == of_intest { true } else { false };
-
         if list_of_adj_and_nets.is_some() {
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
                 //
@@ -125,50 +122,18 @@ impl Tile {
                     .collect::<Vec<String>>()
                     .join(" | ");
 
-                if debug {
-                    println!(
-                        "Checking {coordinate:?} {:?} with {text}",
-                        to_6bit_binary(net)
-                    );
-                }
-
-                if Self::all_match(surrounding_tiles, adj_and_nets, debug) {
-                    if debug {
-                        println!("All match returned true");
-                    }
-
+                if Self::all_match(surrounding_tiles, adj_and_nets) {
                     // For each subnet, merge them into one net
                     let adj_net = adj_and_nets
                         .iter()
                         .map(|(_, _m, n)| n)
                         .fold(0, |a, b| a << 6 | b);
 
-                    if debug {
-                        println!(
-                            "adj_net: {} @ {} for {}",
-                            to_6bit_binary(&adj_net),
-                            coordinate,
-                            to_6bit_binary(&net)
-                        );
-                    }
                     let new_bits = (adj_net << 6) | net;
-                    if debug {
-                        println!("new_bits: {}", to_6bit_binary(&new_bits),);
-                    }
+
                     let bits = bits::transform_tile_orientation(new_bits, index, flipped);
-                    if debug {
-                        println!("transformed new bets: {}", to_6bit_binary(&bits),);
-                    }
 
                     if MAP_PATHS.contains_key(&bits) {
-                        if debug {
-                            println!(
-                                "Found path for bits: {} @ {} for {}",
-                                to_6bit_binary(&bits),
-                                coordinate,
-                                to_6bit_binary(&net)
-                            );
-                        }
                         // Adjacent tiles masks
                         let adj_nets_1 = (bits >> 6) & 0b111_111;
                         let adj_nets_2 = (bits >> 12) & 0b111_111;
@@ -209,10 +174,12 @@ impl Tile {
     ) {
         let index = adj_nets.trailing_zeros() as usize;
         let coord = get_connected_coords_at_coords(coordinate, index);
-        let index = coord.i % 3;
-        let flipped = (coord.j + coord.i) % 2 == 1;
-        let adj_bits = bits::transform_tile_orientation(adj_nets, index, flipped);
+        // let index = coord.i % 3;
+        // let flipped = (coord.j + coord.i) % 2 == 1;
+        // let adj_bits = bits::transform_tile_orientation(adj_nets, index, flipped);
+        let adj_bits = adj_nets;
 
+        println!("Hidden: {:?} -> {:?} / {:?} ", coordinate, coord, adj_bits);
         complex_net
             .hidden_neighbours
             .insert(CoordinateAndNet::new(coord, adj_bits));
@@ -235,7 +202,6 @@ impl Tile {
     fn all_match(
         surrounding_tiles: &[Option<&Tile>; 12],
         adj_and_nets: &[(usize, bool, u32)],
-        debug: bool,
     ) -> bool {
         let mut all_matched = true;
 
@@ -243,12 +209,6 @@ impl Tile {
         for (adj_idx, same, pattern) in adj_and_nets.iter() {
             let &adj_tile = &surrounding_tiles[*adj_idx];
 
-            if debug {
-                println!(
-                    "<{}> -> {:?} / {:?} ::: {:?}",
-                    adj_idx, same, pattern, adj_tile
-                );
-            }
             //
             match adj_tile {
                 Some(a) => {
