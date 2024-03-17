@@ -111,36 +111,64 @@ impl Tile {
 
         let mut complex_net: ComplexNet = ComplexNet::new();
 
+        let of_intest = Coordinate { i: 1, j: 1 };
+        let debug = if coordinate == of_intest { true } else { false };
+
         if list_of_adj_and_nets.is_some() {
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
                 //
                 let text = adj_and_nets
                     .iter()
-                    .map(|(i, d, n)| format!("{i} {d} {}", to_6bit_binary(n)))
+                    .map(|(i, d, n)| {
+                        format!("{x} {c} {z}", c = d, x = i + 1, z = to_6bit_binary(n))
+                    })
                     .collect::<Vec<String>>()
-                    .join(", ");
+                    .join(" | ");
 
-                println!(
-                    "Checking {coordinate:?} {:?} with {text}",
-                    to_6bit_binary(net)
-                );
+                if debug {
+                    println!(
+                        "Checking {coordinate:?} {:?} with {text}",
+                        to_6bit_binary(net)
+                    );
+                }
 
-                if Self::all_match(surrounding_tiles, adj_and_nets) {
+                if Self::all_match(surrounding_tiles, adj_and_nets, debug) {
+                    if debug {
+                        println!("All match returned true");
+                    }
+
+                    // For each subnet, merge them into one net
                     let adj_net = adj_and_nets
                         .iter()
                         .map(|(_, _m, n)| n)
-                        .fold(0, |a, b| a | b);
+                        .fold(0, |a, b| a << 6 | b);
 
-                    let new_bits = (adj_net << 6) | net;
-                    let bits = bits::transform_tile_orientation(new_bits, index, flipped);
-
-                    if MAP_PATHS.contains_key(&bits) {
+                    if debug {
                         println!(
-                            "Found path for bits: {} @ {} for {}",
-                            to_6bit_binary(&bits),
+                            "adj_net: {} @ {} for {}",
+                            to_6bit_binary(&adj_net),
                             coordinate,
                             to_6bit_binary(&net)
                         );
+                    }
+                    let new_bits = (adj_net << 6) | net;
+                    if debug {
+                        println!("new_bits: {}", to_6bit_binary(&new_bits),);
+                    }
+                    let bits = bits::transform_tile_orientation(new_bits, index, flipped);
+                    if debug {
+                        println!("transformed new bets: {}", to_6bit_binary(&bits),);
+                    }
+
+                    if MAP_PATHS.contains_key(&bits) {
+                        if debug {
+                            println!(
+                                "Found path for bits: {} @ {} for {}",
+                                to_6bit_binary(&bits),
+                                coordinate,
+                                to_6bit_binary(&net)
+                            );
+                        }
                         // Adjacent tiles masks
                         let adj_nets_1 = (bits >> 6) & 0b111_111;
                         let adj_nets_2 = (bits >> 12) & 0b111_111;
@@ -207,6 +235,7 @@ impl Tile {
     fn all_match(
         surrounding_tiles: &[Option<&Tile>; 12],
         adj_and_nets: &[(usize, bool, u32)],
+        debug: bool,
     ) -> bool {
         let mut all_matched = true;
 
@@ -214,10 +243,12 @@ impl Tile {
         for (adj_idx, same, pattern) in adj_and_nets.iter() {
             let &adj_tile = &surrounding_tiles[*adj_idx];
 
-            // println!(
-            //     "<{}> -> {:?} / {:?} ::: {:?}",
-            //     adj_idx, same, pattern, adj_tile
-            // );
+            if debug {
+                println!(
+                    "<{}> -> {:?} / {:?} ::: {:?}",
+                    adj_idx, same, pattern, adj_tile
+                );
+            }
             //
             match adj_tile {
                 Some(a) => {
