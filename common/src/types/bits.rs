@@ -1,4 +1,6 @@
 use crate::consts::IN;
+use crate::types::coordinate::Coordinate;
+use memoize::memoize;
 
 pub fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
     // Extract the bits to be rotated.
@@ -17,8 +19,14 @@ pub fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
     return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
 }
 
-pub fn transform_tile_orientation(value: u32, index: usize, flipped: bool) -> u32 {
-    let rotated_net = match index {
+#[memoize]
+fn coordinate_to_index_and_flip(coordinate: Coordinate) -> (usize, bool) {
+    return (coordinate.i % 3, coordinate.i * 3 + coordinate.j == 1);
+}
+
+pub fn transform_tile(value: u32, coordinate: Coordinate) -> u32 {
+    let (index, flipped) = coordinate_to_index_and_flip(coordinate);
+    let rotated_net = match index % 3 {
         0 => value,
         1 => rotate_bits_345_right_and_012_left(value),
         2 => rotate_bits_345_left_and_012_right(value),
@@ -30,4 +38,55 @@ pub fn transform_tile_orientation(value: u32, index: usize, flipped: bool) -> u3
         rotated_net
     };
     return bits;
+}
+
+pub fn restore_tile(value: u32, coordinate: Coordinate) -> u32 {
+    let (index, flipped) = coordinate_to_index_and_flip(coordinate);
+    let rotated_net = match index % 3 {
+        0 => value,
+        1 => rotate_bits_345_left_and_012_right(value),
+        2 => rotate_bits_345_right_and_012_left(value),
+        _ => panic!("Invalid rotation"),
+    };
+    let bits: u32 = if flipped {
+        !IN & rotated_net
+    } else {
+        rotated_net
+    };
+    return bits;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::consts::{N1, N2, N3};
+    use std::assert_eq;
+
+    #[test]
+    fn test_transform() {
+        assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 0 }), N1);
+        assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 0 }), N2);
+        assert_eq!(transform_tile(N1, Coordinate { i: 2, j: 0 }), N3);
+        assert_eq!(transform_tile(N1, Coordinate { i: 3, j: 0 }), N1);
+        //
+        assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 1 }), IN | N1);
+        assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 1 }), N2);
+        assert_eq!(transform_tile(N1, Coordinate { i: 2, j: 1 }), N3);
+    }
+
+    #[test]
+    fn test_restore_transform() {
+        assert_eq!(restore_tile(N1, Coordinate { i: 0, j: 0 }), N1);
+        assert_eq!(restore_tile(N2, Coordinate { i: 1, j: 0 }), N1);
+        assert_eq!(restore_tile(N3, Coordinate { i: 2, j: 0 }), N1);
+        assert_eq!(restore_tile(N1, Coordinate { i: 3, j: 0 }), N1);
+        //
+        assert_eq!(restore_tile(N1, Coordinate { i: 1, j: 1 }), N3);
+        // assert_eq!(restore_tile_orientation(N2, Coordinate { i: 0, j: 0 }), IN | N1);
+        // assert_eq!(restore_tile_orientation(N3, Coordinate { i: 0, j: 0 }), IN | N1);
+        //
+        // assert_eq!(restore_tile_orientation(IN | N1, Coordinate { i: 0, j: 0 }), IN | N1);
+        // assert_eq!(restore_tile_orientation(IN | N2, 1, true), N1);
+        // assert_eq!(restore_tile_orientation(IN | N3, 2, true), N1);
+    }
 }

@@ -4,6 +4,7 @@ use common::bit_utils::to_6bit_binary;
 use common::consts::{IN, WA};
 use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
+use common::types::bits::restore_tile;
 use common::types::coordinate::{CataloguedNet, ComplexNet, Coordinate, CoordinateAndNet};
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -45,14 +46,22 @@ impl Tile {
         boundaries: bool,
         surrounding_tiles: &[Option<&Tile>; 12],
     ) -> CataloguedNet {
+        //
         let flipped = (coordinate.j + coordinate.i) % 2 == 1;
-
         let index = coordinate.i % 3;
 
         let mut render_nets = CataloguedNet::new();
 
+        // ...
+        let s = self
+            .nodes
+            .iter()
+            .map(|n| to_6bit_binary(n))
+            .collect::<Vec<String>>()
+            .join(", ");
+        println!("NET: {coordinate} -> {:?}", s);
+        //
         for net in self.nodes {
-            // println!("net: {} / {net}", to_6bit_binary(&net));
             // Now we need to look for related tiles ...
 
             // This needs to return a net to use, and a list of adjacent nets to remove.
@@ -63,7 +72,7 @@ impl Tile {
                 render_nets.add(complex_net.unwrap());
             } else {
                 // Simple path
-                let bits = bits::transform_tile_orientation(net, index, flipped);
+                let bits = bits::transform_tile(net, coordinate);
                 let path = MAP_PATHS.get(&bits);
 
                 // A simple tile with no adjacent tiles to worry about?
@@ -125,7 +134,8 @@ impl Tile {
 
                     let new_bits = (adj_net << 6) | net;
 
-                    let bits = bits::transform_tile_orientation(new_bits, index, flipped);
+                    // From here on, the bits are in the correct orientation rather then logical.
+                    let bits = bits::transform_tile(new_bits, coordinate);
 
                     if MAP_PATHS.contains_key(&bits) {
                         // Adjacent tiles masks
@@ -135,13 +145,13 @@ impl Tile {
                         let adj_nets_4 = (bits >> 24) & 0b111_111;
 
                         for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
-                            if adj_net != 0 {
-                                println!(
-                                    "Hide? {:?} / {:?} ",
-                                    coordinate,
-                                    to_6bit_binary(&adj_net)
-                                );
-                            }
+                            // if adj_net != 0 {
+                            //     println!(
+                            //         "Hide? {:?} / {:?} ",
+                            //         coordinate,
+                            //         to_6bit_binary(&adj_net)
+                            //     );
+                            // }
                             if adj_net != 0 && adj_net.count_ones() == 1 {
                                 Self::add_single_node_to_hidden(
                                     coordinate,
@@ -175,20 +185,20 @@ impl Tile {
     ) {
         let index = adj_nets.trailing_zeros() as usize;
         let coord = get_connected_coords_at_coords(coordinate, index);
-        // let index = coord.i % 3;
-        // let flipped = (coord.j + coord.i) % 2 == 1;
-        // let adj_bits = bits::transform_tile_orientation(adj_nets, index, flipped);
 
-        let adj_bits = adj_nets;
-        println!(
-            "Hidden: {:?} -> {:?} / {:?} ",
-            coordinate,
-            coord,
-            to_6bit_binary(&adj_bits)
-        );
+        // We need to un-transform
+        let index = coord.i % 3;
+        let flipped = (coord.j + coord.i) % 2 == 1;
+
+        let adj_bits_out = bits::transform_tile(adj_nets, coord);
+
+        // let adj_bits = adj_nets;
+        let a = to_6bit_binary(&adj_nets);
+        let b = to_6bit_binary(&adj_bits_out);
+        println!("Hidden: {coordinate} / {a} -> {coord} / {b}",);
         complex_net
             .hidden_neighbours
-            .insert(CoordinateAndNet::new(coord, adj_bits));
+            .insert(CoordinateAndNet::new(coord, adj_bits_out));
     }
 
     fn all_match(
@@ -272,71 +282,72 @@ impl fmt::Display for Tile {
 #[cfg(test)]
 mod tests {
     use crate::maze::tile::Tile;
+    use common::consts::{N1, N2, N3, N4, N5, N6};
     use std::{assert_eq, println, vec};
 
     #[test]
     fn test_cw_rotation() {
-        let tile = Tile::new(vec![0b000_011, 0b010_000], true);
+        let tile = Tile::new(vec![N1 | N2, N5], true);
         let rotated_nodes = tile.rotate_cw();
         println!("CW: {:#06b} {:#06b}", rotated_nodes[0], rotated_nodes[1]);
-        assert_eq!(rotated_nodes, vec![0b000_101, 0b100_000]);
+        assert_eq!(rotated_nodes, vec![N1 | N3, N6]);
     }
 
     #[test]
     fn test_ccw_rotation() {
-        let tile = Tile::new(vec![0b000_011, 0b010_000], true);
+        let tile = Tile::new(vec![N1 | N2, N5], true);
         let rotated_nodes = tile.rotate_ccw();
-        assert_eq!(rotated_nodes, vec![0b000_110, 0b001_000]);
+        assert_eq!(rotated_nodes, vec![N2 | N3, N4]);
     }
 
     #[test]
     fn test_bits() {
-        let tile = Tile::new(vec![0b000_011, 0b010_000], true);
-        assert_eq!(tile.bits, 0b010011)
+        let tile = Tile::new(vec![N1 | N2, N5], true);
+        assert_eq!(tile.bits, N1 | N2 | N5)
     }
 
     #[test]
     fn test_intersects() {
-        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
-        let tile2 = Tile::new(vec![0b000_110, 0b100_000], true);
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
+        let tile2 = Tile::new(vec![N2 | N3, N6], true);
         assert_eq!(tile1.intersects(&tile2), true);
 
-        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
-        let tile2 = Tile::new(vec![0b000_100, 0b100_000], true);
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
+        let tile2 = Tile::new(vec![N3, N6], true);
         assert_eq!(tile1.intersects(&tile2), false);
     }
 
     #[test]
     fn test_contains() {
-        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
-        assert_eq!(tile1.contains(0b000_001), true);
-        assert_eq!(tile1.contains(0b000_010), true);
-        assert_eq!(tile1.contains(0b000_100), false);
-        assert_eq!(tile1.contains(0b001_000), false);
-        assert_eq!(tile1.contains(0b010_000), true);
-        assert_eq!(tile1.contains(0b100_000), false);
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
+        assert_eq!(tile1.contains(N1), true);
+        assert_eq!(tile1.contains(N2), true);
+        assert_eq!(tile1.contains(N3), false);
+        assert_eq!(tile1.contains(N4), false);
+        assert_eq!(tile1.contains(N5), true);
+        assert_eq!(tile1.contains(N6), false);
 
         let tile1 = Tile::new(vec![], true);
-        assert_eq!(tile1.contains(0b000_001), false);
+        assert_eq!(tile1.contains(N1), false);
     }
     #[test]
     fn test_contain_net() {
-        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
-        assert_eq!(tile1.contain_net(0b000_001), false);
-        assert_eq!(tile1.contain_net(0b000_010), false);
-        assert_eq!(tile1.contain_net(0b000_011), true);
-        assert_eq!(tile1.contain_net(0b000_100), false);
-        assert_eq!(tile1.contain_net(0b001_000), false);
-        assert_eq!(tile1.contain_net(0b010_000), true);
-        assert_eq!(tile1.contain_net(0b100_000), false);
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
+        assert_eq!(tile1.contain_net(N1), false);
+        assert_eq!(tile1.contain_net(N2), false);
+        assert_eq!(tile1.contain_net(N1 | N2), true);
+        assert_eq!(tile1.contain_net(N3), false);
+        assert_eq!(tile1.contain_net(N4), false);
+        assert_eq!(tile1.contain_net(N5), true);
+        assert_eq!(tile1.contain_net(N6), false);
 
         let tile1 = Tile::new(vec![], true);
-        assert_eq!(tile1.contains(0b000_001), false);
+        assert_eq!(tile1.contains(N1), false);
     }
 
     #[test]
     fn test_is_empty() {
-        let tile1 = Tile::new(vec![0b000_011, 0b010_000], true);
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
         assert_eq!(tile1.is_empty(), false);
 
         let tile1 = Tile::new(vec![], true);

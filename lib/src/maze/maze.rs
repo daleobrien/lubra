@@ -1,8 +1,8 @@
+use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
-use std::{collections::HashSet, os::unix::net};
 
-use common::consts::{N4, N5, N6, NODE_TO_COORD, NX};
+use common::consts::{NODE_TO_COORD, NX};
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
@@ -13,7 +13,7 @@ use crate::maze::adjacent::get_surrounding_tile_connections;
 use crate::maze::tile::Tile;
 use crate::renders::fragment::MAP_PATHS;
 use crate::renders::svg::Svg;
-use common::types::point::{Point, PATH_WIDTH, S2, S4, TILE_HEIGHT, TILE_WIDTH};
+use common::types::point::{Point, S2, TILE_HEIGHT, TILE_WIDTH};
 
 pub struct Maze {
     pub style: Option<String>,
@@ -329,8 +329,18 @@ impl Maze {
                 x: coordinate_and_net.coordinate.i as f64,
                 y: coordinate_and_net.coordinate.j as f64,
             };
-            if coordinate_and_net.coordinate.i == 1 && coordinate_and_net.coordinate.j == 1 {
-                continue;
+            // Why is (1,0) the only shapes that are flipped?
+            if coordinate_and_net.coordinate.i == 1 && coordinate_and_net.coordinate.j == 0 {
+                println!("MMMM: {}", coordinate_and_net);
+                //continue;
+                // let n = N5 | IN;
+                // let x = MAP_PATHS.get(&n);
+                // if x.is_some() {
+                //     println!("NNNN: {}", to_6bit_binary(&n));
+                //     svg.add_fragment(x.unwrap(), point, 1);
+                // } else {
+                //     println!("NNNN: {} NO FOUND!", to_6bit_binary(&n));
+                // }
             }
             svg.add_fragment(frag.unwrap(), point, 1);
         }

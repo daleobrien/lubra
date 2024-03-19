@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 itertools = "0.11.0"
+memoize = "0.4.2"
 

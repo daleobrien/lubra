@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Coordinate {
     pub i: usize,
     pub j: usize,
@@ -43,12 +43,6 @@ pub struct CataloguedNet {
 impl Coordinate {
     pub fn new() -> Self {
         Self { i: 0, j: 0 }
-    }
-}
-
-impl PartialEq for Coordinate {
-    fn eq(&self, other: &Self) -> bool {
-        self.i == other.i && self.j == other.j
     }
 }
 
