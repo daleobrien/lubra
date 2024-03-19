@@ -26,7 +26,7 @@ fn coordinate_to_index_and_flip(coordinate: Coordinate) -> (usize, bool) {
 
 pub fn transform_tile(value: u32, coordinate: Coordinate) -> u32 {
     let (index, flipped) = coordinate_to_index_and_flip(coordinate);
-    let rotated_net = match index % 3 {
+    let rotated_net = match index {
         0 => value,
         1 => rotate_bits_345_right_and_012_left(value),
         2 => rotate_bits_345_left_and_012_right(value),
@@ -40,53 +40,40 @@ pub fn transform_tile(value: u32, coordinate: Coordinate) -> u32 {
     return bits;
 }
 
-pub fn restore_tile(value: u32, coordinate: Coordinate) -> u32 {
-    let (index, flipped) = coordinate_to_index_and_flip(coordinate);
-    let rotated_net = match index % 3 {
-        0 => value,
-        1 => rotate_bits_345_left_and_012_right(value),
-        2 => rotate_bits_345_right_and_012_left(value),
-        _ => panic!("Invalid rotation"),
-    };
-    let bits: u32 = if flipped {
-        !IN & rotated_net
-    } else {
-        rotated_net
-    };
-    return bits;
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::consts::{N1, N2, N3};
+    use crate::consts::{N1, N2, N3, N4, N5, N6};
     use std::assert_eq;
 
     #[test]
-    fn test_transform() {
+    fn test_transform_vertex() {
         assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 0 }), N1);
         assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 0 }), IN | N2);
         assert_eq!(transform_tile(N1, Coordinate { i: 2, j: 0 }), N3);
+        // Check wrapping around.
         assert_eq!(transform_tile(N1, Coordinate { i: 3, j: 0 }), IN | N1);
-        //
+
         assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 1 }), IN | N1);
         assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 1 }), N2);
         assert_eq!(transform_tile(N1, Coordinate { i: 2, j: 1 }), IN | N3);
+        // Other vertexes
+        assert_eq!(transform_tile(N2, Coordinate { i: 1, j: 0 }), IN | N3);
+        assert_eq!(transform_tile(N3, Coordinate { i: 1, j: 0 }), IN | N1);
     }
 
     #[test]
-    fn test_restore_transform() {
-        assert_eq!(restore_tile(N1, Coordinate { i: 0, j: 0 }), N1);
-        assert_eq!(restore_tile(IN | N2, Coordinate { i: 1, j: 0 }), N1);
-        assert_eq!(restore_tile(N3, Coordinate { i: 2, j: 0 }), N1);
-        assert_eq!(restore_tile(IN | N1, Coordinate { i: 3, j: 0 }), N1);
-        //
-        assert_eq!(restore_tile(N1, Coordinate { i: 1, j: 1 }), N3);
-        // assert_eq!(restore_tile_orientation(N2, Coordinate { i: 0, j: 0 }), IN | N1);
-        // assert_eq!(restore_tile_orientation(N3, Coordinate { i: 0, j: 0 }), IN | N1);
-        //
-        // assert_eq!(restore_tile_orientation(IN | N1, Coordinate { i: 0, j: 0 }), IN | N1);
-        // assert_eq!(restore_tile_orientation(IN | N2, 1, true), N1);
-        // assert_eq!(restore_tile_orientation(IN | N3, 2, true), N1);
+    fn test_transform_edges() {
+        assert_eq!(transform_tile(N4, Coordinate { i: 0, j: 0 }), N4);
+        assert_eq!(transform_tile(N4, Coordinate { i: 1, j: 0 }), IN | N6);
+        assert_eq!(transform_tile(N4, Coordinate { i: 2, j: 0 }), N5);
+
+        assert_eq!(transform_tile(N4, Coordinate { i: 0, j: 1 }), IN | N4);
+        assert_eq!(transform_tile(N4, Coordinate { i: 1, j: 1 }), N6);
+        assert_eq!(transform_tile(N4, Coordinate { i: 2, j: 1 }), IN | N5);
+
+        // Other edges
+        assert_eq!(transform_tile(N5, Coordinate { i: 1, j: 0 }), IN | N4);
+        assert_eq!(transform_tile(N6, Coordinate { i: 1, j: 0 }), IN | N5);
     }
 }
