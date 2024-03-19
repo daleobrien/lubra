@@ -332,19 +332,9 @@ impl Maze {
                 x: coordinate_and_net.coordinate.i as f64,
                 y: coordinate_and_net.coordinate.j as f64,
             };
-            // Why is (1,0) the only shapes that are flipped?
-            if coordinate_and_net.coordinate.i == 1 && coordinate_and_net.coordinate.j == 0 {
-                println!("MMMM: {}", coordinate_and_net);
-                //continue;
-                // let n = N5 | IN;
-                // let x = MAP_PATHS.get(&n);
-                // if x.is_some() {
-                //     println!("NNNN: {}", to_6bit_binary(&n));
-                //     svg.add_fragment(x.unwrap(), point, 1);
-                // } else {
-                //     println!("NNNN: {} NO FOUND!", to_6bit_binary(&n));
-                // }
-            }
+            // if coordinate_and_net.coordinate.i == 1 && coordinate_and_net.coordinate.j == 0 {
+            //     println!("MMMM: {}", coordinate_and_net);
+            // }
             svg.add_fragment(frag.unwrap(), point, 1);
         }
 
@@ -352,10 +342,9 @@ impl Maze {
             "<circle stroke=\"black\" fill=\"red\" cx=\"{w:.2}\" cy=\"{h:.2}\" r=\"{r:.2}\" />",
             r = TILE_WIDTH / 10f64,
             w = TILE_WIDTH / 2f64,
-            //h = TILE_HEIGHT - TILE_HEIGHT / S2
-            h = TILE_HEIGHT / S2
+            h = TILE_HEIGHT - TILE_HEIGHT / S2 //h = TILE_HEIGHT / S2
         );
-        svg.add_fragment(&circle, Point { x: 1.0, y: 0.0 }, 1);
+        svg.add_fragment(&circle, Point { x: 0.0, y: 0.0 }, 1);
         let _ = fs::write(file_name, svg.to_string()).expect("Unable to write file");
         Ok(())
     }
