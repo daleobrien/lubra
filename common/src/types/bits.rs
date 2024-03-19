@@ -1,6 +1,6 @@
 use crate::consts::IN;
 use crate::types::coordinate::Coordinate;
-use memoize::memoize;
+//use memoize::memoize;
 
 pub fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
     // Extract the bits to be rotated.
@@ -19,9 +19,9 @@ pub fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
     return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
 }
 
-#[memoize]
+//#[memoize] // Not sure if this will really help, so leave it out for now.
 fn coordinate_to_index_and_flip(coordinate: Coordinate) -> (usize, bool) {
-    return (coordinate.i % 3, coordinate.i * 3 + coordinate.j == 1);
+    return (coordinate.i % 3, (coordinate.j + coordinate.i) % 2 == 1);
 }
 
 pub fn transform_tile(value: u32, coordinate: Coordinate) -> u32 {
@@ -65,21 +65,21 @@ mod tests {
     #[test]
     fn test_transform() {
         assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 0 }), N1);
-        assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 0 }), N2);
+        assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 0 }), IN | N2);
         assert_eq!(transform_tile(N1, Coordinate { i: 2, j: 0 }), N3);
-        assert_eq!(transform_tile(N1, Coordinate { i: 3, j: 0 }), N1);
+        assert_eq!(transform_tile(N1, Coordinate { i: 3, j: 0 }), IN | N1);
         //
         assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 1 }), IN | N1);
         assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 1 }), N2);
-        assert_eq!(transform_tile(N1, Coordinate { i: 2, j: 1 }), N3);
+        assert_eq!(transform_tile(N1, Coordinate { i: 2, j: 1 }), IN | N3);
     }
 
     #[test]
     fn test_restore_transform() {
         assert_eq!(restore_tile(N1, Coordinate { i: 0, j: 0 }), N1);
-        assert_eq!(restore_tile(N2, Coordinate { i: 1, j: 0 }), N1);
+        assert_eq!(restore_tile(IN | N2, Coordinate { i: 1, j: 0 }), N1);
         assert_eq!(restore_tile(N3, Coordinate { i: 2, j: 0 }), N1);
-        assert_eq!(restore_tile(N1, Coordinate { i: 3, j: 0 }), N1);
+        assert_eq!(restore_tile(IN | N1, Coordinate { i: 3, j: 0 }), N1);
         //
         assert_eq!(restore_tile(N1, Coordinate { i: 1, j: 1 }), N3);
         // assert_eq!(restore_tile_orientation(N2, Coordinate { i: 0, j: 0 }), IN | N1);
