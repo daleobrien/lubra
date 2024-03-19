@@ -6,6 +6,7 @@ use common::consts::{NODE_TO_COORD, NX};
 
 use crate::maze::random::random_tile;
 use array2d::Array2D;
+use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
 use rand_distr::num_traits::ToPrimitive;
 
@@ -314,7 +315,9 @@ impl Maze {
                 continue;
             }
 
-            let frag = MAP_PATHS.get(&coordinate_and_net.net);
+            let net = bits::transform_tile(coordinate_and_net.net, coordinate_and_net.coordinate);
+
+            let frag = MAP_PATHS.get(&net);
             if frag.is_none() {
                 println!("_ Blank  {}", masked_net);
                 continue;

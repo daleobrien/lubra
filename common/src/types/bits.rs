@@ -51,12 +51,14 @@ mod tests {
         assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 0 }), N1);
         assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 0 }), IN | N2);
         assert_eq!(transform_tile(N1, Coordinate { i: 2, j: 0 }), N3);
+
         // Check wrapping around.
         assert_eq!(transform_tile(N1, Coordinate { i: 3, j: 0 }), IN | N1);
 
         assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 1 }), IN | N1);
         assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 1 }), N2);
         assert_eq!(transform_tile(N1, Coordinate { i: 2, j: 1 }), IN | N3);
+
         // Other vertexes
         assert_eq!(transform_tile(N2, Coordinate { i: 1, j: 0 }), IN | N3);
         assert_eq!(transform_tile(N3, Coordinate { i: 1, j: 0 }), IN | N1);

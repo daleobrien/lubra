@@ -4,7 +4,6 @@ use common::bit_utils::to_6bit_binary;
 use common::consts::{IN, WA};
 use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
-use common::types::bits::restore_tile;
 use common::types::coordinate::{CataloguedNet, ComplexNet, Coordinate, CoordinateAndNet};
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -52,14 +51,14 @@ impl Tile {
 
         let mut render_nets = CataloguedNet::new();
 
-        // ...
-        let s = self
-            .nodes
-            .iter()
-            .map(|n| to_6bit_binary(n))
-            .collect::<Vec<String>>()
-            .join(", ");
-        println!("NET: {coordinate} -> {:?}", s);
+        // // ...
+        // let s = self
+        //     .nodes
+        //     .iter()
+        //     .map(|n| to_6bit_binary(n))
+        //     .collect::<Vec<String>>()
+        //     .join(", ");
+        // println!("NET: {coordinate} -> {:?}", s);
         //
         for net in self.nodes {
             // Now we need to look for related tiles ...
@@ -72,14 +71,14 @@ impl Tile {
                 render_nets.add(complex_net.unwrap());
             } else {
                 // Simple path
-                let bits = bits::transform_tile(net, coordinate);
-                let path = MAP_PATHS.get(&bits);
+                //let bits = bits::transform_tile(net, coordinate);
+                let path = MAP_PATHS.get(&net);
 
                 // A simple tile with no adjacent tiles to worry about?
                 if path.is_some() {
                     render_nets
                         .visible
-                        .push(CoordinateAndNet::new(coordinate, bits));
+                        .push(CoordinateAndNet::new(coordinate, net));
                 } else {
                     println!(
                         "No path for bits: {} @ {:?}",
@@ -135,7 +134,8 @@ impl Tile {
                     let new_bits = (adj_net << 6) | net;
 
                     // From here on, the bits are in the correct orientation rather then logical.
-                    let bits = bits::transform_tile(new_bits, coordinate);
+                    //let bits = bits::transform_tile(new_bits, coordinate);
+                    let bits = new_bits;
 
                     if MAP_PATHS.contains_key(&bits) {
                         // Adjacent tiles masks
@@ -186,19 +186,9 @@ impl Tile {
         let index = adj_nets.trailing_zeros() as usize;
         let coord = get_connected_coords_at_coords(coordinate, index);
 
-        // We need to un-transform
-        let index = coord.i % 3;
-        let flipped = (coord.j + coord.i) % 2 == 1;
-
-        let adj_bits_out = bits::transform_tile(adj_nets, coord);
-
-        // let adj_bits = adj_nets;
-        let a = to_6bit_binary(&adj_nets);
-        let b = to_6bit_binary(&adj_bits_out);
-        println!("Hidden: {coordinate} / {a} -> {coord} / {b}",);
         complex_net
             .hidden_neighbours
-            .insert(CoordinateAndNet::new(coord, adj_bits_out));
+            .insert(CoordinateAndNet::new(coord, adj_nets));
     }
 
     fn all_match(
