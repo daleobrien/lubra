@@ -12,7 +12,7 @@ fn main() {
     // TODO: use args ...
 
     //let maze = Maze::new(36, 19, true, true, Some(1));
-    let maze = Maze::new(5, 2, true, true, Some(4));
+    let maze = Maze::new(5, 2, true, true, Some(11));
     let name = format!("sample.svg");
     let result_f = maze.render(name.to_string());
     println!("Finished creating Random maze {:?}", result_f.unwrap());

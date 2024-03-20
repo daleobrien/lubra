@@ -138,11 +138,13 @@ impl Tile {
                                     to_6bit_binary(&bits, true)
                                 );
 
-                                Self::add_single_node_to_hidden(
-                                    coordinate,
-                                    &mut complex_net,
-                                    adj_nets_1,
-                                );
+                                if adj_net.count_ones() == 1 {
+                                    Self::add_single_node_to_hidden(
+                                        coordinate,
+                                        &mut complex_net,
+                                        adj_nets_1,
+                                    );
+                                }
                             }
                         }
 
