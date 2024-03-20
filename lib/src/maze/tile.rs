@@ -32,7 +32,7 @@ impl Tile {
         let s: String = self
             .nodes
             .iter()
-            .map(|n| to_6bit_binary(n))
+            .map(|n| to_6bit_binary(n, true))
             .collect::<Vec<String>>()
             .join(", ");
 
@@ -47,7 +47,6 @@ impl Tile {
     ) -> CataloguedNet {
         //
         let flipped = (coordinate.j + coordinate.i) % 2 == 1;
-        let index = coordinate.i % 3;
 
         let mut render_nets = CataloguedNet::new();
 
@@ -55,7 +54,7 @@ impl Tile {
         // let s = self
         //     .nodes
         //     .iter()
-        //     .map(|n| to_6bit_binary(n))
+        //     .map(|n| to_6bit_binary(n, true))
         //     .collect::<Vec<String>>()
         //     .join(", ");
         // println!("NET: {coordinate} -> {:?}", s);
@@ -70,7 +69,6 @@ impl Tile {
                 render_nets.add(complex_net.unwrap());
             } else {
                 // Simple path
-                //let bits = bits::transform_tile(net, coordinate);
                 let path = MAP_PATHS.get(&net);
 
                 // A simple tile with no adjacent tiles to worry about?
@@ -81,7 +79,7 @@ impl Tile {
                 } else {
                     println!(
                         "No path for bits: {} @ {:?}",
-                        to_6bit_binary(&net),
+                        to_6bit_binary(&net, true),
                         coordinate
                     );
                 }
@@ -113,7 +111,6 @@ impl Tile {
         if list_of_adj_and_nets.is_some() {
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
                 //
-
                 if Self::all_match(surrounding_tiles, adj_and_nets) {
                     // For each subnet, merge them into one net
                     let adj_net = adj_and_nets
@@ -124,7 +121,6 @@ impl Tile {
                     let new_bits = (adj_net << 6) | net;
 
                     // From here on, the bits are in the correct orientation rather then logical.
-                    //let bits = bits::transform_tile(new_bits, coordinate);
                     let bits = new_bits;
 
                     if MAP_PATHS.contains_key(&bits) {
@@ -135,7 +131,6 @@ impl Tile {
                         let adj_nets_4 = (bits >> 24) & 0b111_111;
 
                         for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
-   
                             if adj_net != 0 {
                                 Self::add_single_node_to_hidden(
                                     coordinate,
@@ -169,7 +164,7 @@ impl Tile {
     ) {
         let index = adj_nets.trailing_zeros() as usize;
         let coord = get_connected_coords_at_coords(coordinate, index);
-        if  coord.is_some(){
+        if coord.is_some() {
             complex_net
                 .hidden_neighbours
                 .insert(CoordinateAndNet::new(coord.unwrap(), adj_nets));

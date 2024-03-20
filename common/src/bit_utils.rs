@@ -91,7 +91,7 @@ pub fn bit_sequence(n: u32) -> Vec<(u32, u32)> {
         .collect();
 }
 
-pub fn to_6bit_binary(value: &u32) -> String {
+pub fn to_6bit_binary(value: &u32, reduce: bool) -> String {
     let mut s = format!("{:032b}", value);
     let len = s.len();
     for i in (0..len).rev() {
@@ -100,34 +100,36 @@ pub fn to_6bit_binary(value: &u32) -> String {
         }
     }
     let mut text = format!("0b{}", s);
-    for s in vec![
-        "0b00_000000_000000_000000_000000_",
-        "0b00_000000_000000_000000_",
-        "0b00_000000_000000_",
-        "0b00_000000_",
-    ] {
-        if text.starts_with(s) {
-            text = text.replace(s, "0b00_..._");
+    if reduce {
+        for s in vec![
+            "0b00_000000_000000_000000_000000_",
+            "0b00_000000_000000_000000_",
+            "0b00_000000_000000_",
+            "0b00_000000_",
+        ] {
+            if text.starts_with(s) {
+                text = text.replace(s, "0b00_..._");
+            }
         }
-    }
-    for s in vec![
-        "0b01_000000_000000_000000_000000_",
-        "0b01_000000_000000_000000_",
-        "0b01_000000_000000_",
-        "0b01_000000_",
-    ] {
-        if text.starts_with(s) {
-            text = text.replace(s, "0b01_..._");
+        for s in vec![
+            "0b01_000000_000000_000000_000000_",
+            "0b01_000000_000000_000000_",
+            "0b01_000000_000000_",
+            "0b01_000000_",
+        ] {
+            if text.starts_with(s) {
+                text = text.replace(s, "0b01_..._");
+            }
         }
-    }
-    for s in vec![
-        "0b11_000000_000000_000000_000000_",
-        "0b11_000000_000000_000000_",
-        "0b11_000000_000000_",
-        "0b11_000000_",
-    ] {
-        if text.starts_with(s) {
-            text = text.replace(s, "0b11_..._");
+        for s in vec![
+            "0b11_000000_000000_000000_000000_",
+            "0b11_000000_000000_000000_",
+            "0b11_000000_000000_",
+            "0b11_000000_",
+        ] {
+            if text.starts_with(s) {
+                text = text.replace(s, "0b11_..._");
+            }
         }
     }
 

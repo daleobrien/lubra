@@ -31,6 +31,14 @@ pub fn generate_adjacent_paths() {
     );
 
     adj_paths.insert(
+        N1 | N6,
+        vec![
+            vec![(ADJ_N5, true, N2 | N6)], // Will be blank
+            vec![(ADJ_N5, true, N3 | N6)], // Will be blank
+        ],
+    );
+
+    adj_paths.insert(
         N2 | N4,
         vec![
             vec![(ADJ_N4, true, N4)],
@@ -42,6 +50,14 @@ pub fn generate_adjacent_paths() {
     );
 
     adj_paths.insert(
+        N2 | N5,
+        vec![
+            vec![(ADJ_N5, true, N1 | N5)], // Will be blank
+            vec![(ADJ_N5, true, N3 | N5)], // Will be blank
+        ],
+    );
+
+    adj_paths.insert(
         N2 | N6,
         vec![
             vec![(ADJ_N6, true, N6)],
@@ -49,6 +65,14 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N6, true, N3 | N6)],
             vec![(ADJ_N6, true, N4 | N6)], // Will be blank
             vec![(ADJ_N6, true, N5 | N6)], // Will be blank
+        ],
+    );
+
+    adj_paths.insert(
+        N3 | N4,
+        vec![
+            vec![(ADJ_N5, true, N1 | N4)], // Will be blank
+            vec![(ADJ_N5, true, N2 | N4)], // Will be blank
         ],
     );
 
@@ -132,7 +156,7 @@ pub fn generate_adjacent_paths() {
             file,
             "  /* {key6bit} */{key}u32 =>  &[{subs}],\n",
             subs = subs.join(", "),
-            key6bit = to_6bit_binary(&key)
+            key6bit = to_6bit_binary(&key, false)
         );
     }
     let _ = file.write(b"};\n\n");

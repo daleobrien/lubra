@@ -159,7 +159,7 @@ pub fn generate_all_shapes() {
         let _ = write!(
             file,
             " /* {} */ {}u32 =>  \"{}\",\n",
-            to_6bit_binary(&key_as_u32),
+            to_6bit_binary(&key_as_u32, false),
             key,
             trim_whitespace(value.as_str())
         );
@@ -198,12 +198,17 @@ pub fn generate_all_shapes() {
 
         let value = value
             .iter()
-            .map(|x| to_6bit_binary(x))
+            .map(|x| to_6bit_binary(x, false))
             .sorted()
             .unique()
             .join(", ");
 
-        let _ = write!(file, "    {} =>  vec![{}],\n", to_6bit_binary(&key), value,);
+        let _ = write!(
+            file,
+            "    {} =>  vec![{}],\n",
+            to_6bit_binary(&key, false),
+            value,
+        );
     }
     let _ = file.write(b"    _ => vec![mask]\n   }\n");
     let _ = file.write(b"}\n\n");
@@ -218,7 +223,7 @@ pub fn generate_all_shapes() {
     );
 
     for key in emptyFragments.iter().sorted() {
-        let _ = write!(file, "    {} =>  true,\n", to_6bit_binary(&key));
+        let _ = write!(file, "    {} =>  true,\n", to_6bit_binary(&key, false));
     }
     let _ = file.write(b"    _ => false\n   }\n");
     let _ = file.write(b"}\n\n");

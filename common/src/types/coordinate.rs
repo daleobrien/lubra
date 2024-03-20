@@ -28,7 +28,7 @@ impl fmt::Display for CoordinateAndNet {
             "({},{}):{}",
             self.coordinate.i,
             self.coordinate.j,
-            to_6bit_binary(&self.net)
+            to_6bit_binary(&self.net, true)
         )
     }
 }
