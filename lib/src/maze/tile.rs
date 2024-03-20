@@ -46,18 +46,17 @@ impl Tile {
         surrounding_tiles: &[Option<&Tile>; 12],
     ) -> CataloguedNet {
         //
-        let flipped = (coordinate.j + coordinate.i) % 2 == 1;
 
         let mut render_nets = CataloguedNet::new();
 
         // // ...
-        // let s = self
-        //     .nodes
-        //     .iter()
-        //     .map(|n| to_6bit_binary(n, true))
-        //     .collect::<Vec<String>>()
-        //     .join(", ");
-        // println!("NET: {coordinate} -> {:?}", s);
+        let s = self
+            .nodes
+            .iter()
+            .map(|n| to_6bit_binary(n, true))
+            .collect::<Vec<String>>()
+            .join(", ");
+        println!("NET: {coordinate} -> {:?}", s);
         //
         for net in self.nodes {
             // Now we need to look for related tiles ...
@@ -87,6 +86,7 @@ impl Tile {
         }
 
         if boundaries {
+            let flipped = (coordinate.j + coordinate.i) % 2 == 1;
             let bits = if flipped { WA | IN } else { WA };
             let wall = MAP_PATHS.get(&bits);
             if wall.is_some() {
@@ -132,19 +132,17 @@ impl Tile {
 
                         for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
                             if adj_net != 0 {
+                                println!(
+                                    "ADJ: {} {}",
+                                    to_6bit_binary(&adj_net, true),
+                                    to_6bit_binary(&bits, true)
+                                );
+
                                 Self::add_single_node_to_hidden(
                                     coordinate,
                                     &mut complex_net,
                                     adj_nets_1,
                                 );
-                            }
-                        }
-                        match adj_nets_1.count_ones() {
-                            0 => { /* nothing to do */ }
-                            1 => { /* See above */ }
-                            2 => {}
-                            _ => {
-                                // remove the adj_nets_1
                             }
                         }
 
@@ -160,14 +158,16 @@ impl Tile {
     fn add_single_node_to_hidden(
         coordinate: Coordinate,
         complex_net: &mut ComplexNet,
-        adj_nets: u32,
+        adj_net: u32,
     ) {
-        let index = adj_nets.trailing_zeros() as usize;
+        // TODO: only works correctly for 1 bit !
+        let index = adj_net.trailing_zeros() as usize;
+        println!(">> {} {}", index, to_6bit_binary(&adj_net, true));
         let coord = get_connected_coords_at_coords(coordinate, index);
         if coord.is_some() {
             complex_net
                 .hidden_neighbours
-                .insert(CoordinateAndNet::new(coord.unwrap(), adj_nets));
+                .insert(CoordinateAndNet::new(coord.unwrap(), adj_net));
         }
     }
 
