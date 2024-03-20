@@ -139,7 +139,7 @@ impl Tile {
 
                         for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
    
-                            if adj_net != 0 && adj_net.count_ones() == 1 {
+                            if adj_net != 0 {
                                 Self::add_single_node_to_hidden(
                                     coordinate,
                                     &mut complex_net,
@@ -172,10 +172,11 @@ impl Tile {
     ) {
         let index = adj_nets.trailing_zeros() as usize;
         let coord = get_connected_coords_at_coords(coordinate, index);
-
-        complex_net
-            .hidden_neighbours
-            .insert(CoordinateAndNet::new(coord, adj_nets));
+        if  coord.is_some(){
+            complex_net
+                .hidden_neighbours
+                .insert(CoordinateAndNet::new(coord.unwrap(), adj_nets));
+        }
     }
 
     fn all_match(
