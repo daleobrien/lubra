@@ -11,21 +11,24 @@ struct Args {
 fn main() {
     // TODO: use args ...
 
-    //let maze = Maze::new(36, 19, true, true, Some(1));
+    // Large maze
+    let maze = Maze::new(36, 19, true, true, Some(1));
+    let name = format!("sample-large.svg");
+    let _ = maze.render(name.to_string());
 
     // Lots of small mazes
-    // for i in 1..50 {
-    //     let maze = Maze::new(5, 2, true, true, Some(i));
-    //     let name = format!("test/random-{}.svg", i);
-    //     let result_f = maze.render(name.to_string());
-    //     println!("Finished creating Random maze {:?}", result_f.unwrap());
-    // }
+    for i in 1..50 {
+        let maze = Maze::new(5, 2, true, true, Some(i));
+        let name = format!("test/random-{}.svg", i);
+        let _ = maze.render(name.to_string());
+    }
 
     // One small maze
-    let maze = Maze::new(5, 2, true, true, Some(4));
+    // 43,44
+    let maze = Maze::new(5, 2, true, true, Some(43));
+    //let maze = Maze::new(5, 2, true, true, Some(11));
     let name = format!("sample.svg");
-    let result_f = maze.render(name.to_string());
-    println!("Finished creating Random maze {:?}", result_f.unwrap());
+    let _ = maze.render(name.to_string());
 
     // //
     // for i in 1..50 {

@@ -136,6 +136,7 @@ pub fn generate_all_shapes() {
             (dir | N5 | N6 | A3 | A6, n56_36(invert)),
             (dir | N5 | N6 | A1 | A5 | B2 | B6, n46_15_26(invert)),
             (dir | N5 | N6 | A3 | A5 | B2 | B6, n56_35_26(invert)),
+            //(dir | N5 | N6 | A2 | A6 | B3 | B5, n56_35_26(invert)),
             (dir | N5 | N6 | A1 | A5 | B3 | B6, n56_15_36(invert)),
             (dir | N5 | N6 | A1 | A5, n56_15(invert)),
             (dir | N5 | N6 | A2 | A6, n56_26(invert)),
@@ -145,13 +146,12 @@ pub fn generate_all_shapes() {
             let upper_a = (key >> 6) & NL;
             let upper_b = (key) >> 12 & NL;
 
-            if upper_b == 0 {
-                paths.insert(key.to_usize().unwrap_or_default(), path.clone());
-            } else {
-                paths.insert(key.to_usize().unwrap_or_default(), path.clone());
-                // Swap the upper nets
+            if upper_b != 0 && upper_a.trailing_zeros() > upper_b.trailing_zeros() {
+                // Keep the adj bits sorted
                 let swapped = (upper_a << 12) | (upper_b << 6) | (key & NL) | (key & !NX);
                 paths.insert(swapped.to_usize().unwrap_or_default(), path.clone());
+            } else {
+                paths.insert(key.to_usize().unwrap_or_default(), path.clone());
             }
         }
     }
