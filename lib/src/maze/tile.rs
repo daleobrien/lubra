@@ -123,6 +123,8 @@ impl Tile {
                     // From here on, the bits are in the correct orientation rather then logical.
                     let bits = new_bits;
 
+                    println!("BIT: {}", to_6bit_binary(&new_bits, true));
+
                     if MAP_PATHS.contains_key(&bits) {
                         // Adjacent tiles masks
                         let adj_nets_1 = (bits >> 6) & 0b111_111;
@@ -135,7 +137,7 @@ impl Tile {
                                 println!(
                                     "ADJ: {} {}",
                                     to_6bit_binary(&adj_net, true),
-                                    to_6bit_binary(&bits, true)
+                                    to_6bit_binary(&bits, true),
                                 );
 
                                 if adj_net.count_ones() == 1 {

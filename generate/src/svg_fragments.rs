@@ -14,7 +14,7 @@ use crate::frag_complex_arcs::{
 use crate::frag_wall::l_wall;
 use common::bit_utils::to_6bit_binary;
 use common::consts::{
-    A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
+    A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, NX, WA,
 };
 use itertools::Itertools;
 use num_traits::ToPrimitive;
@@ -140,7 +140,19 @@ pub fn generate_all_shapes() {
             (dir | N5 | N6 | A1 | A5, n56_15(invert)),
             (dir | N5 | N6 | A2 | A6, n56_26(invert)),
         ] {
-            paths.insert(key.to_usize().unwrap_or_default(), path);
+            // Insert all combinations of the key with the adjacent nets permeated
+            let lower = key & NL;
+            let upper_a = (key >> 6) & NL;
+            let upper_b = (key) >> 12 & NL;
+
+            if upper_b == 0 {
+                paths.insert(key.to_usize().unwrap_or_default(), path.clone());
+            } else {
+                paths.insert(key.to_usize().unwrap_or_default(), path.clone());
+                // Swap the upper nets
+                let swapped = (upper_a << 12) | (upper_b << 6) | (key & NL) | (key & !NX);
+                paths.insert(swapped.to_usize().unwrap_or_default(), path.clone());
+            }
         }
     }
 
