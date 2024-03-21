@@ -11,17 +11,17 @@ struct Args {
 fn main() {
     // TODO: use args ...
 
-    // Large maze
-    let maze = Maze::new(36, 19, true, true, Some(1));
-    let name = format!("sample-large.svg");
-    let _ = maze.render(name.to_string());
-
-    // Lots of small mazes
-    for i in 1..50 {
-        let maze = Maze::new(5, 2, true, true, Some(i));
-        let name = format!("test/random-{}.svg", i);
-        let _ = maze.render(name.to_string());
-    }
+    // // Large maze
+    // let maze = Maze::new(36, 19, true, true, Some(1));
+    // let name = format!("sample-large.svg");
+    // let _ = maze.render(name.to_string());
+    //
+    // // Lots of small mazes
+    // for i in 1..50 {
+    //     let maze = Maze::new(5, 2, true, true, Some(i));
+    //     let name = format!("test/random-{}.svg", i);
+    //     let _ = maze.render(name.to_string());
+    // }
 
     // One small maze
     // 43,44

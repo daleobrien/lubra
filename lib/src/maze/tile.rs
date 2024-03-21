@@ -62,7 +62,7 @@ impl Tile {
             // Now we need to look for related tiles ...
 
             // This needs to return a net to use, and a list of adjacent nets to remove.
-            let complex_net = None; //Self::find_best_path(coordinate, &surrounding_tiles, &net);
+            let complex_net = Self::find_best_path(coordinate, &surrounding_tiles, &net);
 
             if complex_net.is_some() {
                 render_nets.add(complex_net.unwrap());
