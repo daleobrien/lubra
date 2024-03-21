@@ -136,13 +136,12 @@ pub fn generate_all_shapes() {
             (dir | N5 | N6 | A3 | A6, n56_36(invert)),
             (dir | N5 | N6 | A1 | A5 | B2 | B6, n46_15_26(invert)),
             (dir | N5 | N6 | A3 | A5 | B2 | B6, n56_35_26(invert)),
-            //(dir | N5 | N6 | A2 | A6 | B3 | B5, n56_35_26(invert)),
             (dir | N5 | N6 | A1 | A5 | B3 | B6, n56_15_36(invert)),
             (dir | N5 | N6 | A1 | A5, n56_15(invert)),
             (dir | N5 | N6 | A2 | A6, n56_26(invert)),
         ] {
+            // TODO: Make routine to sort nibbles, except the lowest nibble
             // Insert all combinations of the key with the adjacent nets permeated
-            let lower = key & NL;
             let upper_a = (key >> 6) & NL;
             let upper_b = (key) >> 12 & NL;
 

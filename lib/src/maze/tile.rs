@@ -1,7 +1,7 @@
 use crate::maze::nets_adjacent::ADJ_CHECKS;
 use crate::renders::fragment::MAP_PATHS;
 use common::bit_utils::to_6bit_binary;
-use common::consts::{IN, WA};
+use common::consts::{IN, NL, NX, WA};
 use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
 use common::types::coordinate::{CataloguedNet, ComplexNet, Coordinate, CoordinateAndNet};
@@ -118,35 +118,36 @@ impl Tile {
                         .map(|(_, _m, n)| n)
                         .fold(0, |a, b| a << 6 | b);
 
-                    let new_bits = (adj_net << 6) | net;
+                    let mut new_bits = (adj_net << 6) | net;
+
+                    println!("BIT: {}", to_6bit_binary(&new_bits, true));
+
+                    // Swap upper bits, if needed
+                    // let upper_a = (adj_net) & NL;
+                    // let upper_b = (adj_net) >> 6 & NL;
+                    // if upper_b != 0 && upper_a.trailing_zeros() > upper_b.trailing_zeros() {
+                    //     // Keep the adj bits sorted
+                    //     new_bits = (upper_a << 12) | (upper_b << 6) | net;
+                    // }
+                    // println!("BIT: {}", to_6bit_binary(&new_bits, true));
 
                     // From here on, the bits are in the correct orientation rather then logical.
                     let bits = new_bits;
 
-                    println!("BIT: {}", to_6bit_binary(&new_bits, true));
-
                     if MAP_PATHS.contains_key(&bits) {
                         // Adjacent tiles masks
-                        let adj_nets_1 = (bits >> 6) & 0b111_111;
-                        let adj_nets_2 = (bits >> 12) & 0b111_111;
-                        let adj_nets_3 = (bits >> 18) & 0b111_111;
-                        let adj_nets_4 = (bits >> 24) & 0b111_111;
+                        let adj_nets_1 = (bits >> 6) & NL;
+                        let adj_nets_2 = (bits >> 12) & NL;
+                        let adj_nets_3 = (bits >> 18) & NL;
+                        let adj_nets_4 = (bits >> 24) & NL;
 
                         for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
-                            if adj_net != 0 {
-                                println!(
-                                    "ADJ: {} {}",
-                                    to_6bit_binary(&adj_net, true),
-                                    to_6bit_binary(&bits, true),
+                            if adj_net != 0 && adj_net.count_ones() == 1 {
+                                Self::add_single_node_to_hidden(
+                                    coordinate,
+                                    &mut complex_net,
+                                    adj_nets_1,
                                 );
-
-                                if adj_net.count_ones() == 1 {
-                                    Self::add_single_node_to_hidden(
-                                        coordinate,
-                                        &mut complex_net,
-                                        adj_nets_1,
-                                    );
-                                }
                             }
                         }
 
