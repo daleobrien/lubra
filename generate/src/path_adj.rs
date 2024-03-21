@@ -104,8 +104,8 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N4, true, N2 | N4), (ADJ_N5, true, N1 | N5)],
             vec![(ADJ_N4, false, N2 | N4), (ADJ_N5, true, N3 | N5)],
             vec![(ADJ_N4, true, N1 | N4)],
-            vec![(ADJ_N5, true, N1 | N5)],
             vec![(ADJ_N4, true, N2 | N4)],
+            vec![(ADJ_N5, true, N1 | N5)],
             vec![(ADJ_N5, true, N3 | N5)],
         ],
     );
@@ -128,8 +128,8 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N5, true, N1 | N5), (ADJ_N6, true, N3 | N6)],
             vec![(ADJ_N5, true, N3 | N5), (ADJ_N6, true, N2 | N6)],
             vec![(ADJ_N5, true, N1 | N5)],
-            vec![(ADJ_N6, true, N2 | N6)],
             vec![(ADJ_N5, true, N3 | N5)],
+            vec![(ADJ_N6, true, N2 | N6)],
             vec![(ADJ_N6, true, N3 | N6)],
         ],
     );
