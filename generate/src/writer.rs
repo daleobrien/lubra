@@ -6,7 +6,7 @@ use std::io::prelude::*;
 
 //use itertools::Itertools;
 
-fn list_to_rust_vector_u32<u32: ToString>(list: &[u32]) -> String {
+fn list_to_rust_vector_u32<T: ToString>(list: &[T]) -> String {
     let elements: Vec<String> = list
         .iter()
         .map(|n| format!("{}u32", n.to_string()))
