@@ -1,12 +1,15 @@
-use crate::maze::nets_adjacent::ADJ_CHECKS;
-use crate::renders::fragment::MAP_PATHS;
+use std::fmt;
+
 use common::bit_utils::to_6bit_binary;
-use common::consts::{IN, NL, NX, WA};
+use common::consts::{IN, NL, WA};
 use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
 use common::types::coordinate::{CataloguedNet, ComplexNet, Coordinate, CoordinateAndNet};
-use std::fmt;
-use std::hash::{Hash, Hasher};
+
+use crate::maze::nets_adjacent::ADJ_CHECKS;
+use crate::renders::fragment::MAP_PATHS;
+
+//use std::hash::{Hash, Hasher};
 
 #[derive(Clone)]
 pub struct Tile {
@@ -118,7 +121,7 @@ impl Tile {
                         .map(|(_, _m, n)| n)
                         .fold(0, |a, b| a << 6 | b);
 
-                    let mut new_bits = (adj_net << 6) | net;
+                    let new_bits = (adj_net << 6) | net;
 
                     println!("BIT: {}", to_6bit_binary(&new_bits, true));
 
@@ -256,9 +259,11 @@ impl fmt::Display for Tile {
 
 #[cfg(test)]
 mod tests {
-    use crate::maze::tile::Tile;
-    use common::consts::{N1, N2, N3, N4, N5, N6};
     use std::{assert_eq, println, vec};
+
+    use common::consts::{N1, N2, N3, N4, N5, N6};
+
+    use crate::maze::tile::Tile;
 
     #[test]
     fn test_cw_rotation() {
@@ -305,6 +310,7 @@ mod tests {
         let tile1 = Tile::new(vec![], true);
         assert_eq!(tile1.contains(N1), false);
     }
+
     #[test]
     fn test_contain_net() {
         let tile1 = Tile::new(vec![N1 | N2, N5], true);

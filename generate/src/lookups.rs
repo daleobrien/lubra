@@ -1,7 +1,9 @@
-use common::bit_utils::{bit_sequence, get_mass, mask_to_bits, to_base4, to_bits};
-use common::node_combinations::NodeCombinations;
 use std::collections::HashMap;
 
+use common::bit_utils::{bit_sequence, get_mass, mask_to_bits, to_base4, to_bits};
+use common::node_combinations::NodeCombinations;
+
+#[allow(dead_code)]
 pub fn create_lookups(
     seq: NodeCombinations,
     nets_by_mask: &mut HashMap<u32, Vec<Vec<u32>>>,

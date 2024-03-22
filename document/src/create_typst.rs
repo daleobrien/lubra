@@ -1,6 +1,6 @@
-use itertools::Itertools;
 use std::fs;
-use std::io::BufRead;
+
+use itertools::Itertools;
 
 pub fn create_typst_doc(path_name: &str, typst_filename: &str, columns: usize, version: &str) {
     //let mut file = std::fs::File::create("./../typst/fragments.typ").unwrap();

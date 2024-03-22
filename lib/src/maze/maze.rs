@@ -2,19 +2,20 @@ use std::collections::HashSet;
 use std::error::Error;
 use std::fs;
 
-use common::consts::{NODE_TO_COORD, NX};
-
-use crate::maze::random::random_tile;
 use array2d::Array2D;
+
+use common::consts::{NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
-use rand_distr::num_traits::ToPrimitive;
+use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 
 use crate::maze::adjacent::get_surrounding_tile_connections;
+use crate::maze::random::random_tile;
 use crate::maze::tile::Tile;
 use crate::renders::fragment::MAP_PATHS;
 use crate::renders::svg::Svg;
-use common::types::point::{Point, S2, TILE_HEIGHT, TILE_WIDTH};
+
+// use rand_distr::num_traits::ToPrimitive;
 
 pub struct Maze {
     pub style: Option<String>,
@@ -254,6 +255,7 @@ impl Maze {
         return tile;
     }
 
+    #[allow(dead_code)]
     fn get_any_random_tile(&mut self) -> Tile {
         let nets = random_tile(222222, self.seed, true);
 

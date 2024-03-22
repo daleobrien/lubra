@@ -1,3 +1,15 @@
+use std::collections::{BTreeMap, HashMap, HashSet};
+use std::fs::File;
+use std::io::Write;
+
+use itertools::Itertools;
+use num_traits::ToPrimitive;
+
+use common::bit_utils::to_6bit_binary;
+use common::consts::{
+  A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, NX, WA,
+};
+
 use crate::frag_12::{n12, n13, n23};
 use crate::frag_123::n123;
 use crate::frag_15::{n14, n15, n24, n26, n35, n36};
@@ -8,19 +20,10 @@ use crate::frag_16::{n16, n25, n34};
 use crate::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
 use crate::frag_arcs::{a46, n1, n2, n3, n4, n45, n456, n5, n56, n6};
 use crate::frag_complex_arcs::{
-    n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
-    n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
+  n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
+  n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
 };
 use crate::frag_wall::l_wall;
-use common::bit_utils::to_6bit_binary;
-use common::consts::{
-    A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, NX, WA,
-};
-use itertools::Itertools;
-use num_traits::ToPrimitive;
-use std::collections::{BTreeMap, HashMap, HashSet};
-use std::fs::File;
-use std::io::Write;
 
 pub fn trim_whitespace(s: &str) -> String {
     let words: Vec<_> = s.split_whitespace().collect();
@@ -162,7 +165,7 @@ pub fn generate_all_shapes() {
     let _ = file.write(b"pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {\n");
 
     let mut keys: HashMap<u32, Vec<u32>> = HashMap::new();
-    let mut emptyFragments: HashSet<u32> = HashSet::new();
+    let mut empty_fragments: HashSet<u32> = HashSet::new();
 
     for (key, value) in paths {
         // Store to render library
@@ -176,7 +179,7 @@ pub fn generate_all_shapes() {
         );
 
         if value.is_empty() {
-            emptyFragments.insert(key_as_u32);
+            empty_fragments.insert(key_as_u32);
             continue;
         }
 
@@ -233,7 +236,7 @@ pub fn generate_all_shapes() {
   match mask {\n",
     );
 
-    for key in emptyFragments.iter().sorted() {
+    for key in empty_fragments.iter().sorted() {
         let _ = write!(file, "    {} =>  true,\n", to_6bit_binary(&key, false));
     }
     let _ = file.write(b"    _ => false\n   }\n");

@@ -1,8 +1,10 @@
-use itertools::Itertools;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
-use std::ops::Deref;
+
+//use std::ops::Deref;
+
+//use itertools::Itertools;
 
 fn list_to_rust_vector_u32<u32: ToString>(list: &[u32]) -> String {
     let elements: Vec<String> = list
@@ -70,8 +72,9 @@ pub fn write_mass_to_file(mass_by_mask: HashMap<u32, Vec<u32>>, file_name: &str)
 
 #[cfg(test)]
 mod tests {
-    use crate::writer::{list_of_lists_to_rust_vector, list_to_rust_vector_u32};
     use std::{assert_eq, vec};
+
+    use crate::writer::{list_of_lists_to_rust_vector, list_to_rust_vector_u32};
 
     #[test]
     fn test_list_to_rust_vector_u32() {
