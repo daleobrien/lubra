@@ -1,3 +1,7 @@
+use itertools::Itertools;
+
+use crate::consts::{IN, NL, WA};
+
 pub fn get_mass(nets: &Vec<u32>) -> u32 {
     let mut mass = 1;
     for net in nets {
@@ -136,11 +140,43 @@ pub fn to_6bit_binary(value: &u32, reduce: bool) -> String {
     return text;
 }
 
+const SHIFT_VALUES: [u32; 4] = [6, 12, 18, 24];
+
+pub fn sort_upper_bits(value: u32) -> u32 {
+    // We take all the 6bits nibles, except the lowest 6bits and sorted them
+    SHIFT_VALUES
+        .iter()
+        .copied() // Use copied() to avoid creating references
+        .map(|shift| (value >> shift) & NL)
+        .filter(|&x| x != 0) // Exclude values that are all zeros
+        .sorted()
+        .enumerate()
+        .fold(value & (NL | WA | IN), |result, (i, val)| {
+            result | (val << SHIFT_VALUES[i])
+        })
+}
+
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::{assert_eq, format, vec};
 
+    use crate::consts::{A3, A4, B3, B4, N1, N2};
+
+    use super::*;
+
+    #[test]
+    fn test_sort_upper_bits() {
+        assert_eq!(sort_upper_bits(WA | N2), WA | N2);
+        assert_eq!(sort_upper_bits(IN | WA | N2 | A3), IN | WA | N2 | A3);
+        assert_eq!(
+            sort_upper_bits(IN | WA | N2 | A3 | B4),
+            IN | WA | N2 | A3 | B4
+        );
+        assert_eq!(
+            sort_upper_bits(IN | WA | N1 | A4 | B3),
+            IN | WA | N1 | A3 | B4
+        );
+    }
     #[test]
     fn test_to_bits() {
         assert_eq!(to_bits(&vec![]), 0);
