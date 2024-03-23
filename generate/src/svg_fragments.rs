@@ -120,7 +120,6 @@ pub fn generate_all_shapes() {
             (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
             //
             (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
-            // (dir | N4 | N5 | A1 | A5 | B2 | B4, n45_24_15(invert)), // Reverse of above
             //
             (dir | N4 | N5 | A2 | A4, n45_24(invert)),
             (dir | N4 | N5 | A3 | A5, n45_35(invert)),

@@ -146,12 +146,17 @@ pub fn sort_upper_bits(value: u32) -> u32 {
     // We take all the 6bits nibbles, except the lowest 6bits and sorted them
     SHIFT_VALUES
         .iter()
-        .copied() // Use copied() to avoid creating references
-        .map(|shift| (value >> shift) & NL)
-        .filter(|&x| x != 0) // Exclude values that are all zeros
+        .filter_map(|&shift| {
+            let val = (value >> shift) & NL;
+            if val != 0 {
+                Some((val.trailing_zeros(), val))
+            } else {
+                None
+            }
+        })
         .sorted()
         .enumerate()
-        .fold(value & (NL | WA | IN), |result, (i, val)| {
+        .fold(value & (NL | WA | IN), |result, (i, (_, val))| {
             result | (val << SHIFT_VALUES[i])
         })
 }
@@ -185,7 +190,7 @@ pub fn print_nets(nets: &Vec<u32>) -> String {
 mod tests {
     use std::{assert_eq, format, vec};
 
-    use crate::consts::{A1, A3, A4, A5, B3, B4, B6, N1, N2, N3, N4, N5, N6};
+    use crate::consts::{A1, A3, A4, A5, B2, B3, B4, B6, N1, N2, N3, N4, N5, N6};
 
     use super::*;
 
@@ -222,6 +227,10 @@ mod tests {
         assert_eq!(
             sort_upper_bits(IN | WA | N1 | A4 | B3),
             IN | WA | N1 | A3 | B4
+        );
+        assert_eq!(
+            sort_upper_bits(IN | WA | N4 | N5 | A1 | A5 | B2 | B4),
+            IN | WA | N4 | N5 | A1 | A5 | B2 | B4
         );
     }
     #[test]
