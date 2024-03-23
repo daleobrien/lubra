@@ -1,6 +1,4 @@
 /*
-Each row is indexed in a strange way:  _,1,_,5,_,3,_,6,_,2,_,4
-where the _ is too the left and right of the vertex, (vertex are number 1,2 & 3).
 */
 
 pub const N1: u32 = 0b00_000_000_000_000_000_000_000_000_000_001;
@@ -13,7 +11,7 @@ pub const IN: u32 = 0b01_000_000_000_000_000_000_000_000_000_000; // Inverted
 pub const NO: u32 = 0b00_000_000_000_000_000_000_000_000_000_000; // Normal
 pub const WA: u32 = 0b10_000_000_000_000_000_000_000_000_000_000; // Indicates it's a wall
                                                                   // Some masks
-pub const NL: u32 = 0b00_000_000_000_000_000_000_000_0000_111_111;
+pub const NL: u32 = 0b00_000_000_000_000_000_000_000_000_111_111;
 pub const NX: u32 = 0b00_111_111_111_111_111_111_111_111_111_111;
 
 pub const A1: u32 = 0b00_000_000_000_000_000_000_000_001_000_000;
