@@ -5,9 +5,9 @@ use std::io::Write;
 use itertools::Itertools;
 use num_traits::ToPrimitive;
 
-use common::bit_utils::to_6bit_binary;
+use common::bit_utils::{sort_upper_bits, to_6bit_binary};
 use common::consts::{
-  A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, NX, WA,
+    A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
 };
 
 use crate::frag_12::{n12, n13, n23};
@@ -20,8 +20,8 @@ use crate::frag_16::{n16, n25, n34};
 use crate::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
 use crate::frag_arcs::{a46, n1, n2, n3, n4, n45, n456, n5, n56, n6};
 use crate::frag_complex_arcs::{
-  n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
-  n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
+    n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
+    n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
 };
 use crate::frag_wall::l_wall;
 
@@ -120,7 +120,7 @@ pub fn generate_all_shapes() {
             (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
             //
             (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
-            (dir | N4 | N5 | A1 | A5 | B2 | B4, n45_24_15(invert)), // Reverse of above
+            // (dir | N4 | N5 | A1 | A5 | B2 | B4, n45_24_15(invert)), // Reverse of above
             //
             (dir | N4 | N5 | A2 | A4, n45_24(invert)),
             (dir | N4 | N5 | A3 | A5, n45_35(invert)),
@@ -143,18 +143,8 @@ pub fn generate_all_shapes() {
             (dir | N5 | N6 | A1 | A5, n56_15(invert)),
             (dir | N5 | N6 | A2 | A6, n56_26(invert)),
         ] {
-            // TODO: Make routine to sort nibbles, except the lowest nibble
-            // Insert all combinations of the key with the adjacent nets permeated
-            let upper_a = (key >> 6) & NL;
-            let upper_b = (key) >> 12 & NL;
-
-            if upper_b != 0 && upper_a.trailing_zeros() > upper_b.trailing_zeros() {
-                // Keep the adj bits sorted
-                let swapped = (upper_a << 12) | (upper_b << 6) | (key & NL) | (key & !NX);
-                paths.insert(swapped.to_usize().unwrap_or_default(), path.clone());
-            } else {
-                paths.insert(key.to_usize().unwrap_or_default(), path.clone());
-            }
+            let sorted_key = sort_upper_bits(key);
+            paths.insert(sorted_key.to_usize().unwrap_or_default(), path.clone());
         }
     }
 

@@ -3,19 +3,27 @@ use std::error::Error;
 use std::fs;
 
 use array2d::Array2D;
+use usvg;
+use usvg::fontdb;
 
+use common::bit_utils::print_nets;
 use common::consts::{NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 
 use crate::maze::adjacent::get_surrounding_tile_connections;
+use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::random::random_tile;
 use crate::maze::tile::Tile;
 use crate::renders::fragment::MAP_PATHS;
 use crate::renders::svg::Svg;
 
-// use rand_distr::num_traits::ToPrimitive;
+#[derive(Eq, PartialEq)]
+pub enum FileType {
+    SVG,
+    PNG,
+}
 
 pub struct Maze {
     pub style: Option<String>,
@@ -269,7 +277,28 @@ impl Maze {
         return tile;
     }
 
-    pub fn render(self, file_name: String) -> Result<(), Box<dyn Error>> {
+    ////#[cfg(build = "debug")]
+    fn print_out_networks(&self) {
+        println!("");
+        let rows: Vec<_> = self.tiles.rows_iter().collect();
+
+        let text = rows
+            .into_iter()
+            .rev() // Reverse the rows
+            .map(|row| {
+                row.map(|t| format!("{}", print_nets(&t.nodes)))
+                    .collect::<Vec<_>>()
+                    .join("\t")
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        println!("{}\n", text);
+    }
+
+    pub fn render(self, file_name: String, file_type: FileType) -> Result<(), Box<dyn Error>> {
+        //#[cfg(build = "debug")]
+        self.print_out_networks();
+
         let margin = 5.0;
         let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;
         let h = self.number_of_rows as f64 * TILE_HEIGHT + 5.0 * margin;
@@ -337,15 +366,36 @@ impl Maze {
             svg.add_fragment(frag.unwrap(), point, 1);
         }
 
-        // let circle = format!(
-        //     "<circle stroke=\"black\" fill=\"red\" cx=\"{w:.2}\" cy=\"{h:.2}\" r=\"{r:.2}\" />",
-        //     r = TILE_WIDTH / 10f64,
-        //     w = TILE_WIDTH / 2f64,
-        //     h = TILE_HEIGHT - TILE_HEIGHT / S2 //h = TILE_HEIGHT / S2
-        // );
-        // svg.add_fragment(&circle, Point { x: 0.0, y: 0.0 }, 1);
-        let _ = fs::write(file_name, svg.to_string()).expect("Unable to write file");
+        if file_type == SVG {
+            return self.save_as_svg(svg.to_string(), file_name);
+        }
+        if file_type == PNG {
+            return self.save_as_png(svg.to_string().as_str(), file_name);
+        }
+
         Ok(())
+    }
+    pub fn save_as_svg(self, content: String, file_name: String) -> Result<(), Box<dyn Error>> {
+        let _ = fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
+        return Ok(());
+    }
+
+    pub fn save_as_png(self, svg_content: &str, file_name: String) -> Result<(), Box<dyn Error>> {
+        let input = format!("{}.png", file_name);
+        let mut fontdb = fontdb::Database::new();
+        fontdb.load_system_fonts();
+        let tree = usvg::Tree::from_str(svg_content, &usvg::Options::default(), &fontdb).unwrap();
+
+        let zoom = 1f32;
+        let pixmap_size = tree.size().to_int_size().scale_by(zoom).unwrap();
+
+        let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height()).unwrap();
+
+        let render_ts = tiny_skia::Transform::from_scale(zoom, zoom);
+        resvg::render(&tree, render_ts, &mut pixmap.as_mut());
+
+        pixmap.save_png(&input).unwrap();
+        return Ok(());
     }
 }
 

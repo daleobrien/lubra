@@ -1,7 +1,8 @@
-use crate::bit_utils::to_6bit_binary;
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::{Hash, Hasher};
+
+use crate::bit_utils::print_bits;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Coordinate {
@@ -11,7 +12,7 @@ pub struct Coordinate {
 
 impl fmt::Display for Coordinate {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "coord:({},{})", self.i, self.j,)
+        write!(f, "({},{})", self.i, self.j,)
     }
 }
 
@@ -28,7 +29,7 @@ impl fmt::Display for CoordinateAndNet {
             "({},{}):{}",
             self.coordinate.i,
             self.coordinate.j,
-            to_6bit_binary(&self.net, true)
+            print_bits(self.net)
         )
     }
 }

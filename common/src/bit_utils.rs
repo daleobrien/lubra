@@ -143,7 +143,7 @@ pub fn to_6bit_binary(value: &u32, reduce: bool) -> String {
 const SHIFT_VALUES: [u32; 4] = [6, 12, 18, 24];
 
 pub fn sort_upper_bits(value: u32) -> u32 {
-    // We take all the 6bits nibles, except the lowest 6bits and sorted them
+    // We take all the 6bits nibbles, except the lowest 6bits and sorted them
     SHIFT_VALUES
         .iter()
         .copied() // Use copied() to avoid creating references
@@ -156,14 +156,61 @@ pub fn sort_upper_bits(value: u32) -> u32 {
         })
 }
 
+fn nibble_to_enum_string(value: u32) -> String {
+    (1..=6).fold(String::new(), |mut s, i| {
+        if value & (1 << (i - 1)) != 0 {
+            s.push_str(&i.to_string());
+        }
+        s
+    })
+}
+
+const ALL_SHIFT_VALUES: [u32; 5] = [0, 6, 12, 18, 24];
+
+pub fn print_bits(value: u32) -> String {
+    ALL_SHIFT_VALUES
+        .iter()
+        .copied() // Use copied() to avoid creating references
+        .map(|shift| (value >> shift) & NL)
+        .filter(|&x| x != 0) // Exclude values that are all zeros
+        .map(|x| nibble_to_enum_string(x))
+        .join("/")
+}
+
+pub fn print_nets(nets: &Vec<u32>) -> String {
+    nets.iter().map(|x| print_bits(*x)).join(" ")
+}
+
 #[cfg(test)]
 mod tests {
     use std::{assert_eq, format, vec};
 
-    use crate::consts::{A3, A4, B3, B4, N1, N2};
+    use crate::consts::{A1, A3, A4, A5, B3, B4, B6, N1, N2, N3, N4, N5, N6};
 
     use super::*;
 
+    #[test]
+    fn test_nibble_to_enum_string() {
+        assert_eq!(nibble_to_enum_string(N1), "1");
+        assert_eq!(nibble_to_enum_string(N2), "2");
+        assert_eq!(nibble_to_enum_string(N3), "3");
+        assert_eq!(nibble_to_enum_string(N4), "4");
+        assert_eq!(nibble_to_enum_string(N5), "5");
+        assert_eq!(nibble_to_enum_string(N6), "6");
+    }
+
+    #[test]
+    fn test_print_nodes() {
+        assert_eq!(print_bits(N2 | N5), "25");
+        assert_eq!(print_bits(N2 | N6), "26");
+        assert_eq!(print_bits(N2 | N6 | A1 | A5 | B3 | B6), "26/15/36");
+    }
+
+    #[test]
+    fn test_print_nets() {
+        let n = vec![N2 | N5, N1 | N6];
+        assert_eq!(print_nets(&n), "25 16");
+    }
     #[test]
     fn test_sort_upper_bits() {
         assert_eq!(sort_upper_bits(WA | N2), WA | N2);

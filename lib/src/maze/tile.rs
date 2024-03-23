@@ -1,6 +1,6 @@
 use std::fmt;
 
-use common::bit_utils::to_6bit_binary;
+use common::bit_utils::{print_bits, print_nets, sort_upper_bits, to_6bit_binary};
 use common::consts::{IN, NL, WA};
 use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
@@ -11,7 +11,7 @@ use crate::renders::fragment::MAP_PATHS;
 
 //use std::hash::{Hash, Hasher};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Tile {
     pub nodes: Vec<u32>,
     pub initialised: bool,
@@ -53,13 +53,14 @@ impl Tile {
         let mut render_nets = CataloguedNet::new();
 
         // // ...
-        let s = self
-            .nodes
-            .iter()
-            .map(|n| to_6bit_binary(n, true))
-            .collect::<Vec<String>>()
-            .join(", ");
-        println!("NET: {coordinate} -> {:?}", s);
+        // let s = self
+        //     .nodes
+        //     .iter()
+        //     .map(|n| to_6bit_binary(n, true))
+        //     .collect::<Vec<String>>()
+        //     .join(", ");
+
+        println!("NET: {coordinate} -> {:?}", print_nets(&self.nodes));
         //
         for net in self.nodes {
             // Now we need to look for related tiles ...
@@ -121,18 +122,19 @@ impl Tile {
                         .map(|(_, _m, n)| n)
                         .fold(0, |a, b| a << 6 | b);
 
-                    let new_bits = (adj_net << 6) | net;
+                    let mut new_bits = (adj_net << 6) | net;
 
-                    println!("BIT: {}", to_6bit_binary(&new_bits, true));
-
-                    // Swap upper bits, if needed
-                    // let upper_a = (adj_net) & NL;
-                    // let upper_b = (adj_net) >> 6 & NL;
-                    // if upper_b != 0 && upper_a.trailing_zeros() > upper_b.trailing_zeros() {
-                    //     // Keep the adj bits sorted
-                    //     new_bits = (upper_a << 12) | (upper_b << 6) | net;
-                    // }
-                    // println!("BIT: {}", to_6bit_binary(&new_bits, true));
+                    new_bits = sort_upper_bits(new_bits);
+                    if (adj_net << 6) | net != new_bits {
+                        let x = (adj_net << 6) | net;
+                        println!(
+                            "BIT:                 -> {:?} -> {:?}",
+                            print_bits(x),
+                            print_bits(new_bits)
+                        );
+                    } else {
+                        println!("BIT:             -> {:?}", print_bits(new_bits));
+                    }
 
                     // From here on, the bits are in the correct orientation rather then logical.
                     let bits = new_bits;

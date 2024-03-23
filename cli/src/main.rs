@@ -1,4 +1,6 @@
 use clap::Parser;
+
+use lib::maze::maze::FileType::SVG;
 use lib::maze::maze::Maze;
 
 #[derive(Parser, Debug)]
@@ -14,21 +16,21 @@ fn main() {
     // // Large maze
     // let maze = Maze::new(36, 19, true, true, Some(1));
     // let name = format!("sample-large.svg");
-    // let _ = maze.render(name.to_string());
+    // let _ = maze.render(name.to_string(), SVG);
     //
     // // Lots of small mazes
     // for i in 1..50 {
-    //     let maze = Maze::new(5, 2, true, true, Some(i));
-    //     let name = format!("test/random-{}.svg", i);
-    //     let _ = maze.render(name.to_string());
+    //     let maze = Maze::new(4, 2, true, true, Some(i));
+    //     let name = format!("test/random-{}", i);
+    //     let _ = maze.render(name.to_string(), PNG);
     // }
 
     // One small maze
     // 43,44
-    let maze = Maze::new(5, 2, true, true, Some(43));
+    let maze = Maze::new(4, 2, true, true, Some(41));
     //let maze = Maze::new(5, 2, true, true, Some(11));
-    let name = format!("sample.svg");
-    let _ = maze.render(name.to_string());
+    let name = format!("sample");
+    let _ = maze.render(name.to_string(), SVG);
 
     // //
     // for i in 1..50 {
