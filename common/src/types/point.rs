@@ -1,6 +1,7 @@
-use crate::types::format::trimf64;
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
+
+use crate::types::format::trimf64;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {
@@ -15,8 +16,8 @@ pub const S5: f64 = 0.2886751345948128822545743902509787f64; /* 1/(2 sqrt(3)) */
 
 pub const TILE_WIDTH: f64 = 120f64;
 pub const TILE_HEIGHT: f64 = 120f64 * S3;
-pub const PATH_WIDTH: f64 = 0.08f64; // No overlap between tiles
-                                     //pub const PATH_WIDTH: f64 = 0.11f64; // No overlap between tiles
+//pub const PATH_WIDTH: f64 = 0.08f64; // No overlap between tiles
+pub const PATH_WIDTH: f64 = 0.11f64; // No overlap between tiles
                                      //pub const PATH_WIDTH: f64 = 0.16666f64; // Max
 
 impl Add for Point {

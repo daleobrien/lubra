@@ -3,8 +3,13 @@ use std::error::Error;
 use std::fs;
 
 use array2d::Array2D;
+use rand::prelude::*;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+use rand_chacha::ChaCha8Rng;
 use usvg;
 use usvg::fontdb;
+use common::bit_utils::print_nets;
 
 use common::consts::{NODE_TO_COORD, NX};
 use common::types::bits;
@@ -72,22 +77,29 @@ impl Maze {
     pub fn create_random_grid(&mut self, number_of_columns: usize, number_of_rows: usize) {
         // Seed some random tiles that don't touch each other or the boundaries
 
-        for j in 0..number_of_rows {
-            for i in 0..number_of_columns {
-                // Don't need to create twice
-                if self.tiles[(j, i)].initialised {
-                    continue;
-                }
+        let mut rng = match self.seed {
+            Some(s) => ChaCha8Rng::seed_from_u64(s),
+            None => ChaCha8Rng::from_rng(thread_rng()).unwrap(),
+        };
 
-                let tile = self.get_random_tile(i, j);
-                self.tiles[(j, i)] = tile;
-                //self.tiles[(j, i)]= Tile::new(vec![N6], true);
+        let mut indices: Vec<(usize, usize)> = (0..number_of_rows)
+            .flat_map(|j| (0..number_of_columns).map(move |i| (j, i)))
+            .collect();
 
-                self.seed = match self.seed {
-                    Some(s) => Some(s.wrapping_add(1)),
-                    _ => None,
-                };
+        indices.shuffle(&mut rng);
+
+        for (j, i) in indices {
+            // Don't need to create twice
+            if self.tiles[(j, i)].initialised {
+                continue;
             }
+
+            self.tiles[(j, i)] = self.get_random_tile(i, j);
+
+            self.seed = match self.seed {
+                Some(s) => Some(s.wrapping_add(1)),
+                _ => None,
+            };
         }
 
         self.width = (number_of_columns + 1) as f64 * TILE_WIDTH / 2.0;
