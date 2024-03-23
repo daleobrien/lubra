@@ -14,20 +14,20 @@ fn main() {
     // TODO: use args ...
 
     // // Large maze
-    let maze = Maze::new(36, 19, true, true, Some(1));
-    let name = format!("sample-large.svg");
-    let _ = maze.render(name.to_string(), SVG);
+    // let maze = Maze::new(36, 19, true, true, Some(1));
+    // let name = format!("sample-large.svg");
+    // let _ = maze.render(name.to_string(), SVG);
     //
     // Lots of small mazes
     for i in 1..50 {
-        let maze = Maze::new(4, 2, true, true, Some(i));
+        let maze = Maze::new(4, 3, true, true, Some(i));
         let name = format!("test/random-{}", i);
         let _ = maze.render(name.to_string(), PNG);
     }
 
     // One small maze
     // 43,44
-    let maze = Maze::new(4, 2, true, true, Some(41));
+    let maze = Maze::new(4, 3, true, true, Some(41));
     //let maze = Maze::new(5, 2, true, true, Some(11));
     let name = format!("sample");
     let _ = maze.render(name.to_string(), SVG);
