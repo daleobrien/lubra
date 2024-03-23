@@ -35,8 +35,8 @@ pub fn generate_adjacent_paths() {
     adj_paths.insert(
         N1 | N6,
         vec![
-            vec![(ADJ_N5, true, N2 | N6)], // Will be blank
-            vec![(ADJ_N5, true, N3 | N6)], // Will be blank
+            vec![(ADJ_N6, true, N2 | N6)], // Will be blank
+            vec![(ADJ_N6, true, N3 | N6)], // Will be blank
         ],
     );
 
@@ -73,8 +73,8 @@ pub fn generate_adjacent_paths() {
     adj_paths.insert(
         N3 | N4,
         vec![
-            vec![(ADJ_N5, true, N1 | N4)], // Will be blank
-            vec![(ADJ_N5, true, N2 | N4)], // Will be blank
+            vec![(ADJ_N4, true, N1 | N4)], // Will be blank
+            vec![(ADJ_N4, true, N2 | N4)], // Will be blank
         ],
     );
 
