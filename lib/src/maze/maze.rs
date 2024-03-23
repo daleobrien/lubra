@@ -6,7 +6,6 @@ use array2d::Array2D;
 use usvg;
 use usvg::fontdb;
 
-use common::bit_utils::{print_bits, print_nets};
 use common::consts::{NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
@@ -277,7 +276,7 @@ impl Maze {
         return tile;
     }
 
-    ////#[cfg(build = "debug")]
+    #[cfg(build = "debug")]
     fn print_out_networks(&self) {
         println!("");
         let rows: Vec<_> = self.tiles.rows_iter().collect();
@@ -296,7 +295,7 @@ impl Maze {
     }
 
     pub fn render(self, file_name: String, file_type: FileType) -> Result<(), Box<dyn Error>> {
-        //#[cfg(build = "debug")]
+        #[cfg(build = "debug")]
         self.print_out_networks();
 
         let margin = 5.0;
@@ -326,13 +325,13 @@ impl Maze {
             }
         }
 
-        println!("");
-        println!("Render ...");
-        println!("");
-        for coordinate_and_net in all_catorised_nets.hidden.iter() {
-            println!("_ Hidden {}", coordinate_and_net);
-        }
-        println!("");
+        // println!("");
+        // println!("Render ...");
+        // println!("");
+        // for coordinate_and_net in all_catorised_nets.hidden.iter() {
+        //     println!("_ Hidden {}", coordinate_and_net);
+        // }
+        // println!("");
         for coordinate_and_net in all_catorised_nets.visible.iter() {
             // We don't want to draw the hidden nets
             let masked_net: CoordinateAndNet = CoordinateAndNet {
@@ -342,7 +341,7 @@ impl Maze {
             };
 
             if all_catorised_nets.hidden.contains(&masked_net) {
-                println!("_ Nope   {}", masked_net);
+                //println!("_ Nope   {}", masked_net);
                 continue;
             }
 
@@ -350,14 +349,14 @@ impl Maze {
 
             let frag = MAP_PATHS.get(&net);
             if frag.is_none() {
-                println!("_ Blank  {} : {}", masked_net, print_bits(net));
+                //println!("_ Blank  {} : {}", masked_net, print_bits(net));
                 continue;
             }
             if frag.unwrap().is_empty() {
-                println!("_ Empty  {} : {}", masked_net, print_bits(net));
+                //println!("_ Empty  {} : {}", masked_net, print_bits(net));
                 continue;
             }
-            println!("_ Yes    {}", masked_net);
+            //println!("_ Yes    {}", masked_net);
 
             let point: Point = Point {
                 x: coordinate_and_net.coordinate.i as f64,

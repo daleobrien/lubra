@@ -2,7 +2,7 @@ use std::fmt;
 
 use rand_distr::num_traits::ToPrimitive;
 
-use common::bit_utils::{print_bits, print_nets, sort_upper_bits, to_6bit_binary};
+use common::bit_utils::{sort_upper_bits, to_6bit_binary};
 use common::consts::{IN, NL, WA};
 use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
@@ -54,15 +54,7 @@ impl Tile {
 
         let mut render_nets = CataloguedNet::new();
 
-        // // ...
-        // let s = self
-        //     .nodes
-        //     .iter()
-        //     .map(|n| to_6bit_binary(n, true))
-        //     .collect::<Vec<String>>()
-        //     .join(", ");
-
-        println!("NET: {coordinate} -> {:?}", print_nets(&self.nodes));
+        //println!("NET: {coordinate} -> {:?}", print_nets(&self.nodes));
         //
         for net in self.nodes {
             // Now we need to look for related tiles ...
@@ -82,11 +74,11 @@ impl Tile {
                         .visible
                         .push(CoordinateAndNet::new(coordinate, net));
                 } else {
-                    println!(
-                        "No path for bits: {} @ {:?}",
-                        to_6bit_binary(&net, true),
-                        coordinate
-                    );
+                    // println!(
+                    //     "No path for bits: {} @ {:?}",
+                    //     to_6bit_binary(&net, true),
+                    //     coordinate
+                    // );
                 }
             }
         }
@@ -127,16 +119,16 @@ impl Tile {
                     let mut new_bits = (adj_net << 6) | net;
 
                     new_bits = sort_upper_bits(new_bits);
-                    if (adj_net << 6) | net != new_bits {
-                        let x = (adj_net << 6) | net;
-                        println!(
-                            "BIT:                 -> {:?} -> {:?}",
-                            print_bits(x),
-                            print_bits(new_bits)
-                        );
-                    } else {
-                        println!("BIT:             -> {:?}", print_bits(new_bits));
-                    }
+                    // if (adj_net << 6) | net != new_bits {
+                    //     let x = (adj_net << 6) | net;
+                    //     println!(
+                    //         "BIT:                 -> {:?} -> {:?}",
+                    //         print_bits(x),
+                    //         print_bits(new_bits)
+                    //     );
+                    // } else {
+                    //     println!("BIT:             -> {:?}", print_bits(new_bits));
+                    // }
 
                     // From here on, the bits are in the correct orientation rather then logical.
                     let bits = new_bits;
@@ -178,15 +170,14 @@ impl Tile {
         adj_net: u32,
         node_number: usize,
     ) {
-        // TODO: only works correctly for 1 bit !
         let coord = get_connected_coords_at_coords(coordinate, node_number);
         if coord.is_some() {
-            println!(
-                "HID: {}  -> \"{}\" [{n}]",
-                coord.unwrap(),
-                print_bits(adj_net),
-                n = node_number + 1
-            );
+            // println!(
+            //     "HID: {}  -> \"{}\" [{n}]",
+            //     coord.unwrap(),
+            //     print_bits(adj_net),
+            //     n = node_number + 1
+            // );
             complex_net
                 .hidden_neighbours
                 .insert(CoordinateAndNet::new(coord.unwrap(), adj_net));
