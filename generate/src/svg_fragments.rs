@@ -7,14 +7,14 @@ use num_traits::ToPrimitive;
 
 use common::bit_utils::{print_bits, sort_upper_bits, to_6bit_binary};
 use common::consts::{
-    A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
+    A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, WA,
 };
 
 use crate::frag_12::{n12, n13, n23};
 use crate::frag_123::n123;
 use crate::frag_15::{n14, n15, n24, n26, n35, n36};
 use crate::frag_15_dot::{n14_4, n15_5, n24_4, n26_6, n35_5, n36_6};
-use crate::frag_15_long::{n14_24, n15_35, n24_14, n26_36, n35_15, n36_26};
+use crate::frag_15_long::{n14_24, n15_35, n26_36};
 use crate::frag_15_straight::{n14_34, n15_25, n24_34, n26_16, n35_25, n36_16};
 use crate::frag_16::{n16, n25, n34};
 use crate::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
@@ -68,47 +68,26 @@ pub fn generate_all_shapes() {
             (dir | N3 | N5, n35(invert)),
             (dir | N3 | N6, n36(invert)),
             //
-            (dir | N1 | N6 | A2 | A6, "".to_string()),
-            (dir | N1 | N6 | A3 | A6, "".to_string()),
-            (dir | N2 | N5 | A1 | A5, "".to_string()),
-            (dir | N2 | N5 | A3 | A5, "".to_string()),
-            (dir | N3 | N4 | A1 | A4, "".to_string()),
-            (dir | N3 | N4 | A2 | A4, "".to_string()),
-            //
             (dir | N1 | N4 | A2 | A4, n14_24(invert)),
             (dir | N1 | N4 | A3 | A4, n14_34(invert)),
-            (dir | N1 | N4 | A4 | A5, "".to_string()), // Equivalent to 4-5/1-4
-            (dir | N1 | N4 | A4 | A6, "".to_string()), // Equivalent to 4-6/1-4
             (dir | N1 | N4 | A4, n14_4(invert)),
             //
             (dir | N1 | N5 | A2 | A5, n15_25(invert)),
             (dir | N1 | N5 | A3 | A5, n15_35(invert)),
-            (dir | N1 | N5 | A4 | A5, "".to_string()), //
-            (dir | N1 | N5 | A5 | A6, "".to_string()), //
             (dir | N1 | N5 | A5, n15_5(invert)),
             //
-            (dir | N2 | N4 | A1 | A4, n24_14(invert)),
+            // (dir | N2 | N4 | A1 | A4, n24_14(invert)),
             (dir | N2 | N4 | A3 | A4, n24_34(invert)),
-            (dir | N2 | N4 | A4 | A5, "".to_string()), //
-            (dir | N2 | N4 | A4 | A6, "".to_string()), //
             (dir | N2 | N4 | A4, n24_4(invert)),
             //
             (dir | N2 | N6 | A1 | A6, n26_16(invert)),
             (dir | N2 | N6 | A3 | A6, n26_36(invert)),
-            (dir | N2 | N6 | A4 | A6, "".to_string()), //
-            (dir | N2 | N6 | A5 | A6, "".to_string()), //
             (dir | N2 | N6 | A6, n26_6(invert)),
             //
-            (dir | N3 | N5 | A1 | A5, n35_15(invert)),
             (dir | N3 | N5 | A2 | A5, n35_25(invert)),
-            (dir | N3 | N5 | A4 | A5, "".to_string()), //
-            (dir | N3 | N5 | A5 | A6, "".to_string()), //
             (dir | N3 | N5 | A5, n35_5(invert)),
             //
             (dir | N3 | N6 | A1 | A6, n36_16(invert)),
-            (dir | N3 | N6 | A2 | A6, n36_26(invert)),
-            (dir | N3 | N6 | A4 | A6, "".to_string()), //
-            (dir | N3 | N6 | A5 | A6, "".to_string()), // Equivalent to 5-6/3-6
             (dir | N3 | N6 | A6, n36_6(invert)),
             // 4-5
             (dir | N4 | N5, n45(invert)),
@@ -145,23 +124,23 @@ pub fn generate_all_shapes() {
             let sorted_key = sort_upper_bits(key);
             paths.insert(sorted_key.to_usize().unwrap_or_default(), path.clone());
 
-            // // Automatically generate Blank fragments
-            // let key_base = key & NL;
-            // let key_a = (key >> 6) & NL;
-            // let key_b = (key >> 12) & NL;
-            // if key_a != 0 && key_b == 0 {
-            //     let blank_key = ((key_base << 6) | key_a | (key & WA & IN))
-            //         .to_usize()
-            //         .unwrap_or_default();
-            //     if !paths.contains_key(&blank_key) {
-            //         paths.insert(blank_key, "".to_string());
-            //     } else if paths[&blank_key] != "".to_string() {
-            //         println!(
-            //             "Not adding blank key: {}",
-            //             print_bits(blank_key.to_u32().unwrap())
-            //         );
-            //     }
-            // }
+            // Automatically generate Blank fragments
+            let key_base = key & NL;
+            let key_a = (key >> 6) & NL;
+            let key_b = (key >> 12) & NL;
+            if key_a != 0 && key_b == 0 {
+                let blank_key = ((key_base << 6) | key_a | (key & WA & IN))
+                    .to_usize()
+                    .unwrap_or_default();
+                if !paths.contains_key(&blank_key) {
+                    paths.insert(blank_key, "".to_string());
+                } else if paths[&blank_key] != "".to_string() {
+                    println!(
+                        "Not adding blank key: {}",
+                        print_bits(blank_key.to_u32().unwrap())
+                    );
+                }
+            }
         }
     }
 
@@ -191,7 +170,7 @@ pub fn generate_all_shapes() {
         }
 
         // Store to documentation library
-        let index = key_as_u32 & (IN | N1 | N2 | N3 | N4 | N5 | N6);
+        let index = key_as_u32 & (IN | NL);
 
         if !keys.contains_key(&index) {
             keys.entry(index).or_insert_with(Vec::new).push(key_as_u32);
@@ -245,7 +224,12 @@ pub fn generate_all_shapes() {
     );
 
     for key in empty_fragments.iter().sorted() {
-        let _ = write!(file, "    {} =>  true,\n", to_6bit_binary(&key, false));
+        let _ = write!(
+            file,
+            " /*{:<10}*/   {} =>  true,\n",
+            print_bits(*key),
+            to_6bit_binary(&key, false)
+        );
     }
     let _ = file.write(b"    _ => false\n   }\n");
     let _ = file.write(b"}\n\n");

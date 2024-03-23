@@ -1,5 +1,7 @@
 use std::fmt;
 
+use rand_distr::num_traits::ToPrimitive;
+
 use common::bit_utils::{print_bits, print_nets, sort_upper_bits, to_6bit_binary};
 use common::consts::{IN, NL, WA};
 use common::nodes::get_connected_coords_at_coords;
@@ -147,11 +149,16 @@ impl Tile {
                         let adj_nets_4 = (bits >> 24) & NL;
 
                         for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
-                            if adj_net != 0 && adj_net.count_ones() == 1 {
-                                Self::add_single_node_to_hidden(
+                            // TODO: pass the index in for the current connected node
+                            let node_number =
+                                ((net & NL) & adj_net).trailing_zeros().to_usize().unwrap();
+
+                            if adj_net != 0 {
+                                Self::add_node_to_hidden(
                                     coordinate,
                                     &mut complex_net,
                                     adj_nets_1,
+                                    node_number,
                                 );
                             }
                         }
@@ -165,16 +172,21 @@ impl Tile {
         return None;
     }
 
-    fn add_single_node_to_hidden(
+    fn add_node_to_hidden(
         coordinate: Coordinate,
         complex_net: &mut ComplexNet,
         adj_net: u32,
+        node_number: usize,
     ) {
         // TODO: only works correctly for 1 bit !
-        let index = adj_net.trailing_zeros() as usize;
-        let coord = get_connected_coords_at_coords(coordinate, index);
+        let coord = get_connected_coords_at_coords(coordinate, node_number);
         if coord.is_some() {
-            println!("HID: {}  -> \"{}\"", coord.unwrap(), print_bits(adj_net));
+            println!(
+                "HID: {}  -> \"{}\" [{n}]",
+                coord.unwrap(),
+                print_bits(adj_net),
+                n = node_number + 1
+            );
             complex_net
                 .hidden_neighbours
                 .insert(CoordinateAndNet::new(coord.unwrap(), adj_net));
