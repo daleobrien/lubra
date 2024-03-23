@@ -19,14 +19,14 @@ fn main() {
     let _ = maze.render(name.to_string(), SVG);
 
     // Lots of small mazes
-    for i in 1..50 {
-        let maze = Maze::new(4, 3, true, true, Some(i));
-        let name = format!("test/random-{}", i);
+    for i in 1..105 {
+        let maze = Maze::new(5, 4, true, true, Some(i));
+        let name = format!("test/random-{:02}", i);
         let _ = maze.render(name.to_string(), PNG);
     }
-
+    //
     // One small maze
-    let maze = Maze::new(4, 3, true, true, Some(27));
+    let maze = Maze::new(5, 4, true, true, Some(3));
     //let maze = Maze::new(5, 2, true, true, Some(11));
     let name = format!("sample");
     let _ = maze.render(name.to_string(), SVG);

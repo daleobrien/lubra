@@ -354,7 +354,7 @@ impl Maze {
                 continue;
             }
             if frag.unwrap().is_empty() {
-                println!("_ Empty  {}", masked_net);
+                println!("_ Empty  {} : {}", masked_net, print_bits(net));
                 continue;
             }
             println!("_ Yes    {}", masked_net);
