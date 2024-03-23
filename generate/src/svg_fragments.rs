@@ -144,6 +144,24 @@ pub fn generate_all_shapes() {
         ] {
             let sorted_key = sort_upper_bits(key);
             paths.insert(sorted_key.to_usize().unwrap_or_default(), path.clone());
+
+            // // Automatically generate Blank fragments
+            // let key_base = key & NL;
+            // let key_a = (key >> 6) & NL;
+            // let key_b = (key >> 12) & NL;
+            // if key_a != 0 && key_b == 0 {
+            //     let blank_key = ((key_base << 6) | key_a | (key & WA & IN))
+            //         .to_usize()
+            //         .unwrap_or_default();
+            //     if !paths.contains_key(&blank_key) {
+            //         paths.insert(blank_key, "".to_string());
+            //     } else if paths[&blank_key] != "".to_string() {
+            //         println!(
+            //             "Not adding blank key: {}",
+            //             print_bits(blank_key.to_u32().unwrap())
+            //         );
+            //     }
+            // }
         }
     }
 
@@ -161,7 +179,7 @@ pub fn generate_all_shapes() {
         let key_as_u32 = key.to_u32().unwrap();
         let _ = write!(
             file,
-            " /* {} */ {}u32 =>  \"{}\",\n",
+            " /* {:<10} */ {}u32 =>  \"{}\",\n",
             to_6bit_binary(&key_as_u32, false),
             key,
             trim_whitespace(value.as_str())

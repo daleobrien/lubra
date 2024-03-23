@@ -172,9 +172,9 @@ impl Tile {
     ) {
         // TODO: only works correctly for 1 bit !
         let index = adj_net.trailing_zeros() as usize;
-        println!(">> {} {}", index, to_6bit_binary(&adj_net, true));
         let coord = get_connected_coords_at_coords(coordinate, index);
         if coord.is_some() {
+            println!("HID: {}  -> \"{}\"", coord.unwrap(), print_bits(adj_net));
             complex_net
                 .hidden_neighbours
                 .insert(CoordinateAndNet::new(coord.unwrap(), adj_net));

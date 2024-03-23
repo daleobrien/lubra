@@ -286,9 +286,9 @@ impl Maze {
             .into_iter()
             .rev() // Reverse the rows
             .map(|row| {
-                row.map(|t| format!("{}", print_nets(&t.nodes)))
+                row.map(|t| format!("{:^10}", print_nets(&t.nodes)))
                     .collect::<Vec<_>>()
-                    .join("\t")
+                    .join("|")
             })
             .collect::<Vec<_>>()
             .join("\n");
