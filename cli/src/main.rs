@@ -14,9 +14,9 @@ fn main() {
     // TODO: use args ...
 
     // // Large maze
-    // let maze = Maze::new(36, 19, true, true, Some(1));
-    // let name = format!("sample-large.svg");
-    // let _ = maze.render(name.to_string(), SVG);
+    let maze = Maze::new(36, 19, true, true, Some(1));
+    let name = format!("sample-large.svg");
+    let _ = maze.render(name.to_string(), SVG);
     //
     // Lots of small mazes
     for i in 1..50 {
