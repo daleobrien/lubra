@@ -1,14 +1,16 @@
-use common::bit_utils::to_6bit_binary;
-use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
+
+use common::bit_utils::print_bits;
+use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 
 pub fn generate_adjacent_paths() {
     // This is used to look up matching adjacent paths.
     let mut adj_paths: BTreeMap<u32, Vec<Vec<(usize, bool, u32)>>> = BTreeMap::new();
 
     // e.g. for a NODE_1-4 we can handle a few different matching tiles
+    // The booleans is to make sure it matches, if false, it must not be the tile
     adj_paths.insert(
         N1 | N4,
         vec![
@@ -102,7 +104,7 @@ pub fn generate_adjacent_paths() {
         vec![
             vec![(ADJ_N4, true, N1 | N4), (ADJ_N5, true, N3 | N5)],
             vec![(ADJ_N4, true, N2 | N4), (ADJ_N5, true, N1 | N5)],
-            vec![(ADJ_N4, false, N2 | N4), (ADJ_N5, true, N3 | N5)],
+            vec![(ADJ_N4, true, N2 | N4), (ADJ_N5, true, N3 | N5)],
             vec![(ADJ_N4, true, N1 | N4)],
             vec![(ADJ_N4, true, N2 | N4)],
             vec![(ADJ_N5, true, N1 | N5)],
@@ -154,9 +156,9 @@ pub fn generate_adjacent_paths() {
         }
         let _ = write!(
             file,
-            "  /* {key6bit} */{key}u32 =>  &[{subs}],\n",
+            "  /* {key6bit:^4} */ {key}u32 =>  &[{subs}],\n",
             subs = subs.join(", "),
-            key6bit = to_6bit_binary(&key, false)
+            key6bit = print_bits(key)
         );
     }
     let _ = file.write(b"};\n\n");

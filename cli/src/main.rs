@@ -26,8 +26,8 @@ fn main() {
     }
 
     // One small maze
-    // 3 & 10
-    let maze = Maze::new(4, 3, true, true, Some(3));
+    //  10
+    let maze = Maze::new(4, 3, true, true, Some(10));
     //let maze = Maze::new(5, 2, true, true, Some(11));
     let name = format!("sample");
     let _ = maze.render(name.to_string(), SVG);

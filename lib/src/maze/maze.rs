@@ -6,7 +6,7 @@ use array2d::Array2D;
 use usvg;
 use usvg::fontdb;
 
-use common::bit_utils::print_nets;
+use common::bit_utils::{print_bits, print_nets};
 use common::consts::{NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
@@ -350,7 +350,7 @@ impl Maze {
 
             let frag = MAP_PATHS.get(&net);
             if frag.is_none() {
-                println!("_ Blank  {}", masked_net);
+                println!("_ Blank  {} : {}", masked_net, print_bits(net));
                 continue;
             }
             if frag.unwrap().is_empty() {

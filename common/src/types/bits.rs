@@ -1,5 +1,6 @@
 use crate::consts::IN;
 use crate::types::coordinate::Coordinate;
+
 //use memoize::memoize;
 
 pub fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
@@ -37,14 +38,16 @@ pub fn transform_tile(value: u32, coordinate: Coordinate) -> u32 {
     } else {
         rotated_net
     };
-    return bits;
+    return bits; // sort ?
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::consts::{N1, N2, N3, N4, N5, N6};
     use std::assert_eq;
+
+    use crate::consts::{N1, N2, N3, N4, N5, N6};
+
+    use super::*;
 
     #[test]
     fn test_transform_vertex() {
