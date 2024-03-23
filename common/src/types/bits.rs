@@ -1,3 +1,4 @@
+use crate::bit_utils::sort_upper_bits;
 use crate::consts::IN;
 use crate::types::coordinate::Coordinate;
 
@@ -38,7 +39,7 @@ pub fn transform_tile(value: u32, coordinate: Coordinate) -> u32 {
     } else {
         rotated_net
     };
-    return bits; // sort ?
+    return sort_upper_bits(bits);
 }
 
 #[cfg(test)]
