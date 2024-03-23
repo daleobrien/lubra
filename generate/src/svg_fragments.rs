@@ -5,7 +5,7 @@ use std::io::Write;
 use itertools::Itertools;
 use num_traits::ToPrimitive;
 
-use common::bit_utils::{sort_upper_bits, to_6bit_binary};
+use common::bit_utils::{print_bits, sort_upper_bits, to_6bit_binary};
 use common::consts::{
     A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NO, WA,
 };
@@ -180,7 +180,7 @@ pub fn generate_all_shapes() {
         let _ = write!(
             file,
             " /* {:<10} */ {}u32 =>  \"{}\",\n",
-            to_6bit_binary(&key_as_u32, false),
+            print_bits(key_as_u32),
             key,
             trim_whitespace(value.as_str())
         );
@@ -226,7 +226,8 @@ pub fn generate_all_shapes() {
 
         let _ = write!(
             file,
-            "    {} =>  vec![{}],\n",
+            "/* {:<10} */    {} =>  vec![{}],\n",
+            print_bits(*key),
             to_6bit_binary(&key, false),
             value,
         );
