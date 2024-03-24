@@ -1,14 +1,17 @@
-use crate::{add_nodes, draw_walls};
+use std::fs;
+use std::fs::File;
+use std::io::Write;
+
+use itertools::Itertools;
+
 use common::consts::{
     A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, WA,
 };
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
-use itertools::Itertools;
 use lib::renders::fragment::MAP_PATHS;
 use lib::renders::svg::Svg;
-use std::fs;
-use std::fs::File;
-use std::io::Write;
+
+use crate::{add_nodes, draw_walls};
 
 pub fn create_svgs() {
     // Clean folder first
@@ -35,10 +38,10 @@ pub fn create_svgs() {
         }
 
         // Don't draw tiles with only 1 node
-        let lower = key & (N1 | N2 | N3 | N4 | N5 | N6);
-        if lower == N1 || lower == N2 || lower == N3 || lower == N4 || lower == N5 || lower == N6 {
-            continue;
-        }
+        // let lower = key & (N1 | N2 | N3 | N4 | N5 | N6);
+        // if lower == N1 || lower == N2 || lower == N3 || lower == N4 || lower == N5 || lower == N6 {
+        //     continue;
+        // }
 
         let mut svg = Svg::new(4f64 * TILE_WIDTH, 4f64 * TILE_HEIGHT);
 
