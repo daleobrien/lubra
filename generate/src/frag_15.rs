@@ -6,7 +6,8 @@ use common::types::point::{PATH_WIDTH, Point, S2, S3, TILE_WIDTH};
 fn a15_base(invert: bool) -> (String, String, String, String, Path) {
     let w = PATH_WIDTH;
 
-    let r1 = 0.5; // Adjusted
+    let r1 = 0.3333; // Adjustable
+
     let r2 = (1. + 2. * r1) / (4. + 12. * r1);
 
     let x1 = 0.5 - w;
@@ -50,10 +51,16 @@ pub fn a15_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: 
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"{fill}\\\" d=\\\"\
+        "<path fill=\\\"{fill}\\\" d=\\\"\
       M {a} \
       A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} L {d} \
-      A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \\\" />",
+      A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \
+      \\\" />\
+      <path stroke=\\\"black\\\" d=\\\"\
+      M {a} \
+      A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} M {d} \
+      A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \
+      \\\" />",
         a = pts[0],
         b = pts[1],
         c = pts[2],
