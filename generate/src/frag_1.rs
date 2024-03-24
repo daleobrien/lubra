@@ -5,6 +5,7 @@ use common::types::point::{PATH_WIDTH, Point, S3, TILE_WIDTH};
 
 fn a1_base(invert: bool) -> (String, Path) {
     let w = PATH_WIDTH;
+    let h = PATH_WIDTH / 2.;
 
     let r = w / 2.;
 
@@ -12,7 +13,7 @@ fn a1_base(invert: bool) -> (String, Path) {
     let x2 = 0.5 + w;
 
     let y1 = S3;
-    let y2 = S3 - w;
+    let y2 = S3 - h;
 
     let a = Point { x: x1, y: y1 };
     let b = Point { x: x1, y: y2 };
