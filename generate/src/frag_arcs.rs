@@ -1,31 +1,11 @@
-use crate::frag_math;
-use common::consts::FILL;
-use common::types::path::Path;
 use itertools::concat;
 
-pub fn n1(invert: bool) -> String {
-    return a1_or_6(1, invert);
-}
+use common::consts::FILL;
+use common::types::format::trimf64;
+use common::types::path::Path;
+use common::types::point::{PATH_WIDTH, Point, S3, TILE_WIDTH};
 
-pub fn n2(invert: bool) -> String {
-    return a2_or_5(1, invert);
-}
-
-pub fn n3(invert: bool) -> String {
-    return a3_or_4(1, invert);
-}
-
-pub fn n4(invert: bool) -> String {
-    return a3_or_4(6, invert);
-}
-
-pub fn n5(invert: bool) -> String {
-    return a2_or_5(6, invert);
-}
-
-pub fn n6(invert: bool) -> String {
-    return a1_or_6(6, invert);
-}
+use crate::frag_math;
 
 fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
     let pts: Vec<String> = pts.str();
@@ -84,29 +64,80 @@ pub fn n456(invert: bool) -> String {
     a = p1[0], b = p1[1], c = p2[0], d = p2[1], e = p3[0], f = p3[1]);
 }
 
-fn a_x_or_y(pts: Path, r: String) -> String {
+fn a1_base(invert: bool) -> (String, Path) {
+    let w = PATH_WIDTH;
+
+    let r = w / 2.;
+
+    let x1 = 0.5 - w;
+    let x2 = 0.5 + w;
+
+    let y1 = S3;
+    let y2 = S3 - w;
+
+    let a = Point { x: x1, y: y1 };
+    let b = Point { x: x1, y: y2 };
+    let c = Point { x: x2, y: y2 };
+    let d = Point { x: x2, y: y1 };
+
+    let pts = Path::new(vec![a, b, c, d]);
+
+    let pts = if invert { pts.invert() } else { pts };
+    let r = trimf64(TILE_WIDTH * r);
+    return (r, pts);
+}
+
+pub fn a1_str(invert: bool, pts: Path, r: String) -> String {
+    let d1 = if invert { 0 } else { 1 };
     let pts = pts.str();
     return format!(
-        "<path stroke=\\\"black\\\" fill=\\\"{FILL}\\\" d=\\\"M {a} A {r} {r} 0 0 0 {b}\\\" />",
+        "<path  stroke=\\\"black\\\" fill=\\\"{fill}\\\" d=\\\"\
+      M {a} L {b} \
+      A {r} {r} 0 0 {d1} {c} \
+      L {d} \
+      \\\" />\
+   ",
         a = pts[0],
         b = pts[1],
-        r = r
+        c = pts[2],
+        d = pts[3],
+        fill = FILL,
     );
 }
 
-fn a1_or_6(index: usize, invert: bool) -> String {
-    let (pts, r) = frag_math::ax(index, invert);
-    return a_x_or_y(pts, r);
+pub fn n1(invert: bool) -> String {
+    let (r, pts) = a1_base(invert);
+    return a1_str(invert, pts, r);
 }
 
-fn a2_or_5(index: usize, invert: bool) -> String {
-    let (pts, r) = frag_math::ax(index, invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1]);
-    return a_x_or_y(pts, r);
+pub fn n2(invert: bool) -> String {
+    let (r, pts) = a1_base(invert);
+    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
+    return a1_str(invert, pts, r);
 }
 
-fn a3_or_4(index: usize, invert: bool) -> String {
-    let (pts, r) = frag_math::ax(index, invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1]);
-    return a_x_or_y(pts, r);
+pub fn n3(invert: bool) -> String {
+    let (r, pts) = a1_base(invert);
+    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
+    return a1_str(invert, pts, r);
+}
+
+pub fn n4(invert: bool) -> String {
+    let (r, pts) = a1_base(!invert);
+    let pts = pts.reflect();
+    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
+    return a1_str(invert, pts, r);
+}
+
+pub fn n5(invert: bool) -> String {
+    let (r, pts) = a1_base(!invert);
+    let pts = pts.reflect();
+    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
+    return a1_str(invert, pts, r);
+}
+
+pub fn n6(invert: bool) -> String {
+    let (r, pts) = a1_base(!invert);
+    let pts = pts.reflect();
+    return a1_str(invert, pts, r);
 }
