@@ -17,8 +17,9 @@ pub const S5: f64 = 0.2886751345948128822545743902509787f64; /* 1/(2 sqrt(3)) */
 pub const TILE_WIDTH: f64 = 120f64;
 pub const TILE_HEIGHT: f64 = 120f64 * S3;
 //pub const PATH_WIDTH: f64 = 0.08f64; // No overlap between tiles
+//pub const PATH_WIDTH: f64 = 0.16666f64; // Max
+//pub const PATH_WIDTH: f64 = 0.04;
 pub const PATH_WIDTH: f64 = 0.11f64; // No overlap between tiles
-                                     //pub const PATH_WIDTH: f64 = 0.16666f64; // Max
 
 impl Add for Point {
     type Output = Self;
@@ -65,6 +66,10 @@ impl Mul<Point> for f64 {
 }
 
 impl Point {
+    pub fn new(x: f64, y: f64) -> Point {
+        Point { x, y }
+    }
+
     pub fn trim(self) -> String {
         return format!("{} {}", trimf64(self.x), trimf64(self.y));
     }

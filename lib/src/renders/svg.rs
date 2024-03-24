@@ -1,6 +1,8 @@
-use crate::renders::registry::StringRegistry;
-use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use std::fmt;
+
+use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+
+use crate::renders::registry::StringRegistry;
 
 pub struct Svg {
     width: f64,
@@ -50,6 +52,7 @@ impl Svg {
     pub fn to_string(&self) -> String {
         let mut s = String::new();
 
+        // TODO: Stoke with should relate to TILE_WIDTH
         let margin = 15f64;
         s.push_str(&format!(
             "<svg \

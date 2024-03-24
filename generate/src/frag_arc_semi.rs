@@ -1,29 +1,17 @@
 use common::consts::FILL;
 use common::types::format::trimf64;
 use common::types::path::Path;
-use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
+use common::types::point::{PATH_WIDTH, Point, S3, TILE_WIDTH};
 
 fn a15_base(invert: bool) -> (String, String, Path) {
     let w = PATH_WIDTH;
     let r1 = trimf64(TILE_WIDTH * (0.25 + w));
     let r2 = trimf64(TILE_WIDTH * (0.25 - w));
 
-    let a = Point {
-        x: 0.5 - w / 2.0,
-        y: S3 + S3 * w,
-    };
-    let b = Point {
-        x: 0.75 + w / 2.0,
-        y: S3 / 2.0 - S3 * w,
-    };
-    let c = Point {
-        x: 0.75 - w / 2.0,
-        y: S3 / 2.0 + S3 * w,
-    };
-    let d = Point {
-        x: 0.5 + w / 2.0,
-        y: S3 - S3 * w,
-    };
+    let a = Point::new(0.5 - w / 2.0, S3 + S3 * w);
+    let b = Point::new(0.75 + w / 2.0, S3 / 2.0 - S3 * w);
+    let c = Point::new(0.75 - w / 2.0, S3 / 2.0 + S3 * w);
+    let d = Point::new(0.5 + w / 2.0, S3 - S3 * w);
 
     let pts = Path::new(vec![a, b, c, d]);
     let pts = if invert { pts.invert() } else { pts };
