@@ -38,13 +38,6 @@ pub fn generate_all_shapes() {
         for (key, path) in [
             (dir | WA, l_wall(invert)),
             //
-            // (dir | N1 | A1, "".to_string()),
-            // (dir | N2 | A2, "".to_string()),
-            // (dir | N3 | A3, "".to_string()),
-            // (dir | N4 | A4, "".to_string()),
-            // (dir | N5 | A5, "".to_string()),
-            // (dir | N6 | A6, "".to_string()),
-            //
             (dir | N1, n1(invert)),
             (dir | N2, n2(invert)),
             (dir | N3, n3(invert)),
