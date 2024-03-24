@@ -10,6 +10,7 @@ use common::consts::{
     A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, WA,
 };
 
+use crate::frag_1::{n1, n2, n3, n4, n5, n6};
 use crate::frag_12::{n12, n13, n23};
 use crate::frag_123::n123;
 use crate::frag_15::{n14, n15, n24, n26, n35, n36};
@@ -18,7 +19,7 @@ use crate::frag_15_long::{n14_24, n15_35, n24_14, n26_36, n35_15, n36_26};
 use crate::frag_15_straight::{n14_34, n15_25, n24_34, n26_16, n35_25, n36_16};
 use crate::frag_16::{n16, n25, n34};
 use crate::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
-use crate::frag_arcs::{a46, n1, n2, n3, n4, n45, n456, n5, n56, n6};
+use crate::frag_arcs::{a46, n45, n456, n56};
 use crate::frag_complex_arcs::{
     n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
     n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,

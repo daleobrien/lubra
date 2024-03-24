@@ -1,3 +1,7 @@
+use crate::path_adj::generate_adjacent_paths;
+use crate::svg_fragments::generate_all_shapes;
+
+mod frag_1;
 mod frag_12;
 mod frag_123;
 mod frag_15;
@@ -16,9 +20,6 @@ mod frag_wall;
 mod lookups;
 mod path_adj;
 mod svg_fragments;
-
-use crate::path_adj::generate_adjacent_paths;
-use crate::svg_fragments::generate_all_shapes;
 
 fn main() {
     println!("Generating Rust code for all SVG nets.");
