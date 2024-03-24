@@ -52,7 +52,7 @@ pub fn a15_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: 
     return format!(
         "<path stroke=\\\"black\\\" fill=\\\"{fill}\\\" d=\\\"\
       M {a} \
-      A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} M {d} \
+      A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} L {d} \
       A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \\\" />",
         a = pts[0],
         b = pts[1],

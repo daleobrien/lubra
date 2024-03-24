@@ -50,7 +50,7 @@ pub fn create_svgs() {
         draw_walls::add_walls(key, &mut svg);
         add_nodes::add_indexes(key, &mut svg);
 
-        let content = svg.to_string();
+        let content = svg.to_string(false);
 
         let mut file_name_part_1: Vec<String> = vec![];
         let mut file_name_part_2: Vec<String> = vec![];

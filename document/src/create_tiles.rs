@@ -1,15 +1,18 @@
-use crate::empty::empty_fragments;
-use crate::variants::list_of_variants;
-use common::consts::{A1, A2, A3, B1, B2, B3, N1, N2, N3, WA};
-use common::node_combinations::NodeCombinations;
-use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
-use itertools::Itertools;
-use lib::renders::fragment::MAP_PATHS;
-use lib::renders::svg::Svg;
 use std::collections::HashSet;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
+
+use itertools::Itertools;
+
+use common::consts::{A1, A2, A3, B1, B2, B3, N1, N2, N3, WA};
+use common::node_combinations::NodeCombinations;
+use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use lib::renders::fragment::MAP_PATHS;
+use lib::renders::svg::Svg;
+
+use crate::empty::empty_fragments;
+use crate::variants::list_of_variants;
 
 pub fn create_tiles() {
     // Clean folder first
@@ -104,7 +107,7 @@ pub fn save_nets_to_svg(nets: Vec<u32>, index: usize) -> bool {
     if fragment_count == 0 {
         return false;
     }
-    let content = svg.to_string();
+    let content = svg.to_string(false);
     // Check if this content has been used before ... if so, don't save it
     let mut f =
         File::create(format!("./../typst/tiles/{index:04}.svg")).expect("File Creation failed");
@@ -137,8 +140,9 @@ fn nets_are_valid(nets: Vec<u32>) -> bool {
 // Add tests here
 #[cfg(test)]
 mod tests {
-    use super::*;
     use common::consts::B1;
+
+    use super::*;
 
     #[test]
     fn test_valild_match() {

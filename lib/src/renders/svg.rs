@@ -13,7 +13,7 @@ pub struct Svg {
 
 impl fmt::Display for Svg {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(f, "{}", self.to_string(false))
     }
 }
 
@@ -49,9 +49,14 @@ impl Svg {
         ));
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_string(&self, add_background_mask: bool) -> String {
         let mut s = String::new();
 
+        let style = if add_background_mask {
+            "style='background-color: lightblue;'"
+        } else {
+            ""
+        };
         // TODO: Stoke with should relate to TILE_WIDTH
         let margin = 15f64;
         s.push_str(&format!(
@@ -61,6 +66,7 @@ impl Svg {
                \n  xmlns=\"http://www.w3.org/2000/svg\" \
                \n  stroke-width=\"5\" \
                \n  fill-opacity=\"0.8\" \
+               \n  {style} \
                \n  stroke-opacity=\"1\" \
                \n  fill=\"transparent\" \
                \n  stroke-linecap=\"butt\" \

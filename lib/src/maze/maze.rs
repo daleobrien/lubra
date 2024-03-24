@@ -9,7 +9,6 @@ use rand::thread_rng;
 use rand_chacha::ChaCha8Rng;
 use usvg;
 use usvg::fontdb;
-use common::bit_utils::print_nets;
 
 use common::consts::{NODE_TO_COORD, NX};
 use common::types::bits;
@@ -378,10 +377,10 @@ impl Maze {
         }
 
         if file_type == SVG {
-            return self.save_as_svg(svg.to_string(), file_name);
+            return self.save_as_svg(svg.to_string(false), file_name);
         }
         if file_type == PNG {
-            return self.save_as_png(svg.to_string().as_str(), file_name);
+            return self.save_as_png(svg.to_string(false).as_str(), file_name);
         }
 
         Ok(())
