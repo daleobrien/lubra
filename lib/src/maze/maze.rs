@@ -9,6 +9,7 @@ use rand::thread_rng;
 use rand_chacha::ChaCha8Rng;
 use usvg;
 use usvg::fontdb;
+use common::bit_utils::print_nets;
 
 use common::consts::{NODE_TO_COORD, NX};
 use common::types::bits;
@@ -352,7 +353,6 @@ impl Maze {
             };
 
             if all_catorised_nets.hidden.contains(&masked_net) {
-                //println!("_ Nope   {}", masked_net);
                 continue;
             }
 
@@ -360,14 +360,11 @@ impl Maze {
 
             let frag = MAP_PATHS.get(&net);
             if frag.is_none() {
-                //println!("_ Blank  {} : {}", masked_net, print_bits(net));
                 continue;
             }
             if frag.unwrap().is_empty() {
-                //println!("_ Empty  {} : {}", masked_net, print_bits(net));
                 continue;
             }
-            //println!("_ Yes    {}", masked_net);
 
             let point: Point = Point {
                 x: coordinate_and_net.coordinate.i as f64,
@@ -376,14 +373,10 @@ impl Maze {
             svg.add_fragment(frag.unwrap(), point, 1);
         }
 
-        if file_type == SVG {
-            return self.save_as_svg(svg.to_string(false), file_name);
+        match file_type {
+            SVG => return self.save_as_svg(svg.to_string(false), file_name),
+            PNG => return self.save_as_png(svg.to_string(false).as_str(), file_name),
         }
-        if file_type == PNG {
-            return self.save_as_png(svg.to_string(false).as_str(), file_name);
-        }
-
-        Ok(())
     }
     pub fn save_as_svg(self, content: String, file_name: String) -> Result<(), Box<dyn Error>> {
         let _ = fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
