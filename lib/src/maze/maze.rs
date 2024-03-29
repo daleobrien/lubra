@@ -116,8 +116,9 @@ impl Maze {
         // It does seem that it can be very hard to join some nets!!!
         println!("\nWe have disjoint {:?} nets:", self.nets.len());
 
-        // Remove nets that are too small
-        self.nets = self.nets.iter().filter(|&n| n.len() > 2).cloned().collect();
+        // TODO: Update the tiles to match?
+
+        self.nets.retain(|nets| nets.len() > 2);
 
         for (n, nets) in self.nets.iter_mut().enumerate() {
             println!("{n} -> {}, {:?}", nets.len(), nets);
