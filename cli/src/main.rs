@@ -13,10 +13,10 @@ struct Args {
 fn main() {
     // TODO: use args ...
 
-    // // Large maze
+    // Large maze
     let mut maze = Maze::new(70, 60, true, true, Some(1));
-    maze.reduce_nets(2);
-    let name = format!("sample-large.svg");
+    maze.reduce_nets(4);
+    let name = format!("sample-large");
     let _ = maze.render(name.to_string(), SVG);
     //
     // // Lots of small mazes
@@ -32,7 +32,7 @@ fn main() {
     let _ = maze.render(name.to_string(), SVG);
 
     // Reduce step
-    maze.reduce_nets(2);
+    maze.reduce_nets(4);
     let name = format!("sample-1");
     let _ = maze.render(name.to_string(), SVG);
 }

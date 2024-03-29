@@ -3,7 +3,7 @@ use std::error::Error;
 use std::fs;
 
 use array2d::Array2D;
-use rand::prelude::*;
+use common::bit_utils::print_nets;
 use rand::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -122,22 +122,18 @@ impl Maze {
                     let tile = self.tiles.get(*j, *i);
 
                     if tile.is_some() {
-                        //
-                        // TODO: This won't work for nets longer than 2
-                        // or does it not do adjance tiles?
-                        let n_tile = tile
+                        let new_tile = tile
                             .unwrap()
                             .nodes
                             .iter()
                             .filter(|&b| {
-                                // 0b_010_001
                                 let mask = 1u32 << n;
-                                return mask & *b != *b;
+                                return mask & *b != mask;
                             })
                             .map(|b| *b)
                             .collect::<Vec<u32>>();
 
-                        let _ = self.tiles[(*j, *i)] = Tile::new(n_tile, true);
+                        let _ = self.tiles[(*j, *i)] = Tile::new(new_tile, true);
                     }
                 }
             }
