@@ -4,14 +4,13 @@ use std::fs;
 
 use array2d::Array2D;
 use rand::prelude::*;
-
-
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
+use common::bit_utils::print_nets;
 
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
@@ -114,11 +113,27 @@ impl Maze {
 
         // TODO: At the point we can remove nets that have a length of 2, since they are just mini-circle
         // It does seem that it can be very hard to join some nets!!!
+
+        self.nets.retain(|nets| {
+            let too_small = nets.len() <= 2;
+            // We can remove nets that have a length of 2, since they are just mini-circle
+            // TODO: Update the tiles to match?
+            if too_small {
+                println!("Too small");
+                for coord_and_node in nets.iter() {
+                    //
+                    println!(
+                        "   {:?} -> {:?}",
+                        coord_and_node,
+                        self.tiles.get(coord_and_node[1], coord_and_node[0])
+                    );
+                }
+            }
+
+            return !too_small;
+        });
+
         println!("\nWe have disjoint {:?} nets:", self.nets.len());
-
-        // TODO: Update the tiles to match?
-
-        self.nets.retain(|nets| nets.len() > 2);
 
         for (n, nets) in self.nets.iter_mut().enumerate() {
             println!("{n} -> {}, {:?}", nets.len(), nets);
