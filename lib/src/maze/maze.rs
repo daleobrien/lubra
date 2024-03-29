@@ -4,13 +4,14 @@ use std::fs;
 
 use array2d::Array2D;
 use rand::prelude::*;
+use rand::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
-
+use common::bit_utils::print_nets;
 
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
@@ -105,28 +106,38 @@ impl Maze {
 
         self.width = (number_of_columns + 1) as f64 * TILE_WIDTH / 2.0;
         self.height = number_of_rows as f64 * TILE_HEIGHT;
+    }
 
+    pub fn reduce_nets(&mut self) {
         // Sort such that the last net is the shortest, we will be deleting them as we go
         self.nets.sort_by(|a, b| (&b.len()).cmp(&a.len()));
 
-        // Join the nets together such that we have a complete maze!
-
-        // TODO: At the point we can remove nets that have a length of 2, since they are just mini-circle
-        // It does seem that it can be very hard to join some nets!!!
-
+        // Strip out small nets
         self.nets.retain(|nets| {
+            // Remove small nets
             let too_small = nets.len() <= 2;
-            // We can remove nets that have a length of 2, since they are just mini-circle
-            // TODO: Update the tiles to match?
             if too_small {
-                println!("Too small");
-                for coord_and_node in nets.iter() {
+                // Of the form [(i,j,4), (...), ... ]
+                for [i, j, n] in nets.iter() {
                     //
-                    println!(
-                        "   {:?} -> {:?}",
-                        coord_and_node,
-                        self.tiles.get(coord_and_node[1], coord_and_node[0])
-                    );
+                    let tile = self.tiles.get(*j, *i);
+
+                    if tile.is_some() {
+                        //
+                        let n_tile = tile
+                            .unwrap()
+                            .nodes
+                            .iter()
+                            .filter(|&b| {
+                                // 0b_010_001
+                                let mask = 1u32 << n;
+                                return mask & *b != *b;
+                            })
+                            .map(|b| *b)
+                            .collect::<Vec<u32>>();
+
+                        let _ = self.tiles[(*j, *i)] = Tile::new(n_tile, true);
+                    }
                 }
             }
 
@@ -138,37 +149,39 @@ impl Maze {
         for (n, nets) in self.nets.iter_mut().enumerate() {
             println!("{n} -> {}, {:?}", nets.len(), nets);
         }
+
+        /*
+
+         net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
+         net_2 = [[i,j,k], [i,j,k], <m>]
+
+         Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
+         Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
+
+         Repeat until we only have one net.
+
+        The surrounding_tiles are of the form:
+
+                 1
+                ╱ ╲
+               4   5
+              ╱     ╲
+             2 ━ 6 ━ 3
+
+            ▽△▽△▽      △▽△▽△:
+            △▽▲▽△  or  ▽△▼△▽
+            ▽△▽△▽      △▽△▽△
+
+         */
     }
 
-    /*
-
-        net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
-        net_2 = [[i,j,k], [i,j,k], <m>]
-
-        Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
-        Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
-
-        Repeat until we only have one net.
-    F
-       The surrounding_tiles are of the form:
-
-                1
-               ╱ ╲
-              4   5
-             ╱     ╲
-            2 ━ 6 ━ 3
-
-           ▽△▽△▽      △▽△▽△:
-           △▽▲▽△  or  ▽△▼△▽
-           ▽△▽△▽      △▽△▽△
-
-        */
     fn update_network(&mut self, tile: &Tile, i: usize, j: usize) {
         let tile_nets = tile.nodes.clone();
 
         let mapping = NODE_TO_COORD[(i + (3 * (j % 2))) % 6];
 
         for net in tile_nets {
+            // TODO: Need to transform this into bits rather than use node indexes
             let tile_sub_nets: HashSet<[usize; 3]> = vec![N1, N2, N3, N4, N5, N6]
                 .iter()
                 .filter(|&node| net & *node == *node)
@@ -276,34 +289,11 @@ impl Maze {
     }
 
     fn get_random_tile(&mut self, i: usize, j: usize) -> Tile {
-        // Test the new way to draw spanning two cell
-
-        //println!("\n>> ({i},{j})");
         let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
-        //print_surrounding(&surrounding_tiles);
-
         let mask = get_surrounding_tile_connections(&surrounding_tiles);
-        //println!("MASK ({i},{j}) {:06}", mask);
         let nets = random_tile(mask, self.seed, false);
-
         let tile = Tile::new(nets, true);
-
         self.update_network(&tile, i, j);
-
-        return tile;
-    }
-
-    #[allow(dead_code)]
-    fn get_any_random_tile(&mut self) -> Tile {
-        let nets = random_tile(222222, self.seed, true);
-
-        self.seed = match self.seed {
-            Some(s) => Some(s.wrapping_add(1)),
-            _ => None,
-        };
-
-        let tile = Tile::new(nets, true);
-        // self.update_network(&tile, i, j);
         return tile;
     }
 
@@ -325,7 +315,7 @@ impl Maze {
         println!("{}\n", text);
     }
 
-    pub fn render(self, file_name: String, file_type: FileType) -> Result<(), Box<dyn Error>> {
+    pub fn render(&mut self, file_name: String, file_type: FileType) -> Result<(), Box<dyn Error>> {
         #[cfg(build = "debug")]
         self.print_out_networks();
 
@@ -390,12 +380,21 @@ impl Maze {
             PNG => return self.save_as_png(svg.to_string(false).as_str(), file_name),
         }
     }
-    pub fn save_as_svg(self, content: String, file_name: String) -> Result<(), Box<dyn Error>> {
+
+    pub fn save_as_svg(
+        &mut self,
+        content: String,
+        file_name: String,
+    ) -> Result<(), Box<dyn Error>> {
         let _ = fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
         return Ok(());
     }
 
-    pub fn save_as_png(self, svg_content: &str, file_name: String) -> Result<(), Box<dyn Error>> {
+    pub fn save_as_png(
+        &mut self,
+        svg_content: &str,
+        file_name: String,
+    ) -> Result<(), Box<dyn Error>> {
         let input = format!("{}.png", file_name);
         let mut fontdb = fontdb::Database::new();
         fontdb.load_system_fonts();
