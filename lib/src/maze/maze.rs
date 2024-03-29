@@ -4,8 +4,8 @@ use std::fs;
 
 use array2d::Array2D;
 use rand::prelude::*;
-use rand::prelude::*;
-use rand::prelude::*;
+
+
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use rand_chacha::ChaCha8Rng;
