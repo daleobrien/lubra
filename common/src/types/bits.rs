@@ -1,5 +1,5 @@
 use crate::bit_utils::sort_upper_bits;
-use crate::consts::IN;
+use crate::consts::{IN, WA};
 use crate::types::coordinate::Coordinate;
 
 //use memoize::memoize;
@@ -10,7 +10,7 @@ pub fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
     let bits_345_2 = value << 1 & 0b110_000_110_000_110_000_110_000_110_000;
     let bits_012_1 = value << 2 & 0b000_100_000_100_000_100_000_100_000_100;
     let bits_012_2 = value >> 1 & 0b000_011_000_011_000_011_000_011_000_011;
-    return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
+    return (WA & value) | bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
 }
 
 pub fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
@@ -18,7 +18,7 @@ pub fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
     let bits_345_2 = value << 2 & 0b100_000_100_000_100_000_100_000_100_000;
     let bits_012_1 = value << 1 & 0b000_110_000_110_000_110_000_110_000_110;
     let bits_012_2 = value >> 2 & 0b000_001_000_001_000_001_000_001_000_001;
-    return bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
+    return (WA & value) | bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
 }
 
 //#[memoize] // Not sure if this will really help, so leave it out for now.
