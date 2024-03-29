@@ -15,7 +15,7 @@ fn main() {
 
     // // Large maze
     let mut maze = Maze::new(70, 60, true, true, Some(1));
-    maze.reduce_nets();
+    maze.reduce_nets(2);
     let name = format!("sample-large.svg");
     let _ = maze.render(name.to_string(), SVG);
     //
@@ -32,7 +32,7 @@ fn main() {
     let _ = maze.render(name.to_string(), SVG);
 
     // Reduce step
-    maze.reduce_nets();
+    maze.reduce_nets(2);
     let name = format!("sample-1");
     let _ = maze.render(name.to_string(), SVG);
 }

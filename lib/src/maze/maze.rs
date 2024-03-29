@@ -11,7 +11,6 @@ use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
-use common::bit_utils::print_nets;
 
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
@@ -108,14 +107,14 @@ impl Maze {
         self.height = number_of_rows as f64 * TILE_HEIGHT;
     }
 
-    pub fn reduce_nets(&mut self) {
+    pub fn reduce_nets(&mut self, lower_limit: usize) {
         // Sort such that the last net is the shortest, we will be deleting them as we go
         self.nets.sort_by(|a, b| (&b.len()).cmp(&a.len()));
 
         // Strip out small nets
         self.nets.retain(|nets| {
             // Remove small nets
-            let too_small = nets.len() <= 2;
+            let too_small = nets.len() <= lower_limit;
             if too_small {
                 // Of the form [(i,j,4), (...), ... ]
                 for [i, j, n] in nets.iter() {
@@ -124,6 +123,8 @@ impl Maze {
 
                     if tile.is_some() {
                         //
+                        // TODO: This won't work for nets longer than 2
+                        // or does it not do adjance tiles?
                         let n_tile = tile
                             .unwrap()
                             .nodes
