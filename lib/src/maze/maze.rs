@@ -114,31 +114,30 @@ impl Maze {
         // Strip out small nets
         self.nets.retain(|nets| {
             // Remove small nets
-            let too_small = nets.len() <= lower_limit;
-            if too_small {
-                // Of the form [(i,j,4), (...), ... ]
-                for [i, j, n] in nets.iter() {
-                    //
-                    let tile = self.tiles.get(*j, *i);
+            if nets.len() > lower_limit {
+                return true;
+            }
+            // Of the form [(i,j,4), (...), ... ]
+            for [i, j, n] in nets.iter() {
+                //
+                let tile = self.tiles.get(*j, *i);
 
-                    if tile.is_some() {
-                        let new_tile = tile
-                            .unwrap()
-                            .nodes
-                            .iter()
-                            .filter(|&b| {
-                                let mask = 1u32 << n;
-                                return mask & *b != mask;
-                            })
-                            .map(|b| *b)
-                            .collect::<Vec<u32>>();
+                if tile.is_some() {
+                    let reduced_tile = tile
+                        .unwrap()
+                        .nodes
+                        .iter()
+                        .filter(|&b| {
+                            let mask = 1u32 << n;
+                            return mask & *b != mask;
+                        })
+                        .map(|b| *b)
+                        .collect::<Vec<u32>>();
 
-                        let _ = self.tiles[(*j, *i)] = Tile::new(new_tile, true);
-                    }
+                    let _ = self.tiles[(*j, *i)] = Tile::new(reduced_tile, true);
                 }
             }
-
-            return !too_small;
+            return false;
         });
 
         println!("\nWe have disjoint {:?} nets:", self.nets.len());
