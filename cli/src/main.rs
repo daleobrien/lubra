@@ -24,10 +24,14 @@ fn main() {
     //     let name = format!("test/random-{:02}", i);
     //     let _ = maze.render(name.to_string(), PNG);
     // }
-    //
+
     // One small maze
-    let maze = Maze::new(5, 4, true, true, Some(3));
-    //let maze = Maze::new(5, 2, true, true, Some(11));
-    let name = format!("sample");
+    let mut maze = Maze::new(5, 4, true, true, Some(3));
+    let name = format!("sample-0");
+    let _ = maze.render(name.to_string(), SVG);
+
+    // Reduce step
+    maze.reduce_nets();
+    let name = format!("sample-1");
     let _ = maze.render(name.to_string(), SVG);
 }

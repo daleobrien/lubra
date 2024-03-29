@@ -119,16 +119,6 @@ impl Tile {
                     let mut new_bits = (adj_net << 6) | net;
 
                     new_bits = sort_upper_bits(new_bits);
-                    // if (adj_net << 6) | net != new_bits {
-                    //     let x = (adj_net << 6) | net;
-                    //     println!(
-                    //         "BIT:                 -> {:?} -> {:?}",
-                    //         print_bits(x),
-                    //         print_bits(new_bits)
-                    //     );
-                    // } else {
-                    //     println!("BIT:             -> {:?}", print_bits(new_bits));
-                    // }
 
                     // From here on, the bits are in the correct orientation rather then logical.
                     let bits = new_bits;
