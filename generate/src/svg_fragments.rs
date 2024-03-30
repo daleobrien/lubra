@@ -53,6 +53,32 @@ pub fn generate_all_shapes() {
             (dir | N1 | N2 | N4, n14(invert) + &n24(invert)),
             (dir | N2 | N3 | N6, n26(invert) + &n36(invert)),
             //
+            (dir | N1 | N4 | N6, n14(invert) + &n16(invert)),
+            (dir | N1 | N5 | N6, n15(invert) + &n16(invert)),
+            (dir | N2 | N5 | N4, n25(invert) + &n24(invert)),
+            //
+            (dir | N2 | N5 | N6, n25(invert) + &n26(invert)),
+            (dir | N3 | N4 | N5, n34(invert) + &n35(invert)),
+            (dir | N3 | N4 | N6, n34(invert) + &n36(invert)),
+            //
+            (dir | N2 | N5 | N1, n25(invert) + &n12(invert)),
+            (dir | N2 | N5 | N3, n25(invert) + &n23(invert)),
+            (dir | N3 | N4 | N1, n34(invert) + &n23(invert)),
+            (dir | N3 | N4 | N2, n34(invert) + &n13(invert)),
+            (dir | N1 | N6 | N2, n16(invert) + &n12(invert)),
+            (dir | N1 | N6 | N3, n16(invert) + &n13(invert)),
+            //
+            (dir | N1 | N4 | N5, n14(invert) + &n15(invert)),
+            (dir | N2 | N4 | N6, n24(invert) + &n26(invert)),
+            (dir | N3 | N5 | N6, n35(invert) + &n36(invert)),
+            //
+            (dir | N1 | N6 | N2, n16(invert) + &n12(invert)),
+            (dir | N1 | N6 | N3, n16(invert) + &n13(invert)),
+            (dir | N2 | N5 | N1, n25(invert) + &n12(invert)),
+            (dir | N2 | N5 | N3, n25(invert) + &n23(invert)),
+            (dir | N3 | N4 | N1, n34(invert) + &n13(invert)),
+            (dir | N3 | N4 | N2, n34(invert) + &n23(invert)),
+            //
             (dir | N1 | N2, n12(invert)),
             (dir | N1 | N3, n13(invert)),
             (dir | N1 | N4, n14(invert)),
