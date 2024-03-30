@@ -1,9 +1,11 @@
-mod lookups;
-mod writer;
+use std::collections::HashMap;
+
+use common::node_combinations::NodeCombinations;
 
 use crate::writer::{write_mass_to_file, write_nets_to_file};
-use common::node_combinations::NodeCombinations;
-use std::collections::HashMap;
+
+mod lookups;
+mod writer;
 
 fn main() {
     println!("Generating Rust code for all lookups nets (large network).");
