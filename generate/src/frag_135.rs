@@ -71,7 +71,19 @@ fn a135_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: Str
     );
 }
 
+// Not used right now, since it is identical to n13 + n35
 pub fn n135(invert: bool) -> String {
     let (r1, r2, r3, r4, pts) = a135_base(invert);
-    return a135_str(invert, pts, r1, r2, r3, r4);
+    let pts_1 = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
+    let n35 = a135_str(
+        !invert,
+        pts_1,
+        r1.clone(),
+        r2.clone(),
+        r3.clone(),
+        r4.clone(),
+    );
+
+    let n15 = a135_str(invert, pts, r1, r2, r3, r4);
+    return n15 + &n35;
 }

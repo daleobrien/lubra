@@ -13,7 +13,6 @@ use common::consts::{
 use crate::frag_1::{n1, n2, n3, n4, n5, n6};
 use crate::frag_12::{n12, n13, n23};
 use crate::frag_123::n123;
-use crate::frag_135::n135;
 use crate::frag_15::{n14, n15, n24, n26, n35, n36};
 use crate::frag_15_dot::{n14_4, n15_5, n24_4, n26_6, n35_5, n36_6};
 use crate::frag_15_long::{n14_24, n15_35, n24_14, n26_36, n35_15, n36_26};
@@ -50,7 +49,9 @@ pub fn generate_all_shapes() {
             (dir | N1 | N2 | N3, n123(invert)),
             (dir | N4 | N5 | N6, n456(invert)),
             //
-            (dir | N1 | N3 | N5, n135(invert)),
+            (dir | N1 | N3 | N5, n15(invert) + &n35(invert)),
+            (dir | N1 | N2 | N4, n14(invert) + &n24(invert)),
+            (dir | N2 | N3 | N6, n26(invert) + &n36(invert)),
             //
             (dir | N1 | N2, n12(invert)),
             (dir | N1 | N3, n13(invert)),
@@ -67,11 +68,11 @@ pub fn generate_all_shapes() {
             //
             (dir | N1 | N4 | A2 | A4, n14_24(invert)),
             (dir | N1 | N4 | A3 | A4, n14_34(invert)),
-            (dir | N1 | N4 | A4, n14_4(invert)),
+            (dir | N1 | N4 | A4, n14_4(invert)), // This looks wrong!
             //
             (dir | N1 | N5 | A2 | A5, n15_25(invert)),
             (dir | N1 | N5 | A3 | A5, n15_35(invert)),
-            (dir | N1 | N5 | A5, n15_5(invert)),
+            (dir | N1 | N5 | A5, n15_5(invert)), // Looks wrong?
             //
             (dir | N2 | N4 | A1 | A4, n24_14(invert)),
             (dir | N2 | N4 | A3 | A4, n24_34(invert)),
