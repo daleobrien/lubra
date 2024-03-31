@@ -65,7 +65,7 @@ pub fn generate_all_shapes() {
             (dir | N2 | N5 | N1, n25(invert) + &n12(invert)),
             (dir | N2 | N5 | N3, n25(invert) + &n23(invert)),
             (dir | N3 | N4 | N1, n34(invert) + &n23(invert)),
-            (dir | N3 | N4 | N2, n34(invert) + &n13(invert)),
+            (dir | N3 | N4 | N2, n34(invert) + &n23(invert)),
             (dir | N1 | N6 | N2, n16(invert) + &n12(invert)),
             (dir | N1 | N6 | N3, n16(invert) + &n13(invert)),
             //
