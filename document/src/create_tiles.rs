@@ -60,6 +60,8 @@ pub fn create_tiles() {
                 all_variants.push(variant);
             }
         }
+
+        // Why is this done during run-time, it's not much faster than before
         let nets_variants = NodeCombinations::new(all_variants, len);
 
         for variant in nets_variants {

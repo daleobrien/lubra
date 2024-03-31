@@ -8,8 +8,10 @@ pub fn create_lookups(
     seq: NodeCombinations,
     nets_by_mask: &mut HashMap<u32, Vec<Vec<u32>>>,
     mass_by_mask: &mut HashMap<u32, Vec<u32>>,
-) {
+) -> usize {
+    let mut count = 0;
     for nodes in seq {
+        count += 1;
         let mass = get_mass(&nodes);
 
         let bits = to_bits(&nodes);
@@ -26,4 +28,5 @@ pub fn create_lookups(
                 .push(mass);
         }
     }
+    return count;
 }

@@ -1,62 +1,46 @@
-use itertools::Itertools;
+use std::collections::HashSet;
 
-use crate::bit_utils::interects;
+use itertools::Itertools;
 
 #[derive(Debug, Clone)]
 pub struct NodeCombinations {
     list: Vec<Vec<u32>>,
 }
 
-fn recursive_combinations(used_bits: u32, list: Vec<u32>) -> Option<Vec<Vec<u32>>> {
-    if list.len() == 0 {
-        return None;
-    }
-
-    // Only consider possible nodes that are not already used
-    let filtered_list = list
-        .iter()
-        .filter(|&x| !(*x & used_bits > 0))
-        .map(|x| *x)
-        .collect::<Vec<u32>>();
-
-    let mut combinations: Vec<Vec<u32>> = Vec::new();
-
-    for (i, &node) in filtered_list.iter().enumerate() {
-        let new_used_bits = used_bits | node;
-        let mut new_list = filtered_list.clone();
-        new_list.remove(i);
-
-        let mut new_combinations = recursive_combinations(new_used_bits, new_list);
-        match new_combinations {
-            Some(mut value) => {
-                for item in value.iter_mut() {
-                    item.push(node);
-                }
-                combinations.append(&mut value);
-            }
-            None => {
-                combinations.push(vec![node]);
-            }
+fn generate_combinations(
+    list: &mut Vec<u32>,
+    combination: &mut Vec<u32>,
+    results: &mut HashSet<Vec<u32>>,
+) {
+    let mut sorted_combination = combination.clone();
+    sorted_combination.sort();
+    results.insert(sorted_combination);
+    for i in 0..list.len() {
+        let num = list.remove(i);
+        if combination.iter().any(|&x| x & num != 0) {
+            list.insert(i, num);
+            continue;
         }
+        combination.push(num);
+        generate_combinations(list, combination, results);
+        combination.pop();
+        list.insert(i, num);
     }
-    return Some(combinations);
 }
 
 impl NodeCombinations {
     pub fn new(list: Vec<u32>, min_k: usize) -> Self {
-        let mut combinations: Vec<Vec<u32>> = Vec::new();
+        let mut combination = vec![];
+        let mut results = HashSet::new();
+        let mut list = list.clone();
+        generate_combinations(&mut list, &mut combination, &mut results);
 
-        // TODO: Should do this dynamically, since we don't need to do all combinations now
-        // This is really slow!, as I increase the number of nodes options!
-        // Need a better way
-        for k in min_k..=list.len() {
-            for item in list.iter().combinations(k).unique() {
-                let value: Vec<u32> = item.iter().map(|&x| (*x)).collect();
-                if !interects(&value) {
-                    combinations.push(value);
-                }
-            }
-        }
+        let mut combinations: Vec<Vec<u32>> = results
+            .iter()
+            .map(|x| x.clone())
+            .filter(|x| x.len() >= min_k)
+            .collect();
+
         combinations.sort();
         combinations.reverse();
 
