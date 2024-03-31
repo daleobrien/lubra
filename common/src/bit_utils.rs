@@ -25,22 +25,14 @@ pub fn to_bits(nets: &Vec<u32>) -> u32 {
 }
 
 pub fn interects(nets: &Vec<u32>) -> bool {
-    if nets.is_empty() || nets.len() == 1 {
-        return false;
-    }
-    if nets.len() == 2 {
-        return nets[0] & nets[1] != 0;
-    }
-
-    for i in 0..nets.len() - 1 {
-        for j in i + 1..nets.len() {
-            if nets[i] & nets[j] != 0 {
-                return true;
-            }
-        }
-    }
-
-    return false;
+    let mut combined = 0;
+    !nets.is_empty()
+        && nets.len() != 1
+        && nets.iter().any(|&byte| {
+            let intersects = combined & byte != 0;
+            combined |= byte;
+            intersects
+        })
 }
 
 pub fn dont_care_to_bits(value: u32) -> u32 {
@@ -281,7 +273,7 @@ mod tests {
             false
         );
         assert_eq!(
-            interects(&vec![0b000_001, 0b000_010, 0b001_000, 0b001_000]),
+            interects(&vec![0b000_001, 0b001_000, 0b000_010, 0b001_000]),
             true
         );
     }
