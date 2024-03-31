@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-
-
 #[derive(Debug, Clone)]
 pub struct NodeCombinations {
     list: Vec<Vec<u32>>,
@@ -9,22 +7,23 @@ pub struct NodeCombinations {
 
 fn generate_combinations(
     list: &mut Vec<u32>,
+    start: usize,
     combination: &mut Vec<u32>,
     results: &mut HashSet<Vec<u32>>,
 ) {
     let mut sorted_combination = combination.clone();
     sorted_combination.sort();
     results.insert(sorted_combination);
-    for i in 0..list.len() {
-        let num = list.remove(i);
+    for i in start..list.len() {
+        let num = list[i];
         if combination.iter().any(|&x| x & num != 0) {
-            list.insert(i, num);
             continue;
         }
         combination.push(num);
-        generate_combinations(list, combination, results);
+        list.swap(start, i);
+        generate_combinations(list, start + 1, combination, results);
+        list.swap(start, i);
         combination.pop();
-        list.insert(i, num);
     }
 }
 
@@ -33,7 +32,8 @@ impl NodeCombinations {
         let mut combination = vec![];
         let mut results = HashSet::new();
         let mut list = list.clone();
-        generate_combinations(&mut list, &mut combination, &mut results);
+
+        generate_combinations(&mut list, 0, &mut combination, &mut results);
 
         let mut combinations: Vec<Vec<u32>> = results
             .iter()
