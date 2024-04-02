@@ -5,8 +5,8 @@ use common::types::point::{PATH_WIDTH, Point, S2, S3, TILE_WIDTH};
 
 fn a135_base(invert: bool) -> (String, String, String, String, Path) {
     let w = PATH_WIDTH;
-
     let r1 = 0.3333; // Adjustable
+
     let r2 = (1. + 2. * r1) / (4. + 12. * r1);
 
     let p1 = Point { x: 0.5 - w, y: S3 };
