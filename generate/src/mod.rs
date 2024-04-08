@@ -3,6 +3,7 @@ pub mod frag_12;
 pub mod frag_123;
 pub mod frag_135;
 pub mod frag_155;
+pub mod frag_156;
 pub mod frag_15_dot;
 pub mod frag_15_long;
 pub mod frag_15_straight;

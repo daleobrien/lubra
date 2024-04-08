@@ -7,6 +7,7 @@ mod frag_123;
 mod frag_135;
 mod frag_15;
 mod frag_155;
+mod frag_156;
 mod frag_15_dot;
 mod frag_15_long;
 mod frag_15_straight;
