@@ -1,9 +1,9 @@
 use common::consts::FILL;
 use common::types::format::trimf64;
 use common::types::path::Path;
-use common::types::point::{PATH_WIDTH, Point, S1, S2, S3, TILE_WIDTH};
+use common::types::point::{Point, PATH_WIDTH, S1, S2, S3, TILE_WIDTH};
 
-fn a156_base(invert: bool) -> (String, String, String, String, Path) {
+fn a156_base(invert: bool) -> (String, String, String, String, String, String, Path) {
     let w = PATH_WIDTH;
     let r1 = 0.3333f64; // Adjustable
 
@@ -99,40 +99,49 @@ fn a156_base(invert: bool) -> (String, String, String, String, Path) {
     let r2s = trimf64(TILE_WIDTH * (r1 + w));
     let r3s = trimf64(TILE_WIDTH * (r2 - w));
     let r4s = trimf64(TILE_WIDTH * (r2 + w));
-    return (r1s, r2s, r3s, r4s, pts);
+    let r5s = trimf64(TILE_WIDTH * (0.5f64 - w));
+    let r6s = trimf64(TILE_WIDTH * (0.5f64 + w));
+    return (r1s, r2s, r3s, r4s, r5s, r6s, pts);
 }
 
-fn a156_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: String) -> String {
+fn a156_str(
+    invert: bool,
+    pts: Path,
+    r1: String,
+    r2: String,
+    r3: String,
+    r4: String,
+    r5: String,
+    r6: String,
+) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     return format!(
-        "<path fill=\\\"{fill}\\\"  d=\\\"\
-      M {a} \
-      A {r1} {r1} 0 0 {d1} {b} \
-      A {r4} {r4} 0 0 {d2} {c} \
-      A {r3} {r3} 0 0 {d1} {d} \
-      A {r4} {r4} 0 0 {d2} {e} \
-      A {r1} {r1} 0 0 {d1} {f} \
-      L {g} \
-      A {r2} {r2} 0 0 {d2} {h} \
-      A {r3} {r3} 0 0 {d1} {i} \
-      L {j}
-      A {r3} {r3} 0 0 {d1} {k} \
-      A {r2} {r2} 0 0 {d2} {l} \
-      \\\" />\
+        "\
+       <path fill=\\\"{fill}\\\"  d=\\\"\
+        M {a} \
+        A {r1} {r1} 0 0 {d2} {b} \
+        A {r4} {r4} 0 0 {d1} {c} \
+        A {r1} {r1} 0 0 {d2} {d} \
+        A {r6} {r6} 0 0 {d1} {e} \
+        L {f}
+        A {r5} {r5} 0 0 {d2} {g} \
+        L {h} \
+        A {r3} {r3} 0 0 {d2} {i} \
+        A {r2} {r2} 0 0 {d1} {j} \
+        Z \
+        \\\" />
       <path stroke=\\\"black\\\" d=\\\"\
       M {a} \
-      A {r1} {r1} 0 0 {d1} {b} \
-      A {r4} {r4} 0 0 {d2} {c} \
-      A {r3} {r3} 0 0 {d1} {d} \
-      A {r4} {r4} 0 0 {d2} {e} \
-      A {r1} {r1} 0 0 {d1} {f} \
-      M {g} \
-      A {r2} {r2} 0 0 {d2} {h} \
-      A {r3} {r3} 0 0 {d1} {i} \
-      M {j}
-      A {r3} {r3} 0 0 {d1} {k} \
-      A {r2} {r2} 0 0 {d2} {l} \
+      A {r1} {r1} 0 0 {d2} {b} \
+      A {r4} {r4} 0 0 {d1} {c} \
+      A {r1} {r1} 0 0 {d2} {d} \
+      A {r6} {r6} 0 0 {d1} {e} \
+      M {f}
+      A {r5} {r5} 0 0 {d2} {g} \
+      M {h} \
+      A {r3} {r3} 0 0 {d2} {i} \
+      A {r2} {r2} 0 0 {d1} {j} \
       \\\" />",
         a = pts[0],
         b = pts[1],
@@ -144,16 +153,14 @@ fn a156_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: Str
         h = pts[7],
         i = pts[8],
         j = pts[9],
-        k = pts[10],
-        l = pts[11],
         fill = FILL,
     );
 }
 
 pub fn n156(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a156_base(invert);
-    let pts = pts
-        .reflect()
-        .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-    return a156_str(invert, pts, r1, r2, r3, r4);
+    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
+    // let pts = pts
+    //     .reflect()
+    //     .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
 }
