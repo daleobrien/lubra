@@ -159,9 +159,6 @@ fn a156_str(
 
 pub fn n156(invert: bool) -> String {
     let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
-    // let pts = pts
-    //     .reflect()
-    //     .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
 }
 
