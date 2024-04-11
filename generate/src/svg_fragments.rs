@@ -15,7 +15,7 @@ use crate::frag_12::{n12, n13, n23};
 use crate::frag_123::n123;
 use crate::frag_135::{n124, n135, n236};
 use crate::frag_15::{n14, n15, n24, n26, n35, n36};
-use crate::frag_156::{n146, n156, n345, n346};
+use crate::frag_156::{n146, n156, n245, n256, n345, n346};
 use crate::frag_15_dot::{n14_4, n15_5, n24_4, n26_6, n35_5, n36_6};
 use crate::frag_15_long::{n14_24, n15_35, n24_14, n26_36, n35_15, n36_26};
 use crate::frag_15_straight::{n14_34, n15_25, n24_34, n26_16, n35_25, n36_16};
@@ -51,18 +51,12 @@ pub fn generate_all_shapes() {
             //
             (dir | N1 | N2 | N3, n123(invert)),
             (dir | N4 | N5 | N6, n456(invert)),
+            //
             // 3 way, one complete side
             (dir | N1 | N3 | N5, n135(invert)),
             (dir | N1 | N2 | N4, n124(invert)),
             (dir | N2 | N3 | N6, n236(invert)),
             //
-            //(dir | N1 | N4 | N6, n14(invert) + &n16(invert)),
-            //(dir | N1 | N5 | N6, n15(invert) + &n16(invert)),
-            (dir | N2 | N5 | N4, n25(invert) + &n24(invert)),
-            //
-            (dir | N2 | N5 | N6, n25(invert) + &n26(invert)),
-            //(dir | N3 | N4 | N5, n34(invert) + &n35(invert)),
-            //(dir | N3 | N4 | N6, n34(invert) + &n36(invert)),
             //
             (dir | N2 | N5 | N1, n25(invert) + &n12(invert)),
             (dir | N2 | N5 | N3, n25(invert) + &n23(invert)),
@@ -78,8 +72,10 @@ pub fn generate_all_shapes() {
             //
             (dir | N1 | N4 | N6, n146(invert)),
             (dir | N1 | N5 | N6, n156(invert)),
-            (dir | N3 | N4 | N6, n346(invert)),
+            (dir | N2 | N4 | N5, n245(invert)),
+            (dir | N2 | N5 | N6, n256(invert)),
             (dir | N3 | N4 | N5, n345(invert)),
+            (dir | N3 | N4 | N6, n346(invert)),
             //
             // 4 ways
             //
