@@ -5,7 +5,7 @@ use common::types::point::{Point, PATH_WIDTH, S1, S2, S3, TILE_WIDTH};
 
 fn a156_base(invert: bool) -> (String, String, String, String, String, String, Path) {
     let w = PATH_WIDTH;
-    let r1 = 0.3333f64; // Adjustable
+    let r1 = 0.2f64; // Adjustable
 
     let r2: f64 = (1. + (2. * r1)) / (4. + (12. * r1));
 
@@ -163,4 +163,11 @@ pub fn n156(invert: bool) -> String {
     //     .reflect()
     //     .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
+}
+
+pub fn n146(invert: bool) -> String {
+    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
+    let pts = pts.reflect();
+    //     .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    return a156_str(!invert, pts, r1, r2, r3, r4, r5, r6);
 }

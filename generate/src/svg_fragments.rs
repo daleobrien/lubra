@@ -15,7 +15,7 @@ use crate::frag_12::{n12, n13, n23};
 use crate::frag_123::n123;
 use crate::frag_135::{n124, n135, n236};
 use crate::frag_15::{n14, n15, n24, n26, n35, n36};
-use crate::frag_156::n156;
+use crate::frag_156::{n146, n156};
 use crate::frag_15_dot::{n14_4, n15_5, n24_4, n26_6, n35_5, n36_6};
 use crate::frag_15_long::{n14_24, n15_35, n24_14, n26_36, n35_15, n36_26};
 use crate::frag_15_straight::{n14_34, n15_25, n24_34, n26_16, n35_25, n36_16};
@@ -76,6 +76,7 @@ pub fn generate_all_shapes() {
             (dir | N3 | N5 | N6, n35(invert) + &n36(invert)),
             //
             //
+            (dir | N1 | N4 | N6, n146(invert)),
             (dir | N1 | N5 | N6, n156(invert)),
             //
             // 4 ways
