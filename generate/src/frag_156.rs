@@ -172,13 +172,13 @@ pub fn n146(invert: bool) -> String {
  4 5
 2 6 3 */
 
-pub fn n256(invert: bool) -> String {
+pub fn n245(invert: bool) -> String {
     let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
 }
 
-pub fn n245(invert: bool) -> String {
+pub fn n256(invert: bool) -> String {
     let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
     let pts = pts
         .reflect()
