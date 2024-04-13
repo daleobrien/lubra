@@ -13,6 +13,7 @@ use common::consts::{
 use crate::frag_1::{n1, n2, n3, n4, n5, n6};
 use crate::frag_12::{n12, n13, n23};
 use crate::frag_123::n123;
+use crate::frag_125::{n125, n134};
 use crate::frag_135::{n124, n135, n236};
 use crate::frag_15::{n14, n15, n24, n26, n35, n36};
 use crate::frag_156::{n146, n156, n245, n256, n345, n346};
@@ -58,9 +59,9 @@ pub fn generate_all_shapes() {
             (dir | N2 | N3 | N6, n236(invert)),
             //
             //
-            (dir | N2 | N5 | N1, n25(invert) + &n12(invert)),
+            (dir | N1 | N2 | N5, n125(invert)),
+            (dir | N1 | N3 | N4, n134(invert)),
             (dir | N2 | N5 | N3, n25(invert) + &n23(invert)),
-            (dir | N3 | N4 | N1, n34(invert) + &n13(invert)),
             (dir | N3 | N4 | N2, n34(invert) + &n23(invert)),
             (dir | N1 | N6 | N2, n16(invert) + &n12(invert)),
             (dir | N1 | N6 | N3, n16(invert) + &n13(invert)),
