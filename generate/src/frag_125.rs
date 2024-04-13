@@ -153,3 +153,17 @@ pub fn n134(invert: bool) -> String {
     let pts = pts.reflect();
     return a125_str(invert, pts, r1s, r1l, r2s, r2l);
 }
+
+pub fn n126(invert: bool) -> String {
+    let (r1s, r1l, r2s, r2l, pts) = a135_base(invert);
+    let pts = pts
+        .reflect()
+        .rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    return a125_str(invert, pts, r1s, r1l, r2s, r2l);
+}
+
+pub fn n234(invert: bool) -> String {
+    let (r1s, r1l, r2s, r2l, pts) = a135_base(invert);
+    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    return a125_str(!invert, pts, r1s, r1l, r2s, r2l);
+}
