@@ -9,8 +9,6 @@ fn a135_base(invert: bool) -> (String, String, String, String, Path) {
 
     let r2: f64 = (1. + (2. * r1)) / (4. + (12. * r1));
 
-    let r2: f64 = (1. + (2. * r1)) / (4. + (12. * r1));
-
     let pt1 = Point {
         x: 0.5f64 + ((-1.) * w),
         y: S3,

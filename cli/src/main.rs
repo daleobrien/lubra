@@ -14,7 +14,7 @@ fn main() {
     // TODO: use args ...
 
     // Large maze
-    let mut maze = Maze::new(70, 60, true, true, Some(1));
+    let mut maze = Maze::new(70, 60, true, false, Some(1));
     maze.reduce_nets(4);
     let name = format!("sample-large");
     let _ = maze.render(name.to_string(), SVG);
