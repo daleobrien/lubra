@@ -95,8 +95,8 @@ pub fn n1236(invert: bool) -> String {
 }
 
 
-pub fn n2346(invert: bool) -> String {
+pub fn n2345(invert: bool) -> String {
     let (r1s, r1l, pts) = base(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
-    return to_str(invert, pts, r1s, r1l);
+    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
+    return to_str(!invert, pts, r1s, r1l);
 }
