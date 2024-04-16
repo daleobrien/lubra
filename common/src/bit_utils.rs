@@ -3,15 +3,13 @@ use itertools::Itertools;
 use crate::consts::{IN, NL, WA};
 
 pub fn get_mass(nets: &Vec<u32>) -> u32 {
-    let mut mass = 1;
+    let mut mass = 1 * nets.len() as u32;
     for net in nets {
         match net.count_ones() {
-            2 => mass *= 11,
-            3 => mass *= 10,
-            _ => (),
-        }
-        if *net == 0b000_111 {
-            mass *= 12;
+            2 => mass *= 20,
+            3 => mass *= 5,
+            4 => mass *= 2,
+            _ => mass *= 1,
         }
     }
     return mass;
