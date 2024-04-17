@@ -35,7 +35,7 @@ pub const ADJ_N4: usize = 3usize;
 pub const ADJ_N5: usize = 4usize;
 pub const ADJ_N6: usize = 5usize;
 
-pub const FILL: &str = "white";
+pub const FILL: &str = "red";
 
 // For a tile in the very first position, (0,0), the coordinates are:
 const K0: [(i32, i32); 12] = [

@@ -3,7 +3,7 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, S4, S5, TILE_WIDTH};
 
-fn base(invert: bool) -> (String, Path) {
+fn base(invert: bool) -> (String, String, String, Path) {
     let w = PATH_WIDTH;
 
     let pt1 = Point {
@@ -86,18 +86,23 @@ fn base(invert: bool) -> (String, Path) {
 
     let pts = if invert { pts.invert() } else { pts };
     let r = trimf64(TILE_WIDTH * (1. / 6. - w));
-    return (r, pts);
+    let cx = trimf64(TILE_WIDTH * (1. / 2.));
+    let cy = trimf64(TILE_WIDTH * S5);
+    return (r, cx, cy, pts);
 }
 
-fn to_str(invert: bool, pts: Path, r: String) -> String {
+fn to_str(invert: bool, pts: Path, r: String, _cx: String, _cy: String) -> String {
     let d1 = if invert { 1 } else { 0 };
     let pts = pts.str();
+    // This does not work, since I need to set the fill to some colour, e.g. white, then we don't have
+    // a transparent background.
+    // <circle cx=\\\"{cx}\\\" cy=\\\"{cy}\\\" r=\\\"{r}\\\" stroke=\\\"black\\\" fill=\\\"none\\\" /> \
     return format!(
         "<path fill=\\\"{fill}\\\" d=\\\"\
       M {a} \
       L {b} \
       A {r} {r} 0 0 {d1} {c} \
-      M {d} \
+      L {d} \
       A {r} {r} 0 0 {d1} {e} \
       L {f} \
       L {g} \
@@ -113,7 +118,7 @@ fn to_str(invert: bool, pts: Path, r: String) -> String {
       A {r} {r} 0 0 {d1} {q} \
       L {r_}
       \\\" /> \
-      <path stroke=\\\"black\\\" d=\\\"\
+     <path stroke=\\\"black\\\" d=\\\"\
       M {a} \
       L {b} \
       A {r} {r} 0 0 {d1} {c} \
@@ -131,7 +136,7 @@ fn to_str(invert: bool, pts: Path, r: String) -> String {
       A {r} {r} 0 0 {d1} {o} \
       M {p} \
       A {r} {r} 0 0 {d1} {q} \
-      L {r_}
+      L {r_} \
       \\\" />",
         a = pts[0],
         b = pts[1],
@@ -156,12 +161,12 @@ fn to_str(invert: bool, pts: Path, r: String) -> String {
 }
 
 pub fn n123456(invert: bool) -> String {
-    let (r, pts) = base(invert);
+    let (r, cx, cy, pts) = base(invert);
     let pts = pts.rotate_ccw(
         invert,
         vec![
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
         ],
     );
-    return to_str(invert, pts, r);
+    return to_str(invert, pts, r, cx, cy);
 }
