@@ -23,12 +23,12 @@ fn base(invert: bool) -> (String, String, Path) {
         y: 0.25f64 * S2 * (1. + ((-2.) * w)),
     };
     let pt5 = Point {
-        x: 0.333333f64,
-        y: (-0.166667f64) + S4 + ((-1.) * w),
+        x: 0.0833333f64 * (5. + (6. * w)),
+        y: 0.25f64 * S2 * (1. + ((-2.) * w)),
     };
     let pt6 = Point {
-        x: 0.5f64 + ((-1.) * w),
-        y: (-0.333333f64) + S4,
+        x: 0.0833333f64 * (7. + ((-6.) * w)),
+        y: 0.25f64 * S4 * (1. + (6. * w)),
     };
     let pt7 = Point {
         x: 0.5f64 + ((-1.) * w),
@@ -91,7 +91,7 @@ fn to_str(invert: bool, pts: Path, r1s: String, r1l: String) -> String {
       L {d} \
       A {r1l} {r1l} 0 0 {d2} {e} \
       A {r1s} {r1s} 0 0 {d1} {f} \
-      L {g} \
+      A {r1l} {r1l} 0 0 {d2} {g} \
       L {h} \
       A {r1s} {r1s} 0 0 {d1} {i} \
       L {j} \
@@ -109,7 +109,7 @@ fn to_str(invert: bool, pts: Path, r1s: String, r1l: String) -> String {
       M {d} \
       A {r1l} {r1l} 0 0 {d2} {e} \
       A {r1s} {r1s} 0 0 {d1} {f} \
-      L {g} \
+      A {r1l} {r1l} 0 0 {d2} {g} \
       M {h} \
       A {r1s} {r1s} 0 0 {d1} {i} \
       L {j} \
