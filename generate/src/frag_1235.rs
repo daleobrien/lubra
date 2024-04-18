@@ -15,56 +15,56 @@ fn base(invert: bool) -> (String, String, Path) {
         y: S4,
     };
     let pt3 = Point {
-        x: 0.25f64 * (1. + (2. * w)),
-        y: 0.25f64 * S2 * (1. + (2. * w)),
+        x: 0.0833333f64 * (8. + ((-1.) * S2) + ((-6.) * S2 * w)),
+        y: (-0.0833333f64) + S4 + ((-0.5f64) * w),
     };
     let pt4 = Point {
-        x: 0.25f64 * (1. + ((-2.) * w)),
-        y: 0.25f64 * S2 * (1. + ((-2.) * w)),
+        x: 0.0833333f64 * (9. + ((-2.) * S2) + ((-6.) * w)),
+        y: 0.0833333f64 * ((-2.) + (3. * S2) + (6. * S2 * w)),
     };
     let pt5 = Point {
-        x: 0.25f64 * (1. + ((-2.) * w)),
-        y: 0.25f64 * S4 * (1. + (6. * w)),
-    };
-    let pt6 = Point {
         x: (-0.5f64) * w,
         y: S3 * w,
     };
-    let pt7 = Point {
+    let pt6 = Point {
         x: 0.5f64 * w,
         y: (-0.5f64) * S2 * w,
     };
+    let pt7 = Point {
+        x: 0.0833333f64 * (9. + ((-2.) * S2) + (6. * w)),
+        y: 0.0833333f64 * ((-2.) + (3. * S2) + ((-6.) * S2 * w)),
+    };
     let pt8 = Point {
-        x: 0.25f64 * (1. + (2. * w)),
-        y: 0.25f64 * S4 * (1. + ((-6.) * w)),
+        x: 0.0833333f64 * (10. + ((-1.) * S2) + ((-6.) * S2 * w)),
+        y: 0.0833333f64 * ((-1.) + (2. * S2) + ((-6.) * w)),
     };
     let pt9 = Point {
-        x: 0.5f64 + ((-1.) * w),
-        y: 0.,
-    };
-    let pt10 = Point {
-        x: 0.5f64 + w,
-        y: 0.,
-    };
-    let pt11 = Point {
         x: 0.25f64 * (3. + ((-2.) * w)),
         y: 0.25f64 * S4 * (1. + ((-6.) * w)),
     };
-    let pt12 = Point {
+    let pt10 = Point {
         x: 1. + ((-0.5f64) * w),
         y: (-0.5f64) * S2 * w,
     };
-    let pt13 = Point {
+    let pt11 = Point {
         x: 0.5f64 * (2. + w),
         y: S3 * w,
     };
+    let pt12 = Point {
+        x: 0.25f64 * (3. + (2. * w)),
+        y: 0.25f64 * S4 * (1. + (6. * w)),
+    };
+    let pt13 = Point {
+        x: 0.25f64 * (3. + (2. * w)),
+        y: 0.25f64 * S2 * (1. + ((-2.) * w)),
+    };
     let pt14 = Point {
-        x: 0.0833333f64 * (7. + (6. * w)),
-        y: 0.0833333f64 * S4 * (5. + (18. * w)),
+        x: 0.25f64 * (3. + ((-2.) * w)),
+        y: 0.25f64 * S2 * (1. + (2. * w)),
     };
     let pt15 = Point {
         x: 0.5f64 + w,
-        y: 0.666667f64 * S4,
+        y: S4,
     };
     let pt16 = Point {
         x: 0.5f64 + w,
@@ -88,13 +88,13 @@ fn to_str(invert: bool, pts: Path, r1s: String, r1l: String) -> String {
         "<path fill=\\\"{fill}\\\" d=\\\"\
       M {a} \
       L {b} \
-      A {r1s} {r1s} 0 0 {d1} {c} \
-      L {d} \
-      A {r1l} {r1l} 0 0 {d2} {e} \
-      A {r1s} {r1s} 0 0 {d1} {f} \
-      A {r1l} {r1l} 0 0 {d2} {g} \
-      L {h} \
-      A {r1s} {r1s} 0 0 {d1} {i} \
+      A {r1l} {r1l} 0 0 {d2} {c} \
+      A {r1s} {r1s} 0 0 {d1} {d} \
+      L {e} \
+      L {f} \
+      L {g} \
+      A {r1s} {r1s} 0 0 {d1} {h} \
+      A {r1l} {r1l} 0 0 {d2} {i} \
       L {j} \
       L {k} \
       L {l} \
@@ -102,17 +102,17 @@ fn to_str(invert: bool, pts: Path, r1s: String, r1l: String) -> String {
       L {n} \
       A {r1s} {r1s} 0 0 {d1} {o} \
       L {p} \
-      \\\" />
+      \\\" /> \
       <path stroke=\\\"black\\\" d=\\\"\
       M {a} \
       L {b} \
-      A {r1s} {r1s} 0 0 {d1} {c} \
-      M {d} \
-      A {r1l} {r1l} 0 0 {d2} {e} \
-      A {r1s} {r1s} 0 0 {d1} {f} \
-      A {r1l} {r1l} 0 0 {d2} {g} \
-      M {h} \
-      A {r1s} {r1s} 0 0 {d1} {i} \
+      A {r1l} {r1l} 0 0 {d2} {c} \
+      A {r1s} {r1s} 0 0 {d1} {d} \
+      L {e} \
+      M {f} \
+      L {g} \
+      A {r1s} {r1s} 0 0 {d1} {h} \
+      A {r1l} {r1l} 0 0 {d2} {i} \
       L {j} \
       M {k} \
       L {l} \

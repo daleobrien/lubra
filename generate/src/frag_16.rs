@@ -1,7 +1,7 @@
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-const FILL: &str = "white";
+use common::consts::FILL;
 
 fn generate_lx(invert: bool) -> Path {
     let w = Point {
@@ -17,12 +17,13 @@ fn generate_lx(invert: bool) -> Path {
 fn l_a_to_b(path: Path) -> String {
     let s = path.trim();
     return format!(
-        "<path fill=\\\"{FILL}\\\" d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
+        "<path fill=\\\"{fill}\\\" d=\\\"M{a}l{b}l{c}l{d}z \\\"/> \
          <path stroke=\\\"black\\\" d=\\\"M{a}l{b}m{c}l{d}z\\\"/>",
         a = s[0],
         b = s[1],
         c = s[2],
-        d = s[3]
+        d = s[3],
+        fill = FILL,
     );
 }
 
