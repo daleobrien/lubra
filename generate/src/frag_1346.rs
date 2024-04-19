@@ -67,10 +67,6 @@ fn base(invert: bool) -> (String, String, String, Path) {
         pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8, pt9, pt10, pt11, pt12, pt13, pt14,
     ]);
 
-    let pts = Path::new(vec![
-        pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8, pt9, pt10, pt11, pt12, pt13, pt14,
-    ]);
-
     let pts = if invert { pts.invert() } else { pts };
     let r1s = trimf64(TILE_WIDTH * (1. / 6. - w));
     let r1l = trimf64(TILE_WIDTH * (1. / 6. + w));

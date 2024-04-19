@@ -26,7 +26,7 @@ use crate::frag_1456::{n1456, n2456, n3456};
 use crate::frag_15::{n14, n15, n24, n26, n35, n36};
 use crate::frag_156::{n146, n156, n245, n256, n345, n346};
 use crate::frag_15_dot::{n14_4, n15_5, n24_4, n26_6, n35_5, n36_6};
-use crate::frag_15_long::{n14_24, n15_35, n24_14, n26_36, n35_15, n36_26};
+use crate::frag_15_long::{n15_35, n24_14, n36_26};
 use crate::frag_15_straight::{n14_34, n15_25, n24_34, n26_16, n35_25, n36_16};
 use crate::frag_16::{n16, n25, n34};
 use crate::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
@@ -132,7 +132,7 @@ pub fn generate_all_shapes() {
             (dir | N3 | N5, n35(invert)),
             (dir | N3 | N6, n36(invert)),
             //
-            (dir | N1 | N4 | A2 | A4, n14_24(invert)),
+            //(dir | N1 | N4 | A2 | A4, n14_24(invert)),
             (dir | N1 | N4 | A3 | A4, n14_34(invert)),
             (dir | N1 | N4 | A4, n14_4(invert)), // This looks wrong!
             //
@@ -145,10 +145,10 @@ pub fn generate_all_shapes() {
             (dir | N2 | N4 | A4, n24_4(invert)),
             //
             (dir | N2 | N6 | A1 | A6, n26_16(invert)),
-            (dir | N2 | N6 | A3 | A6, n26_36(invert)),
+            //(dir | N2 | N6 | A3 | A6, n26_36(invert)),
             (dir | N2 | N6 | A6, n26_6(invert)),
             //
-            (dir | N3 | N5 | A1 | A5, n35_15(invert)),
+            //(dir | N3 | N5 | A1 | A5, n35_15(invert)),
             (dir | N3 | N5 | A2 | A5, n35_25(invert)),
             (dir | N3 | N5 | A5, n35_5(invert)),
             //
