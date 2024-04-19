@@ -39,11 +39,11 @@ fn main() {
 
     // One small maze
     let mut maze = Maze::new(5, 4, true, true, Some(3));
-    let name = format!("sample-0");
+    let name = format!("5-sample-0");
     let _ = maze.render(name.to_string(), SVG);
 
     // Reduce step
     maze.reduce_nets(4);
-    let name = format!("sample-1");
+    let name = format!("6-sample-1");
     let _ = maze.render(name.to_string(), SVG);
 }

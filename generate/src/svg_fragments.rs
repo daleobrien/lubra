@@ -132,7 +132,6 @@ pub fn generate_all_shapes() {
             (dir | N3 | N5, n35(invert)),
             (dir | N3 | N6, n36(invert)),
             //
-            //(dir | N1 | N4 | A2 | A4, n14_24(invert)),
             (dir | N1 | N4 | A3 | A4, n14_34(invert)),
             (dir | N1 | N4 | A4, n14_4(invert)), // This looks wrong!
             //
@@ -145,10 +144,8 @@ pub fn generate_all_shapes() {
             (dir | N2 | N4 | A4, n24_4(invert)),
             //
             (dir | N2 | N6 | A1 | A6, n26_16(invert)),
-            //(dir | N2 | N6 | A3 | A6, n26_36(invert)),
             (dir | N2 | N6 | A6, n26_6(invert)),
             //
-            //(dir | N3 | N5 | A1 | A5, n35_15(invert)),
             (dir | N3 | N5 | A2 | A5, n35_25(invert)),
             (dir | N3 | N5 | A5, n35_5(invert)),
             //
