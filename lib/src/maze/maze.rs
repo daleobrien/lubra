@@ -11,7 +11,6 @@ use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
 
-
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
