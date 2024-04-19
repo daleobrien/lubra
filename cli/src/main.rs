@@ -15,13 +15,19 @@ fn main() {
 
     // Large maze
     let mut maze = Maze::new(70, 60, true, false, Some(1));
+    let name = format!("1-sample-large");
+    let _ = maze.render(name.to_string(), SVG);
+
     maze.reduce_nets(4);
-    let name = format!("sample-large");
+    let name = format!("2-sample-large-reduced");
     let _ = maze.render(name.to_string(), SVG);
 
     let mut maze = Maze::new(70, 60, true, true, Some(1));
+    let name = format!("3-sample-large-with-grid");
+    let _ = maze.render(name.to_string(), SVG);
+
     maze.reduce_nets(4);
-    let name = format!("sample-large-with-grid");
+    let name = format!("4-sample-large-with-grid-reduced");
     let _ = maze.render(name.to_string(), SVG);
 
     // Lots of small mazes
