@@ -286,7 +286,14 @@ impl Maze {
     fn get_random_tile(&mut self, i: usize, j: usize) -> Tile {
         let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
         let mask = get_surrounding_tile_connections(&surrounding_tiles);
-        let nets = random_tile(mask, self.seed, false);
+
+        // Try simple, then complex options?
+        let mut nets = random_tile(mask, self.seed, true);
+        if mask != 0 && nets.len() == 0 {
+            // If we can't find a tile that fits, try again without the mask
+            nets = random_tile(mask, self.seed, false);
+        }
+
         let tile = Tile::new(nets, true);
         self.update_network(&tile, i, j);
         return tile;
