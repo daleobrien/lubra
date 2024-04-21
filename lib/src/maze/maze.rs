@@ -10,6 +10,7 @@ use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
+use common::bit_utils::print_nets;
 
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
@@ -86,6 +87,7 @@ impl Maze {
             .flat_map(|j| (0..number_of_columns).map(move |i| (j, i)))
             .collect();
 
+        // Add the tiles in random order, otherwise the prevoius tile will influence the next
         indices.shuffle(&mut rng);
 
         for (j, i) in indices {
@@ -104,6 +106,29 @@ impl Maze {
 
         self.width = (number_of_columns + 1) as f64 * TILE_WIDTH / 2.0;
         self.height = number_of_rows as f64 * TILE_HEIGHT;
+    }
+
+    pub fn remove_cycles(&mut self) {
+        println!("Removing cycles ...");
+        // We can do this by removing any tile that is part of a cycle
+        let mut visited: HashSet<(usize, usize, usize)> = HashSet::new();
+
+        for net in self.nets.iter() {
+            let mut cycle = false;
+            for [i, j, k] in net.iter() {
+                println!("@ {}, {}, {}", i, j, k);
+                if visited.contains(&(*j, *i, *k)) {
+                    cycle = true;
+                    println!("->: {}, {}, {}", i, j, k);
+                    break;
+                }
+                visited.insert((*j, *i, *k));
+            }
+
+            if cycle {
+                // Break the cycle
+            }
+        }
     }
 
     pub fn reduce_nets(&mut self, lower_limit: usize) {
