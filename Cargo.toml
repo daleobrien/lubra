@@ -1,18 +1,15 @@
+cargo-features = ["codegen-backend"]
 [workspace]
 resolver = "2"
-members = [
-    "lib",
-    "cli",
-    "generate",
-    "common",
-    "document"
-]
+members = ["lib", "cli", "generate", "common", "document"]
 
 [profile.dev]
-codegen-units = 1 # faster builds
+codegen-units = 256 # faster builds
 incremental = true
-lto = true
+lto = false
 panic = "abort"
+debug = 0
+# codegen-backend = "cranelift"
 
 [profile.release]
 opt-level = 3
@@ -24,4 +21,3 @@ panic = 'unwind'
 incremental = false
 overflow-checks = false
 strip = true
-
