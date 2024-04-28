@@ -21,7 +21,8 @@ pub const TILE_HEIGHT: f64 = 120f64 * S3;
 
 //pub const PATH_WIDTH: f64 = 0.16666f64; // Max is 1/6
 //pub const PATH_WIDTH: f64 = 0.04;
-pub const PATH_WIDTH: f64 = 0.11f64; // No overlap between tiles
+//pub const PATH_WIDTH: f64 = 0.11f64; // No overlap between tiles
+pub const PATH_WIDTH: f64 = 0.07f64; // No overlap between tiles
 
 impl Add for Point {
     type Output = Self;
