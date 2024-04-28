@@ -153,19 +153,41 @@ impl Maze {
             // We could loop through, looking for any intersections that are exactly 2
             let mut found = false;
             for (i, j) in intersections {
-                let tiles_at_intersections = self.tiles.get(*j, *i).unwrap();
+                let tiles_at_intersections = self.tiles.get(*j, *i).unwrap().clone();
                 if tiles_at_intersections.nodes.len() == 2 {
-                    //println!(" {n} \\[UndirectedEdge] {m} ,");
+                    let bits = tiles_at_intersections.bits;
                     // We can merge these two nets in a simple way
-                    let _ =
-                        self.tiles
-                            .set(*j, *i, Tile::new(vec![tiles_at_intersections.bits], true));
+                    let _ = self.tiles.set(*j, *i, Tile::new(vec![bits], true));
 
                     found = true;
 
-                    // TODO: Joins nets! // But this will change all the other join indexes, how to do this?
-                    // Reverse, largest index down?
-                    // Need a way to do it all at once!
+                    // Join the nets
+                    let nodes = tiles_at_intersections.get_first_nodes();
+                    let mut indexes: Vec<usize> = self
+                        .nets
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(index, net)| {
+                            if nodes.iter().any(|&node| net.contains(&[*i, *j, node])) {
+                                Some(index)
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+                    indexes.sort();
+
+                    // Join the nets with the matching indexes
+                    // We only have 2 items
+                    if indexes.len() == 2 {
+                        let first_index = indexes[0];
+                        let other_index = indexes[1];
+                        let other_net = self.nets[other_index].clone();
+                        self.nets[first_index].extend(other_net);
+                        self.nets.remove(other_index);
+                    } else {
+                        println!("Error, we don't have 2 indexes to merge {:?}", indexes);
+                    }
                     break;
                 }
             }

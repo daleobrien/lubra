@@ -30,6 +30,14 @@ impl Tile {
         };
     }
 
+    pub fn get_first_nodes(&self) -> Vec<usize> {
+        // Get the first set bit from each node
+        return self
+            .nodes
+            .iter()
+            .map(|n| n.trailing_zeros().to_usize().unwrap())
+            .collect();
+    }
     pub fn to_string_vec(self) -> String {
         if self.nodes.is_empty() {
             return "-".to_string();
