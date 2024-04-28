@@ -148,28 +148,24 @@ impl Maze {
         let mut shared_coords = Self::get_intersections(coord_maps);
         let mut processed_coords: HashSet<(usize, usize)> = HashSet::new();
 
-        for element in shared_coords.iter() {
-            let (n, m) = element.0;
-            //println!("Any element: [{n},{m}] -> {:?}", element.1);
+        for ((n, m), intersections) in shared_coords.iter() {
             // Must always have atleast one element
 
             // We could loop through, looking for any intersections that are exactly 2
-            let first_coord = element.1.iter().next().unwrap();
-            let tiles_at_intersections = self.tiles.get(first_coord.1, first_coord.0).unwrap();
-            //println!("Tile: {:?}", tiles_at_intersections.nodes);
-            // If length is 2, we are good to go
-
-            if tiles_at_intersections.nodes.len() == 2 {
-                // We can merge these two nets in a simple way
-                //println!("Tile: {:32b}", tiles_at_intersections.bits);
-                self.tiles.set(
-                    first_coord.1,
-                    first_coord.0,
-                    Tile::new(vec![tiles_at_intersections.bits], true),
-                );
-            } else {
-                println!("First node: {:?}", first_coord);
-                println!("Skipping: {:?}", tiles_at_intersections,);
+            let mut found = false;
+            for (i, j) in intersections {
+                let tiles_at_intersections = self.tiles.get(*j, *i).unwrap();
+                if tiles_at_intersections.nodes.len() == 2 {
+                    // We can merge these two nets in a simple way
+                    self.tiles
+                        .set(*j, *i, Tile::new(vec![tiles_at_intersections.bits], true));
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                // We can't merge these nets in a simple way
+                println!("Tile: ({m},{n}){:?}", intersections);
             }
 
             // If I merge one, then all other mergers will be need to be updated
