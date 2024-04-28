@@ -145,10 +145,10 @@ impl Maze {
 
         // We can do the below until there is only none list
         // Alter node and track which nets can be merged, since we need to do it on one pass?
-        let mut shared_coords = Self::get_intersections(coord_maps);
+        let shared_coords = Self::get_intersections(coord_maps);
 
         for ((n, m), intersections) in shared_coords.iter() {
-            // Must always have atleast one element
+            // Must always have at least one element
 
             // We could loop through, looking for any intersections that are exactly 2
             let mut found = false;
@@ -225,54 +225,54 @@ impl Maze {
             let n_keys: HashSet<(usize, usize)> = coords_n.keys().cloned().collect();
             for (m, coords_m) in coord_maps.iter().enumerate() {
                 if m <= n {
-                    continue; // It is symmetric
+                    continue; // It is symmetric!
                 }
+
+                // If n and m are in the same set, then we don't need to check them since they have
+                // already have an intersection via some intermediary set.
+                // For example: If I have some joins on say, 1/2 and 2/3 then I don't need to check 2/3
                 let index_n = node_to_set.iter().position(|x| x.contains(&n));
                 let index_m = node_to_set.iter().position(|x| x.contains(&m));
-
                 if index_n.is_some() && index_n == index_m {
                     continue;
                 }
 
+                // Find any intersections between the two sets, i.e. where different nets share the same tile
                 let m_keys: HashSet<(usize, usize)> = coords_m.keys().cloned().collect();
-
                 let intersecting: HashSet<(usize, usize)> =
                     n_keys.intersection(&m_keys).cloned().collect();
 
-                // If I have some joins on say, 1/2 and 2/3 then I don't need to check 2/3
-                // I think that's the case, will work on that first
-
                 if !intersecting.is_empty() {
-                    // Find set for n, & then m
+                    // Some intersections have been found!
+                    match (index_n, index_m) {
+                        (Some(index_n), Some(index_m)) => {
+                            // These two sets are connected, so we can merge them
+                            // None: `m > n` is always true.
+                            let (left, right) = node_to_set.split_at_mut(index_m);
+                            let set_n = &mut left[index_n];
+                            let set_m = &right[0];
+                            set_n.extend(set_m.iter());
+                            node_to_set.remove(index_m);
 
-                    //println!(">> {n}->{index_n}, {m}-{index_m}");
-
-                    if index_n.is_some() && index_m.is_some() {
-                        // Merge the two sets
-                        let (left, right) = node_to_set.split_at_mut(index_m.unwrap());
-                        let set_n = &mut left[index_n.unwrap()];
-                        let set_m = &mut right[0];
-                        set_n.extend(set_m.iter().cloned());
-                        node_to_set.remove(index_m.unwrap());
-
-                        shared_coords.insert((n, m), intersecting);
-                    } else if index_n.is_some() {
-                        // Add m to n's set
-                        let set_n = node_to_set.get_mut(index_n.unwrap()).unwrap();
-                        set_n.insert(m);
-                        shared_coords.insert((n, m), intersecting);
-                    } else if index_m.is_some() {
-                        // Add n to m's set
-                        let set_m = node_to_set.get_mut(index_m.unwrap()).unwrap();
-                        set_m.insert(n);
-                        shared_coords.insert((n, m), intersecting);
-                    } else {
-                        // Create a new set
-                        let mut new_set = HashSet::new();
-                        new_set.insert(n);
-                        new_set.insert(m);
-                        node_to_set.push(new_set);
-                        shared_coords.insert((n, m), intersecting);
+                            shared_coords.insert((n, m), intersecting);
+                        }
+                        (Some(index_n), None) => {
+                            // Add m to n's set
+                            let set_n = node_to_set.get_mut(index_n).unwrap();
+                            set_n.insert(m);
+                            shared_coords.insert((n, m), intersecting);
+                        }
+                        (None, Some(index_m)) => {
+                            // Add n to m's set
+                            let set_m = node_to_set.get_mut(index_m).unwrap();
+                            set_m.insert(n);
+                            shared_coords.insert((n, m), intersecting);
+                        }
+                        _ => {
+                            // Create a new set
+                            node_to_set.push(vec![n, m].into_iter().collect());
+                            shared_coords.insert((n, m), intersecting);
+                        }
                     }
                 }
             }
