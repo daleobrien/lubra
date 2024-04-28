@@ -21,3 +21,4 @@ panic = 'unwind'
 incremental = false
 overflow-checks = false
 strip = true
+#codegen-units = 1

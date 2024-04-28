@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs;
 
@@ -10,8 +10,9 @@ use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
-use common::bit_utils::print_nets;
 
+#[cfg(build = "debug")]
+use common::bit_utils::print_nets;
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
@@ -116,10 +117,10 @@ impl Maze {
         for net in self.nets.iter() {
             let mut cycle = false;
             for [i, j, k] in net.iter() {
-                println!("@ {}, {}, {}", i, j, k);
+                //println!("@ {}, {}, {}", i, j, k);
                 if visited.contains(&(*j, *i, *k)) {
                     cycle = true;
-                    println!("->: {}, {}, {}", i, j, k);
+                    //println!("->: {}, {}, {}", i, j, k);
                     break;
                 }
                 visited.insert((*j, *i, *k));
@@ -132,9 +133,147 @@ impl Maze {
     }
 
     pub fn reduce_nets(&mut self, lower_limit: usize) {
+        self.sort_nets_by_length();
+        self.remove_short_nets(lower_limit);
+
+        // Create a hashSet of the nets, but used just i,j coordinates as the keys
+        let coord_maps = self.create_coord_maps();
+
+        // NOTE: Do I only need get intersections one at a time, since we are merging them?
+        // But faster to get them all at once, and then not use the later ones we no longer
+        // need
+
+        // We can do the below until there is only none list
+        // Alter node and track which nets can be merged, since we need to do it on one pass?
+        let mut shared_coords = Self::get_intersections(coord_maps);
+        let mut processed_coords: HashSet<(usize, usize)> = HashSet::new();
+
+        for element in shared_coords.iter() {
+            let (n, m) = element.0;
+            println!("Any element: [{n},{m}] -> {:?}", element.1);
+            // Must always have atleast one element
+
+            // We could loop through, looking for any intersections that are exactly 2
+            let first_coord = element.1.iter().next().unwrap();
+            println!("First node: {:?}", first_coord);
+            let tiles_at_intersections = self.tiles.get(first_coord.1, first_coord.0).unwrap();
+            println!("Tile: {:?}", tiles_at_intersections.nodes);
+            // If length is 2, we are good to go
+
+            if tiles_at_intersections.nodes.len() == 2 {
+                // We can merge these two nets
+                println!("Tile: {:32b}", tiles_at_intersections.bits);
+                self.tiles.set(
+                    first_coord.1,
+                    first_coord.0,
+                    Tile::new(vec![tiles_at_intersections.bits], true),
+                );
+            }
+
+            // This node will be replaced!
+            // In one, net add the other node
+            // Need to get the tile at each coord, since sometimes the net will loop through the same
+            // coord multiple times
+
+            // If I merge one, then all other mergers will be need to be updated
+            // Example:
+            // If 1/2 merged then 1/3 & 2/3 will effectively merged too, and so on. But we don't need to scan, so that's ok
+            // thus, skip all 2/n provided joins if there is a 1/n, and I will iterate over a 1/n before a 2/n
+            processed_coords.insert((*n, *m));
+        }
+
+        //println!("nets  {:?}", self.nets);
+        //println!("tiles  {:?}", self.tiles);
+        // println!("Shared coords: {:?}", shared_coords);
+        //
+        // {
+        //  (0, 1): { (7, 1), (4, 2), (6, 4), (8, 4), (6, 1), (4, 3) },
+        //  (0, 2): { (2, 5), (5, 6), (7, 7), (8, 7) }
+        // }
+
+        println!("\nWe have disjoint {:?} nets:", self.nets.len());
+
+        // for (n, nets) in self.nets.iter_mut().enumerate() {
+        //     println!("{n} -> {}, {:?}", nets.len(), nets);
+        // }
+
+        /*
+
+         net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
+         net_2 = [[i,j,k], [i,j,k], <m>]
+
+         Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
+         Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
+
+         Repeat until we only have one net.
+
+        The surrounding_tiles are of the form:
+
+                 1
+                ╱ ╲
+               4   5
+              ╱     ╲
+             2 ━ 6 ━ 3
+
+            ▽△▽△▽      △▽△▽△:
+            △▽▲▽△  or  ▽△▼△▽
+            ▽△▽△▽      △▽△▽△
+
+         */
+    }
+
+    fn get_intersections(
+        coord_maps: Vec<HashMap<(usize, usize), Vec<usize>>>,
+    ) -> HashMap<(usize, usize), HashSet<(usize, usize)>> {
+        let mut shared_coords: HashMap<(usize, usize), HashSet<(usize, usize)>> = HashMap::new();
+
+        for (n, coords_n) in coord_maps.iter().enumerate() {
+            let n_keys: HashSet<(usize, usize)> = coords_n.keys().cloned().collect();
+            for (m, coords_m) in coord_maps.iter().enumerate() {
+                if m <= n {
+                    continue; // It is symmetric
+                }
+                let m_keys: HashSet<(usize, usize)> = coords_m.keys().cloned().collect();
+
+                let intersecting: HashSet<(usize, usize)> =
+                    n_keys.intersection(&m_keys).cloned().collect();
+
+                if !intersecting.is_empty() {
+                    shared_coords.insert((n, m), intersecting);
+                }
+            }
+        }
+        return shared_coords;
+    }
+
+    fn create_coord_maps(&mut self) -> Vec<HashMap<(usize, usize), Vec<usize>>> {
+        let mut coord_maps: Vec<HashMap<(usize, usize), Vec<usize>>> = vec![]; //HashMap::new();
+        for (n, nets) in self.nets.iter().enumerate() {
+            for [i, j, k] in nets.iter() {
+                let map = coord_maps.get_mut(n);
+                if map.is_none() {
+                    coord_maps.push(HashMap::new());
+                }
+                let map = coord_maps.get_mut(n).unwrap();
+                let entry = map.entry((*i, *j)).or_insert(vec![]);
+                entry.push(*k);
+            }
+        }
+        // for set in coord_maps.iter() {
+        //     //println!("SET");
+        //     for (coord, nets) in set.iter() {
+        //         //  println!("{:?} -> {:?}", coord, nets);
+        //     }
+        // }
+        return coord_maps;
+    }
+
+    fn sort_nets_by_length(&mut self) {
         // Sort such that the last net is the shortest, we will be deleting them as we go
         self.nets.sort_by(|a, b| (&b.len()).cmp(&a.len()));
+    }
 
+    fn remove_short_nets(&mut self, lower_limit: usize) {
         // Strip out small nets
         self.nets.retain(|nets| {
             // Remove small nets
@@ -163,36 +302,6 @@ impl Maze {
             }
             return false;
         });
-
-        println!("\nWe have disjoint {:?} nets:", self.nets.len());
-
-        for (n, nets) in self.nets.iter_mut().enumerate() {
-            println!("{n} -> {}, {:?}", nets.len(), nets);
-        }
-
-        /*
-
-         net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
-         net_2 = [[i,j,k], [i,j,k], <m>]
-
-         Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
-         Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
-
-         Repeat until we only have one net.
-
-        The surrounding_tiles are of the form:
-
-                 1
-                ╱ ╲
-               4   5
-              ╱     ╲
-             2 ━ 6 ━ 3
-
-            ▽△▽△▽      △▽△▽△:
-            △▽▲▽△  or  ▽△▼△▽
-            ▽△▽△▽      △▽△▽△
-
-         */
     }
 
     fn update_network(&mut self, tile: &Tile, i: usize, j: usize) {
@@ -343,6 +452,7 @@ impl Maze {
     }
 
     pub fn render(&mut self, file_name: String, file_type: FileType) -> Result<(), Box<dyn Error>> {
+        //let start = Instant::now();
         #[cfg(build = "debug")]
         self.print_out_networks();
 
@@ -373,6 +483,9 @@ impl Maze {
             }
         }
 
+        // println!("render took (1) {:?}", start.elapsed());
+        // let start = Instant::now();
+
         for coordinate_and_net in all_catorised_nets.visible.iter() {
             // We don't want to draw the hidden nets
             let masked_net: CoordinateAndNet = CoordinateAndNet {
@@ -402,6 +515,9 @@ impl Maze {
             svg.add_fragment(frag.unwrap(), point, 1);
         }
 
+        //println!("render took (2) {:?}", start.elapsed());
+        //let start = Instant::now();
+
         match file_type {
             SVG => return self.save_as_svg(svg.to_string(false), file_name),
             PNG => return self.save_as_png(svg.to_string(false).as_str(), file_name),
@@ -429,13 +545,17 @@ impl Maze {
 
         let zoom = 1f32;
         let pixmap_size = tree.size().to_int_size().scale_by(zoom).unwrap();
+        println!("Size w:{} h:{}", pixmap_size.width(), pixmap_size.height());
 
         let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height()).unwrap();
 
         let render_ts = tiny_skia::Transform::from_scale(zoom, zoom);
+
+        // This is very slow when running on debug builds !!!
         resvg::render(&tree, render_ts, &mut pixmap.as_mut());
 
         pixmap.save_png(&input).unwrap();
+
         return Ok(());
     }
 }
