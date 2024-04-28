@@ -33,7 +33,7 @@ fn main() {
     // let start = Instant::now();
     // println!("Generating nets ... ");
     // One small maze
-    let mut maze = Maze::new(50, 32, true, true, Some(3));
+    let mut maze = Maze::new(50, 32, true, false, Some(3));
     let name = format!("5-sample-normal-03");
 
     // println!("generation took {:?}", start.elapsed());
