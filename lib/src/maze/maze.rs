@@ -150,30 +150,27 @@ impl Maze {
 
         for element in shared_coords.iter() {
             let (n, m) = element.0;
-            println!("Any element: [{n},{m}] -> {:?}", element.1);
+            //println!("Any element: [{n},{m}] -> {:?}", element.1);
             // Must always have atleast one element
 
             // We could loop through, looking for any intersections that are exactly 2
             let first_coord = element.1.iter().next().unwrap();
-            println!("First node: {:?}", first_coord);
             let tiles_at_intersections = self.tiles.get(first_coord.1, first_coord.0).unwrap();
-            println!("Tile: {:?}", tiles_at_intersections.nodes);
+            //println!("Tile: {:?}", tiles_at_intersections.nodes);
             // If length is 2, we are good to go
 
             if tiles_at_intersections.nodes.len() == 2 {
-                // We can merge these two nets
-                println!("Tile: {:32b}", tiles_at_intersections.bits);
+                // We can merge these two nets in a simple way
+                //println!("Tile: {:32b}", tiles_at_intersections.bits);
                 self.tiles.set(
                     first_coord.1,
                     first_coord.0,
                     Tile::new(vec![tiles_at_intersections.bits], true),
                 );
+            } else {
+                println!("First node: {:?}", first_coord);
+                println!("Skipping: {:?}", tiles_at_intersections,);
             }
-
-            // This node will be replaced!
-            // In one, net add the other node
-            // Need to get the tile at each coord, since sometimes the net will loop through the same
-            // coord multiple times
 
             // If I merge one, then all other mergers will be need to be updated
             // Example:
@@ -185,11 +182,6 @@ impl Maze {
         //println!("nets  {:?}", self.nets);
         //println!("tiles  {:?}", self.tiles);
         // println!("Shared coords: {:?}", shared_coords);
-        //
-        // {
-        //  (0, 1): { (7, 1), (4, 2), (6, 4), (8, 4), (6, 1), (4, 3) },
-        //  (0, 2): { (2, 5), (5, 6), (7, 7), (8, 7) }
-        // }
 
         println!("\nWe have disjoint {:?} nets:", self.nets.len());
 
