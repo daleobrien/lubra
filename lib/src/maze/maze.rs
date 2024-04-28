@@ -157,18 +157,21 @@ impl Maze {
                 if tiles_at_intersections.nodes.len() == 2 {
                     //println!(" {n} \\[UndirectedEdge] {m} ,");
                     // We can merge these two nets in a simple way
-                    self.tiles
-                        .set(*j, *i, Tile::new(vec![tiles_at_intersections.bits], true));
+                    let _ =
+                        self.tiles
+                            .set(*j, *i, Tile::new(vec![tiles_at_intersections.bits], true));
+
                     found = true;
 
-                    // TODO: Joins nets! // But this will change all the other join indexes
+                    // TODO: Joins nets! // But this will change all the other join indexes, how to do this?
+                    // Reverse, largest index down?
                     // Need a way to do it all at once!
                     break;
                 }
             }
             if !found {
                 // We can't merge these nets in a simple way
-                println!("Tile: ({m},{n}){:?}", intersections);
+                println!("Couldn't join: ({m},{n}){:?}", intersections);
                 // TODO: Implement more complex joins ...
             }
 
