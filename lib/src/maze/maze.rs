@@ -159,10 +159,9 @@ impl Maze {
                     // We can merge these two nets in a simple way
                     let _ = self.tiles.set(*j, *i, Tile::new(vec![bits], true));
 
-                    found = true;
-
                     // Join the nets
                     let nodes = tiles_at_intersections.get_first_nodes();
+                    // Find the nets that contain the nodes
                     let mut indexes: Vec<usize> = self
                         .nets
                         .iter()
@@ -188,6 +187,7 @@ impl Maze {
                     } else {
                         println!("Error, we don't have 2 indexes to merge {:?}", indexes);
                     }
+                    found = true;
                     break;
                 }
             }
@@ -195,6 +195,7 @@ impl Maze {
                 // We can't merge these nets in a simple way
                 println!("Couldn't join: ({m},{n}){:?}", intersections);
                 // TODO: Implement more complex joins ...
+                // This occurs when atleast one net passing though the same tile as the other net
             }
 
             // If I merge one, then all other mergers will be need to be updated
