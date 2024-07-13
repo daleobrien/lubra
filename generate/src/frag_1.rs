@@ -1,7 +1,7 @@
 use common::consts::FILL;
 use common::types::format::trimf64;
 use common::types::path::Path;
-use common::types::point::{PATH_WIDTH, Point, S3, TILE_WIDTH};
+use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
 fn a1_base(invert: bool) -> (String, Path) {
     let w = PATH_WIDTH;

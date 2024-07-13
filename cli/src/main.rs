@@ -40,23 +40,23 @@ fn main() {
     // let start = Instant::now();
 
     let _ = maze.render(name.to_string(), SVG);
-
-    // println!("render took {:?}", start.elapsed());
-    // let start = Instant::now();
-
-    maze.remove_cycles();
-    let name = format!("6-sample-remove-cycles-03");
-    let _ = maze.render(name.to_string(), SVG);
-
-    //println!("Reducing nets ... ");
-    // Reduce step
-    maze.reduce_nets(4);
-    // println!("reducing took {:?}", start.elapsed());
-    // let start = Instant::now();
-
-    let name = format!("7-sample-reduce-03");
-    let _ = maze.render(name.to_string(), SVG);
-    //println!("render took {:?}", start.elapsed());
+    //
+    // // println!("render took {:?}", start.elapsed());
+    // // let start = Instant::now();
+    //
+    // maze.remove_cycles();
+    // let name = format!("6-sample-remove-cycles-03");
+    // let _ = maze.render(name.to_string(), SVG);
+    //
+    // //println!("Reducing nets ... ");
+    // // Reduce step
+    // maze.reduce_nets(4);
+    // // println!("reducing took {:?}", start.elapsed());
+    // // let start = Instant::now();
+    //
+    // let name = format!("7-sample-reduce-03");
+    // let _ = maze.render(name.to_string(), SVG);
+    // //println!("render took {:?}", start.elapsed());
 
     // // Lots of small mazes
     // for i in 1..105 {

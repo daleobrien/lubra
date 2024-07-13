@@ -2,7 +2,7 @@ use std::fmt;
 
 use rand_distr::num_traits::ToPrimitive;
 
-use common::bit_utils::{sort_upper_bits, to_6bit_binary};
+use common::bit_utils::{print_bits, print_nets, sort_upper_bits, to_6bit_binary};
 use common::consts::{IN, NL, WA};
 use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
@@ -57,22 +57,37 @@ impl Tile {
         coordinate: Coordinate,
         boundaries: bool,
         surrounding_tiles: &[Option<&Tile>; 12],
+        debug: bool,
     ) -> CataloguedNet {
         //
 
         let mut render_nets = CataloguedNet::new();
 
-        //println!("NET: {coordinate} -> {:?}", print_nets(&self.nodes));
-        //
+        if debug {
+            println!("NETS: {coordinate} -> {:?}", print_nets(&self.nodes));
+        }
         for net in self.nodes {
             // Now we need to look for related tiles ...
 
+            if debug {
+                println!("NET: {coordinate} -> {:?}", net);
+            }
             // This needs to return a net to use, and a list of adjacent nets to remove.
-            let complex_net = Self::find_best_path(coordinate, &surrounding_tiles, &net);
+            let complex_net = Self::find_best_path(coordinate, &surrounding_tiles, &net, debug);
 
             if complex_net.is_some() {
+                if debug {
+                    println!(
+                        "COMPLEX {:?} :: {:?}",
+                        to_6bit_binary(&net, true),
+                        &surrounding_tiles
+                    );
+                }
                 render_nets.add(complex_net.unwrap());
             } else {
+                if debug {
+                    println!("SIMPLE {:?} ::", to_6bit_binary(&net, true));
+                }
                 // Simple path
                 let path = MAP_PATHS.get(&net);
 
@@ -109,6 +124,7 @@ impl Tile {
         coordinate: Coordinate,
         surrounding_tiles: &&[Option<&Tile>; 12],
         net: &u32,
+        debug: bool,
     ) -> Option<ComplexNet> {
         let list_of_adj_and_nets = ADJ_CHECKS.get(&net);
 
@@ -144,6 +160,13 @@ impl Tile {
                                 ((net & NL) & adj_net).trailing_zeros().to_usize().unwrap();
 
                             if adj_net != 0 {
+                                if debug {
+                                    println!(
+                                        "HID: {}  -> adj_net \"{}\"]",
+                                        coordinate,
+                                        print_bits(adj_net),
+                                    );
+                                }
                                 Self::add_node_to_hidden(
                                     coordinate,
                                     &mut complex_net,

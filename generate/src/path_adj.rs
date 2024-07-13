@@ -66,7 +66,7 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N6, true, N1 | N6)],
             vec![(ADJ_N6, true, N3 | N6)],
             vec![(ADJ_N6, true, N4 | N6)], // Will be blank
-            vec![(ADJ_N6, true, N5 | N6)], // Will be blank
+                                           //vec![(ADJ_N6, true, N5 | N6)], // Will be blank
         ],
     );
 

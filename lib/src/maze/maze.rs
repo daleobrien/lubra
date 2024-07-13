@@ -13,6 +13,7 @@ use usvg::fontdb;
 
 #[cfg(build = "debug")]
 use common::bit_utils::print_nets;
+use common::bit_utils::to_6bit_binary;
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
@@ -538,6 +539,7 @@ impl Maze {
                     coord,
                     self.boundaries,
                     &surrounding_tiles,
+                    i == 25 && j == 7,
                 );
                 all_catorised_nets.extend(cat_nets);
             }
@@ -555,12 +557,22 @@ impl Maze {
             };
 
             if all_catorised_nets.hidden.contains(&masked_net) {
+                // For some reason, we are hiding just one wrong net?
+                if coordinate_and_net.coordinate.i == 25 && coordinate_and_net.coordinate.j == 7 {
+                    println!(
+                        "HIDDEN: ({},{}) {:?}",
+                        coordinate_and_net.coordinate.i,
+                        coordinate_and_net.coordinate.j,
+                        to_6bit_binary(&masked_net.net, true)
+                    );
+                }
                 continue;
             }
 
             let net = bits::transform_tile(coordinate_and_net.net, coordinate_and_net.coordinate);
 
             let frag = MAP_PATHS.get(&net);
+
             if frag.is_none() {
                 continue;
             }
