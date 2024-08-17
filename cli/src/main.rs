@@ -33,13 +33,17 @@ fn main() {
     // let start = Instant::now();
     // println!("Generating nets ... ");
     // One small maze
-    let mut maze = Maze::new(50, 32, true, true, Some(3));
-    let name = format!("5-sample-normal-03");
+    //let mut maze = Maze::new(50, 32, true, true, Some(3));
 
-    // println!("generation took {:?}", start.elapsed());
-    // let start = Instant::now();
+    for i in 8..9 {
+        let mut maze = Maze::new(10, 7, true, true, Some(i));
+        let name = format!("5-sample-normal-0{i}");
 
-    let _ = maze.render(name.to_string(), SVG);
+        // println!("generation took {:?}", start.elapsed());
+        // let start = Instant::now();
+
+        let _ = maze.render(name.to_string(), SVG);
+    }
     //
     // // println!("render took {:?}", start.elapsed());
     // // let start = Instant::now();

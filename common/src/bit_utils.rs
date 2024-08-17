@@ -102,7 +102,8 @@ pub fn to_6bit_binary(value: &u32, reduce: bool) -> String {
             "0b00_000000_",
         ] {
             if text.starts_with(s) {
-                text = text.replace(s, "0b00_..._");
+                //text = text.replace(s, "0b00_..._");
+                text = text.replace(s, "");
             }
         }
         for s in vec![

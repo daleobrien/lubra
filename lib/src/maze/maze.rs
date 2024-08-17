@@ -3,6 +3,13 @@ use std::error::Error;
 use std::fs;
 
 use array2d::Array2D;
+use common::bit_utils::print_bits;
+#[cfg(build = "debug")]
+use common::bit_utils::print_nets;
+use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
+use common::types::bits;
+use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
+use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use rand::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -10,14 +17,6 @@ use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
-
-#[cfg(build = "debug")]
-use common::bit_utils::print_nets;
-use common::bit_utils::to_6bit_binary;
-use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
-use common::types::bits;
-use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
-use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 
 use crate::maze::adjacent::get_surrounding_tile_connections;
 use crate::maze::maze::FileType::{PNG, SVG};
@@ -539,7 +538,7 @@ impl Maze {
                     coord,
                     self.boundaries,
                     &surrounding_tiles,
-                    i == 25 && j == 7,
+                    i == 24 && j == 7,
                 );
                 all_catorised_nets.extend(cat_nets);
             }
@@ -560,10 +559,10 @@ impl Maze {
                 // For some reason, we are hiding just one wrong net?
                 if coordinate_and_net.coordinate.i == 25 && coordinate_and_net.coordinate.j == 7 {
                     println!(
-                        "HIDDEN: ({},{}) {:?}",
+                        "HIDD: ({},{}) {:?}",
                         coordinate_and_net.coordinate.i,
                         coordinate_and_net.coordinate.j,
-                        to_6bit_binary(&masked_net.net, true)
+                        print_bits(masked_net.net)
                     );
                 }
                 continue;
