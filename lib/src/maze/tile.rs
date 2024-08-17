@@ -197,7 +197,7 @@ impl Tile {
                                 Self::add_node_to_hidden(
                                     coordinate,
                                     &mut complex_net,
-                                    adj_nets_1,
+                                    adj_net,
                                     node_number,
                                     debug,
                                 );
@@ -223,15 +223,16 @@ impl Tile {
         let coord = get_connected_coords_at_coords(coordinate, node_number);
 
         if coord.is_some() {
-            if (1 << node_number).to_u32().unwrap() & adj_net != 0 {
+            let index_as_mask = 1 << node_number;
+            if index_as_mask.to_u32().unwrap() & adj_net != 0 {
                 // Also, is node_number in adj_net
                 if debug {
                     println!(
-                        "ADD: {}  -> node # {n} {b} {x}",
+                        "ADD : {}  -> node # {n} {b} {x}",
                         coord.unwrap(),
                         n = node_number + 1,
                         b = print_bits(adj_net),
-                        x = adj_net & 1 << node_number
+                        x = adj_net & index_as_mask != 0
                     );
                 }
                 complex_net
