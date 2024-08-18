@@ -538,7 +538,7 @@ impl Maze {
                     coord,
                     self.boundaries,
                     &surrounding_tiles,
-                    i == 200 && j == 1,
+                    false, //i == 200 && j == 1,
                 );
                 all_catorised_nets.extend(cat_nets);
             }
