@@ -195,7 +195,7 @@ impl Maze {
                 // We can't merge these nets in a simple way
                 println!("Couldn't join: ({m},{n}){:?}", intersections);
                 // TODO: Implement more complex joins ...
-                // This occurs when atleast one net passing though the same tile as the other net
+                // This occurs when at least one net passing though the same tile as the other net
             }
 
             // If I merge one, then all other mergers will be need to be updated
