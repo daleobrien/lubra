@@ -1,15 +1,14 @@
-cargo-features = ["codegen-backend"]
+# cargo-features = ["codegen-backend"]
 [workspace]
 resolver = "2"
 members = ["lib", "cli", "generate", "common", "document"]
 
 [profile.dev]
-codegen-units = 256 # faster builds
-incremental = true
-lto = false
-panic = "abort"
-debug = 0
-# codegen-backend = "cranelift"
+#codegen-units = 256 # faster builds
+#incremental = true
+#lto = false
+#panic = "abort"
+#debug = 0
 
 [profile.release]
 opt-level = 3

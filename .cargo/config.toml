@@ -1,6 +1,5 @@
 [build]
 rustflags = [
     "-Ctarget-cpu=native",
-    "-Clink-arg=-fuse-ld=/opt/homebrew/opt/llvm/bin/ld64.lld",
     "-Zthreads=12",
 ]
