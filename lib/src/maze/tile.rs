@@ -38,6 +38,7 @@ impl Tile {
             .map(|n| n.trailing_zeros().to_usize().unwrap())
             .collect();
     }
+    
     pub fn to_string_vec(self) -> String {
         if self.nodes.is_empty() {
             return "-".to_string();

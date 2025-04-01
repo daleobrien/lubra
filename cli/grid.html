@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SVG Grid</title>
+        <style>
+            .svg-grid {
+                display: grid;
+                grid-template-columns: repeat(10, 1fr);
+                gap: 5px;
+                width: fit-content;
+                margin: auto;
+                padding: 10px;
+            }
+            .svg-item {
+                width: 250px;
+                height: 290px;
+                overflow: hidden;
+            }
+            .svg-item svg {
+                width: 50%;
+                height: 50%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="svg-grid">
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const svgGrid = document.querySelector(".svg-grid");
+                    for (let i = 1; i <= 100; i++) {
+                        const svgItem = document.createElement("div");
+                        svgItem.classList.add("svg-item");
+                        const embed = document.createElement("embed");
+                        embed.src = `./small/${String(i).padStart(3, "0")}.svg`;
+                        embed.type = "image/svg+xml";
+                        svgItem.appendChild(embed);
+                        svgGrid.appendChild(svgItem);
+                    }
+                });
+            </script>
+        </div>
+    </body>
+</html>

@@ -99,40 +99,30 @@ fn to_str(invert: bool, pts: Path, r: String, _cx: String, _cy: String) -> Strin
     // <circle cx=\\\"{cx}\\\" cy=\\\"{cy}\\\" r=\\\"{r}\\\" stroke=\\\"black\\\" fill=\\\"none\\\" /> \
     return format!(
         "<path fill=\\\"{fill}\\\" d=\\\"\
-      M {a} \
-      L {b} \
+      M {a} L {b} \
       A {r} {r} 0 0 {d1} {c} \
       L {d} \
       A {r} {r} 0 0 {d1} {e} \
-      L {f} \
-      L {g} \
-      L {h} \
+      L {f} L {g} L {h} \
       A {r} {r} 0 0 {d1} {i} \
       L {j} \
       A {r} {r} 0 0 {d1} {k} \
-      L {l} \
-      L {m} \
-      L {n} \
+      L {l} L {m} L {n} \
       A {r} {r} 0 0 {d1} {o} \
       L {p} \
       A {r} {r} 0 0 {d1} {q} \
       L {r_}
       \\\" /> \
      <path stroke=\\\"black\\\" d=\\\"\
-      M {a} \
-      L {b} \
+      M {a}  L {b} \
       A {r} {r} 0 0 {d1} {c} \
       M {d} \
       A {r} {r} 0 0 {d1} {e} \
-      L {f} \
-      M {g} \
-      L {h} \
+      L {f} M {g} L {h} \
       A {r} {r} 0 0 {d1} {i} \
       M {j} \
       A {r} {r} 0 0 {d1} {k} \
-      L {l} \
-      M {m} \
-      L {n} \
+      L {l} M {m} L {n} \
       A {r} {r} 0 0 {d1} {o} \
       M {p} \
       A {r} {r} 0 0 {d1} {q} \

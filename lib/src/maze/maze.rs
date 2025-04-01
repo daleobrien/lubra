@@ -4,8 +4,6 @@ use std::fs;
 
 use array2d::Array2D;
 use common::bit_utils::print_bits;
-#[cfg(build = "debug")]
-use common::bit_utils::print_nets;
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
@@ -120,14 +118,14 @@ impl Maze {
                 //println!("@ {}, {}, {}", i, j, k);
                 if visited.contains(&(*j, *i, *k)) {
                     cycle = true;
-                    //println!("->: {}, {}, {}", i, j, k);
+                    println!("Cycle detected @ ->: {}, {}, {}", i, j, k);
                     break;
                 }
                 visited.insert((*j, *i, *k));
             }
 
             if cycle {
-                // Break the cycle
+                // TODO: Break the cycles
             }
         }
     }
@@ -216,21 +214,23 @@ impl Maze {
 
         /*
 
-         net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
-         net_2 = [[i,j,k], [i,j,k], <m>]
+        net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
+        net_2 = [[i,j,k], [i,j,k], <m>]
 
-         Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
-         Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
+        Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
+        Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
 
-         Repeat until we only have one net.
+        Repeat until we only have one net.
 
         The surrounding_tiles are of the form:
 
-                 1
-                ╱ ╲
-               4   5
-              ╱     ╲
-             2 ━ 6 ━ 3
+                    1
+                  ╱ ╲
+                4      5
+              ╱         ╲
+             2  ━  6  ━   3
+
+            Either up or down
 
             ▽△▽△▽      △▽△▽△:
             △▽▲▽△  or  ▽△▼△▽
