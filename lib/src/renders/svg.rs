@@ -22,14 +22,7 @@ impl Svg {
         Svg {
             width,
             height,
-            layers: [
-                String::new(),
-                String::new(),
-                String::new(),
-                String::new(),
-                String::new(),
-                String::new(),
-            ],
+            layers: std::array::from_fn(|_| String::new()),
             glyphs: StringRegistry::new(),
         }
     }
