@@ -1,3 +1,4 @@
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -10,27 +11,28 @@ pub struct StringRegistry {
 impl StringRegistry {
     pub fn new() -> Self {
         StringRegistry {
-            map: HashMap::new(),
             counter: AtomicUsize::new(0),
+            map: HashMap::new(),
             set: HashMap::new(),
         }
     }
 
     pub fn add(&mut self, value: &str) -> usize {
-        // If we have already stored the value, just return the key (id)
-        if self.set.contains_key(value) {
-            return *self.set.get(value).unwrap();
+        match self.set.entry(value.to_string()) {
+            Entry::Occupied(e) => *e.get(),
+            Entry::Vacant(e) => {
+                let id = self.counter.fetch_add(1, Ordering::Relaxed);
+                e.insert(id);
+                self.map.insert(id, value.to_string());
+                id
+            }
         }
-
-        let id = self.counter.fetch_add(1, Ordering::Relaxed);
-        self.map.insert(id, value.to_string());
-        self.set.insert(value.to_string(), id);
-        return id;
     }
 
     pub fn get(&self, id: usize) -> Option<&String> {
         self.map.get(&id)
     }
+
     pub(crate) fn iter(&self) -> StringRegistryIter {
         StringRegistryIter {
             inner: self.map.iter(),
