@@ -22,4 +22,4 @@ strip = true
 
 
 [build]
-rustflags = ["-C", "target-cpu=native" ""target-feature=+crt-static"]"]
+rustflags = ["-C", "target-cpu=native" "target-feature=+crt-static"]
