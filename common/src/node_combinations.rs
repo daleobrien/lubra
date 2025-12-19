@@ -78,4 +78,15 @@ mod tests {
         }
         assert_eq!(count, 5);
     }
+
+    #[test]
+    fn test_node_combinations_with_min_k() {
+        let seq = NodeCombinations::new(vec![0b_001, 0b_010, 0b_100], 2);
+
+        let mut count = 0;
+        for _ in seq {
+            count += 1;
+        }
+        assert_eq!(count, 4); // [[1,2,4], [1,2], [1,4], [2,4]]
+    }
 }
