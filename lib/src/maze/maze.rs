@@ -2,7 +2,9 @@ use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs;
 
+use crate::maze::adjacent::get_surrounding_tile_connections;
 use crate::maze::maze::FileType::{PNG, SVG};
+use crate::maze::random::random_tile;
 use crate::maze::tile::Tile;
 use crate::renders::fragment::MAP_PATHS;
 use crate::renders::svg::Svg;
@@ -18,8 +20,6 @@ use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
-use crate::maze::adjacent::get_surrounding_tile_connections;
-use crate::maze::random::random_tile;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {
@@ -132,7 +132,6 @@ impl Maze {
     }
 
     pub fn reduce_nets(&mut self, lower_limit: usize) {
-      return;
         self.sort_nets_by_length();
         self.remove_short_nets(lower_limit);
 
@@ -598,6 +597,10 @@ impl Maze {
                 (TILE_WIDTH / 2.0, 0.0),                     // 6
             ];
 
+            // Track positions where text has been added to avoid duplicates
+            let mut used_positions: Vec<Point> = Vec::new();
+            const POSITION_MARGIN: f64 = 2.0;
+
             for j in 0..self.number_of_rows {
                 for i in 0..self.number_of_columns {
                     // Calculate base position for this tile
@@ -616,7 +619,18 @@ impl Maze {
                                     TILE_HEIGHT - local_y
                                 },
                         };
-                        svg.add_text(numbers[i % 3][node_idx], position, 2);
+                        // Skip if we have already added text at this position
+                        let is_duplicate = used_positions.iter().any(|used_pos| {
+                            let dx = position.x - used_pos.x;
+                            let dy = position.y - used_pos.y;
+                            (dx * dx + dy * dy).sqrt() < POSITION_MARGIN
+                        });
+
+                        if !is_duplicate {
+                            let text = numbers[i % 3][node_idx];
+                            svg.add_text(text, position, 2);
+                            used_positions.push(position);
+                        }
                     }
                     let position = Point {
                       x: tile_x + TILE_WIDTH / 2.0,
