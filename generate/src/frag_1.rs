@@ -1,11 +1,11 @@
 use common::consts::FILL;
-use common::define_shape_family_1r;
+use common::define_shape_family;
 use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-fn base(invert: bool) -> (String, Path) {
+fn base(invert: bool) -> (String, String, Path) {
     let w = PATH_WIDTH;
     let h = PATH_WIDTH / 2.;
     let r = w / 2.;
@@ -25,25 +25,25 @@ fn base(invert: bool) -> (String, Path) {
     }
 
     let r_str = trimf64(TILE_WIDTH * r);
-    (r_str, pts)
+    // Return r_str twice for consistency with 2r pattern (both radii are the same)
+    (r_str.clone(), r_str, pts)
 }
 
-fn svg(invert: bool, pts: &Path, r: &str) -> String {
-
+fn svg(invert: bool, r1: String, _r2: String, pts: Path) -> String {
     let d1 = if invert { 0 } else { 1 };
-    let pts_str = pts.clone().str();
+    let pts_str = pts.str();
     format!(
-        "<path stroke='black' fill='{fill}' d='M {a} L {b} A {r} {r} 0 0 {d1} {c} L {d}'/>",
+        "<path stroke='black' fill='{fill}' d='M{a}L{b}A{r} {r} 0 0 {d1} {c}L{d}'/>",
         a = pts_str[0],
         b = pts_str[1],
         c = pts_str[2],
         d = pts_str[3],
         fill = FILL,
-        r = r,
+        r = r1,
     )
 }
 
-define_shape_family_1r! {
+define_shape_family! {
     base: base,
     svg: svg,
     variants: {

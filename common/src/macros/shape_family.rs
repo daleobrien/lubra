@@ -1,27 +1,5 @@
 #[macro_export]
-macro_rules! define_shape_family_1r {
-    (
-        base: $base_fn:ident,
-        svg: $svg_fn:ident,
-        variants: {
-            $(
-                $variant_name:ident: $invert_flip:expr => $transform:ident
-            ),* $(,)?
-        }
-    ) => {
-        $(
-            pub fn $variant_name(invert: bool) -> String {
-                let inv = if $invert_flip { !invert } else { invert };
-                let (r, pts) = $base_fn(inv);
-                let transformed_pts = $transform(pts, invert);
-                $svg_fn(invert, &transformed_pts, &r)
-            }
-        )*
-    };
-}
-
-#[macro_export]
-macro_rules! define_shape_family_2r {
+macro_rules! define_shape_family {
     (
         base: $base_fn:ident,
         svg: $svg_fn:ident,
