@@ -45,7 +45,8 @@ pub fn trim_whitespace(s: &str) -> String {
 pub fn generate_all_shapes() {
     let mut paths: BTreeMap<usize, String> = BTreeMap::new();
 
-  // TODO: Find 4-5 4 and 4-5 5 combinations with arcs, since that isn't valid
+    // TODO:!!!! 4-5 5 and 4-5 4 !!!! appears in docs! and doesn't make sense
+
     for dir in [IN, NO] {
         let invert = dir == IN;
         for (key, path) in [
@@ -134,11 +135,11 @@ pub fn generate_all_shapes() {
             (dir | N3 | N6, n36(invert)),
             //
             (dir | N1 | N4 | A3 | A4, n14_34(invert)),
-            (dir | N1 | N4 | A4, n14_4(invert)), // This looks wrong!
+            (dir | N1 | N4 | A4, n14_4(invert)),
             //
             (dir | N1 | N5 | A2 | A5, n15_25(invert)),
             (dir | N1 | N5 | A3 | A5, n15_35(invert)),
-            (dir | N1 | N5 | A5, n15_5(invert)), // Looks wrong?
+            (dir | N1 | N5 | A5, n15_5(invert)),
             //
             (dir | N2 | N4 | A1 | A4, n24_14(invert)),
             (dir | N2 | N4 | A3 | A4, n24_34(invert)),
@@ -155,15 +156,11 @@ pub fn generate_all_shapes() {
             (dir | N3 | N6 | A6, n36_6(invert)),
             // 4-5
             (dir | N4 | N5, n45(invert)),
-            (dir | N4 | N5 | A4, n45(invert) + &*n4(invert)),
-            (dir | N4 | N5 | A5, n45(invert) + &*n5(invert)),
             (dir | N4 | N5 | A1 | A4, n45_14(invert)),
             (dir | N4 | N5 | A1 | A5, n45_15(invert)),
             (dir | N4 | N5 | A2 | A4 | B3 | B5, n45_24_35(invert)),
             (dir | N4 | N5 | A1 | A4 | B3 | B5, n45_14_35(invert)),
-            //
             (dir | N4 | N5 | A2 | A4 | B1 | B5, n45_24_15(invert)),
-            //
             (dir | N4 | N5 | A2 | A4, n45_24(invert)),
             (dir | N4 | N5 | A3 | A5, n45_35(invert)),
             // 4-6
