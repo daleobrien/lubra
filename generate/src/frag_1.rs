@@ -31,13 +31,13 @@ fn base(invert: bool) -> (String, String, Path) {
 
 fn svg(invert: bool, r1: String, _r2: String, pts: Path) -> String {
     let d1 = if invert { 0 } else { 1 };
-    let pts_str = pts.str();
+    let pts= pts.str();
     format!(
         "<path stroke='black' fill='{fill}' d='M{a}L{b}A{r} {r} 0 0 {d1} {c}L{d}'/>",
-        a = pts_str[0],
-        b = pts_str[1],
-        c = pts_str[2],
-        d = pts_str[3],
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
         fill = FILL,
         r = r1,
     )
@@ -46,6 +46,7 @@ fn svg(invert: bool, r1: String, _r2: String, pts: Path) -> String {
 define_shape_family! {
     base: base,
     svg: svg,
+    offset_rotations: &[0, 1, 2, 3],
     variants: {
         n1: false => identity,
         n2: false => rotate_ccw,

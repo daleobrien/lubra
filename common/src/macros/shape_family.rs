@@ -3,6 +3,7 @@ macro_rules! define_shape_family {
     (
         base: $base_fn:ident,
         svg: $svg_fn:ident,
+        offset_rotations: $offset_rotations:expr,
         variants: {
             $(
                 $variant_name:ident: $invert_flip:expr => $transform:ident
@@ -13,7 +14,7 @@ macro_rules! define_shape_family {
             pub fn $variant_name(invert: bool) -> String {
                 let inv = if $invert_flip { !invert } else { invert };
                 let (r1, r2, pts) = $base_fn(inv);
-                let transformed_pts = $transform(pts, invert);
+                let transformed_pts = $transform(pts, invert, $offset_rotations);
                 $svg_fn(invert, r1, r2, transformed_pts)
             }
         )*
@@ -26,44 +27,44 @@ pub mod transforms {
   use crate::types::path::Path;
 
   #[inline]
-  pub fn nothing(_pts: Path, _invert: bool) -> Path {
+  pub fn nothing(_pts: Path, _invert: bool, _offset_rotations: &[usize]) -> Path {
     Path::new(vec![])
   }
 
   /// Identity transformation (no change)
     #[inline]
-    pub fn identity(pts: Path, _invert: bool) -> Path {
+    pub fn identity(pts: Path, _invert: bool, _offset_rotations: &[usize]) -> Path {
         pts
     }
 
     /// Rotate counter-clockwise (120 degrees)
     #[inline]
-    pub fn rotate_ccw(pts: Path, invert: bool) -> Path {
-        pts.rotate_ccw(invert, vec![0, 1, 2, 3])
+    pub fn rotate_ccw(pts: Path, invert: bool, offset_rotations: &[usize]) -> Path {
+        pts.rotate_ccw(invert, offset_rotations.to_vec())
     }
 
     /// Rotate clockwise (120 degrees)
     #[inline]
-    pub fn rotate_cw(pts: Path, invert: bool) -> Path {
-        pts.rotate_cw(invert, vec![0, 1, 2, 3])
+    pub fn rotate_cw(pts: Path, invert: bool, offset_rotations: &[usize]) -> Path {
+        pts.rotate_cw(invert, offset_rotations.to_vec())
     }
 
     /// Reflect only
     #[inline]
-    pub fn reflect(pts: Path, _invert: bool) -> Path {
+    pub fn reflect(pts: Path, _invert: bool, _offset_rotations: &[usize]) -> Path {
         pts.reflect()
     }
 
     /// Reflect then rotate counter-clockwise
     #[inline]
-    pub fn reflect_then_rotate_ccw(pts: Path, invert: bool) -> Path {
-        pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3])
+    pub fn reflect_then_rotate_ccw(pts: Path, invert: bool, offset_rotations: &[usize]) -> Path {
+        pts.reflect().rotate_ccw(invert, offset_rotations.to_vec())
     }
 
     /// Reflect then rotate clockwise
     #[inline]
-    pub fn reflect_then_rotate_cw(pts: Path, invert: bool) -> Path {
-        pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3])
+    pub fn reflect_then_rotate_cw(pts: Path, invert: bool, offset_rotations: &[usize]) -> Path {
+        pts.reflect().rotate_cw(invert, offset_rotations.to_vec())
     }
 
 }

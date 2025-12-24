@@ -37,6 +37,7 @@ fn svg(invert: bool, r1: String, r2: String, pts: Path) -> String {
 define_shape_family! {
     base: base,
     svg: svg,
+    offset_rotations: &[0, 1, 2, 3],
     variants: {
         n23: false => identity,
         n13: false => rotate_ccw,
