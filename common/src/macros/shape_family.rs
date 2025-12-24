@@ -51,7 +51,7 @@ pub mod transforms {
   use crate::types::path::Path;
 
   #[inline]
-  pub fn nothing(pts: Path, _invert: bool) -> Path {
+  pub fn nothing(_pts: Path, _invert: bool) -> Path {
     Path::new(vec![])
   }
 

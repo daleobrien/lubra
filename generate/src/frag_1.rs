@@ -5,7 +5,7 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-fn a1_base(invert: bool) -> (String, Path) {
+fn base(invert: bool) -> (String, Path) {
     let w = PATH_WIDTH;
     let h = PATH_WIDTH / 2.;
     let r = w / 2.;
@@ -28,7 +28,8 @@ fn a1_base(invert: bool) -> (String, Path) {
     (r_str, pts)
 }
 
-fn a1_str(invert: bool, pts: &Path, r: &str) -> String {
+fn svg(invert: bool, pts: &Path, r: &str) -> String {
+
     let d1 = if invert { 0 } else { 1 };
     let pts_str = pts.clone().str();
     format!(
@@ -42,15 +43,9 @@ fn a1_str(invert: bool, pts: &Path, r: &str) -> String {
     )
 }
 
-fn n_base(invert: bool, transform: fn(Path, bool) -> Path) -> String {
-    let (r, pts) = a1_base(invert);
-    let transformed_pts = transform(pts, invert);
-    a1_str(invert, &transformed_pts, &r)
-}
-
 define_shape_family! {
-    base: a1_base,
-    svg: a1_str,
+    base: base,
+    svg: svg,
     variants: {
         n1: false => identity,
         n2: false => rotate_ccw,
