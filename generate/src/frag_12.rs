@@ -22,8 +22,8 @@ fn axy_to_str(invert: bool, r1: String, r2: String, pts: Path) -> String {
     let dir1 = if invert { 1 } else { 0 };
     let dir2 = if invert { 0 } else { 1 };
     return format!(
-        "<path fill=\\\"{fill}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {dir1} {b} L {c} A {r2} {r2} 0 0 {dir2} {d} z \\\" /> \
-         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 {dir1} {b} M {c} A {r2} {r2} 0 0 {dir2} {d} \\\" />",
+        "<path fill='{fill}' d='M {a} A {r1} {r1} 0 0 {dir1} {b} L {c} A {r2} {r2} 0 0 {dir2} {d} z ' /> \
+         <path stroke='black' d='M {a} A {r1} {r1} 0 0 {dir1} {b} M {c} A {r2} {r2} 0 0 {dir2} {d} ' />",
         a = pts[0],
         b = pts[1],
         c = pts[2],

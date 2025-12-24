@@ -32,7 +32,7 @@ fn main() {
     // let start = Instant::now();
     // println!("Generating nets ... ");
 
-    let mut maze = Maze::new(100, 64, true, true, true, Some(0));
+    let mut maze = Maze::new(100, 64, true, false, false, Some(0));
     maze.reduce_nets(4);
     let name = format!("100-by-64-sample-normal-00");
     let _ = maze.render(name.to_string(), SVG);
