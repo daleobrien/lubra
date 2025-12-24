@@ -3,7 +3,7 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, TILE_WIDTH};
 
-fn a15_base(invert: bool) -> (String, String, String, String, Path) {
+fn base(invert: bool) -> (String, String, String, String, Path) {
     let w = PATH_WIDTH;
 
     let r1 = 0.3333; // Adjustable
@@ -47,20 +47,20 @@ fn a15_base(invert: bool) -> (String, String, String, String, Path) {
     return (r1s, r2s, r3s, r4s, pts);
 }
 
-pub fn a15_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: String) -> String {
+pub fn svg(invert: bool,  r1: String, r2: String, r3: String, r4: String, pts: Path,) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     return format!(
-        "<path fill=\\\"{fill}\\\" d=\\\"\
+        "<path fill='{fill}' d='\
       M {a} \
       A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} L {d} \
       A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \
-      \\\" />\
-      <path stroke=\\\"black\\\" d=\\\"\
+      ' />\
+      <path stroke='black' d='\
       M {a} \
       A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} M {d} \
       A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \
-      \\\" />",
+      ' />",
         a = pts[0],
         b = pts[1],
         c = pts[2],
@@ -72,35 +72,35 @@ pub fn a15_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: 
 }
 
 pub fn n15(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
-    return a15_str(invert, pts, r1, r2, r3, r4);
+    let (r1, r2, r3, r4, pts) = base(invert);
+    return svg(invert, r1, r2, r3, r4, pts);
 }
 
 pub fn n24(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
+    let (r1, r2, r3, r4, pts) = base(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return a15_str(invert, pts, r1, r2, r3, r4);
+    return svg(invert, r1, r2, r3, r4, pts);
 }
 
 pub fn n36(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
+    let (r1, r2, r3, r4, pts) = base(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return a15_str(invert, pts, r1, r2, r3, r4);
+    return svg(invert, r1, r2, r3, r4, pts);
 }
 
 pub fn n14(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
+    let (r1, r2, r3, r4, pts) = base(invert);
     let pts = pts.reflect();
-    return a15_str(!invert, pts, r1, r2, r3, r4);
+    return svg(!invert, r1, r2, r3, r4, pts);
 }
 
 pub fn n26(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
+    let (r1, r2, r3, r4, pts) = base(invert);
     let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return a15_str(!invert, pts, r1, r2, r3, r4);
+    return svg(!invert, r1, r2, r3, r4, pts);
 }
 pub fn n35(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
+    let (r1, r2, r3, r4, pts) = base(invert);
     let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return a15_str(!invert, pts, r1, r2, r3, r4);
+    return svg(!invert, r1, r2, r3, r4, pts);
 }

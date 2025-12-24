@@ -3,7 +3,7 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-fn a_base(invert: bool) -> (f64, f64, Path) {
+fn base(invert: bool) -> (f64, f64, Path) {
     let w = PATH_WIDTH;
 
     let r1 = 0.25 + w;
@@ -27,58 +27,60 @@ fn a_base(invert: bool) -> (f64, f64, Path) {
     return (r1, r2, pts);
 }
 
-pub fn n15_5(invert: bool) -> String {
-    let (r1, r2, pts) = a_base(invert);
-    return a_str(invert, pts.str(), r1, r2);
-}
+fn svg(invert: bool, pts: Vec<String>, r1: f64, r2: f64) -> String {
+  let (d1, d2, d3) = if invert { (0, 1, 0) } else { (1, 0, 1) };
 
-pub fn n24_4(invert: bool) -> String {
-    let (r1, r2, pts) = a_base(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
-    return a_str(invert, pts.str(), r1, r2);
-}
-
-pub fn n36_6(invert: bool) -> String {
-    let (r1, r2, pts) = a_base(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
-    return a_str(invert, pts.str(), r1, r2);
-}
-
-pub fn n14_4(invert: bool) -> String {
-    let (r1, r2, pts) = a_base(invert);
-    let pts = pts.reflect();
-    return a_str(!invert, pts.str(), r1, r2);
-}
-
-pub fn n26_6(invert: bool) -> String {
-    let (r1, r2, pts) = a_base(invert);
-    let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3]);
-    return a_str(!invert, pts.str(), r1, r2);
-}
-
-pub fn n35_5(invert: bool) -> String {
-    let (r1, r2, pts) = a_base(invert);
-    let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
-    return a_str(!invert, pts.str(), r1, r2);
-}
-
-fn a_str(invert: bool, pts: Vec<String>, r1: f64, r2: f64) -> String {
-    let (d1, d2, d3) = if invert { (0, 1, 0) } else { (1, 0, 1) };
-
-    let string = format!(
-        " <path stroke=\\\"black\\\" fill=\\\"{fill}\\\" d=\\\"\
+  let string = format!(
+    " <path stroke='black' fill='{fill}' d='\
            M {a} A {r1} {r1} 0 0 {d1} {b} \
                  A {r3} {r3} 0 0 {d3} {c} \
                  A {r2} {r2} 0 0 {d2} {d} \
-          \\\" />",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-        r1 = trimf64(r1 * TILE_WIDTH),
-        r3 = trimf64(PATH_WIDTH * TILE_WIDTH),
-        r2 = trimf64(r2 * TILE_WIDTH),
-        fill = FILL
-    );
-    return string;
+          ' />",
+    a = pts[0],
+    b = pts[1],
+    c = pts[2],
+    d = pts[3],
+    r1 = trimf64(r1 * TILE_WIDTH),
+    r3 = trimf64(PATH_WIDTH * TILE_WIDTH),
+    r2 = trimf64(r2 * TILE_WIDTH),
+    fill = FILL
+  );
+  return string;
 }
+
+pub fn n15_5(invert: bool) -> String {
+    let (r1, r2, pts) = base(invert);
+    return svg(invert, pts.str(), r1, r2);
+}
+
+pub fn n24_4(invert: bool) -> String {
+    let (r1, r2, pts) = base(invert);
+    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
+    return svg(invert, pts.str(), r1, r2);
+}
+
+pub fn n36_6(invert: bool) -> String {
+    let (r1, r2, pts) = base(invert);
+    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
+    return svg(invert, pts.str(), r1, r2);
+}
+
+pub fn n14_4(invert: bool) -> String {
+    let (r1, r2, pts) = base(invert);
+    let pts = pts.reflect();
+    return svg(!invert, pts.str(), r1, r2);
+}
+
+pub fn n26_6(invert: bool) -> String {
+    let (r1, r2, pts) = base(invert);
+    let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3]);
+    return svg(!invert, pts.str(), r1, r2);
+}
+
+pub fn n35_5(invert: bool) -> String {
+    let (r1, r2, pts) = base(invert);
+    let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
+    return svg(!invert, pts.str(), r1, r2);
+}
+
+
