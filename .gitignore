@@ -23,3 +23,5 @@ target/rust-analyzer/metadata/workspace/Cargo.lock
 .idea/copilot.data.migration.agent.xml
 __pycache__/main.cpython-313.pyc
 .idea/copilot.data.migration.ask2agent.xml
+.idea/copilot.data.migration.ask.xml
+.idea/copilot.data.migration.edit.xml
