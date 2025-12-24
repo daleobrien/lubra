@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Edit:*)",
+      "Read(~/.zshrc)"
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0"
+  },
+  "companyAnnouncements": [
+    "Welcome to Acme Corp! Review our code guidelines at docs.acme.com",
+    "Reminder: Code reviews required for all PRs",
+    "New security policy in effect"
+  ]
+}

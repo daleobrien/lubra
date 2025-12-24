@@ -7,12 +7,13 @@ use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::random::random_tile;
 use crate::maze::tile::Tile;
 use crate::renders::fragment::MAP_PATHS;
+use crate::renders::node_numbers::add_node_numbers;
 use crate::renders::svg::Svg;
 use array2d::Array2D;
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
-use common::types::point::{Point, S2, TILE_HEIGHT, TILE_WIDTH};
+use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use rand::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -580,65 +581,7 @@ impl Maze {
         }
 
         if self.show_node_numbers {
-            // Add node numbers if requested
-            let numbers_0 = vec!["①", "②", "③", "④", "⑤", "⑥"];
-            let numbers_1 = vec!["③", "①", "②", "⑤", "⑥", "④"];
-            let numbers_2 = vec!["②", "③", "①", "⑥", "④", "⑤"];
-            let numbers = [numbers_0, numbers_1, numbers_2];
-
-            // Define node positions for a hexagonal tile (in local tile coordinates)
-            // These positions are based on a regular hexagon geometry
-            let node_positions: [(f64, f64); 6] = [
-                (TILE_WIDTH / 2.0, TILE_HEIGHT),             // 1
-                (0.0, 0.0),                                  // 2
-                (TILE_WIDTH, 0.0),                           // 3
-                (TILE_WIDTH / 4.0, TILE_HEIGHT / 2.0),       // 4
-                (TILE_WIDTH * 3.0 / 4.0, TILE_HEIGHT / 2.0), // 5
-                (TILE_WIDTH / 2.0, 0.0),                     // 6
-            ];
-
-            // Track positions where text has been added to avoid duplicates
-            let mut used_positions: Vec<Point> = Vec::new();
-            const POSITION_MARGIN: f64 = 2.0;
-
-            for j in 0..self.number_of_rows {
-                for i in 0..self.number_of_columns {
-                    // Calculate base position for this tile
-                    let tile_x = i as f64 * TILE_WIDTH / 2.0;
-                    let tile_y = j as f64 * TILE_HEIGHT;
-
-                    // Draw numbers for each active node
-                    for node_idx in 0..6 {
-                        let (local_x, local_y) = node_positions[node_idx];
-                        let position = Point {
-                            x: tile_x + local_x,
-                            y: tile_y
-                                + if (i + j) % 2 == 0 {
-                                    local_y
-                                } else {
-                                    TILE_HEIGHT - local_y
-                                },
-                        };
-                        // Skip if we have already added text at this position
-                        let is_duplicate = used_positions.iter().any(|used_pos| {
-                            let dx = position.x - used_pos.x;
-                            let dy = position.y - used_pos.y;
-                            (dx * dx + dy * dy).sqrt() < POSITION_MARGIN
-                        });
-
-                        if !is_duplicate {
-                            let text = numbers[i % 3][node_idx];
-                            svg.add_text(text, position, 2);
-                            used_positions.push(position);
-                        }
-                    }
-                    let position = Point {
-                      x: tile_x + TILE_WIDTH / 2.0,
-                      y: tile_y + if (i + j) % 2 == 0 {TILE_HEIGHT * S2 / 4.0} else {TILE_HEIGHT * (1.0 - S2 / 4.0)},
-                    };
-                    svg.add_text(format!("{i},{j}").as_str(), position, 2);
-                }
-            }
+            add_node_numbers(&mut svg, self.number_of_columns, self.number_of_rows);
         }
 
         //println!("render took (2) {:?}", start.elapsed());
