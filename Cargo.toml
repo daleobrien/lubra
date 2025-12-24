@@ -19,3 +19,7 @@ panic = 'unwind'
 incremental = false
 overflow-checks = false
 strip = true
+
+
+[build]
+rustflags = ["-C", "target-cpu=native", "target-feature=+crt-static"]
