@@ -21,3 +21,6 @@ incremental = false
 overflow-checks = false
 strip = true
 #codegen-units = 1
+
+[build]
+rustflags = ["-C", "target-cpu=native", "target-feature=+crt-static"]
