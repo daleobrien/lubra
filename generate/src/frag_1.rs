@@ -1,4 +1,6 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
@@ -28,13 +30,9 @@ fn a1_base(invert: bool) -> (String, Path) {
 
 fn a1_str(invert: bool, pts: &Path, r: &str) -> String {
     let d1 = if invert { 0 } else { 1 };
-    let pts_str = pts.str();
+    let pts_str = pts.clone().str();
     format!(
-        r#"<path  stroke="black" fill="{fill}" d="\
-      M {a} L {b} \
-      A {r} {r} 0 0 {d1} {c} \
-      L {d} \
-      \" />"#,
+        "<path stroke='black' fill='{fill}' d='M {a} L {b} A {r} {r} 0 0 {d1} {c} L {d}'/>",
         a = pts_str[0],
         b = pts_str[1],
         c = pts_str[2],
@@ -50,36 +48,15 @@ fn n_base(invert: bool, transform: fn(Path, bool) -> Path) -> String {
     a1_str(invert, &transformed_pts, &r)
 }
 
-pub fn n1(invert: bool) -> String {
-    n_base(invert, |pts, _| pts)
-}
-
-pub fn n2(invert: bool) -> String {
-    n_base(invert, |pts, invert| {
-        pts.rotate_ccw(invert, vec![0, 1, 2, 3])
-    })
-}
-
-pub fn n3(invert: bool) -> String {
-    n_base(invert, |pts, invert| {
-        pts.rotate_cw(invert, vec![0, 1, 2, 3])
-    })
-}
-
-pub fn n4(invert: bool) -> String {
-    n_base(!invert, |pts, invert| {
-        let reflected_pts = pts.reflect();
-        reflected_pts.rotate_cw(invert, vec![0, 1, 2, 3])
-    })
-}
-
-pub fn n5(invert: bool) -> String {
-    n_base(!invert, |pts, invert| {
-        let reflected_pts = pts.reflect();
-        reflected_pts.rotate_ccw(invert, vec![0, 1, 2, 3])
-    })
-}
-
-pub fn n6(invert: bool) -> String {
-    n_base(!invert, |pts, _| pts.reflect())
+define_shape_family! {
+    base: a1_base,
+    svg: a1_str,
+    variants: {
+        n1: false => identity,
+        n2: false => rotate_ccw,
+        n3: false => rotate_cw,
+        n4: true => reflect_then_rotate_cw,
+        n5: true => reflect_then_rotate_ccw,
+        n6: true => reflect,
+    }
 }

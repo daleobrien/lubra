@@ -2,12 +2,15 @@ use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs;
 
+use crate::maze::maze::FileType::{PNG, SVG};
+use crate::maze::tile::Tile;
+use crate::renders::fragment::MAP_PATHS;
+use crate::renders::svg::Svg;
 use array2d::Array2D;
-use common::bit_utils::print_bits;
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
-use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use common::types::point::{Point, S2, TILE_HEIGHT, TILE_WIDTH};
 use rand::prelude::*;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
@@ -15,13 +18,8 @@ use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
-
 use crate::maze::adjacent::get_surrounding_tile_connections;
-use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::random::random_tile;
-use crate::maze::tile::Tile;
-use crate::renders::fragment::MAP_PATHS;
-use crate::renders::svg::Svg;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {
@@ -39,6 +37,7 @@ pub struct Maze {
     number_of_rows: usize,
     tiles: Array2D<Tile>,
     boundaries: bool,
+    show_node_numbers: bool,
 }
 
 impl Maze {
@@ -47,6 +46,7 @@ impl Maze {
         number_of_rows: usize,
         randomise: bool,
         boundaries: bool,
+        show_node_numbers: bool,
         seed: Option<u64>,
     ) -> Self {
         // User Maze object somehow
@@ -66,6 +66,7 @@ impl Maze {
             number_of_rows,
             tiles,
             boundaries,
+            show_node_numbers,
         };
 
         if randomise {
@@ -95,7 +96,7 @@ impl Maze {
                 continue;
             }
 
-            self.tiles[(j, i)] = self.get_random_tile(i, j);
+          self.tiles[(j, i)] = self.get_random_tile(i, j);
 
             self.seed = match self.seed {
                 Some(s) => Some(s.wrapping_add(1)),
@@ -131,6 +132,7 @@ impl Maze {
     }
 
     pub fn reduce_nets(&mut self, lower_limit: usize) {
+      return;
         self.sort_nets_by_length();
         self.remove_short_nets(lower_limit);
 
@@ -489,6 +491,7 @@ impl Maze {
         }
 
         let tile = Tile::new(nets, true);
+        //let tile = Tile::new(vec![N6], true);
         self.update_network(&tile, i, j);
         return tile;
     }
@@ -556,15 +559,6 @@ impl Maze {
             };
 
             if all_catorised_nets.hidden.contains(&masked_net) {
-                // For some reason, we are hiding just one wrong net?
-                if coordinate_and_net.coordinate.i == 25 && coordinate_and_net.coordinate.j == 7 {
-                    println!(
-                        "HIDD: ({},{}) {:?}",
-                        coordinate_and_net.coordinate.i,
-                        coordinate_and_net.coordinate.j,
-                        print_bits(masked_net.net)
-                    );
-                }
                 continue;
             }
 
@@ -584,6 +578,53 @@ impl Maze {
                 y: coordinate_and_net.coordinate.j as f64,
             };
             svg.add_fragment(frag.unwrap(), point, 1);
+        }
+
+        if self.show_node_numbers {
+            // Add node numbers if requested
+            let numbers_0 = vec!["①", "②", "③", "④", "⑤", "⑥"];
+            let numbers_1 = vec!["③", "①", "②", "⑤", "⑥", "④"];
+            let numbers_2 = vec!["②", "③", "①", "⑥", "④", "⑤"];
+            let numbers = [numbers_0, numbers_1, numbers_2];
+
+            // Define node positions for a hexagonal tile (in local tile coordinates)
+            // These positions are based on a regular hexagon geometry
+            let node_positions: [(f64, f64); 6] = [
+                (TILE_WIDTH / 2.0, TILE_HEIGHT),             // 1
+                (0.0, 0.0),                                  // 2
+                (TILE_WIDTH, 0.0),                           // 3
+                (TILE_WIDTH / 4.0, TILE_HEIGHT / 2.0),       // 4
+                (TILE_WIDTH * 3.0 / 4.0, TILE_HEIGHT / 2.0), // 5
+                (TILE_WIDTH / 2.0, 0.0),                     // 6
+            ];
+
+            for j in 0..self.number_of_rows {
+                for i in 0..self.number_of_columns {
+                    // Calculate base position for this tile
+                    let tile_x = i as f64 * TILE_WIDTH / 2.0;
+                    let tile_y = j as f64 * TILE_HEIGHT;
+
+                    // Draw numbers for each active node
+                    for node_idx in 0..6 {
+                        let (local_x, local_y) = node_positions[node_idx];
+                        let position = Point {
+                            x: tile_x + local_x,
+                            y: tile_y
+                                + if (i + j) % 2 == 0 {
+                                    local_y
+                                } else {
+                                    TILE_HEIGHT - local_y
+                                },
+                        };
+                        svg.add_text(numbers[i % 3][node_idx], position, 2);
+                    }
+                    let position = Point {
+                      x: tile_x + TILE_WIDTH / 2.0,
+                      y: tile_y + if (i + j) % 2 == 0 {TILE_HEIGHT * S2 / 4.0} else {TILE_HEIGHT * (1.0 - S2 / 4.0)},
+                    };
+                    svg.add_text(format!("{i},{j}").as_str(), position, 2);
+                }
+            }
         }
 
         //println!("render took (2) {:?}", start.elapsed());
@@ -633,11 +674,11 @@ impl Maze {
 
 #[cfg(test)]
 mod tests {
-    use crate::maze::maze::Maze;
+  use crate::maze::maze::Maze;
 
-    #[test]
+  #[test]
     fn test_surrounding_for_island() {
-        let maze = Maze::new(1, 1, false, false, None);
+        let maze = Maze::new(1, 1, false, false, false, None);
 
         let surrounding_tiles = maze.get_connected_titles_for_tile(0, 0);
 
@@ -650,7 +691,7 @@ mod tests {
 
     #[test]
     fn test_surrounding_for_x_0() {
-        let maze = Maze::new(9, 9, false, false, None);
+        let maze = Maze::new(9, 9, false, false, false, None);
 
         let expected = vec![
             vec![1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0],

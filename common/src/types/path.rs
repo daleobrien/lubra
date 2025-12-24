@@ -12,6 +12,9 @@ impl Path {
         Path { points }
     }
 
+    pub fn len(self) -> usize {
+      self.points.len()
+    }
     pub fn scale(self) -> Path {
         return Path {
             points: self.iter().map(|p| *p * TILE_WIDTH).collect(),

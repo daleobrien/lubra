@@ -7,7 +7,7 @@ use num_traits::ToPrimitive;
 
 use common::bit_utils::{print_bits, sort_upper_bits, to_6bit_binary};
 use common::consts::{
-    A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, WA,
+  A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, WA,
 };
 
 use crate::frag_1::{n1, n2, n3, n4, n5, n6};
@@ -32,8 +32,8 @@ use crate::frag_16::{n16, n25, n34};
 use crate::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
 use crate::frag_arcs::{a46, n45, n456, n56};
 use crate::frag_complex_arcs::{
-    n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
-    n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
+  n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
+  n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
 };
 use crate::frag_wall::l_wall;
 
@@ -45,6 +45,7 @@ pub fn trim_whitespace(s: &str) -> String {
 pub fn generate_all_shapes() {
     let mut paths: BTreeMap<usize, String> = BTreeMap::new();
 
+  // TODO: Find 4-5 4 and 4-5 5 combinations with arcs, since that isn't valid
     for dir in [IN, NO] {
         let invert = dir == IN;
         for (key, path) in [
