@@ -1,4 +1,6 @@
 use common::consts::FILL;
+use common::define_shape_family_2r;
+use common::macros::{identity, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
@@ -32,19 +34,12 @@ fn svg(invert: bool, r1: String, r2: String, pts: Path) -> String {
     );
 }
 
-pub fn n23(invert: bool) -> String {
-    let (r1, r2, pts) = base(invert);
-    return svg(invert, r1, r2, pts);
-}
-
-pub fn n13(invert: bool) -> String {
-    let (r1, r2, pts) = base(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
-    return svg(invert, r1, r2, pts);
-}
-
-pub fn n12(invert: bool) -> String {
-    let (r1, r2, pts) = base(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
-    return svg(invert, r1, r2, pts);
+define_shape_family_2r! {
+    base: base,
+    svg: svg,
+    variants: {
+        n23: false => identity,
+        n13: false => rotate_ccw,
+        n12: false => rotate_cw,
+    }
 }

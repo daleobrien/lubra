@@ -1,30 +1,5 @@
-/// Define a family of related shapes with automatic variant generation.
-///
-/// This macro reduces code duplication by generating all 6 node variants
-/// (n1-n6) from a single base shape definition with transformations.
-///
-/// # Example
-///
-/// ```ignore
-/// use common::define_shape_family;
-///
-/// define_shape_family! {
-///     base: a1_base,
-///     svg: a1_str,
-///     variants: {
-///         n1: false => identity,
-///         n2: false => rotate_ccw,
-///         n3: false => rotate_cw,
-///         n4: true => reflect_then_rotate_cw,
-///         n5: true => reflect_then_rotate_ccw,
-///         n6: true => reflect,
-///     }
-/// }
-/// ```
-///
-/// This generates 6 public functions: n1(bool) -> String, n2(bool) -> String, etc.
 #[macro_export]
-macro_rules! define_shape_family {
+macro_rules! define_shape_family_1r {
     (
         base: $base_fn:ident,
         svg: $svg_fn:ident,
@@ -40,6 +15,28 @@ macro_rules! define_shape_family {
                 let (r, pts) = $base_fn(inv);
                 let transformed_pts = $transform(pts, invert);
                 $svg_fn(invert, &transformed_pts, &r)
+            }
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! define_shape_family_2r {
+    (
+        base: $base_fn:ident,
+        svg: $svg_fn:ident,
+        variants: {
+            $(
+                $variant_name:ident: $invert_flip:expr => $transform:ident
+            ),* $(,)?
+        }
+    ) => {
+        $(
+            pub fn $variant_name(invert: bool) -> String {
+                let inv = if $invert_flip { !invert } else { invert };
+                let (r1, r2, pts) = $base_fn(inv);
+                let transformed_pts = $transform(pts, invert);
+                $svg_fn(invert, r1, r2, transformed_pts)
             }
         )*
     };
