@@ -13,9 +13,9 @@ macro_rules! define_shape_family {
         $(
             pub fn $variant_name(invert: bool) -> String {
                 let inv = if $invert_flip { !invert } else { invert };
-                let (r1, r2, pts) = $base_fn(inv);
+                let (radii, pts) = $base_fn(inv);
                 let transformed_pts = $transform(pts, invert, $offset_rotations);
-                $svg_fn(invert, r1, r2, transformed_pts)
+                $svg_fn(invert, radii, transformed_pts)
             }
         )*
     };

@@ -5,7 +5,7 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-fn base(invert: bool) -> (String, String, Path) {
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
     let a = w * Point { x: -0.5, y: S3 };
     let b = w * Point { x: 0.5, y: S3 } + Point { x: 1.0, y: 0.0 };
@@ -16,10 +16,10 @@ fn base(invert: bool) -> (String, String, Path) {
     let r2 = trimf64(TILE_WIDTH * (1.0 - PATH_WIDTH));
     let pts = Path::new(vec![a, b, c, d]);
     let pts = if invert { pts.invert() } else { pts };
-    return (r1, r2, pts);
+    return (vec![r1, r2], pts);
 }
 
-fn svg(invert: bool, r1: String, r2: String, pts: Path) -> String {
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let pts = pts.str();
     let dir1 = if invert { 1 } else { 0 };
     let dir2 = if invert { 0 } else { 1 };
@@ -31,6 +31,8 @@ fn svg(invert: bool, r1: String, r2: String, pts: Path) -> String {
         c = pts[2],
         d = pts[3],
         fill=FILL,
+        r1 = radii[0],
+        r2 = radii[1],
     );
 }
 
