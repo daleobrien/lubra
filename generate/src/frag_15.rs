@@ -53,22 +53,10 @@ fn base(invert: bool) -> (Vec<String>, Path) {
 
 pub fn svg(invert: bool, radii: Vec<String>, pts: Path,) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
-    // let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
-    // good: n/i15, n/i24, n/i36
-    // bad : n/i14, n/i26, n/i35
 
     let pts = pts.str();
     return format!(
-        "<path fill='{fill}' d='\
-      M {a} \
-      A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} L {d} \
-      A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \
-      ' />\
-      <path stroke='black' d='\
-      M {a} \
-      A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} M {d} \
-      A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \
-      ' />",
+        "<path fill='{fill}' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r2} {r2} 0 0 {d1} {c}L{d}A{r3} {r3} 0 0 {d2} {e}A{r4} {r4} 0 0 {d1} {f}'/><path stroke='black' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r2} {r2} 0 0 {d1} {c}M{d}A{r3} {r3} 0 0 {d2} {e}A{r4} {r4} 0 0 {d1} {f}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],

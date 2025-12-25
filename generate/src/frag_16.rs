@@ -20,8 +20,7 @@ fn base(invert: bool) -> (Vec<String>, Path) {
 fn svg(_invert: bool, _radii: Vec<String>, pts: Path) -> String {
   let pts = pts.str();
     return format!(
-        "<path fill='{fill}' d='M{a}l{b}l{c}l{d}z '/> \
-         <path stroke='black' d='M{a}l{b}m{c}l{d}z'/>",
+        "<path fill='{fill}' d='M{a}l{b}l{c}l{d}z'/><path stroke='black' d='M{a}l{b}m{c}l{d}z'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
