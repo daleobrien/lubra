@@ -2,10 +2,10 @@ use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 use weighted_rand::builder::{NewBuilder, WalkerTableBuilder};
 
-use crate::maze::mass_large::list_of_possible_mass_for_a_mask as mass_large;
-use crate::maze::mass_small::list_of_possible_mass_for_a_mask as mass_small;
-use crate::maze::nets_large::list_of_possible_nets_for_a_mask as nets_large;
-use crate::maze::nets_small::list_of_possible_nets_for_a_mask as nets_small;
+use crate::maze::generated::mass_large::list_of_possible_mass_for_a_mask as mass_large;
+use crate::maze::generated::mass_small::list_of_possible_mass_for_a_mask as mass_small;
+use crate::maze::generated::nets_large::list_of_possible_nets_for_a_mask as nets_large;
+use crate::maze::generated::nets_small::list_of_possible_nets_for_a_mask as nets_small;
 
 pub fn random_tile(mask: u32, seed: Option<u64>, reduced_lookup: bool) -> Vec<u32> {
     let possible_nets = if reduced_lookup {

@@ -206,7 +206,7 @@ pub fn generate_all_shapes() {
     }
 
     // Change this to a look up function rather than a class with a HashMap.
-    let mut file = File::create("../lib/src/renders/fragment.rs").expect("File Creation failed");
+    let mut file = File::create("../lib/src/renders/generated/fragment.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
     let _ = file.write(b"pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {\n");

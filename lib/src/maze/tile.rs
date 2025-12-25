@@ -8,8 +8,8 @@ use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
 use common::types::coordinate::{CataloguedNet, ComplexNet, Coordinate, CoordinateAndNet};
 
-use crate::maze::nets_adjacent::ADJ_CHECKS;
-use crate::renders::fragment::MAP_PATHS;
+use crate::maze::generated::nets_adjacent::ADJ_CHECKS;
+use crate::renders::generated::fragment::MAP_PATHS;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Tile {

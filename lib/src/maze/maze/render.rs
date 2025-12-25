@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fs;
 use crate::maze::maze::{FileType, Maze};
 use crate::maze::maze::FileType::{PNG, SVG};
-use crate::renders::fragment::MAP_PATHS;
+use crate::renders::generated::fragment::MAP_PATHS;
 use crate::renders::node_numbers::add_node_numbers;
 use crate::renders::svg::Svg;
 use common::consts::NX;

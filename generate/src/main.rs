@@ -71,8 +71,8 @@ fn generate_nets() {
     let count = lookups::create_lookups(seq, &mut nets_by_mask, &mut mass_by_mask);
     println!("Generated {} lookups.", count);
 
-    write_nets_to_file(nets_by_mask, "../lib/src/maze/nets_large.rs");
-    write_mass_to_file(mass_by_mask, "../lib/src/maze/mass_large.rs");
+    write_nets_to_file(nets_by_mask, "../lib/src/maze/generated/nets_large.rs");
+    write_mass_to_file(mass_by_mask, "../lib/src/maze/generated/mass_large.rs");
 
     println!("Generating Rust code for all lookups nets (small network).");
     let seq = NodeCombinations::new(
@@ -94,6 +94,6 @@ fn generate_nets() {
 
     lookups::create_lookups(seq, &mut nets_by_mask, &mut mass_by_mask);
 
-    write_nets_to_file(nets_by_mask, "../lib/src/maze/nets_small.rs");
-    write_mass_to_file(mass_by_mask, "../lib/src/maze/mass_small.rs");
+    write_nets_to_file(nets_by_mask, "../lib/src/maze/generated/nets_small.rs");
+    write_mass_to_file(mass_by_mask, "../lib/src/maze/generated/mass_small.rs");
 }
