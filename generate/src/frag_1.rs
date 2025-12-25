@@ -1,6 +1,8 @@
 use common::consts::FILL;
 use common::define_shape_family;
-use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
+use common::macros::{
+  identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw,
+};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
@@ -20,7 +22,9 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let d = Point { x: x2, y: y1 };
 
     let mut pts = Path::new(vec![a, b, c, d]);
-    if invert { pts = pts.invert(); }
+    if invert {
+        pts = pts.invert();
+    }
 
     let r_str = trimf64(TILE_WIDTH * r);
     (vec![r_str], pts)
@@ -28,15 +32,14 @@ fn base(invert: bool) -> (Vec<String>, Path) {
 
 fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let d1 = if invert { 0 } else { 1 };
-    let pts= pts.str();
+    let pts = pts.str();
     format!(
-        "<path stroke='black' fill='{fill}' d='M{a}L{b}A{r} {r} 0 0 {d1} {c}L{d}'/>",
+        "<path stroke='black' fill='{FILL}' d='M{a}L{b}A{r} {r} 0 0 {d1} {c}L{d}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
         d = pts[3],
-        fill = FILL,
-        r = radii[0],
+        r = radii[0]
     )
 }
 
