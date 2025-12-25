@@ -96,12 +96,12 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let r = &radii[0];
     let pts = pts.str();
     format!(
-        "<path fill='{fill}' d='M{a}L{b}A{r} {r} 0 0 {d1} {c}L{d}A{r} {r} 0 0 {d1} {e}L{f}L{g}L{h}A{r} {r} 0 0 {d1} {i}L{j}A{r} {r} 0 0 {d1} {k}L{l}L{m}L{n}A{r} {r} 0 0 {d1} {o}L{p}A{r} {r} 0 0 {d1} {q}L{r_}'/>\
+        "<path fill='{FILL}' d='M{a}L{b}A{r} {r} 0 0 {d1} {c}L{d}A{r} {r} 0 0 {d1} {e}L{f}L{g}L{h}A{r} {r} 0 0 {d1} {i}L{j}A{r} {r} 0 0 {d1} {k}L{l}L{m}L{n}A{r} {r} 0 0 {d1} {o}L{p}A{r} {r} 0 0 {d1} {q}L{r_}'/>\
         <path stroke='black' d='M{a}L{b}A{r} {r} 0 0 {d1} {c}M{d}A{r} {r} 0 0 {d1} {e}L{f}M{g}L{h}A{r} {r} 0 0 {d1} {i}M{j}A{r} {r} 0 0 {d1} {k}L{l}M{m}L{n}A{r} {r} 0 0 {d1} {o}M{p}A{r} {r} 0 0 {d1} {q}L{r_}'/>",
         a = pts[0], b = pts[1], c = pts[2], d = pts[3], e = pts[4],
         f = pts[5], g = pts[6], h = pts[7], i = pts[8], j = pts[9],
         k = pts[10], l = pts[11], m = pts[12], n = pts[13], o = pts[14],
-        p = pts[15], q = pts[16], r_ = pts[17], fill = FILL,
+        p = pts[15], q = pts[16], r_ = pts[17],
     )
 }
 

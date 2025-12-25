@@ -42,13 +42,12 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     format!(
-        "<path fill='{fill}' d='M{a}A{r1} {r1} 0 0 {d1} {b}L{c}A{r2} {r2} 0 0 {d2} {d}'/>\
+        "<path fill='{FILL}' d='M{a}A{r1} {r1} 0 0 {d1} {b}L{c}A{r2} {r2} 0 0 {d2} {d}'/>\
         <path stroke='black' d='M{a}A{r1} {r1} 0 0 {d1} {b}M{c}A{r2} {r2} 0 0 {d2} {d}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
         d = pts[3],
-        fill = FILL,
         r1 = radii[0],
         r2 = radii[1],
     )

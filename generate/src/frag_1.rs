@@ -20,9 +20,7 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let d = Point { x: x2, y: y1 };
 
     let mut pts = Path::new(vec![a, b, c, d]);
-    if invert {
-        pts = pts.invert();
-    }
+    if invert { pts = pts.invert(); }
 
     let r_str = trimf64(TILE_WIDTH * r);
     (vec![r_str], pts)
