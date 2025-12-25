@@ -3,7 +3,7 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S1, S2, S3, TILE_WIDTH};
 
-fn a156_base(invert: bool) -> (String, String, String, String, String, String, Path) {
+fn base(invert: bool) -> (String, String, String, String, String, String, Path) {
     let w = PATH_WIDTH;
     let r1 = 0.2f64; // Adjustable
 
@@ -104,7 +104,7 @@ fn a156_base(invert: bool) -> (String, String, String, String, String, String, P
     return (r1s, r2s, r3s, r4s, r5s, r6s, pts);
 }
 
-fn a156_str(
+fn svg(
     invert: bool,
     pts: Path,
     r1: String,
@@ -118,31 +118,8 @@ fn a156_str(
     let pts = pts.str();
     return format!(
         "\
-       <path fill=\\\"{fill}\\\"  d=\\\"\
-        M {a} \
-        A {r1} {r1} 0 0 {d2} {b} \
-        A {r4} {r4} 0 0 {d1} {c} \
-        A {r1} {r1} 0 0 {d2} {d} \
-        A {r6} {r6} 0 0 {d1} {e} \
-        L {f}
-        A {r5} {r5} 0 0 {d2} {g} \
-        L {h} \
-        A {r3} {r3} 0 0 {d2} {i} \
-        A {r2} {r2} 0 0 {d1} {j} \
-        Z \
-        \\\" />
-      <path stroke=\\\"black\\\" d=\\\"\
-      M {a} \
-      A {r1} {r1} 0 0 {d2} {b} \
-      A {r4} {r4} 0 0 {d1} {c} \
-      A {r1} {r1} 0 0 {d2} {d} \
-      A {r6} {r6} 0 0 {d1} {e} \
-      M {f}
-      A {r5} {r5} 0 0 {d2} {g} \
-      M {h} \
-      A {r3} {r3} 0 0 {d2} {i} \
-      A {r2} {r2} 0 0 {d1} {j} \
-      \\\" />",
+       <path fill='{fill}' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r4} {r4} 0 0 {d1} {c}A{r1} {r1} 0 0 {d2} {d}A{r6} {r6} 0 0 {d1} {e}L{f}A{r5} {r5} 0 0 {d2} {g}L{h}A{r3} {r3} 0 0 {d2} {i}A{r2} {r2} 0 0 {d1} {j}Z'/>\
+       <path stroke='black' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r4} {r4} 0 0 {d1} {c}A{r1} {r1} 0 0 {d2} {d}A{r6} {r6} 0 0 {d1} {e}M{f}A{r5} {r5} 0 0 {d2} {g}M{h}A{r3} {r3} 0 0 {d2} {i}A{r2} {r2} 0 0 {d1} {j}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
@@ -158,44 +135,40 @@ fn a156_str(
 }
 
 pub fn n156(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
-    return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
+    let (r1, r2, r3, r4, r5, r6, pts) = base(invert);
+    return svg(invert, pts, r1, r2, r3, r4, r5, r6);
 }
 
 pub fn n146(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
+    let (r1, r2, r3, r4, r5, r6, pts) = base(invert);
     let pts = pts.reflect();
-    return a156_str(!invert, pts, r1, r2, r3, r4, r5, r6);
+    return svg(!invert, pts, r1, r2, r3, r4, r5, r6);
 }
 
-/*1
- 4 5
-2 6 3 */
-
 pub fn n245(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
+    let (r1, r2, r3, r4, r5, r6, pts) = base(invert);
     let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
+    return svg(invert, pts, r1, r2, r3, r4, r5, r6);
 }
 
 pub fn n256(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
+    let (r1, r2, r3, r4, r5, r6, pts) = base(invert);
     let pts = pts
         .reflect()
         .rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return a156_str(!invert, pts, r1, r2, r3, r4, r5, r6);
+    return svg(!invert, pts, r1, r2, r3, r4, r5, r6);
 }
 
 pub fn n346(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
+    let (r1, r2, r3, r4, r5, r6, pts) = base(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
+    return svg(invert, pts, r1, r2, r3, r4, r5, r6);
 }
 
 pub fn n345(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
+    let (r1, r2, r3, r4, r5, r6, pts) = base(invert);
     let pts = pts
         .reflect()
         .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return a156_str(!invert, pts, r1, r2, r3, r4, r5, r6);
+    return svg(!invert, pts, r1, r2, r3, r4, r5, r6);
 }
