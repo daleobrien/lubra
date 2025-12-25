@@ -27,11 +27,11 @@ pub mod transforms {
   use crate::types::path::Path;
 
   #[inline]
-  pub fn nothing(_pts: Path, _invert: bool, _offset_rotations: &[usize]) -> Path {
-    Path::new(vec![])
-  }
+    pub fn nothing(_pts: Path, _invert: bool, _offset_rotations: &[usize]) -> Path {
+        Path::new(vec![])
+    }
 
-  /// Identity transformation (no change)
+    /// Identity transformation (no change)
     #[inline]
     pub fn identity(pts: Path, _invert: bool, _offset_rotations: &[usize]) -> Path {
         pts
@@ -66,7 +66,6 @@ pub mod transforms {
     pub fn reflect_then_rotate_cw(pts: Path, invert: bool, offset_rotations: &[usize]) -> Path {
         pts.reflect().rotate_cw(invert, offset_rotations.to_vec())
     }
-
 }
 
 // Re-export transforms for easier access

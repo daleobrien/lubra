@@ -13,7 +13,7 @@ impl Path {
     }
 
     pub fn len(self) -> usize {
-      self.points.len()
+        self.points.len()
     }
     pub fn scale(self) -> Path {
         return Path {

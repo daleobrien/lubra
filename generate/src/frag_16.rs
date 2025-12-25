@@ -40,17 +40,3 @@ define_shape_family! {
         n34: false => rotate_cw,
     }
 }
-
-// pub fn n16(invert: bool) -> String {
-//     return svg(TILE_WIDTH * base(invert));
-// }
-//
-// pub fn n25(invert: bool) -> String {
-//     let pts = TILE_WIDTH * base(invert).rotate_ccw(invert, vec![0, 4]);
-//     return svg(pts);
-// }
-//
-// pub fn n34(invert: bool) -> String {
-//     let pts = TILE_WIDTH * base(invert).rotate_cw(invert, vec![0, 4]);
-//     return svg(pts);
-// }
