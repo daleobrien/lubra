@@ -1,9 +1,9 @@
-use std::collections::{HashMap, HashSet};
+use crate::maze::maze::Maze;
+use crate::maze::tile::Tile;
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD};
 use common::types::coordinate::add;
 use rand_distr::num_traits::ToPrimitive;
-use crate::maze::tile::Tile;
-use crate::maze::maze::Maze;
+use std::collections::{HashMap, HashSet};
 
 /// Net operation methods for the Maze struct.
 /// These methods handle network management including cycle removal,
@@ -34,7 +34,8 @@ impl Maze {
 
     pub fn reduce_nets(&mut self, lower_limit: usize) {
         self.sort_nets_by_length();
-        self.remove_short_nets(lower_limit);
+      // remove_short_nets might be broken ... seem to create more disjoint nets!
+       // self.remove_short_nets(lower_limit);
 
         // Create a hashSet of the nets, but used just i,j coordinates as the keys
         let coord_maps = self.create_coord_maps();
@@ -93,7 +94,8 @@ impl Maze {
             }
             if !found {
                 // We can't merge these nets in a simple way
-                println!("Couldn't join: ({m},{n}){:?}", intersections);
+                // for these two nets, which points do the share the same tile?
+                println!("Couldn't join: (net:{m},net:{n}){:?}", intersections);
                 // TODO: Implement more complex joins ...
                 // This occurs when at least one net passing though the same tile as the other net
             }
