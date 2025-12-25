@@ -6,7 +6,7 @@ FOLDER=$(cd `dirname $0` && pwd)
 echo "${FOLDER}"
 
 cd ${FOLDER}/generate
-cargo run --bin generate_svg
+cargo run --package generate -- svg
 
 cd ${FOLDER}/cli
 cargo run

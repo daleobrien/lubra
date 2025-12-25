@@ -1,13 +1,46 @@
+use std::env;
 use std::collections::HashMap;
 
 use common::node_combinations::NodeCombinations;
 
-use crate::writer::{write_mass_to_file, write_nets_to_file};
-
-mod lookups;
+mod fragments;
+mod generators;
 mod writer;
 
+use generators::path_adj::generate_adjacent_paths;
+use generators::svg_fragments::generate_all_shapes;
+use generators::lookups;
+use writer::{write_mass_to_file, write_nets_to_file};
+
 fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() > 1 {
+        match args[1].as_str() {
+            "svg" => generate_svg(),
+            "nets" => generate_nets(),
+            _ => {
+                eprintln!("Usage: {} [svg|nets]", args[0]);
+                eprintln!("  svg  - Generate SVG fragments");
+                eprintln!("  nets - Generate net lookup tables");
+                eprintln!("  (no args) - Generate both");
+                std::process::exit(1);
+            }
+        }
+    } else {
+        // Generate both by default
+        generate_svg();
+        generate_nets();
+    }
+}
+
+fn generate_svg() {
+    println!("Generating Rust code for all SVG nets.");
+    generate_all_shapes();
+    generate_adjacent_paths();
+}
+
+fn generate_nets() {
     println!("Generating Rust code for all lookups nets (large network).");
 
     let seq = NodeCombinations::new(
@@ -31,10 +64,6 @@ fn main() {
         ],
         0,
     );
-
-    // Combinations, with duplicates => n! +  ...
-    // Given it is related to factorial, it is not possible to calculate it for large numbers
-    // but we are limited but the number of bits, e.g. n < 6 * 2^6 * 6
 
     let mut nets_by_mask: HashMap<u32, Vec<Vec<u32>>> = HashMap::new();
     let mut mass_by_mask: HashMap<u32, Vec<u32>> = HashMap::new();

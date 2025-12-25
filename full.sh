@@ -4,8 +4,8 @@ set -
 FOLDER=$(cd `dirname $0` && pwd)
 
 cd ${FOLDER}/generate
-cargo run --bin generate_nets
-cargo run --bin generate_svg
+cargo run --package generate -- nets
+cargo run --package generate -- svg
 
 cd ${FOLDER}/cli
 cargo run

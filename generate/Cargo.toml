@@ -1,11 +1,3 @@
-[[bin]]
-name = "generate_svg"
-path = "src/main_svg.rs"
-
-[[bin]]
-name = "generate_nets"
-path = "src/main_nets.rs"
-
 [package]
 name = "generate"
 version = "0.1.0"

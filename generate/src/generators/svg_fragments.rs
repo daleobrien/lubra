@@ -10,32 +10,32 @@ use common::consts::{
   A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, WA,
 };
 
-use crate::frag_1::{n1, n2, n3, n4, n5, n6};
-use crate::frag_12::{n12, n13, n23};
-use crate::frag_123::n123;
-use crate::frag_12345::{n12345, n12346, n12356};
-use crate::frag_123456::n123456;
-use crate::frag_1235::{n1234, n1235, n1236};
-use crate::frag_125::{n125, n126, n134, n136, n234, n235};
-use crate::frag_1345::{n1245, n1246, n1345, n1356, n2346, n2356};
-use crate::frag_13456::{n12456, n13456, n23456};
-use crate::frag_1346::{n1256, n1346, n2345};
-use crate::frag_135::{n124, n135, n236};
-use crate::frag_145::{n145, n246, n356};
-use crate::frag_1456::{n1456, n2456, n3456};
-use crate::frag_15::{n14, n15, n24, n26, n35, n36};
-use crate::frag_156::{n146, n156, n245, n256, n345, n346};
-use crate::frag_15_35::{n15_35, n24_14, n36_26};
-use crate::frag_15_dot::{n14_4, n15_5, n24_4, n26_6, n35_5, n36_6};
-use crate::frag_15_straight::{n14_34, n15_25, n24_34, n26_16, n35_25, n36_16};
-use crate::frag_16::{n16, n25, n34};
-use crate::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
-use crate::frag_arcs::{a46, n45, n456, n56};
-use crate::frag_complex_arcs::{
+use crate::fragments::frag_1::{n1, n2, n3, n4, n5, n6};
+use crate::fragments::frag_12::{n12, n13, n23};
+use crate::fragments::frag_123::n123;
+use crate::fragments::frag_12345::{n12345, n12346, n12356};
+use crate::fragments::frag_123456::n123456;
+use crate::fragments::frag_1235::{n1234, n1235, n1236};
+use crate::fragments::frag_125::{n125, n126, n134, n136, n234, n235};
+use crate::fragments::frag_1345::{n1245, n1246, n1345, n1356, n2346, n2356};
+use crate::fragments::frag_13456::{n12456, n13456, n23456};
+use crate::fragments::frag_1346::{n1256, n1346, n2345};
+use crate::fragments::frag_135::{n124, n135, n236};
+use crate::fragments::frag_145::{n145, n246, n356};
+use crate::fragments::frag_1456::{n1456, n2456, n3456};
+use crate::fragments::frag_15::{n14, n15, n24, n26, n35, n36};
+use crate::fragments::frag_156::{n146, n156, n245, n256, n345, n346};
+use crate::fragments::frag_15_35::{n15_35, n24_14, n36_26};
+use crate::fragments::frag_15_dot::{n14_4, n15_5, n24_4, n26_6, n35_5, n36_6};
+use crate::fragments::frag_15_straight::{n14_34, n15_25, n24_34, n26_16, n35_25, n36_16};
+use crate::fragments::frag_16::{n16, n25, n34};
+use crate::fragments::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
+use crate::fragments::frag_arcs::{a46, n45, n456, n56};
+use crate::fragments::frag_complex_arcs::{
   n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
   n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
 };
-use crate::frag_wall::l_wall;
+use crate::fragments::frag_wall::l_wall;
 
 pub fn trim_whitespace(s: &str) -> String {
     let words: Vec<_> = s.split_whitespace().collect();
