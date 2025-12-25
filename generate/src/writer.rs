@@ -2,9 +2,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 
-//use std::ops::Deref;
-
-//use itertools::Itertools;
 
 fn list_to_rust_vector_u32<T: ToString>(list: &[T]) -> String {
     let elements: Vec<String> = list
@@ -74,11 +71,11 @@ pub fn write_mass_to_file(mass_by_mask: HashMap<u32, Vec<u32>>, file_name: &str)
 
 #[cfg(test)]
 mod tests {
-    use std::{assert_eq, vec};
+  use std::{assert_eq, vec};
 
-    use crate::writer::{list_of_lists_to_rust_vector, list_to_rust_vector_u32};
+  use crate::writer::{list_of_lists_to_rust_vector, list_to_rust_vector_u32};
 
-    #[test]
+  #[test]
     fn test_list_to_rust_vector_u32() {
         assert_eq!(
             list_to_rust_vector_u32(&vec![1u32, 2u32, 3u32]),
