@@ -107,11 +107,11 @@ define_shape_family! {
     svg: svg,
     offset_rotations: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
     variants: {
-        n1345: false, false => identity,
+        n1345: false, true => identity,
+        n1246: false, true => rotate_ccw,
+        n2356: false, true => rotate_cw,
         n1245: false, false => reflect,
-        n1246: false, false => rotate_ccw,
         n2346: false, false => reflect_then_rotate_ccw,
-        n2356: false, false => rotate_cw,
         n1356: false, false => reflect_then_rotate_cw,
     }
 }
