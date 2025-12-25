@@ -35,8 +35,8 @@ define_shape_family! {
     svg: svg,
     offset_rotations: &[0,4],
     variants: {
-        n16: false => identity,
-        n25: false => rotate_ccw,
-        n34: false => rotate_cw,
+        n16: false, false => identity,
+        n25: false, false => rotate_ccw,
+        n34: false, false => rotate_cw,
     }
 }

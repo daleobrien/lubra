@@ -6,16 +6,17 @@ macro_rules! define_shape_family {
         offset_rotations: $offset_rotations:expr,
         variants: {
             $(
-                $variant_name:ident: $invert_flip:expr => $transform:ident
+                $variant_name:ident: $invert_base_invert:expr, $invert_svg_invert:expr => $transform:ident
             ),* $(,)?
         }
     ) => {
         $(
             pub fn $variant_name(invert: bool) -> String {
-                let inv = if $invert_flip { !invert } else { invert };
+                let inv = if $invert_base_invert { !invert } else { invert };
                 let (radii, pts) = $base_fn(inv);
                 let transformed_pts = $transform(pts, invert, $offset_rotations);
-                $svg_fn(invert, radii, transformed_pts)
+                let svg_inv = if $invert_svg_invert { !invert } else { invert };
+                $svg_fn(svg_inv, radii, transformed_pts)
             }
         )*
     };
