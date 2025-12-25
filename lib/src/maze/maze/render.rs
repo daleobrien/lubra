@@ -1,0 +1,152 @@
+use std::error::Error;
+use std::fs;
+use crate::maze::maze::{FileType, Maze};
+use crate::maze::maze::FileType::{PNG, SVG};
+use crate::renders::fragment::MAP_PATHS;
+use crate::renders::node_numbers::add_node_numbers;
+use crate::renders::svg::Svg;
+use common::consts::NX;
+use common::types::bits;
+use common::types::coordinate::{CataloguedNet, Coordinate, CoordinateAndNet};
+use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use usvg;
+use usvg::fontdb;
+
+#[cfg(debug_assertions)]
+use common::bit_utils::print_nets;
+
+/// Rendering methods for the Maze struct.
+/// These methods handle SVG/PNG generation and file saving.
+impl Maze {
+    #[cfg(debug_assertions)]
+    fn print_out_networks(&self) {
+        println!("");
+        let rows: Vec<_> = self.tiles.rows_iter().collect();
+
+        let text = rows
+            .into_iter()
+            .rev() // Reverse the rows
+            .map(|row| {
+                row.map(|t| format!("{:^10}", print_nets(&t.nodes)))
+                    .collect::<Vec<_>>()
+                    .join("|")
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        println!("{}\n", text);
+    }
+
+    pub fn render(&mut self, file_name: String, file_type: FileType) -> Result<(), Box<dyn Error>> {
+        //let start = Instant::now();
+        #[cfg(debug_assertions)]
+        self.print_out_networks();
+
+        let margin = 5.0;
+        let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;
+        let h = self.number_of_rows as f64 * TILE_HEIGHT + 5.0 * margin;
+
+        // Create header and so on
+        let mut svg = Svg::new(w, h);
+
+        let mut all_catorised_nets: CataloguedNet = CataloguedNet::new();
+
+        for j in 0..self.number_of_rows {
+            for i in 0..self.number_of_columns {
+                let coord: Coordinate = Coordinate { i, j };
+
+                let tile = self.tiles[(j, i)].clone();
+                let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
+
+                // First, we build a list of nets (masks) and hidden nets at each coordinate
+                // Then we use the still visible ones to build the SVG
+                let cat_nets = tile.generate_hidden_and_visible_nets(
+                    coord,
+                    self.boundaries,
+                    &surrounding_tiles,
+                    false, //i == 200 && j == 1,
+                );
+                all_catorised_nets.extend(cat_nets);
+            }
+        }
+
+        // println!("render took (1) {:?}", start.elapsed());
+        // let start = Instant::now();
+
+        for coordinate_and_net in all_catorised_nets.visible.iter() {
+            // We don't want to draw the hidden nets
+            let masked_net: CoordinateAndNet = CoordinateAndNet {
+                // IN & WA
+                net: coordinate_and_net.net & NX,
+                coordinate: coordinate_and_net.coordinate,
+            };
+
+            if all_catorised_nets.hidden.contains(&masked_net) {
+                continue;
+            }
+
+            let net = bits::transform_tile(coordinate_and_net.net, coordinate_and_net.coordinate);
+
+            let frag = MAP_PATHS.get(&net);
+
+            if frag.is_none() {
+                continue;
+            }
+            if frag.unwrap().is_empty() {
+                continue;
+            }
+
+            let point: Point = Point {
+                x: coordinate_and_net.coordinate.i as f64,
+                y: coordinate_and_net.coordinate.j as f64,
+            };
+            svg.add_fragment(frag.unwrap(), point, 1);
+        }
+
+        if self.show_node_numbers {
+            add_node_numbers(&mut svg, self.number_of_columns, self.number_of_rows);
+        }
+
+        //println!("render took (2) {:?}", start.elapsed());
+        //let start = Instant::now();
+
+        match file_type {
+            SVG => return self.save_as_svg(svg.to_string(false), file_name),
+            PNG => return self.save_as_png(svg.to_string(false).as_str(), file_name),
+        }
+    }
+
+    pub fn save_as_svg(
+        &mut self,
+        content: String,
+        file_name: String,
+    ) -> Result<(), Box<dyn Error>> {
+        let _ = fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
+        return Ok(());
+    }
+
+    pub fn save_as_png(
+        &mut self,
+        svg_content: &str,
+        file_name: String,
+    ) -> Result<(), Box<dyn Error>> {
+        let input = format!("{}.png", file_name);
+        let mut fontdb = fontdb::Database::new();
+        fontdb.load_system_fonts();
+        let tree = usvg::Tree::from_str(svg_content, &usvg::Options::default(), &fontdb).unwrap();
+
+        let zoom = 1f32;
+        let pixmap_size = tree.size().to_int_size().scale_by(zoom).unwrap();
+        println!("Size w:{} h:{}", pixmap_size.width(), pixmap_size.height());
+
+        let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height()).unwrap();
+
+        let render_ts = tiny_skia::Transform::from_scale(zoom, zoom);
+
+        // This is very slow when running on debug builds !!!
+        resvg::render(&tree, render_ts, &mut pixmap.as_mut());
+
+        pixmap.save_png(&input).unwrap();
+
+        Ok(())
+    }
+}
