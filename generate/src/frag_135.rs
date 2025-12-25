@@ -1,9 +1,11 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, TILE_WIDTH};
 
-fn a135_base(invert: bool) -> (String, String, String, String, Path) {
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
     let r1 = 0.3333; // Adjustable
 
@@ -66,13 +68,13 @@ fn a135_base(invert: bool) -> (String, String, String, String, Path) {
     let r2s = trimf64(TILE_WIDTH * (r1 + w));
     let r3s = trimf64(TILE_WIDTH * (r2 - w));
     let r4s = trimf64(TILE_WIDTH * (r2 + w));
-    return (r1s, r2s, r3s, r4s, pts);
+    (vec![r1s, r2s, r3s, r4s], pts)
 }
 
-fn a135_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: String) -> String {
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
-    return format!(
+    format!(
         "<path fill=\\\"{fill}\\\"  d=\\\"\
       M {a} \
       A {r1} {r1} 0 0 {d1} {b} \
@@ -113,28 +115,21 @@ fn a135_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: Str
         j = pts[9],
         k = pts[10],
         l = pts[11],
+        r1 = radii[0],
+        r2 = radii[1],
+        r3 = radii[2],
+        r4 = radii[3],
         fill = FILL,
-    );
+    )
 }
 
-pub fn n124(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a135_base(invert);
-    let pts = pts.reflect();
-    return a135_str(invert, pts, r1, r2, r3, r4);
-}
-
-pub fn n236(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a135_base(invert);
-    let pts = pts
-        .reflect()
-        .rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-    return a135_str(invert, pts, r1, r2, r3, r4);
-}
-
-pub fn n135(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a135_base(invert);
-    let pts = pts
-        .reflect()
-        .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
-    return a135_str(invert, pts, r1, r2, r3, r4);
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+    variants: {
+        n124: false, false => reflect,
+        n236: false, false => reflect_then_rotate_ccw,
+        n135: false, false => reflect_then_rotate_cw,
+    }
 }
