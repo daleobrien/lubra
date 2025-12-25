@@ -6,4 +6,5 @@ FOLDER=$(cd `dirname $0` && pwd)
 echo "${FOLDER}"
 
 cd ${FOLDER}/cli
+rm -f *.svg
 cargo run

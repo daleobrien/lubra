@@ -1,9 +1,12 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, TILE_WIDTH};
 
-fn a15_base(invert: bool) -> (String, String, String, String, Path) {
+
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
 
     let r1 = 0.3333; // Adjustable
@@ -38,69 +41,46 @@ fn a15_base(invert: bool) -> (String, String, String, String, Path) {
     let f = Point { x: x6, y: y6 };
 
     let pts = Path::new(vec![a, b, c, d, e, f]);
-
     let pts = if invert { pts.invert() } else { pts };
+
     let r1s = trimf64(TILE_WIDTH * (r1 - w));
     let r2s = trimf64(TILE_WIDTH * (r2 + w));
     let r3s = trimf64(TILE_WIDTH * (r2 - w));
     let r4s = trimf64(TILE_WIDTH * (r1 + w));
-    return (r1s, r2s, r3s, r4s, pts);
+
+    (vec![r1s, r2s, r3s, r4s], pts)
 }
 
-pub fn a15_str(invert: bool, pts: Path, r1: String, r2: String, r3: String, r4: String) -> String {
+pub fn svg(invert: bool, radii: Vec<String>, pts: Path,) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
+
     let pts = pts.str();
     return format!(
-        "<path fill=\\\"{fill}\\\" d=\\\"\
-      M {a} \
-      A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} L {d} \
-      A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \
-      \\\" />\
-      <path stroke=\\\"black\\\" d=\\\"\
-      M {a} \
-      A {r1} {r1} 0 0 {d2} {b} A {r2} {r2} 0 0 {d1} {c} M {d} \
-      A {r3} {r3} 0 0 {d2} {e} A {r4} {r4} 0 0 {d1} {f} \
-      \\\" />",
+        "<path fill='{fill}' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r2} {r2} 0 0 {d1} {c}L{d}A{r3} {r3} 0 0 {d2} {e}A{r4} {r4} 0 0 {d1} {f}'/><path stroke='black' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r2} {r2} 0 0 {d1} {c}M{d}A{r3} {r3} 0 0 {d2} {e}A{r4} {r4} 0 0 {d1} {f}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
         d = pts[3],
         e = pts[4],
         f = pts[5],
+        r1=radii[0],
+        r2=radii[1],
+        r3=radii[2],
+        r4=radii[3],
         fill = FILL,
     );
 }
 
-pub fn n15(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
-    return a15_str(invert, pts, r1, r2, r3, r4);
-}
-
-pub fn n24(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return a15_str(invert, pts, r1, r2, r3, r4);
-}
-
-pub fn n36(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return a15_str(invert, pts, r1, r2, r3, r4);
-}
-
-pub fn n14(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
-    let pts = pts.reflect();
-    return a15_str(!invert, pts, r1, r2, r3, r4);
-}
-
-pub fn n26(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
-    let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return a15_str(!invert, pts, r1, r2, r3, r4);
-}
-pub fn n35(invert: bool) -> String {
-    let (r1, r2, r3, r4, pts) = a15_base(invert);
-    let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return a15_str(!invert, pts, r1, r2, r3, r4);
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3, 4, 5],
+    variants: {
+        n15: false, false => identity,
+        n24: false, false => rotate_ccw,
+        n36: false, false => rotate_cw,
+        n14: false, true => reflect,
+        n26: false, true => reflect_then_rotate_ccw,
+        n35: false, true => reflect_then_rotate_cw,
+    }
 }

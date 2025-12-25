@@ -1,9 +1,11 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-pub fn fn_pts(invert: bool) -> (String, String, Path) {
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
 
     let r1 = 0.5 + w;
@@ -33,54 +35,34 @@ pub fn fn_pts(invert: bool) -> (String, String, Path) {
 
     let pts = Path::new(vec![a, b, c, d]);
     let pts = if invert { pts.invert() } else { pts };
-    return (r1, r2, pts);
+    (vec![r1, r2], pts)
 }
 
-pub fn a45_35_half(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    return fn_str(invert, pts, r1, r2);
-}
-
-pub fn a46_14_half(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3]);
-    return fn_str(invert, pts, r1, r2);
-}
-
-pub fn a56_26_half(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3]);
-    return fn_str(invert, pts, r1, r2);
-}
-
-pub fn a45_24_half(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.reflect();
-    return fn_str(!invert, pts, r1, r2);
-}
-
-pub fn a46_36_half(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3]);
-    return fn_str(!invert, pts, r1, r2);
-}
-
-pub fn a56_15_half(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3]);
-    return fn_str(!invert, pts, r1, r2);
-}
-
-pub fn fn_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
-    return format!(
-        "<path fill=\\\"{fill}\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} L {c} A {r2} {r2} 0 0 {d2} {d} \\\" />\
-        <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 {d1} {b} M {c} A {r2} {r2} 0 0 {d2} {d} \\\" />",
+    format!(
+        "<path fill='{FILL}' d='M{a}A{r1} {r1} 0 0 {d1} {b}L{c}A{r2} {r2} 0 0 {d2} {d}'/>\
+        <path stroke='black' d='M{a}A{r1} {r1} 0 0 {d1} {b}M{c}A{r2} {r2} 0 0 {d2} {d}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
         d = pts[3],
-        fill=FILL,
-    );
+        r1 = radii[0],
+        r2 = radii[1],
+    )
+}
+
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3],
+    variants: {
+        a45_35_half: false, false => identity,
+        a46_14_half: false, false => rotate_ccw,
+        a56_26_half: false, false => rotate_cw,
+        a45_24_half: false, true => reflect,
+        a46_36_half: false, true => reflect_then_rotate_ccw,
+        a56_15_half: false, true => reflect_then_rotate_cw,
+    }
 }

@@ -48,7 +48,7 @@ pub fn add_walls(key: u32, svg: &mut Svg) {
 
     svg.add_fragment(
         &format!(
-            "<path stroke-opacity=\"0.1\" stroke=\"red\" d=\"M{},{}l{},{}\"/>",
+            "<path stroke-opacity='0.1' stroke='red' d='M{},{}l{},{}'/>",
             0, TILE_HEIGHT, TILE_WIDTH, 0
         ),
         Point {

@@ -1,5 +1,5 @@
 [build]
 rustflags = [
     "-Ctarget-cpu=native",
-    "-Zthreads=12",
+    #"-Zthreads=12",
 ]

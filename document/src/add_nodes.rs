@@ -51,7 +51,14 @@ fn add_text(svg: &mut Svg, n: String, x: f64, y: f64, key: u32) {
     let invert = key & IN == IN;
     let y = if invert { 3f64 - y } else { y };
     svg.add_fragment(
-        &format!("<text y=\"3.7\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"43px\" fill=\"black\" transform=\"scale(1, -1)\">{n}</text>"),
+        &format!("<text y='3.7' \
+         dominant-baseline='middle' \
+         opacity='0.2' \
+         fill-opacity='1.0' \
+         text-anchor='middle' \
+         font-size='43px' \
+         fill='red' \
+         transform='scale(1, -1)'>{n}</text>"),
         Point { x, y },
         0,
     );
