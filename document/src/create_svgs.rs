@@ -5,10 +5,10 @@ use std::io::Write;
 use itertools::Itertools;
 
 use common::consts::{
-    A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, WA,
+  A1, A2, A3, A4, A5, A6, B1, B2, B3, B4, B5, B6, IN, N1, N2, N3, N4, N5, N6, WA,
 };
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
-use lib::renders::fragment::MAP_PATHS;
+use lib::renders::generated::fragment::MAP_PATHS;
 use lib::renders::svg::Svg;
 
 use crate::{add_nodes, draw_walls};

@@ -1,6 +1,6 @@
 use common::consts::{IN, WA};
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
-use lib::renders::fragment::MAP_PATHS;
+use lib::renders::generated::fragment::MAP_PATHS;
 use lib::renders::svg::Svg;
 
 pub fn add_walls(key: u32, svg: &mut Svg) {

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 
-
 fn list_to_rust_vector_u32<T: ToString>(list: &[T]) -> String {
     let elements: Vec<String> = list
         .iter()

@@ -8,7 +8,7 @@ use itertools::Itertools;
 use common::consts::{A1, A2, A3, B1, B2, B3, N1, N2, N3, WA};
 use common::node_combinations::NodeCombinations;
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
-use lib::renders::fragment::MAP_PATHS;
+use lib::renders::generated::fragment::MAP_PATHS;
 use lib::renders::svg::Svg;
 
 use crate::empty::empty_fragments;
@@ -147,11 +147,11 @@ fn nets_are_valid(nets: Vec<u32>) -> bool {
 // Add tests here
 #[cfg(test)]
 mod tests {
-    use common::consts::B1;
+  use common::consts::B1;
 
-    use super::*;
+  use super::*;
 
-    #[test]
+  #[test]
     fn test_valild_match() {
         assert_eq!(nets_are_valid(vec![A1 | B1, A2, A3, A1 | B1]), false);
         assert_eq!(nets_are_valid(vec![A1 | B1, A2, A3]), true);
