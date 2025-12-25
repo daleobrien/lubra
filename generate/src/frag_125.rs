@@ -1,9 +1,11 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, TILE_WIDTH};
 
-fn a135_base(invert: bool) -> (String, String, String, String, Path) {
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
     let r1 = 0.3333; // Adjustable
 
@@ -81,10 +83,11 @@ fn a135_base(invert: bool) -> (String, String, String, String, Path) {
     let r1l = trimf64(TILE_WIDTH * (r1 + w));
     let r2s = trimf64(TILE_WIDTH * (r2 - w));
     let r2l = trimf64(TILE_WIDTH * (r2 + w));
-    return (r1s, r1l, r2s, r2l, pts);
+
+    (vec![r1s, r1l, r2s, r2l], pts)
 }
 
-fn a125_str(invert: bool, pts: Path, r1s: String, r1l: String, r2s: String, r2l: String) -> String {
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     return format!(
@@ -133,45 +136,23 @@ fn a125_str(invert: bool, pts: Path, r1s: String, r1l: String, r2s: String, r2l:
         l = pts[11],
         m = pts[12],
         fill = FILL,
+        r1s = radii[0],
+        r1l = radii[1],
+        r2s = radii[2],
+        r2l = radii[3],
     );
 }
 
-pub fn n125(invert: bool) -> String {
-    let (r1s, r1l, r2s, r2l, pts) = a135_base(invert);
-    let pts = pts;
-    return a125_str(!invert, pts, r1s, r1l, r2s, r2l);
-}
-
-pub fn n134(invert: bool) -> String {
-    let (r1s, r1l, r2s, r2l, pts) = a135_base(invert);
-    let pts = pts.reflect();
-    return a125_str(invert, pts, r1s, r1l, r2s, r2l);
-}
-
-pub fn n126(invert: bool) -> String {
-    let (r1s, r1l, r2s, r2l, pts) = a135_base(invert);
-    let pts = pts
-        .reflect()
-        .rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-    return a125_str(invert, pts, r1s, r1l, r2s, r2l);
-}
-
-pub fn n234(invert: bool) -> String {
-    let (r1s, r1l, r2s, r2l, pts) = a135_base(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-    return a125_str(!invert, pts, r1s, r1l, r2s, r2l);
-}
-
-pub fn n235(invert: bool) -> String {
-    let (r1s, r1l, r2s, r2l, pts) = a135_base(invert);
-    let pts = pts
-        .reflect()
-        .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-    return a125_str(invert, pts, r1s, r1l, r2s, r2l);
-}
-
-pub fn n136(invert: bool) -> String {
-    let (r1s, r1l, r2s, r2l, pts) = a135_base(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-    return a125_str(!invert, pts, r1s, r1l, r2s, r2l);
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    variants: {
+        n125: false, true => identity,
+        n134: false, false => reflect,
+        n126: false, false => reflect_then_rotate_ccw,
+        n234: false, true => rotate_ccw,
+        n235: false, false => reflect_then_rotate_cw,
+        n136: false, true => rotate_cw,
+    }
 }
