@@ -91,37 +91,34 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     return format!(
-        "<path fill=\\\"{fill}\\\" d=\\\"\
-      M {a} \
-      A {r1s} {r1s} 0 0 {d1} {b} \
-      A {r2l} {r2l} 0 0 {d2} {c} \
-      A {r2s} {r2s} 0 0 {d1} {d} \
-      L {e} \
-      L {f} \
-      L {g} \
-      A {r2l} {r2l} 0 0 {d2} {h} \
-      A {r2s} {r2s} 0 0 {d1} {i} \
-      A {r2l} {r2l} 0 0 {d2} {j} \
-      L {k}
-      A {r2s} {r2s} 0 0 {d1} {l} \
-      A {r1l} {r1l} 0 0 {d2} {m} \
-      Z \
-      \\\" /> \
-      <path stroke=\\\"black\\\" d=\\\"\
-      M {a} \
-      A {r1s} {r1s} 0 0 {d1} {b} \
-      A {r2l} {r2l} 0 0 {d2} {c} \
-      A {r2s} {r2s} 0 0 {d1} {d} \
-      L {e} \
-      M {f} \
-      L {g} \
-      A {r2l} {r2l} 0 0 {d2} {h} \
-      A {r2s} {r2s} 0 0 {d1} {i} \
-      A {r2l} {r2l} 0 0 {d2} {j} \
-      M {k}
-      A {r2s} {r2s} 0 0 {d1} {l} \
-      A {r1l} {r1l} 0 0 {d2} {m} \
-      \\\" />",
+        "<path fill='{fill}' d='\
+      M{a}\
+      A{r1s} {r1s} 0 0 {d1} {b}\
+      A{r2l} {r2l} 0 0 {d2} {c}\
+      A{r2s} {r2s} 0 0 {d1} {d}\
+      L{e}\
+      L{f}\
+      L{g}\
+      A{r2l} {r2l} 0 0 {d2} {h}\
+      A{r2s} {r2s} 0 0 {d1} {i}\
+      A{r2l} {r2l} 0 0 {d2} {j}\
+      L{k}\
+      A{r2s} {r2s} 0 0 {d1} {l}\
+      A{r1l} {r1l} 0 0 {d2} {m}\
+      Z'/><path stroke='black' d='\
+      M{a}\
+      A{r1s} {r1s} 0 0 {d1} {b}\
+      A{r2l} {r2l} 0 0 {d2} {c}\
+      A{r2s} {r2s} 0 0 {d1} {d}\
+      L{e}\
+      M{f}\
+      L{g}\
+      A{r2l} {r2l} 0 0 {d2} {h}\
+      A{r2s} {r2s} 0 0 {d1} {i}\
+      A{r2l} {r2l} 0 0 {d2} {j}\
+      M{k}\
+      A{r2s} {r2s} 0 0 {d1} {l}\
+      A{r1l} {r1l} 0 0 {d2} {m}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
