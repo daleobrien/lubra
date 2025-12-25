@@ -33,7 +33,7 @@ impl StringRegistry {
         self.map.get(&id)
     }
 
-    pub(crate) fn iter(&self) -> StringRegistryIter {
+    pub(crate) fn iter(&self) -> StringRegistryIter<'_> {
         StringRegistryIter {
             inner: self.map.iter(),
         }
@@ -63,10 +63,10 @@ impl IntoIterator for StringRegistry {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use std::assert_eq;
+  use super::*;
+  use std::assert_eq;
 
-    #[test]
+  #[test]
     fn test_string_registry() {
         let mut registry = StringRegistry::new();
 

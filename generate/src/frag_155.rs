@@ -1,9 +1,11 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, TILE_WIDTH};
 
-pub fn fn_pts(invert: bool) -> (String, String, Path) {
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
 
     let r = S2 - 3.0 / 2.0; // Sqrt[3] - (3/2)
@@ -42,57 +44,42 @@ pub fn fn_pts(invert: bool) -> (String, String, Path) {
         y: S3 - 0.5 + w,
     };
 
-    let r1 = trimf64(TILE_WIDTH * r1);
-    let r2 = trimf64(TILE_WIDTH * r2);
+    let r1_str = trimf64(TILE_WIDTH * r1);
+    let r2_str = trimf64(TILE_WIDTH * r2);
 
     let pts = Path::new(vec![a, b, c, d, e, f]);
     let pts = if invert { pts.invert() } else { pts };
-    return (r1, r2, pts);
+    (vec![r1_str, r2_str], pts)
 }
 
-pub fn a144(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    return fn_str(invert, pts, r1, r2);
-}
-pub fn a266(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return fn_str(invert, pts, r1, r2);
-}
-pub fn a355(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return fn_str(invert, pts, r1, r2);
-}
-
-pub fn a155(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.reflect();
-    return fn_str(!invert, pts, r1, r2);
-}
-pub fn a244(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.reflect().rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return fn_str(!invert, pts, r1, r2);
-}
-pub fn a366(invert: bool) -> String {
-    let (r1, r2, pts) = fn_pts(invert);
-    let pts = pts.reflect().rotate_cw(invert, vec![0, 1, 2, 3, 4, 5]);
-    return fn_str(!invert, pts, r1, r2);
-}
-
-pub fn fn_str(invert: bool, pts: Path, r1: String, r2: String) -> String {
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
-    return format!(
-        "<path fill=\\\"{fill}\\\" d=\\\"M {a} L {b} A {r1} {r1} 0 0 {d1} {c} L {d} A {r2} {r2} 0 0 {d2} {e} L {f} \\\" />\
-        <path stroke=\\\"black\\\" d=\\\"M {a} L {b} A {r1} {r1} 0 0 {d1} {c} M {d} A {r2} {r2} 0 0 {d2} {e} L {f} \\\" />",
+    format!(
+        "<path fill='{fill}' d='M{a}L{b}A{r1} {r1} 0 0 {d1} {c}L{d}A{r2} {r2} 0 0 {d2} {e}L{f}'/>\
+         <path stroke='black' d='M{a}L{b}A{r1} {r1} 0 0 {d1} {c}M{d}A{r2} {r2} 0 0 {d2} {e}L{f}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
         d = pts[3],
         e = pts[4],
         f = pts[5],
-        fill=FILL,
-    );
+        fill = FILL,
+        r1 = radii[0],
+        r2 = radii[1],
+    )
+}
+
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3, 4, 5],
+    variants: {
+        a144: false, false => identity,
+        a266: false, false => rotate_ccw,
+        a355: false, false => rotate_cw,
+        a155: false, true => reflect,
+        a244: false, true => reflect_then_rotate_ccw,
+        a366: false, true => reflect_then_rotate_cw,
+    }
 }

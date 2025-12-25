@@ -1,9 +1,11 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
 
-fn a1_base(invert: bool) -> (String, Path) {
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
     let h = PATH_WIDTH / 2.;
     let r = w / 2.;
@@ -18,68 +20,36 @@ fn a1_base(invert: bool) -> (String, Path) {
     let d = Point { x: x2, y: y1 };
 
     let mut pts = Path::new(vec![a, b, c, d]);
-    if invert {
-        pts = pts.invert();
-    }
+    if invert { pts = pts.invert(); }
 
     let r_str = trimf64(TILE_WIDTH * r);
-    (r_str, pts)
+    (vec![r_str], pts)
 }
 
-fn a1_str(invert: bool, pts: &Path, r: &str) -> String {
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let d1 = if invert { 0 } else { 1 };
-    let pts_str = pts.str();
+    let pts= pts.str();
     format!(
-        r#"<path  stroke="black" fill="{fill}" d="\
-      M {a} L {b} \
-      A {r} {r} 0 0 {d1} {c} \
-      L {d} \
-      \" />"#,
-        a = pts_str[0],
-        b = pts_str[1],
-        c = pts_str[2],
-        d = pts_str[3],
+        "<path stroke='black' fill='{fill}' d='M{a}L{b}A{r} {r} 0 0 {d1} {c}L{d}'/>",
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
         fill = FILL,
-        r = r,
+        r = radii[0],
     )
 }
 
-fn n_base(invert: bool, transform: fn(Path, bool) -> Path) -> String {
-    let (r, pts) = a1_base(invert);
-    let transformed_pts = transform(pts, invert);
-    a1_str(invert, &transformed_pts, &r)
-}
-
-pub fn n1(invert: bool) -> String {
-    n_base(invert, |pts, _| pts)
-}
-
-pub fn n2(invert: bool) -> String {
-    n_base(invert, |pts, invert| {
-        pts.rotate_ccw(invert, vec![0, 1, 2, 3])
-    })
-}
-
-pub fn n3(invert: bool) -> String {
-    n_base(invert, |pts, invert| {
-        pts.rotate_cw(invert, vec![0, 1, 2, 3])
-    })
-}
-
-pub fn n4(invert: bool) -> String {
-    n_base(!invert, |pts, invert| {
-        let reflected_pts = pts.reflect();
-        reflected_pts.rotate_cw(invert, vec![0, 1, 2, 3])
-    })
-}
-
-pub fn n5(invert: bool) -> String {
-    n_base(!invert, |pts, invert| {
-        let reflected_pts = pts.reflect();
-        reflected_pts.rotate_ccw(invert, vec![0, 1, 2, 3])
-    })
-}
-
-pub fn n6(invert: bool) -> String {
-    n_base(!invert, |pts, _| pts.reflect())
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3],
+    variants: {
+        n1: false, false => identity,
+        n2: false, false => rotate_ccw,
+        n3: false, false => rotate_cw,
+        n4: true, false => reflect_then_rotate_cw,
+        n5: true, false => reflect_then_rotate_ccw,
+        n6: true, false => reflect,
+    }
 }

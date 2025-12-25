@@ -36,9 +36,24 @@ impl Svg {
         let name = self.glyphs.add(fragment);
 
         self.layers[layer_index].push_str(&format!(
-            "\n  <use href=\"#{name}\" x=\"{x:.2}\" y=\"{y:.2}\"/>",
+            "\n  <use href='#{name}' x='{x:.2}' y='{y:.2}'/>",
             x = index.x * TILE_WIDTH / 2.0,
             y = index.y * TILE_HEIGHT,
+        ));
+    }
+
+    pub fn add_text(&mut self, text: &str, position: Point, layer_index: usize) {
+        // Add a text element at the specified position
+        // Note: The coordinate system will be flipped by the main SVG transform
+        self.layers[layer_index].push_str(&format!(
+            "<text x='{x:.2}' y='{y:.2}' \
+             font-size='12' fill='red' font-family='monospace' \
+             text-anchor='middle' dominant-baseline='middle' \
+             transform='scale(1,-1) translate(0,{flip:.2})'>{text}</text>",
+            x = position.x,
+            y = position.y,
+            flip = -2.0 * position.y, // Compensate for the flip transform
+            text = text
         ));
     }
 
@@ -54,16 +69,16 @@ impl Svg {
         let margin = 15f64;
         s.push_str(&format!(
             "<svg \
-               \n  viewBox=\"{m} {m} {w} {h}\" \
-               \n  width=\"{w}px\" height=\"{h}px\" \
-               \n  xmlns=\"http://www.w3.org/2000/svg\" \
-               \n  stroke-width=\"5\" \
-               \n  fill-opacity=\"0.8\" \
+               \n  viewBox='{m} {m} {w} {h}' \
+               \n  width='{w}px' height='{h}px' \
+               \n  xmlns='http://www.w3.org/2000/svg' \
+               \n  stroke-width='5' \
+               \n  fill-opacity='0.8' \
                \n  {style} \
-               \n  stroke-opacity=\"1\" \
-               \n  fill=\"transparent\" \
-               \n  stroke-linecap=\"butt\" \
-               \n  stroke=\"transparent\" \
+               \n  stroke-opacity='1' \
+               \n  fill='transparent' \
+               \n  stroke-linecap='butt' \
+               \n  stroke='transparent' \
                >\n",
             m = -margin,
             w = self.width + margin * 2f64,
@@ -73,7 +88,7 @@ impl Svg {
         s.push_str(&format!("\n<defs>"));
         for (name, content) in self.glyphs.iter() {
             s.push_str(&format!(
-                "\n  <g id=\"{name}\">{content}</g>",
+                "\n  <g id='{name}'>{content}</g>",
                 name = *name,
                 content = content
             ));
@@ -81,7 +96,7 @@ impl Svg {
         s.push_str(&format!("\n</defs>\n"));
 
         s.push_str(&format!(
-            "<g transform=\"translate(0,{h}) scale(1, -1)\">",
+            "<g transform='translate(0,{h}) scale(1, -1)'>",
             h = self.height - margin * 2f64
         ));
         for layer in &self.layers {

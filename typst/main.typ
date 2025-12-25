@@ -1,7 +1,7 @@
 #import "template.typ": *
 
-#import "@preview/algo:0.3.1": algo, i, d, comment, code
-#import "@preview/cetz:0.1.0"
+#import "@preview/algo:0.3.6": algo, i, d, comment, code
+#import "@preview/cetz:0.4.2"
 
 // Take a look at the file `template.typ` in the file panel
 // to customize this template and discover how it works.

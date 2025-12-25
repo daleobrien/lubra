@@ -1,9 +1,11 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{identity, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, TILE_WIDTH};
 
-fn pts(invert: bool) -> (Path, String, String, String, String) {
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
 
     let r1: f64 = 0.166667f64 + w;
@@ -83,41 +85,39 @@ fn pts(invert: bool) -> (Path, String, String, String, String) {
     let r1s = trimf64(TILE_WIDTH * (r1 - w));
     let r2s = trimf64(TILE_WIDTH * (r2 - w));
 
-    return (pts, r1s, r1l, r2s, r2l);
+    return (vec![r1s, r1l, r2s, r2l], pts);
 }
 
-fn to_str(invert: bool, pts: Path, r1s: String, r1l: String, r2s: String, r2l: String) -> String {
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let pts = pts.str();
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
+    let [r1s, r1l, r2s, r2l] = radii.as_slice() else {
+        panic!("Expected 4 radii");
+    };
     return format!(
         "\
-        <path fill=\\\"{FILL}\\\"  d=\\\"\
-           M {a} \
-           A {r1s} {r1s} 0 0 {d2} {b} \
-           A {r2l} {r2l} 0 0 {d1} {c} \
-           A {r2s} {r2s} 0 0 {d2} {d} \
-           A {r1l} {r1l} 0 0 {d1} {e} \
-           L {f}
-           A {r1s} {r1s} 0 0 {d2} {g} \
-           A {r2l} {r2l} 0 0 {d1} {h} \
-           A {r2s} {r2s} 0 0 {d2} {i} \
-           A {r1l} {r1l} 0 0 {d1} {j} \
-           \\\" \
-           />\
-        <path stroke=\\\"black\\\"  d=\\\"\
-           M {a} \
-           A {r1s} {r1s} 0 0 {d2} {b} \
-           A {r2l} {r2l} 0 0 {d1} {c} \
-           A {r2s} {r2s} 0 0 {d2} {d} \
-           A {r1l} {r1l} 0 0 {d1} {e} \
-           M {f}
-           A {r1s} {r1s} 0 0 {d2} {g} \
-           A {r2l} {r2l} 0 0 {d1} {h} \
-           A {r2s} {r2s} 0 0 {d2} {i} \
-           A {r1l} {r1l} 0 0 {d1} {j} \
-           \\\" \
-           />\
-           ",
+        <path fill='{FILL}' d='\
+           M{a}\
+           A{r1s} {r1s} 0 0 {d2} {b}\
+           A{r2l} {r2l} 0 0 {d1} {c}\
+           A{r2s} {r2s} 0 0 {d2} {d}\
+           A{r1l} {r1l} 0 0 {d1} {e}\
+           L{f}
+           A{r1s} {r1s} 0 0 {d2} {g}\
+           A{r2l} {r2l} 0 0 {d1} {h}\
+           A{r2s} {r2s} 0 0 {d2} {i}\
+           A{r1l} {r1l} 0 0 {d1} {j}\'/>\
+        <path stroke='black' d='\
+           M{a}\
+           A{r1s} {r1s} 0 0 {d2} {b}\
+           A{r2l} {r2l} 0 0 {d1} {c}\
+           A{r2s} {r2s} 0 0 {d2} {d}\
+           A{r1l} {r1l} 0 0 {d1} {e}\
+           M{f}
+           A{r1s} {r1s} 0 0 {d2} {g}\
+           A{r2l} {r2l} 0 0 {d1} {h}\
+           A{r2s} {r2s} 0 0 {d2} {i}\
+           A{r1l} {r1l} 0 0 {d1} {j}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
@@ -130,19 +130,14 @@ fn to_str(invert: bool, pts: Path, r1s: String, r1l: String, r2s: String, r2l: S
         j = pts[9],
     );
 }
-pub fn n15_35(invert: bool) -> String {
-    let (pts, r1, r2, r3, r4) = pts(invert);
-    return to_str(invert, pts, r1, r2, r3, r4);
-}
 
-pub fn n24_14(invert: bool) -> String {
-    let (pts, r1, r2, r3, r4) = pts(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return to_str(invert, pts, r1, r2, r3, r4);
-}
-
-pub fn n36_26(invert: bool) -> String {
-    let (pts, r1, r2, r3, r4) = pts(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return to_str(invert, pts, r1, r2, r3, r4);
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    variants: {
+        n15_35: false, false => identity,
+        n24_14: false, false => rotate_ccw,
+        n36_26: false, false => rotate_cw,
+    }
 }

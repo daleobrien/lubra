@@ -1,9 +1,11 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S1, S2, S3, TILE_WIDTH};
 
-fn a156_base(invert: bool) -> (String, String, String, String, String, String, Path) {
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
     let r1 = 0.2f64; // Adjustable
 
@@ -101,48 +103,16 @@ fn a156_base(invert: bool) -> (String, String, String, String, String, String, P
     let r4s = trimf64(TILE_WIDTH * (r2 + w));
     let r5s = trimf64(TILE_WIDTH * (0.5f64 - w));
     let r6s = trimf64(TILE_WIDTH * (0.5f64 + w));
-    return (r1s, r2s, r3s, r4s, r5s, r6s, pts);
+    return (vec![r1s, r2s, r3s, r4s, r5s, r6s], pts);
 }
 
-fn a156_str(
-    invert: bool,
-    pts: Path,
-    r1: String,
-    r2: String,
-    r3: String,
-    r4: String,
-    r5: String,
-    r6: String,
-) -> String {
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     return format!(
         "\
-       <path fill=\\\"{fill}\\\"  d=\\\"\
-        M {a} \
-        A {r1} {r1} 0 0 {d2} {b} \
-        A {r4} {r4} 0 0 {d1} {c} \
-        A {r1} {r1} 0 0 {d2} {d} \
-        A {r6} {r6} 0 0 {d1} {e} \
-        L {f}
-        A {r5} {r5} 0 0 {d2} {g} \
-        L {h} \
-        A {r3} {r3} 0 0 {d2} {i} \
-        A {r2} {r2} 0 0 {d1} {j} \
-        Z \
-        \\\" />
-      <path stroke=\\\"black\\\" d=\\\"\
-      M {a} \
-      A {r1} {r1} 0 0 {d2} {b} \
-      A {r4} {r4} 0 0 {d1} {c} \
-      A {r1} {r1} 0 0 {d2} {d} \
-      A {r6} {r6} 0 0 {d1} {e} \
-      M {f}
-      A {r5} {r5} 0 0 {d2} {g} \
-      M {h} \
-      A {r3} {r3} 0 0 {d2} {i} \
-      A {r2} {r2} 0 0 {d1} {j} \
-      \\\" />",
+       <path fill='{fill}' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r4} {r4} 0 0 {d1} {c}A{r1} {r1} 0 0 {d2} {d}A{r6} {r6} 0 0 {d1} {e}L{f}A{r5} {r5} 0 0 {d2} {g}L{h}A{r3} {r3} 0 0 {d2} {i}A{r2} {r2} 0 0 {d1} {j}Z'/>\
+       <path stroke='black' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r4} {r4} 0 0 {d1} {c}A{r1} {r1} 0 0 {d2} {d}A{r6} {r6} 0 0 {d1} {e}M{f}A{r5} {r5} 0 0 {d2} {g}M{h}A{r3} {r3} 0 0 {d2} {i}A{r2} {r2} 0 0 {d1} {j}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
@@ -154,48 +124,25 @@ fn a156_str(
         i = pts[8],
         j = pts[9],
         fill = FILL,
+        r1 = radii[0],
+        r2 = radii[1],
+        r3 = radii[2],
+        r4 = radii[3],
+        r5 = radii[4],
+        r6 = radii[5],
     );
 }
 
-pub fn n156(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
-    return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
-}
-
-pub fn n146(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
-    let pts = pts.reflect();
-    return a156_str(!invert, pts, r1, r2, r3, r4, r5, r6);
-}
-
-/*1
- 4 5
-2 6 3 */
-
-pub fn n245(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
-}
-
-pub fn n256(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
-    let pts = pts
-        .reflect()
-        .rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return a156_str(!invert, pts, r1, r2, r3, r4, r5, r6);
-}
-
-pub fn n346(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return a156_str(invert, pts, r1, r2, r3, r4, r5, r6);
-}
-
-pub fn n345(invert: bool) -> String {
-    let (r1, r2, r3, r4, r5, r6, pts) = a156_base(invert);
-    let pts = pts
-        .reflect()
-        .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    return a156_str(!invert, pts, r1, r2, r3, r4, r5, r6);
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    variants: {
+        n156: false, false => identity,
+        n245: false, false => rotate_ccw,
+        n346: false, false => rotate_cw,
+        n146: false, true => reflect,
+        n256: false, true => reflect_then_rotate_ccw,
+        n345: false, true => reflect_then_rotate_cw,
+    }
 }

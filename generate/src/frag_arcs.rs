@@ -9,15 +9,9 @@ fn a_x_to_y(pts: Path, radii: (String, String)) -> String {
     let pts: Vec<String> = pts.str();
 
     return format!(
-    "<path fill=\\\"{fill}\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} L {c} A {r2} {r2} 0 0 0 {d} z \\\" /> \
-         <path stroke=\\\"black\\\" d=\\\"M {a} A {r1} {r1} 0 0 1 {b} M {c} A {r2} {r2} 0 0 0 {d} \\\" />",
-    a = pts[0],
-    b = pts[1],
-    c = pts[2],
-    d = pts[3],
-    r1 = radii.0,
-    r2 = radii.1,
-    fill=FILL
+    "<path fill='{FILL}' d='M{a}A{r1} {r1} 0 0 1 {b}L{c}A{r2} {r2} 0 0 0 {d}z'/>\
+    <path stroke='black' d='M{a}A{r1} {r1} 0 0 1 {b}M{c}A{r2} {r2} 0 0 0 {d}'/>",
+    a = pts[0], b = pts[1], c = pts[2], d = pts[3], r1 = radii.0, r2 = radii.1
   );
 }
 
@@ -57,7 +51,7 @@ pub fn n456(invert: bool) -> String {
     let p3 = p3.str();
 
     return format!(
-    "<path fill=\\\"{FILL}\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} L {c} A {r} {r} 0 0 1 {d} L {e} A {r} {r} 0 0 1 {f} z \\\" />\
-        <path stroke=\\\"black\\\" d=\\\"M {a} A {r} {r} 0 0 1 {b} M {c} A {r} {r} 0 0 1 {d} M {e} A {r} {r} 0 0 1 {f} \\\" />",
+    "<path fill='{FILL}' d='M{a}A{r} {r} 0 0 1 {b}L{c}A{r} {r} 0 0 1 {d}L{e}A{r} {r} 0 0 1 {f}z'/>\
+    <path stroke='black' d='M{a}A{r} {r} 0 0 1 {b}M{c}A{r} {r} 0 0 1 {d}M{e}A{r} {r} 0 0 1 {f}'/>",
     a = p1[0], b = p1[1], c = p2[0], d = p2[1], e = p3[0], f = p3[1]);
 }

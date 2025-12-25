@@ -2,8 +2,14 @@ use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs;
 
+use crate::maze::adjacent::get_surrounding_tile_connections;
+use crate::maze::maze::FileType::{PNG, SVG};
+use crate::maze::random::random_tile;
+use crate::maze::tile::Tile;
+use crate::renders::fragment::MAP_PATHS;
+use crate::renders::node_numbers::add_node_numbers;
+use crate::renders::svg::Svg;
 use array2d::Array2D;
-use common::bit_utils::print_bits;
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD, NX};
 use common::types::bits;
 use common::types::coordinate::{add, CataloguedNet, Coordinate, CoordinateAndNet};
@@ -15,13 +21,6 @@ use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
-
-use crate::maze::adjacent::get_surrounding_tile_connections;
-use crate::maze::maze::FileType::{PNG, SVG};
-use crate::maze::random::random_tile;
-use crate::maze::tile::Tile;
-use crate::renders::fragment::MAP_PATHS;
-use crate::renders::svg::Svg;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {
@@ -39,6 +38,7 @@ pub struct Maze {
     number_of_rows: usize,
     tiles: Array2D<Tile>,
     boundaries: bool,
+    show_node_numbers: bool,
 }
 
 impl Maze {
@@ -47,6 +47,7 @@ impl Maze {
         number_of_rows: usize,
         randomise: bool,
         boundaries: bool,
+        show_node_numbers: bool,
         seed: Option<u64>,
     ) -> Self {
         // User Maze object somehow
@@ -66,6 +67,7 @@ impl Maze {
             number_of_rows,
             tiles,
             boundaries,
+            show_node_numbers,
         };
 
         if randomise {
@@ -95,7 +97,7 @@ impl Maze {
                 continue;
             }
 
-            self.tiles[(j, i)] = self.get_random_tile(i, j);
+          self.tiles[(j, i)] = self.get_random_tile(i, j);
 
             self.seed = match self.seed {
                 Some(s) => Some(s.wrapping_add(1)),
@@ -489,6 +491,7 @@ impl Maze {
         }
 
         let tile = Tile::new(nets, true);
+        //let tile = Tile::new(vec![N6], true);
         self.update_network(&tile, i, j);
         return tile;
     }
@@ -556,15 +559,6 @@ impl Maze {
             };
 
             if all_catorised_nets.hidden.contains(&masked_net) {
-                // For some reason, we are hiding just one wrong net?
-                if coordinate_and_net.coordinate.i == 25 && coordinate_and_net.coordinate.j == 7 {
-                    println!(
-                        "HIDD: ({},{}) {:?}",
-                        coordinate_and_net.coordinate.i,
-                        coordinate_and_net.coordinate.j,
-                        print_bits(masked_net.net)
-                    );
-                }
                 continue;
             }
 
@@ -584,6 +578,10 @@ impl Maze {
                 y: coordinate_and_net.coordinate.j as f64,
             };
             svg.add_fragment(frag.unwrap(), point, 1);
+        }
+
+        if self.show_node_numbers {
+            add_node_numbers(&mut svg, self.number_of_columns, self.number_of_rows);
         }
 
         //println!("render took (2) {:?}", start.elapsed());
@@ -633,11 +631,11 @@ impl Maze {
 
 #[cfg(test)]
 mod tests {
-    use crate::maze::maze::Maze;
+  use crate::maze::maze::Maze;
 
-    #[test]
+  #[test]
     fn test_surrounding_for_island() {
-        let maze = Maze::new(1, 1, false, false, None);
+        let maze = Maze::new(1, 1, false, false, false, None);
 
         let surrounding_tiles = maze.get_connected_titles_for_tile(0, 0);
 
@@ -650,7 +648,7 @@ mod tests {
 
     #[test]
     fn test_surrounding_for_x_0() {
-        let maze = Maze::new(9, 9, false, false, None);
+        let maze = Maze::new(9, 9, false, false, false, None);
 
         let expected = vec![
             vec![1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0],

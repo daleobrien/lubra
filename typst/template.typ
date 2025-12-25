@@ -5,7 +5,7 @@
   set page(numbering: "1", number-align: center)
 
   let body-font = "New Computer Modern"
-  let sans-font = "New Computer Modern Sans"
+  let sans-font = "Fira Code"
 
   set text(font: body-font, lang: "en")
   show math.equation: set text(weight: 400)

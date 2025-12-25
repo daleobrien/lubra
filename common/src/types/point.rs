@@ -1,7 +1,6 @@
+use crate::types::format::trimf64;
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
-
-use crate::types::format::trimf64;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Point {

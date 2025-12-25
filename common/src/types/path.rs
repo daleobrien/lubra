@@ -12,6 +12,9 @@ impl Path {
         Path { points }
     }
 
+    pub fn len(self) -> usize {
+        self.points.len()
+    }
     pub fn scale(self) -> Path {
         return Path {
             points: self.iter().map(|p| *p * TILE_WIDTH).collect(),
@@ -46,7 +49,7 @@ impl Path {
             .map(|p| if invert { p.invert() } else { *p })
             .collect();
 
-        let diffs = pts.windows(2).map(|p| (p[1] - p[0])).collect::<Vec<_>>();
+        let diffs = pts.windows(2).map(|p| p[1] - p[0]).collect::<Vec<_>>();
 
         let pts = concat(vec![vec![pts[0]], diffs]);
 
