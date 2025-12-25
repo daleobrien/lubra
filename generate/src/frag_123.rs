@@ -52,17 +52,9 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     )
 }
 
-// define_shape_family! {
-//     base: base,
-//     svg: svg,
-//     offset_rotations: &[],
-//     variants: {
-//         n123: false, false => identity,
-//     }
-// }
-
 pub fn n123(invert: bool) -> String {
     let (radii, pts) = base(invert);
+
     let pts = if invert { pts.invert() } else { pts };
     let pts1 = pts.clone().rotate_ccw(invert, vec![0, 1, 2, 3]);
     let pts2 = pts.clone().rotate_cw(invert, vec![0, 1, 2, 3]);
