@@ -1,9 +1,13 @@
 use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{
+  identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw,
+};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, S4, S5, TILE_WIDTH};
 
-fn base(invert: bool) -> (String, String, Path) {
+fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
     let pt1 = Point {
         x: 0.5f64 + ((-1.) * w),
@@ -69,45 +73,17 @@ fn base(invert: bool) -> (String, String, Path) {
     let pts = if invert { pts.invert() } else { pts };
     let r1s = trimf64(TILE_WIDTH * (1. / 6. - w));
     let r1l = trimf64(TILE_WIDTH * (1. / 6. + w));
-    return (r1s, r1l, pts);
+    return (vec![r1s, r1l], pts);
 }
 
-fn svg(invert: bool, pts: Path, r1s: String, r1l: String) -> String {
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
+    let r1s = &radii[0];
+    let r1l = &radii[1];
     let pts = pts.str();
     return format!(
-        "<path fill='{fill}' d='\
-      M {a} \
-      L {b} \
-      A {r1s} {r1s} 0 0 {d1} {c} \
-      L {d} \
-      A {r1l} {r1l} 0 0 {d2} {e} \
-      A {r1s} {r1s} 0 0 {d1} {f} \
-      A {r1l} {r1l} 0 0 {d2} {g} \
-      L {h} \
-      L {i} \
-      L {j} \
-      A {r1s} {r1s} 0 0 {d1} {k} \
-      L {l}
-      A {r1s} {r1s} 0 0 {d1} {m} \
-      L {n}
-      ' />\
-      <path stroke='black' d='\
-      M {a} \
-      L {b} \
-      A {r1s} {r1s} 0 0 {d1} {c} \
-      M {d} \
-      A {r1l} {r1l} 0 0 {d2} {e} \
-      A {r1s} {r1s} 0 0 {d1} {f} \
-      A {r1l} {r1l} 0 0 {d2} {g} \
-      L {h}
-      M {i} \
-      L {j} \
-      A {r1s} {r1s} 0 0 {d1} {k} \
-      M {l}
-      A {r1s} {r1s} 0 0 {d1} {m} \
-      L {n}
-      ' />",
+        "<path fill='{fill}' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}L{d}A{r1l} {r1l} 0 0 {d2} {e}A{r1s} {r1s} 0 0 {d1} {f}A{r1l} {r1l} 0 0 {d2} {g}L{h}L{i}L{j}A{r1s} {r1s} 0 0 {d1} {k}L{l}A{r1s} {r1s} 0 0 {d1} {m}L{n}'/>\
+        <path stroke='black' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}M{d}A{r1l} {r1l} 0 0 {d2} {e}A{r1s} {r1s} 0 0 {d1} {f}A{r1l} {r1l} 0 0 {d2} {g}L{h}M{i}L{j}A{r1s} {r1s} 0 0 {d1} {k}M{l}A{r1s} {r1s} 0 0 {d1} {m}L{n}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
@@ -126,41 +102,16 @@ fn svg(invert: bool, pts: Path, r1s: String, r1l: String) -> String {
     );
 }
 
-pub fn n1345(invert: bool) -> String {
-    let (r1s, r1l, pts) = base(invert);
-    return svg(!invert, pts, r1s, r1l);
-}
-
-pub fn n1245(invert: bool) -> String {
-    let (r1s, r1l, pts) = base(invert);
-    let pts = pts.reflect();
-    return svg(invert, pts, r1s, r1l);
-}
-
-pub fn n1246(invert: bool) -> String {
-    let (r1s, r1l, pts) = base(invert);
-    let pts = pts.rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
-    return svg(!invert, pts, r1s, r1l);
-}
-
-pub fn n2346(invert: bool) -> String {
-    let (r1s, r1l, pts) = base(invert);
-    let pts = pts
-        .reflect()
-        .rotate_ccw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
-    return svg(invert, pts, r1s, r1l);
-}
-
-pub fn n2356(invert: bool) -> String {
-    let (r1s, r1l, pts) = base(invert);
-    let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
-    return svg(!invert, pts, r1s, r1l);
-}
-
-pub fn n1356(invert: bool) -> String {
-    let (r1s, r1l, pts) = base(invert);
-    let pts = pts
-        .reflect()
-        .rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
-    return svg(invert, pts, r1s, r1l);
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+    variants: {
+        n1345: false, false => identity,
+        n1245: false, false => reflect,
+        n1246: false, false => rotate_ccw,
+        n2346: false, false => reflect_then_rotate_ccw,
+        n2356: false, false => rotate_cw,
+        n1356: false, false => reflect_then_rotate_cw,
+    }
 }
