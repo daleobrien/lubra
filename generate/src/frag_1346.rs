@@ -74,42 +74,12 @@ fn base(invert: bool) -> (String, String, String, Path) {
     return (r1s, r1l, r3, pts);
 }
 
-fn to_str(invert: bool, pts: Path, r1s: String, r1l: String, r3: String) -> String {
+fn svg(invert: bool, pts: Path, r1s: String, r1l: String, r3: String) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
     return format!(
-        "<path fill=\\\"{fill}\\\" d=\\\"\
-      M {a} \
-      L {b} \
-      A {r1s} {r1s} 0 0 {d1} {c} \
-      L {d} \
-      A {r1l} {r1l} 0 0 {d2} {e} \
-      A {r3} {r3} 0 0 {d1} {f} \
-      A {r1l} {r1l} 0 0 {d2} {g} \
-      L {h} \
-      A {r1s} {r1s} 0 0 {d1} {i} \
-      L {j} \
-      L {k} \
-      L {l} \
-      A {r1s} {r1s} 0 0 {d1} {m} \
-      L {n} \
-      \\\"/>\
-      <path stroke=\\\"black\\\" d=\\\"\
-      M {a} \
-      L {b} \
-      A {r1s} {r1s} 0 0 {d1} {c} \
-      M {d} \
-      A {r1l} {r1l} 0 0 {d2} {e} \
-      A {r3} {r3} 0 0 {d1} {f} \
-      A {r1l} {r1l} 0 0 {d2} {g} \
-      M {h} \
-      A {r1s} {r1s} 0 0 {d1} {i} \
-      L {j} \
-      M {k} \
-      L {l} \
-      A {r1s} {r1s} 0 0 {d1} {m} \
-      L {n} \
-      \\\"/>",
+        "<path fill='{fill}' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}L{d}A{r1l} {r1l} 0 0 {d2} {e}A{r3} {r3} 0 0 {d1} {f}A{r1l} {r1l} 0 0 {d2} {g}L{h}A{r1s} {r1s} 0 0 {d1} {i}L{j}L{k}L{l}A{r1s} {r1s} 0 0 {d1} {m}L{n}'/>\
+        <path stroke='black' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}M{d}A{r1l} {r1l} 0 0 {d2} {e}A{r3} {r3} 0 0 {d1} {f}A{r1l} {r1l} 0 0 {d2} {g}M{h}A{r1s} {r1s} 0 0 {d1} {i}L{j}M{k}L{l}A{r1s} {r1s} 0 0 {d1} {m}L{n}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
@@ -130,17 +100,17 @@ fn to_str(invert: bool, pts: Path, r1s: String, r1l: String, r3: String) -> Stri
 
 pub fn n1346(invert: bool) -> String {
     let (r1s, r1l, r3, pts) = base(invert);
-    return to_str(!invert, pts, r1s, r1l, r3);
+    return svg(!invert, pts, r1s, r1l, r3);
 }
 
 pub fn n1256(invert: bool) -> String {
     let (r1s, r1l, r3, pts) = base(invert);
     let pts = pts.reflect();
-    return to_str(invert, pts, r1s, r1l, r3);
+    return svg(invert, pts, r1s, r1l, r3);
 }
 
 pub fn n2345(invert: bool) -> String {
     let (r1s, r1l, r3, pts) = base(invert);
     let pts = pts.rotate_cw(invert, vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
-    return to_str(!invert, pts, r1s, r1l, r3);
+    return svg(!invert, pts, r1s, r1l, r3);
 }
