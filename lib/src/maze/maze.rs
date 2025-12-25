@@ -21,6 +21,7 @@ use rand_chacha::ChaCha8Rng;
 use rand_distr::num_traits::ToPrimitive;
 use usvg;
 use usvg::fontdb;
+use common::bit_utils::print_nets;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {
@@ -625,7 +626,7 @@ impl Maze {
 
         pixmap.save_png(&input).unwrap();
 
-        return Ok(());
+        Ok(())
     }
 }
 

@@ -11,8 +11,6 @@ use common::types::coordinate::{CataloguedNet, ComplexNet, Coordinate, Coordinat
 use crate::maze::nets_adjacent::ADJ_CHECKS;
 use crate::renders::fragment::MAP_PATHS;
 
-//use std::hash::{Hash, Hasher};
-
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Tile {
     pub nodes: Vec<u32>,
@@ -23,22 +21,22 @@ pub struct Tile {
 impl Tile {
     pub fn new(nodes: Vec<u32>, initialised: bool) -> Tile {
         let bits = nodes.iter().fold(0, |a, b| a | b);
-        return Tile {
+        Tile {
             nodes,
             initialised,
             bits,
-        };
+        }
     }
 
     pub fn get_first_nodes(&self) -> Vec<usize> {
         // Get the first set bit from each node
-        return self
+        self
             .nodes
             .iter()
             .map(|n| n.trailing_zeros().to_usize().unwrap())
-            .collect();
+            .collect()
     }
-    
+
     pub fn to_string_vec(self) -> String {
         if self.nodes.is_empty() {
             return "-".to_string();
@@ -50,7 +48,7 @@ impl Tile {
             .collect::<Vec<String>>()
             .join(", ");
 
-        return format!("[{s}]", s = s.replace("\"", ""));
+        format!("[{s}]", s = s.replace("\"", ""))
     }
 
     pub fn generate_hidden_and_visible_nets(
@@ -336,13 +334,13 @@ impl fmt::Display for Tile {
 
 #[cfg(test)]
 mod tests {
-    use std::{assert_eq, println, vec};
+  use std::{assert_eq, println, vec};
 
-    use common::consts::{N1, N2, N3, N4, N5, N6};
+  use common::consts::{N1, N2, N3, N4, N5, N6};
 
-    use crate::maze::tile::Tile;
+  use crate::maze::tile::Tile;
 
-    #[test]
+  #[test]
     fn test_cw_rotation() {
         let tile = Tile::new(vec![N1 | N2, N5], true);
         let rotated_nodes = tile.rotate_cw();
