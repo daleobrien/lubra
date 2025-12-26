@@ -7,6 +7,7 @@ mod net_operations;
 mod tile_lookup;
 mod render;
 mod grid_generation;
+mod get_intersections;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {
