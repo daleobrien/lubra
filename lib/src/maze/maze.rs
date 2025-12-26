@@ -1,13 +1,13 @@
-use std::collections::HashSet;
-use array2d::Array2D;
 use crate::maze::tile::Tile;
+use array2d::Array2D;
+use std::collections::HashSet;
 
 // Import the implementation modules
 mod net_operations;
 mod tile_lookup;
 mod render;
 mod grid_generation;
-mod get_intersections;
+mod intersections;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {
