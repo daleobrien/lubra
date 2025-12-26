@@ -89,10 +89,10 @@ mod tests {
         let mut registry = StringRegistry::new();
 
         let string1 = "First item";
-        let id1 = registry.add(string1);
+        registry.add(string1);
 
         let string2 = "Another item";
-        let id2 = registry.add(string2);
+        registry.add(string2);
 
         let mut iter = registry.iter();
 

@@ -1,4 +1,5 @@
 use crate::maze::maze::Maze;
+use crate::maze::net::{Node, Nodes};
 use crate::maze::tile::Tile;
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD};
 use common::types::coordinate::add;
@@ -16,14 +17,17 @@ impl Maze {
 
         for net in self.nets.iter() {
             let mut cycle = false;
-            for [i, j, k] in net.iter() {
-                //println!("@ {}, {}, {}", i, j, k);
-                if visited.contains(&(*j, *i, *k)) {
+            for tile_node in net.iter() {
+                //println!("@ {}, {}, {}", tile_node.i, tile_node.j, tile_node.node);
+                if visited.contains(&(tile_node.j, tile_node.i, tile_node.node)) {
                     cycle = true;
-                    println!("Cycle detected @ ->: {}, {}, {}", i, j, k);
+                    println!(
+                        "Cycle detected @ ->: {}, {}, {}",
+                        tile_node.i, tile_node.j, tile_node.node
+                    );
                     break;
                 }
-                visited.insert((*j, *i, *k));
+                visited.insert((tile_node.j, tile_node.i, tile_node.node));
             }
 
             if cycle {
@@ -40,9 +44,9 @@ impl Maze {
                 return true;
             }
             // Of the form [(i,j,4), (...), ... ]
-            for [i, j, n] in nets.iter() {
+            for tile_node in nets.iter() {
                 //
-                let tile = self.tiles.get(*j, *i);
+                let tile = self.tiles.get(tile_node.j, tile_node.i);
 
                 if tile.is_some() {
                     let reduced_tile = tile
@@ -50,13 +54,13 @@ impl Maze {
                         .nodes
                         .iter()
                         .filter(|&b| {
-                            let mask = 1u32 << n;
+                            let mask = 1u32 << tile_node.node;
                             return mask & *b != mask;
                         })
                         .map(|b| *b)
                         .collect::<Vec<u32>>();
 
-                    let _ = self.tiles[(*j, *i)] = Tile::new(reduced_tile, true);
+                    let _ = self.tiles[(tile_node.j, tile_node.i)] = Tile::new(reduced_tile, true);
                 }
             }
             return false;
@@ -70,10 +74,10 @@ impl Maze {
 
         for net in tile_nets {
             // TODO: Need to transform this into bits rather than use node indexes
-            let tile_sub_nets: HashSet<[usize; 3]> = vec![N1, N2, N3, N4, N5, N6]
+            let tile_sub_nets: Nodes = vec![N1, N2, N3, N4, N5, N6]
                 .iter()
                 .filter(|&node| net & *node == *node)
-                .map(|&node| [i, j, node.trailing_zeros().to_usize().unwrap()])
+                .map(|&node| Node::new(i, j, node.trailing_zeros().to_usize().unwrap()))
                 .collect();
 
             // For this sub net of the current tile, find which nets they are part of
@@ -82,7 +86,7 @@ impl Maze {
             for (n, nets) in self.nets.iter().enumerate() {
                 for tile_sub_net in tile_sub_nets.iter() {
                     // Find adjacent tile so we can check if it is part of an existing net
-                    let node_idx = tile_sub_net[2];
+                    let node_idx = tile_sub_net.node;
                     let coord = mapping[node_idx];
                     //
                     let x = add(i, coord.0);
@@ -90,7 +94,9 @@ impl Maze {
 
                     match (x, y) {
                         (Some(x), Some(y)) => {
-                            if nets.contains(&[x, y, node_idx]) && !net_indexes.contains(&n) {
+                            if nets.contains(&Node::new(x, y, node_idx))
+                                && !net_indexes.contains(&n)
+                            {
                                 net_indexes.push(n);
                                 //break;
                             }
@@ -114,7 +120,7 @@ impl Maze {
                 // Keep the net[n] and merge the other nets into it
                 let r = net_indexes[1..].to_vec();
 
-                let mut new_net = HashSet::new();
+                let mut new_net = Nodes::new();
                 // Add in the bridging net
                 new_net.extend(tile_sub_nets);
                 // Add the rest of the nets

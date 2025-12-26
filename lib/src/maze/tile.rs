@@ -244,7 +244,7 @@ impl Tile {
     fn all_match(
         surrounding_tiles: &[Option<&Tile>; 12],
         adj_and_nets: &[(usize, bool, u32)],
-        debug: bool,
+        _debug: bool,
     ) -> bool {
         let mut all_matched = true;
 

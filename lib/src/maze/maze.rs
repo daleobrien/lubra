@@ -1,6 +1,6 @@
+use crate::maze::net::Net;
 use crate::maze::tile::Tile;
 use array2d::Array2D;
-use std::collections::HashSet;
 
 // Import the implementation modules
 mod net_operations;
@@ -20,7 +20,7 @@ pub enum FileType {
 
 pub struct Maze {
     pub style: Option<String>,
-    pub(crate) nets: Vec<HashSet<[usize; 3]>>,
+    pub(crate) nets: Net,
     width: f64,
     height: f64,
     pub(crate) seed: Option<u64>,

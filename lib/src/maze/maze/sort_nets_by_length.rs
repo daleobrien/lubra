@@ -11,10 +11,10 @@ impl Maze {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::HashSet;
+    use crate::maze::net::{Net, Node, Nodes};
 
     /// Helper function to create a test maze with given nets
-    fn create_test_maze(nets: Vec<HashSet<[usize; 3]>>) -> Maze {
+    fn create_test_maze(nets: Net) -> Maze {
         let mut maze = Maze::new(10, 10, false, false, false, None);
         maze.nets = nets;
         maze
@@ -29,9 +29,9 @@ mod tests {
 
     #[test]
     fn test_sort_nets_by_length_single_net() {
-        let mut net = HashSet::new();
-        net.insert([0, 0, 0]);
-        net.insert([1, 1, 1]);
+        let mut net = Nodes::new();
+        net.insert(Node::new(0, 0, 0));
+        net.insert(Node::new(1, 1, 1));
 
         let mut maze = create_test_maze(vec![net.clone()]);
         maze.sort_nets_by_length();
@@ -42,17 +42,17 @@ mod tests {
 
     #[test]
     fn test_sort_nets_by_length_already_sorted() {
-        let mut net1 = HashSet::new();
-        net1.insert([0, 0, 0]);
-        net1.insert([1, 1, 1]);
-        net1.insert([2, 2, 2]);
+        let mut net1 = Nodes::new();
+        net1.insert(Node::new(0, 0, 0));
+        net1.insert(Node::new(1, 1, 1));
+        net1.insert(Node::new(2, 2, 2));
 
-        let mut net2 = HashSet::new();
-        net2.insert([3, 3, 3]);
-        net2.insert([4, 4, 4]);
+        let mut net2 = Nodes::new();
+        net2.insert(Node::new(3, 3, 3));
+        net2.insert(Node::new(4, 4, 4));
 
-        let mut net3 = HashSet::new();
-        net3.insert([5, 5, 5]);
+        let mut net3 = Nodes::new();
+        net3.insert(Node::new(5, 5, 5));
 
         let mut maze = create_test_maze(vec![net1.clone(), net2.clone(), net3.clone()]);
         maze.sort_nets_by_length();
@@ -69,17 +69,17 @@ mod tests {
 
     #[test]
     fn test_sort_nets_by_length_reverse_order() {
-        let mut net1 = HashSet::new();
-        net1.insert([0, 0, 0]);
+        let mut net1 = Nodes::new();
+        net1.insert(Node::new(0, 0, 0));
 
-        let mut net2 = HashSet::new();
-        net2.insert([1, 1, 1]);
-        net2.insert([2, 2, 2]);
+        let mut net2 = Nodes::new();
+        net2.insert(Node::new(1, 1, 1));
+        net2.insert(Node::new(2, 2, 2));
 
-        let mut net3 = HashSet::new();
-        net3.insert([3, 3, 3]);
-        net3.insert([4, 4, 4]);
-        net3.insert([5, 5, 5]);
+        let mut net3 = Nodes::new();
+        net3.insert(Node::new(3, 3, 3));
+        net3.insert(Node::new(4, 4, 4));
+        net3.insert(Node::new(5, 5, 5));
 
         let mut maze = create_test_maze(vec![net1.clone(), net2.clone(), net3.clone()]);
         maze.sort_nets_by_length();
@@ -96,23 +96,23 @@ mod tests {
 
     #[test]
     fn test_sort_nets_by_length_mixed_order() {
-        let mut net1 = HashSet::new();
-        net1.insert([0, 0, 0]);
-        net1.insert([1, 1, 1]);
+        let mut net1 = Nodes::new();
+        net1.insert(Node::new(0, 0, 0));
+        net1.insert(Node::new(1, 1, 1));
 
-        let mut net2 = HashSet::new();
-        net2.insert([2, 2, 2]);
-        net2.insert([3, 3, 3]);
-        net2.insert([4, 4, 4]);
-        net2.insert([5, 5, 5]);
+        let mut net2 = Nodes::new();
+        net2.insert(Node::new(2, 2, 2));
+        net2.insert(Node::new(3, 3, 3));
+        net2.insert(Node::new(4, 4, 4));
+        net2.insert(Node::new(5, 5, 5));
 
-        let mut net3 = HashSet::new();
-        net3.insert([6, 6, 6]);
+        let mut net3 = Nodes::new();
+        net3.insert(Node::new(6, 6, 6));
 
-        let mut net4 = HashSet::new();
-        net4.insert([7, 7, 7]);
-        net4.insert([8, 8, 8]);
-        net4.insert([9, 9, 9]);
+        let mut net4 = Nodes::new();
+        net4.insert(Node::new(7, 7, 7));
+        net4.insert(Node::new(8, 8, 8));
+        net4.insert(Node::new(9, 9, 9));
 
         let mut maze = create_test_maze(vec![
             net1.clone(),
@@ -136,17 +136,17 @@ mod tests {
 
     #[test]
     fn test_sort_nets_by_length_same_size() {
-        let mut net1 = HashSet::new();
-        net1.insert([0, 0, 0]);
-        net1.insert([1, 1, 1]);
+        let mut net1 = Nodes::new();
+        net1.insert(Node::new(0, 0, 0));
+        net1.insert(Node::new(1, 1, 1));
 
-        let mut net2 = HashSet::new();
-        net2.insert([2, 2, 2]);
-        net2.insert([3, 3, 3]);
+        let mut net2 = Nodes::new();
+        net2.insert(Node::new(2, 2, 2));
+        net2.insert(Node::new(3, 3, 3));
 
-        let mut net3 = HashSet::new();
-        net3.insert([4, 4, 4]);
-        net3.insert([5, 5, 5]);
+        let mut net3 = Nodes::new();
+        net3.insert(Node::new(4, 4, 4));
+        net3.insert(Node::new(5, 5, 5));
 
         let mut maze = create_test_maze(vec![net1.clone(), net2.clone(), net3.clone()]);
         maze.sort_nets_by_length();
@@ -160,13 +160,13 @@ mod tests {
 
     #[test]
     fn test_sort_nets_by_length_large_difference() {
-        let mut net1 = HashSet::new();
+        let mut net1 = Nodes::new();
         for i in 0..100 {
-            net1.insert([i, i, i]);
+            net1.insert(Node::new(i, i, i));
         }
 
-        let mut net2 = HashSet::new();
-        net2.insert([200, 200, 200]);
+        let mut net2 = Nodes::new();
+        net2.insert(Node::new(200, 200, 200));
 
         let mut maze = create_test_maze(vec![net2.clone(), net1.clone()]);
         maze.sort_nets_by_length();

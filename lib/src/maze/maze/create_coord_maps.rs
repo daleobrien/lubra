@@ -6,14 +6,14 @@ impl Maze {
     pub(crate) fn create_coord_maps(&mut self) -> Vec<HashMap<(usize, usize), Vec<usize>>> {
         let mut coord_maps: Vec<HashMap<(usize, usize), Vec<usize>>> = vec![]; //HashMap::new();
         for (n, nets) in self.nets.iter().enumerate() {
-            for [i, j, k] in nets.iter() {
+            for tile_node in nets.iter() {
                 let map = coord_maps.get_mut(n);
                 if map.is_none() {
                     coord_maps.push(HashMap::new());
                 }
                 let map = coord_maps.get_mut(n).unwrap();
-                let entry = map.entry((*i, *j)).or_insert(vec![]);
-                entry.push(*k);
+                let entry = map.entry((tile_node.i, tile_node.j)).or_insert(vec![]);
+                entry.push(tile_node.node);
             }
         }
         // for set in coord_maps.iter() {
