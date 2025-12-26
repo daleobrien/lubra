@@ -58,7 +58,7 @@ impl Maze {
         let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
         let mask = get_surrounding_tile_connections(&surrounding_tiles);
 
-        // Try simple, then complex options?
+        // Try simple, then complex options
         let mut nets = random_tile(mask, self.seed, true);
         if mask != 0 && nets.len() == 0 {
             // If we can't find a tile that fits, try again without the mask
@@ -66,7 +66,6 @@ impl Maze {
         }
 
         let tile = Tile::new(nets, true);
-        //let tile = Tile::new(vec![N6], true);
         self.update_network(&tile, i, j);
         return tile;
     }
@@ -74,9 +73,9 @@ impl Maze {
 
 #[cfg(test)]
 mod tests {
-    use crate::maze::maze::Maze;
+  use crate::maze::maze::Maze;
 
-    #[test]
+  #[test]
     fn test_surrounding_for_island() {
         let maze = Maze::new(1, 1, false, false, false, None);
 

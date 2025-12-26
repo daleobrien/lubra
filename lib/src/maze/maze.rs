@@ -5,6 +5,8 @@ use std::collections::HashSet;
 // Import the implementation modules
 mod net_operations;
 mod net_reduction;
+mod create_coord_maps;
+mod sort_nets_by_length;
 mod tile_lookup;
 mod render;
 mod grid_generation;

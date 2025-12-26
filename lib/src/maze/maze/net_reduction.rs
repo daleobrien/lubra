@@ -1,6 +1,5 @@
 use crate::maze::maze::Maze;
 use crate::maze::tile::Tile;
-use std::collections::HashMap;
 
 /// Net reduction methods for the Maze struct.
 /// These methods handle reducing the number of nets by merging them.
@@ -116,32 +115,5 @@ impl Maze {
             ▽△▽△▽      △▽△▽△
 
          */
-    }
-
-    fn create_coord_maps(&mut self) -> Vec<HashMap<(usize, usize), Vec<usize>>> {
-        let mut coord_maps: Vec<HashMap<(usize, usize), Vec<usize>>> = vec![]; //HashMap::new();
-        for (n, nets) in self.nets.iter().enumerate() {
-            for [i, j, k] in nets.iter() {
-                let map = coord_maps.get_mut(n);
-                if map.is_none() {
-                    coord_maps.push(HashMap::new());
-                }
-                let map = coord_maps.get_mut(n).unwrap();
-                let entry = map.entry((*i, *j)).or_insert(vec![]);
-                entry.push(*k);
-            }
-        }
-        // for set in coord_maps.iter() {
-        //     //println!("SET");
-        //     for (coord, nets) in set.iter() {
-        //         //  println!("{:?} -> {:?}", coord, nets);
-        //     }
-        // }
-        return coord_maps;
-    }
-
-    fn sort_nets_by_length(&mut self) {
-        // Sort such that the last net is the shortest, we will be deleting them as we go
-        self.nets.sort_by(|a, b| (&b.len()).cmp(&a.len()));
     }
 }
