@@ -4,10 +4,11 @@ use std::collections::HashSet;
 
 // Import the implementation modules
 mod net_operations;
+mod net_reduction;
 mod tile_lookup;
 mod render;
 mod grid_generation;
-mod intersections;
+mod net_intersections;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {
