@@ -1,4 +1,6 @@
 use crate::maze::maze::Maze;
+use crate::maze::tile::Tile;
+use common::consts::N5;
 use common::types::point::{TILE_HEIGHT, TILE_WIDTH};
 use rand::prelude::*;
 use rand::seq::SliceRandom;
@@ -15,6 +17,11 @@ impl Maze {
             Some(s) => ChaCha8Rng::seed_from_u64(s),
             None => ChaCha8Rng::from_rng(thread_rng()).unwrap(),
         };
+
+       // Make the first Tile as a simple starting point
+       // TODO: Determine orientations of first tile
+        let tile = Tile::new(vec![N5], true);
+        self.tiles[(0, 0)] = tile;
 
         let mut indices: Vec<(usize, usize)> = (0..number_of_rows)
             .flat_map(|j| (0..number_of_columns).map(move |i| (j, i)))
