@@ -158,55 +158,25 @@ impl Maze {
 
                     new_nodes.push(new_node);
 
-                    println!("  New merged node: {}", to_6bit_binary(&new_node, false));
-                    println!("  New nodes list: {}", print_nets(&new_nodes));
-
                     let _ = self.tiles.set(*j, *i, Tile::new(new_nodes, true));
                   } else {
                     println!("  WARNING: Could not select random nodes for merging at tile ({}, {})", i, j);
                   }
                 }
-
-              //
-              //     // Print tile location and nodes for each net
-                //     print!("\n  Tile ({}, {}): ", i, j);
-                //     print!("net {}: [", n);
-                //     for (idx, &node) in net_n_nodes.iter().enumerate() {
-                //         if idx > 0 { print!(", "); }
-                //         print!("{}", node_to_name(node));
-                //     }
-                //     print!("] | net {}: [", m);
-                //     for (idx, &node) in net_m_nodes.iter().enumerate() {
-                //         if idx > 0 { print!(", "); }
-                //         print!("{}", node_to_name(node));
-                //     }
-                //     print!("]");
-                //
-                //     // Debug: Show what nodes are actually at this tile
-                //     if let Some(tile) = self.tiles.get(*j, *i) {
-                //         print!(" (tile has {} nodes)", tile.nodes.len());
-                //     }
-                // }
-                // println!();  // Add newline after all tiles
-                // This occurs when at least one net passing though the same tile as the other net
             }
+         }
 
-            // If I merge one, then all other mergers will be need to be updated
-            // Example:
-            // If 1/2 merged then 1/3 & 2/3 will effectively merged too, and so on. But we don't need to scan, so that's ok
-            // thus, skip all 2/n provided joins if there is a 1/n, and I will iterate over a 1/n before a 2/n
-        }
+       // Remove nets that have been merged (are empty)
+        self.nets.retain(|net| !net.is_empty());
 
         //println!("nets  {:?}", self.nets);
         //println!("tiles  {:?}", self.tiles);
         // println!("Shared coords: {:?}", shared_coords);
 
-        println!("\nWe have disjoint {:?} nets:", self.nets.len());
-
-        // for (n, nets) in self.nets.iter_mut().enumerate() {
-        //     println!("{n} -> {}, {:?}", nets.len(), nets);
-        // }
-
+        if self.nets.len() > 1 {
+            // Recursively reduce nets until we have one
+          println!("\nWe have disjoint {:?} nets:", self.nets.len());
+        }
         /*
 
         net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
