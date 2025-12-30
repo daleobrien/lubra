@@ -32,47 +32,26 @@ fn main() {
     // let start = Instant::now();
     // println!("Generating nets ... ");
 
-    let mut maze = Maze::new(100, 64, true, false, false, Some(0));
-    maze.reduce_nets(4);
-    let name = format!("100-by-64-sample-normal-00");
-    let _ = maze.render(name.to_string(), SVG);
+    // let mut maze = Maze::new(100, 64, true, false, false, Some(0));
+    // maze.reduce_nets(4);
+    // let name = format!("100-by-64-sample-normal-00");
+    // let _ = maze.render(name.to_string(), SVG);
 
-    let seed = 10;
+    let seed = 2;
     let mut maze = Maze::new(10, 7, true, true, true, Some(seed));
     maze.reduce_nets(10);
     let name = format!("50-by-32-sample-normal-{seed}");
     let _ = maze.render(name.to_string(), SVG);
 
 
-
     // for i in 1..101 {
-    //     let mut maze = Maze::new(3, 3, true, false, Some(i));
+    //     let mut maze = Maze::new(20, 14, true, false, false, Some(i));
     //     maze.reduce_nets(4);
     //     let name = format!("small/{i:03}");
     //     let _ = maze.render(name.to_string(), SVG);
     // }
     //
-    // // println!("render took {:?}", start.elapsed());
-    // // let start = Instant::now();
-    //
     // maze.remove_cycles();
-    // let name = format!("6-sample-remove-cycles-03");
-    // let _ = maze.render(name.to_string(), SVG);
-    //
-    // //println!("Reducing nets ... ");
-    // // Reduce step
-    // maze.reduce_nets(4);
-    // // println!("reducing took {:?}", start.elapsed());
-    // // let start = Instant::now();
-    //
-    // let name = format!("7-sample-reduce-03");
-    // let _ = maze.render(name.to_string(), SVG);
-    // //println!("render took {:?}", start.elapsed());
 
-    // // Lots of small mazes
-    // for i in 1..105 {
-    //     let mut maze = Maze::new(5, 4, true, true, Some(i));
-    //     let name = format!("test/random-{:02}", i);
-    //     let _ = maze.render(name.to_string(), PNG);
-    // }
+
 }
