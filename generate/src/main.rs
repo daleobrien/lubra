@@ -64,8 +64,8 @@ fn generate_nets() {
         0,
     );
 
-    let mut nets_by_mask: HashMap<u32, Vec<Vec<u32>>> = HashMap::new();
-    let mut mass_by_mask: HashMap<u32, Vec<u32>> = HashMap::new();
+    let mut nets_by_mask: HashMap<usize, Vec<Vec<usize>>> = HashMap::new();
+    let mut mass_by_mask: HashMap<usize, Vec<usize>> = HashMap::new();
 
     let count = lookups::create_lookups(seq, &mut nets_by_mask, &mut mass_by_mask);
     println!("Generated {} lookups.", count);
@@ -88,8 +88,8 @@ fn generate_nets() {
         0,
     );
 
-    let mut nets_by_mask: HashMap<u32, Vec<Vec<u32>>> = HashMap::new();
-    let mut mass_by_mask: HashMap<u32, Vec<u32>> = HashMap::new();
+    let mut nets_by_mask: HashMap<usize, Vec<Vec<usize>>> = HashMap::new();
+    let mut mass_by_mask: HashMap<usize, Vec<usize>> = HashMap::new();
 
     lookups::create_lookups(seq, &mut nets_by_mask, &mut mass_by_mask);
 

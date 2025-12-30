@@ -13,13 +13,13 @@ use crate::renders::generated::fragment::MAP_PATHS;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Tile {
-    pub nodes: Vec<u32>,
+    pub nodes: Vec<usize>,
     pub initialised: bool,
-    pub bits: u32,
+    pub bits: usize,
 }
 
 impl Tile {
-    pub fn new(nodes: Vec<u32>, initialised: bool) -> Tile {
+    pub fn new(nodes: Vec<usize>, initialised: bool) -> Tile {
         let bits = nodes.iter().fold(0, |a, b| a | b);
         Tile {
             nodes,
@@ -127,7 +127,7 @@ impl Tile {
     fn find_best_path(
         coordinate: Coordinate,
         surrounding_tiles: &&[Option<&Tile>; 12],
-        net: &u32,
+        net: &usize,
         debug: bool,
     ) -> Option<ComplexNet> {
         let list_of_adj_and_nets = ADJ_CHECKS.get(&net);
@@ -215,7 +215,7 @@ impl Tile {
     fn add_node_to_hidden(
         coordinate: Coordinate,
         complex_net: &mut ComplexNet,
-        adj_net: u32,
+        adj_net: usize,
         node_number: usize,
         debug: bool,
     ) {
@@ -223,7 +223,7 @@ impl Tile {
 
         if coord.is_some() {
             let index_as_mask = 1 << node_number;
-            if index_as_mask.to_u32().unwrap() & adj_net != 0 {
+            if index_as_mask.to_usize().unwrap() & adj_net != 0 {
                 // Also, is node_number in adj_net
                 if debug {
                     println!(
@@ -243,7 +243,7 @@ impl Tile {
 
     fn all_match(
         surrounding_tiles: &[Option<&Tile>; 12],
-        adj_and_nets: &[(usize, bool, u32)],
+        adj_and_nets: &[(usize, bool, usize)],
         _debug: bool,
     ) -> bool {
         let mut all_matched = true;
@@ -279,7 +279,7 @@ impl Tile {
         all_matched
     }
 
-    pub fn rotate_cw(&self) -> Vec<u32> {
+    pub fn rotate_cw(&self) -> Vec<usize> {
         return self
             .nodes
             .iter()
@@ -287,7 +287,7 @@ impl Tile {
             .collect();
     }
 
-    pub fn rotate_ccw(&self) -> Vec<u32> {
+    pub fn rotate_ccw(&self) -> Vec<usize> {
         return self
             .nodes
             .iter()
@@ -299,11 +299,11 @@ impl Tile {
         return other.bits & self.bits != 0;
     }
 
-    pub fn contains(&self, node_mask: u32) -> bool {
+    pub fn contains(&self, node_mask: usize) -> bool {
         return node_mask & self.bits != 0;
     }
 
-    pub fn contain_net(&self, net_mask: u32) -> bool {
+    pub fn contain_net(&self, net_mask: usize) -> bool {
         return self.nodes.iter().any(|net| *net == net_mask);
     }
 

@@ -2,27 +2,27 @@ use itertools::Itertools;
 
 use crate::consts::{IN, NL, WA};
 
-pub fn get_mass(nets: &Vec<u32>) -> u32 {
-    let mut mass = 1 * nets.len() as u32;
+pub fn get_mass(nets: &Vec<usize>) -> usize {
+    let mut mass = 1 * nets.len();
     for net in nets {
         match net.count_ones() {
-            2 => mass *= 20,
+            2 => mass *= 10,
             3 => mass *= 5,
             4 => mass *= 2,
             _ => mass *= 1,
         }
     }
-    return mass;
+    mass
 }
 
-pub fn to_bits(nets: &Vec<u32>) -> u32 {
+pub fn to_bits(nets: &Vec<usize>) -> usize {
     if nets.is_empty() {
-        return 0u32;
+        return 0;
     }
-    return nets.iter().fold(0, |a, b| a | b);
+    nets.iter().fold(0, |a, b| a | b)
 }
 
-pub fn interects(nets: &Vec<u32>) -> bool {
+pub fn intersects(nets: &Vec<usize>) -> bool {
     let mut combined = 0;
     !nets.is_empty()
         && nets.len() != 1
@@ -33,7 +33,7 @@ pub fn interects(nets: &Vec<u32>) -> bool {
         })
 }
 
-pub fn dont_care_to_bits(value: u32) -> u32 {
+pub fn dont_care_to_bits(value: usize) -> usize {
     //# 0b101 -> 0b10_00_10
     let mut out = 0;
     for j in 0..=5 {
@@ -46,7 +46,7 @@ pub fn dont_care_to_bits(value: u32) -> u32 {
     return out;
 }
 
-pub fn mask_to_bits(value: u32) -> u32 {
+pub fn mask_to_bits(value: usize) -> usize {
     // 0b101 -> 0b01_00_01
     let mut out = 0;
     for j in 0..=5 {
@@ -59,7 +59,7 @@ pub fn mask_to_bits(value: u32) -> u32 {
     return out;
 }
 
-pub fn to_base4(number: u32) -> u32 {
+pub fn to_base4(number: usize) -> usize {
     // e.g. to_base4(5) -> "11"
     if number < 4 {
         return number;
@@ -78,14 +78,14 @@ pub fn to_base4(number: u32) -> u32 {
     return result;
 }
 
-pub fn bit_sequence(n: u32) -> Vec<(u32, u32)> {
+pub fn bit_sequence(n: usize) -> Vec<(usize, usize)> {
     return (0..n)
         .into_iter()
         .map(|n| (n, dont_care_to_bits(n)))
         .collect();
 }
 
-pub fn to_6bit_binary(value: &u32, reduce: bool) -> String {
+pub fn to_6bit_binary(value: &usize, reduce: bool) -> String {
     let mut s = format!("{:032b}", value);
     let len = s.len();
     for i in (0..len).rev() {
@@ -131,9 +131,9 @@ pub fn to_6bit_binary(value: &u32, reduce: bool) -> String {
     return text;
 }
 
-const SHIFT_VALUES: [u32; 4] = [6, 12, 18, 24];
+const SHIFT_VALUES: [usize; 4] = [6, 12, 18, 24];
 
-pub fn sort_upper_bits(value: u32) -> u32 {
+pub fn sort_upper_bits(value: usize) -> usize {
     // We take all the 6bits nibbles, except the lowest 6bits and sorted them
     SHIFT_VALUES
         .iter()
@@ -152,7 +152,7 @@ pub fn sort_upper_bits(value: u32) -> u32 {
         })
 }
 
-fn nibble_to_enum_string(value: u32) -> String {
+fn nibble_to_enum_string(value: usize) -> String {
     (1..=6).fold(String::new(), |mut s, i| {
         if value & (1 << (i - 1)) != 0 {
             s.push_str(&i.to_string());
@@ -161,9 +161,9 @@ fn nibble_to_enum_string(value: u32) -> String {
     })
 }
 
-const ALL_SHIFT_VALUES: [u32; 5] = [0, 6, 12, 18, 24];
+const ALL_SHIFT_VALUES: [usize; 5] = [0, 6, 12, 18, 24];
 
-pub fn print_bits(value: u32) -> String {
+pub fn print_bits(value: usize) -> String {
     ALL_SHIFT_VALUES
         .iter()
         .copied() // Use copied() to avoid creating references
@@ -173,19 +173,19 @@ pub fn print_bits(value: u32) -> String {
         .join("/")
 }
 
-pub fn print_nets(nets: &Vec<u32>) -> String {
+pub fn print_nets(nets: &Vec<usize>) -> String {
     nets.iter().map(|x| print_bits(*x)).join(" ")
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{assert_eq, format, vec};
+  use std::{assert_eq, format, vec};
 
-    use crate::consts::{A1, A3, A4, A5, B2, B3, B4, B6, N1, N2, N3, N4, N5, N6};
+  use crate::consts::{A1, A3, A4, A5, B2, B3, B4, B6, N1, N2, N3, N4, N5, N6};
 
-    use super::*;
+  use super::*;
 
-    #[test]
+  #[test]
     fn test_nibble_to_enum_string() {
         assert_eq!(nibble_to_enum_string(N1), "1");
         assert_eq!(nibble_to_enum_string(N2), "2");
@@ -228,8 +228,8 @@ mod tests {
     fn test_to_bits() {
         assert_eq!(to_bits(&vec![]), 0);
 
-        assert_eq!(to_bits(&vec![2u32]), 2);
-        assert_eq!(to_bits(&vec![1u32, 2u32]), 3);
+        assert_eq!(to_bits(&vec![2]), 2);
+        assert_eq!(to_bits(&vec![1, 2]), 3);
 
         let b = to_bits(&vec![3, 0b100_000]);
         assert_eq!(format!("{:b}", b), "100011");
@@ -262,18 +262,18 @@ mod tests {
 
     #[test]
     fn test_intersections() {
-        assert_eq!(interects(&vec![]), false);
-        assert_eq!(interects(&vec![0b010_101]), false);
-        assert_eq!(interects(&vec![0b000_001, 0b000_010]), false);
-        assert_eq!(interects(&vec![0b000_001, 0b000_011]), true);
-        assert_eq!(interects(&vec![0b000_001, 0b000_010, 0b000_100]), false);
+        assert_eq!(intersects(&vec![]), false);
+        assert_eq!(intersects(&vec![0b010_101]), false);
+        assert_eq!(intersects(&vec![0b000_001, 0b000_010]), false);
+        assert_eq!(intersects(&vec![0b000_001, 0b000_011]), true);
+        assert_eq!(intersects(&vec![0b000_001, 0b000_010, 0b000_100]), false);
         assert_eq!(
-            interects(&vec![0b000_001, 0b000_010, 0b000_100, 0b001_000]),
-            false
+          intersects(&vec![0b000_001, 0b000_010, 0b000_100, 0b001_000]),
+          false
         );
         assert_eq!(
-            interects(&vec![0b000_001, 0b001_000, 0b000_010, 0b001_000]),
-            true
+          intersects(&vec![0b000_001, 0b001_000, 0b000_010, 0b001_000]),
+          true
         );
     }
 

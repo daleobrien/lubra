@@ -7,7 +7,7 @@ use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 
 pub fn generate_adjacent_paths() {
     // This is used to look up matching adjacent paths.
-    let mut adj_paths: BTreeMap<u32, Vec<Vec<(usize, bool, u32)>>> = BTreeMap::new();
+    let mut adj_paths: BTreeMap<usize, Vec<Vec<(usize, bool, usize)>>> = BTreeMap::new();
 
     // e.g. for a NODE_1-4 we can handle a few different matching tiles
     // The booleans is to make sure it matches, if false, it must not be the tile
@@ -141,7 +141,7 @@ pub fn generate_adjacent_paths() {
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
     let _ = file.write(
-        b"pub static ADJ_CHECKS: Map<u32, &'static [&'static [(usize, bool, u32)]]> = phf_map! {\n",
+        b"pub static ADJ_CHECKS: Map<usize, &'static [&'static [(usize, bool, usize)]]> = phf_map! {\n",
     );
     for (key, list_index_and_masks) in adj_paths {
         let mut subs: Vec<String> = vec![];
@@ -149,14 +149,14 @@ pub fn generate_adjacent_paths() {
         for index_and_masks in list_index_and_masks {
             let masks_as_string = index_and_masks
                 .iter()
-                .map(|(i, include, n)| format!("({i}usize, {include}, {n}u32)"))
+                .map(|(i, include, n)| format!("({i}usize, {include}, {n}usize)"))
                 .collect::<Vec<String>>()
                 .join(", ");
             subs.push(format!("&[{masks_as_string}]"));
         }
         let _ = write!(
             file,
-            "  /* {key6bit:^4} */ {key}u32 =>  &[{subs}],\n",
+            "  /* {key6bit:^4} */ {key}usize =>  &[{subs}],\n",
             subs = subs.join(", "),
             key6bit = print_bits(key)
         );

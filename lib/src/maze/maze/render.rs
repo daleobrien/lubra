@@ -1,7 +1,5 @@
-use std::error::Error;
-use std::fs;
-use crate::maze::maze::{FileType, Maze};
 use crate::maze::maze::FileType::{PNG, SVG};
+use crate::maze::maze::{FileType, Maze};
 use crate::renders::generated::fragment::MAP_PATHS;
 use crate::renders::node_numbers::add_node_numbers;
 use crate::renders::svg::Svg;
@@ -9,6 +7,8 @@ use common::consts::NX;
 use common::types::bits;
 use common::types::coordinate::{CataloguedNet, Coordinate, CoordinateAndNet};
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use std::error::Error;
+use std::fs;
 use usvg;
 use usvg::fontdb;
 
@@ -38,8 +38,8 @@ impl Maze {
 
     pub fn render(&mut self, file_name: String, file_type: FileType) -> Result<(), Box<dyn Error>> {
         //let start = Instant::now();
-        #[cfg(debug_assertions)]
-        self.print_out_networks();
+        //#[cfg(debug_assertions)]
+        //self.print_out_networks();
 
         let margin = 5.0;
         let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;

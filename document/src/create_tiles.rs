@@ -59,7 +59,7 @@ pub fn create_tiles() {
             continue;
         }
 
-        let mut all_variants = vec![];
+        let mut all_variants:Vec<usize> = vec![];
         for net in nets.clone() {
             for variant in list_of_variants(net) {
                 all_variants.push(variant);
@@ -94,7 +94,7 @@ pub fn create_tiles() {
     println!("Set: {:#?}", hashes_written.len());
 }
 
-pub fn save_nets_to_svg(nets: Vec<u32>, index: usize) -> bool {
+pub fn save_nets_to_svg(nets: Vec<usize>, index: usize) -> bool {
     let mut svg = Svg::new(3f64 * TILE_WIDTH, 3f64 * TILE_HEIGHT);
 
     let wall = MAP_PATHS.get(&WA).unwrap();
@@ -122,7 +122,7 @@ pub fn save_nets_to_svg(nets: Vec<u32>, index: usize) -> bool {
     return true;
 }
 
-fn nets_are_valid(nets: Vec<u32>) -> bool {
+fn nets_are_valid(nets: Vec<usize>) -> bool {
     let mut v1 = 0;
     let mut v2 = 0;
     let mut v3 = 0;

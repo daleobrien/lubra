@@ -4,7 +4,7 @@ use crate::types::coordinate::Coordinate;
 
 //use memoize::memoize;
 
-pub fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
+pub fn rotate_bits_345_left_and_012_right(value: usize) -> usize {
     // Extract the bits to be rotated.
     let bits_345_1 = value >> 2 & 0b001_000_001_000_001_000_001_000_001_000;
     let bits_345_2 = value << 1 & 0b110_000_110_000_110_000_110_000_110_000;
@@ -13,7 +13,7 @@ pub fn rotate_bits_345_left_and_012_right(value: u32) -> u32 {
     return (WA & value) | bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
 }
 
-pub fn rotate_bits_345_right_and_012_left(value: u32) -> u32 {
+pub fn rotate_bits_345_right_and_012_left(value: usize) -> usize {
     let bits_345_1 = value >> 1 & 0b011_000_011_000_011_000_011_000_011_000;
     let bits_345_2 = value << 2 & 0b100_000_100_000_100_000_100_000_100_000;
     let bits_012_1 = value << 1 & 0b000_110_000_110_000_110_000_110_000_110;
@@ -26,7 +26,7 @@ fn coordinate_to_index_and_flip(coordinate: Coordinate) -> (usize, bool) {
     return (coordinate.i % 3, (coordinate.j + coordinate.i) % 2 == 1);
 }
 
-pub fn transform_tile(value: u32, coordinate: Coordinate) -> u32 {
+pub fn transform_tile(value: usize, coordinate: Coordinate) -> usize {
     let (index, flipped) = coordinate_to_index_and_flip(coordinate);
     let rotated_net = match index {
         0 => value,
@@ -34,7 +34,7 @@ pub fn transform_tile(value: u32, coordinate: Coordinate) -> u32 {
         2 => rotate_bits_345_left_and_012_right(value),
         _ => panic!("Invalid rotation"),
     };
-    let bits: u32 = if flipped {
+    let bits: usize = if flipped {
         IN | rotated_net
     } else {
         rotated_net
@@ -44,13 +44,13 @@ pub fn transform_tile(value: u32, coordinate: Coordinate) -> u32 {
 
 #[cfg(test)]
 mod tests {
-    use std::assert_eq;
+  use std::assert_eq;
 
-    use crate::consts::{N1, N2, N3, N4, N5, N6};
+  use crate::consts::{N1, N2, N3, N4, N5, N6};
 
-    use super::*;
+  use super::*;
 
-    #[test]
+  #[test]
     fn test_transform_vertex() {
         assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 0 }), N1);
         assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 0 }), IN | N2);

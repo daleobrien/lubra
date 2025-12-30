@@ -36,7 +36,7 @@ impl Maze {
         }
     }
 
-    fn remove_short_nets(&mut self, lower_limit: usize) {
+    pub fn remove_short_nets(&mut self, lower_limit: usize) {
         // Strip out small nets
         self.nets.retain(|nets| {
             // Remove small nets
@@ -54,11 +54,11 @@ impl Maze {
                         .nodes
                         .iter()
                         .filter(|&b| {
-                            let mask = 1u32 << tile_node.node;
+                            let mask = 1usize << tile_node.node;
                             return mask & *b != mask;
                         })
                         .map(|b| *b)
-                        .collect::<Vec<u32>>();
+                        .collect::<Vec<usize>>();
 
                     let _ = self.tiles[(tile_node.j, tile_node.i)] = Tile::new(reduced_tile, true);
                 }

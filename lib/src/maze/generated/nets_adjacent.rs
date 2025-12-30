@@ -1,18 +1,18 @@
 /* This file is generated. */
 use ::phf::{Map, phf_map};
 
-pub static ADJ_CHECKS: Map<u32, &'static [&'static [(usize, bool, u32)]]> = phf_map! {
-  /*  14  */ 9u32 =>  &[&[(3usize, true, 8u32)], &[(3usize, true, 10u32)], &[(3usize, true, 12u32)], &[(3usize, true, 24u32)], &[(3usize, true, 40u32)]],
-  /*  24  */ 10u32 =>  &[&[(3usize, true, 8u32)], &[(3usize, true, 9u32)], &[(3usize, true, 12u32)], &[(3usize, true, 24u32)], &[(3usize, true, 40u32)]],
-  /*  34  */ 12u32 =>  &[&[(3usize, true, 9u32)], &[(3usize, true, 10u32)]],
-  /*  15  */ 17u32 =>  &[&[(4usize, true, 16u32)], &[(4usize, true, 18u32)], &[(4usize, true, 20u32)], &[(4usize, true, 24u32)], &[(4usize, true, 48u32)]],
-  /*  25  */ 18u32 =>  &[&[(4usize, true, 17u32)], &[(4usize, true, 20u32)]],
-  /*  35  */ 20u32 =>  &[&[(4usize, true, 16u32)], &[(4usize, true, 17u32)], &[(4usize, true, 18u32)], &[(4usize, true, 24u32)], &[(4usize, true, 48u32)]],
-  /*  45  */ 24u32 =>  &[&[(3usize, true, 9u32), (4usize, true, 20u32)], &[(3usize, true, 10u32), (4usize, true, 17u32)], &[(3usize, true, 10u32), (4usize, true, 20u32)], &[(3usize, true, 9u32)], &[(3usize, true, 10u32)], &[(4usize, true, 17u32)], &[(4usize, true, 20u32)]],
-  /*  16  */ 33u32 =>  &[&[(5usize, true, 34u32)], &[(5usize, true, 36u32)]],
-  /*  26  */ 34u32 =>  &[&[(5usize, true, 32u32)], &[(5usize, true, 33u32)], &[(5usize, true, 36u32)], &[(5usize, true, 40u32)]],
-  /*  36  */ 36u32 =>  &[&[(5usize, true, 32u32)], &[(5usize, true, 33u32)], &[(5usize, true, 34u32)], &[(5usize, true, 40u32)], &[(5usize, true, 48u32)]],
-  /*  46  */ 40u32 =>  &[&[(3usize, true, 9u32), (5usize, true, 34u32)], &[(3usize, true, 9u32), (5usize, true, 36u32)], &[(3usize, true, 10u32), (5usize, true, 36u32)], &[(3usize, true, 9u32)], &[(3usize, true, 10u32)], &[(5usize, true, 34u32)], &[(5usize, true, 36u32)]],
-  /*  56  */ 48u32 =>  &[&[(4usize, true, 17u32), (5usize, true, 34u32)], &[(4usize, true, 17u32), (5usize, true, 36u32)], &[(4usize, true, 20u32), (5usize, true, 34u32)], &[(4usize, true, 17u32)], &[(4usize, true, 20u32)], &[(5usize, true, 34u32)], &[(5usize, true, 36u32)]],
+pub static ADJ_CHECKS: Map<usize, &'static [&'static [(usize, bool, usize)]]> = phf_map! {
+  /*  14  */ 9usize =>  &[&[(3usize, true, 8usize)], &[(3usize, true, 10usize)], &[(3usize, true, 12usize)], &[(3usize, true, 24usize)], &[(3usize, true, 40usize)]],
+  /*  24  */ 10usize =>  &[&[(3usize, true, 8usize)], &[(3usize, true, 9usize)], &[(3usize, true, 12usize)], &[(3usize, true, 24usize)], &[(3usize, true, 40usize)]],
+  /*  34  */ 12usize =>  &[&[(3usize, true, 9usize)], &[(3usize, true, 10usize)]],
+  /*  15  */ 17usize =>  &[&[(4usize, true, 16usize)], &[(4usize, true, 18usize)], &[(4usize, true, 20usize)], &[(4usize, true, 24usize)], &[(4usize, true, 48usize)]],
+  /*  25  */ 18usize =>  &[&[(4usize, true, 17usize)], &[(4usize, true, 20usize)]],
+  /*  35  */ 20usize =>  &[&[(4usize, true, 16usize)], &[(4usize, true, 17usize)], &[(4usize, true, 18usize)], &[(4usize, true, 24usize)], &[(4usize, true, 48usize)]],
+  /*  45  */ 24usize =>  &[&[(3usize, true, 9usize), (4usize, true, 20usize)], &[(3usize, true, 10usize), (4usize, true, 17usize)], &[(3usize, true, 10usize), (4usize, true, 20usize)], &[(3usize, true, 9usize)], &[(3usize, true, 10usize)], &[(4usize, true, 17usize)], &[(4usize, true, 20usize)]],
+  /*  16  */ 33usize =>  &[&[(5usize, true, 34usize)], &[(5usize, true, 36usize)]],
+  /*  26  */ 34usize =>  &[&[(5usize, true, 32usize)], &[(5usize, true, 33usize)], &[(5usize, true, 36usize)], &[(5usize, true, 40usize)]],
+  /*  36  */ 36usize =>  &[&[(5usize, true, 32usize)], &[(5usize, true, 33usize)], &[(5usize, true, 34usize)], &[(5usize, true, 40usize)], &[(5usize, true, 48usize)]],
+  /*  46  */ 40usize =>  &[&[(3usize, true, 9usize), (5usize, true, 34usize)], &[(3usize, true, 9usize), (5usize, true, 36usize)], &[(3usize, true, 10usize), (5usize, true, 36usize)], &[(3usize, true, 9usize)], &[(3usize, true, 10usize)], &[(5usize, true, 34usize)], &[(5usize, true, 36usize)]],
+  /*  56  */ 48usize =>  &[&[(4usize, true, 17usize), (5usize, true, 34usize)], &[(4usize, true, 17usize), (5usize, true, 36usize)], &[(4usize, true, 20usize), (5usize, true, 34usize)], &[(4usize, true, 17usize)], &[(4usize, true, 20usize)], &[(5usize, true, 34usize)], &[(5usize, true, 36usize)]],
 };
 

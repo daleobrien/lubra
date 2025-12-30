@@ -1,5 +1,5 @@
 /* This file is generated. */
-pub fn list_of_variants (mask:u32) -> Vec<u32> {
+pub fn list_of_variants (mask:usize) -> Vec<usize> {
   match mask {
 /*            */    0b00_000000_000000_000000_000000_000000 =>  vec![0b10_000000_000000_000000_000000_000000],
 /* 1          */    0b00_000000_000000_000000_000000_000001 =>  vec![0b00_000000_000000_000000_000000_000001],

@@ -21,7 +21,7 @@ fn tile_is_empty(tile: &Option<&Tile>) -> bool {
     }
 }
 
-fn tile_contains(tile: &Option<&Tile>, node_idx: u32) -> bool {
+fn tile_contains(tile: &Option<&Tile>, node_idx: usize) -> bool {
     match *tile {
         Some(t) => return t.contains(node_idx),
         None => return false,
@@ -32,7 +32,7 @@ fn mask_for_tile_vertex(
     relative_idx: usize,
     idxs: [usize; 4],
     relative_tiles: &[Option<&Tile>; 12],
-) -> u32 {
+) -> usize {
     let opposite = &relative_tiles[relative_idx];
 
     let left = &relative_tiles[idxs[0]];
@@ -40,7 +40,7 @@ fn mask_for_tile_vertex(
     let l_adjacent = &relative_tiles[idxs[2]];
     let r_adjacent = &relative_tiles[idxs[3]];
 
-    let node_value = 1 << relative_idx as u32;
+    let node_value = 1 << relative_idx as usize;
 
     if tile_is_empty(opposite) {
         if !tile_contains(left, node_value)
@@ -65,13 +65,13 @@ fn mask_for_tile_vertex(
             _ => 0,
         };
     }
-    return 0;
+    0
 }
 
-fn mask_for_tile_side(relative_idx: usize, relative_tiles: &[Option<&Tile>; 12]) -> u32 {
+fn mask_for_tile_side(relative_idx: usize, relative_tiles: &[Option<&Tile>; 12]) -> usize {
     let adjacent = &relative_tiles[relative_idx];
 
-    let node_value = 1 << relative_idx as u32;
+    let node_value = 1 << relative_idx as usize;
 
     if tile_is_empty(&adjacent) {
         return match relative_idx + 1 {
@@ -91,10 +91,10 @@ fn mask_for_tile_side(relative_idx: usize, relative_tiles: &[Option<&Tile>; 12])
         };
     }
 
-    return 0;
+    0
 }
 
-pub fn get_surrounding_tile_connections(surrounding_tiles: &[Option<&Tile>; 12]) -> u32 {
+pub fn get_surrounding_tile_connections(surrounding_tiles: &[Option<&Tile>; 12]) -> usize {
     // Node 1
     return mask_for_tile_vertex(ADJ_N1, [ADJ_N4, ADJ_N5, ADJ_N1L, ADJ_N1R], surrounding_tiles)
     // Node 2

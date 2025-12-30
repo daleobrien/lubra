@@ -1,14 +1,16 @@
 use crate::maze::maze::Maze;
 use crate::maze::net::Node;
+use crate::maze::random::select_random_element;
 use crate::maze::tile::Tile;
+use common::bit_utils::{print_nets, to_6bit_binary};
 
 /// Net reduction methods for the Maze struct.
 /// These methods handle reducing the number of nets by merging them.
 impl Maze {
-    pub fn reduce_nets(&mut self, _lower_limit: usize) {
+    pub fn reduce_nets(&mut self, lower_limit: usize) {
         self.sort_nets_by_length();
-      // remove_short_nets might be broken ... seem to create more disjoint nets!
-       // self.remove_short_nets(lower_limit);
+       // remove_short_nets might be broken ... seem to create more disjoint nets!
+       self.remove_short_nets(lower_limit);
 
         // Create a hashSet of the nets, but used just i,j coordinates as the keys
         let coord_maps = self.create_coord_maps();
@@ -62,7 +64,8 @@ impl Maze {
                         let other_index = indexes[1];
                         let other_net = self.nets[other_index].clone();
                         self.nets[first_index].extend(other_net);
-                        self.nets.remove(other_index);
+                        //self.nets.remove(other_index);
+                        self.nets[other_index].clear(); // Leave an empty net to avoid messing up indices
                     } else {
                         println!("Error, we don't have 2 indexes to merge {:?}", indexes);
                     }
@@ -73,8 +76,118 @@ impl Maze {
             if !found {
                 // We can't merge these nets in a simple way
                 // for these two nets, which points do the share the same tile?
-                println!("Couldn't join: (net:{m},net:{n}){:?}", intersections);
-                // TODO: Implement more complex joins ...
+                println!("\nComplex join with (net:{m},net:{n}), intersections {:?}", intersections);
+
+                // Check if indices are still valid (nets may have been merged/removed)
+                if *n >= self.nets.len() || *m >= self.nets.len() {
+                    println!("  WARNING: Net indices ({}, {}) are stale (only {} nets remain after merging)",
+                             n, m, self.nets.len());
+                    continue;
+                }
+
+                // Implement more complex joins ...
+
+                for (i, j) in intersections {
+                  // Get nodes for net n at this tile
+                  let net_n_nodes: Vec<usize> = self.nets[*n]
+                    .iter()
+                    .filter(|node| node.i == *i && node.j == *j)
+                    .map(|node| node.node)
+                    .collect();
+
+                  // Get nodes for net m at this tile
+                  let net_m_nodes: Vec<usize> = self.nets[*m]
+                    .iter()
+                    .filter(|node| node.i == *i && node.j == *j)
+                    .map(|node| node.node)
+                    .collect();
+
+                  // For each n node, to_6bit_binary
+                  net_n_nodes.iter().for_each(|node| {
+                    let p = 1usize<<node;
+                    println!("    net n node: {} => bits: {}", node, to_6bit_binary(&p, false));
+                  });
+                  net_m_nodes.iter().for_each(|node| {
+                    let p = 1usize<<node;
+                    println!("    net m node: {} => bits: {}", node, to_6bit_binary(&p, false));
+                  });
+
+                  // Print the orginal tile at this location
+                  let original_tile = self.tiles.get(*j, *i).unwrap();
+                  println!("  Original tile bits at ({}, {}): {}", i, j, print_nets(&original_tile.nodes));
+
+                  println!("  At tile ({}, {}): net {} nodes: {} | net {} nodes: {}", i, j, n, print_nets(&net_n_nodes), m, print_nets(&net_m_nodes));
+
+                  // Select a random element from net_n_nodes and net_m_nodes to merge, and keep the rest unchanged
+                  let rand_m = select_random_element(net_m_nodes, self.seed);
+                  let rand_n = select_random_element(net_n_nodes, self.seed);
+                  if rand_m.is_some() && rand_n.is_some() {
+
+                    let (selected_m, remaining_m) = rand_m.unwrap();
+                    let (selected_n, remaining_n) = rand_n.unwrap();
+                    let bit_n = 1usize << (selected_n);
+                    let bit_m = 1usize << (selected_m);
+
+                    // Create new bits for the tile after merging
+                    println!("selected   \n\t{} \n\t{}", to_6bit_binary(&bit_n, false), to_6bit_binary(&bit_m, false) );
+
+
+                    let combined_mask = bit_n | bit_m;
+
+                    let indexes_with_bits: Vec<usize> = original_tile.nodes
+                      .iter()
+                      .enumerate()
+                      .filter(|(_, &node_bits)| node_bits & combined_mask != 0)
+                      .map(|(index, _)| index)
+                      .collect();
+                    println!("  Indexes with bits to merge: {:?}", indexes_with_bits);
+
+                    // Create new node by ANDing each indexed node with combined_mask and ORing them together
+                    let new_node: usize = indexes_with_bits
+                      .iter()
+                      .map(|&idx| original_tile.nodes[idx])
+                      .fold(0, |acc, bits| acc | bits);
+
+                    // Remove the indexed nodes and add the new merged node
+                    let mut new_nodes: Vec<usize> = original_tile.nodes
+                      .iter()
+                      .enumerate()
+                      .filter(|(idx, _)| !indexes_with_bits.contains(idx))
+                      .map(|(_, &node)| node)
+                      .collect();
+
+                    new_nodes.push(new_node);
+
+                    println!("  New merged node: {}", to_6bit_binary(&new_node, false));
+                    println!("  New nodes list: {}", print_nets(&new_nodes));
+
+                    let _ = self.tiles.set(*j, *i, Tile::new(new_nodes, true));
+                  } else {
+                    println!("  WARNING: Could not select random nodes for merging at tile ({}, {})", i, j);
+                  }
+                }
+
+              //
+              //     // Print tile location and nodes for each net
+                //     print!("\n  Tile ({}, {}): ", i, j);
+                //     print!("net {}: [", n);
+                //     for (idx, &node) in net_n_nodes.iter().enumerate() {
+                //         if idx > 0 { print!(", "); }
+                //         print!("{}", node_to_name(node));
+                //     }
+                //     print!("] | net {}: [", m);
+                //     for (idx, &node) in net_m_nodes.iter().enumerate() {
+                //         if idx > 0 { print!(", "); }
+                //         print!("{}", node_to_name(node));
+                //     }
+                //     print!("]");
+                //
+                //     // Debug: Show what nodes are actually at this tile
+                //     if let Some(tile) = self.tiles.get(*j, *i) {
+                //         print!(" (tile has {} nodes)", tile.nodes.len());
+                //     }
+                // }
+                // println!();  // Add newline after all tiles
                 // This occurs when at least one net passing though the same tile as the other net
             }
 
@@ -124,13 +237,13 @@ impl Maze {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::maze::net::{Net, Node, Nodes};
-    use crate::maze::tile::Tile;
-    use array2d::Array2D;
-    use common::consts::{N1, N2, N3, N4, N5, N6};
+  use super::*;
+  use crate::maze::net::{Net, Node, Nodes};
+  use crate::maze::tile::Tile;
+  use array2d::Array2D;
+  use common::consts::{N1, N2, N3, N4, N5, N6};
 
-    /// Helper function to create a test maze with given nets and tiles
+  /// Helper function to create a test maze with given nets and tiles
     fn create_test_maze_with_tiles(nets: Net, tiles: Array2D<Tile>) -> Maze {
         let rows = tiles.num_rows();
         let cols = tiles.num_columns();

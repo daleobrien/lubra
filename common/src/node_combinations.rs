@@ -2,14 +2,14 @@ use std::collections::HashSet;
 
 #[derive(Debug, Clone)]
 pub struct NodeCombinations {
-    list: Vec<Vec<u32>>,
+    list: Vec<Vec<usize>>,
 }
 
 fn generate_combinations(
-    list: &mut Vec<u32>,
+    list: &mut Vec<usize>,
     start: usize,
-    combination: &mut Vec<u32>,
-    results: &mut HashSet<Vec<u32>>,
+    combination: &mut Vec<usize>,
+    results: &mut HashSet<Vec<usize>>,
 ) {
     let mut sorted_combination = combination.clone();
     sorted_combination.sort();
@@ -28,14 +28,14 @@ fn generate_combinations(
 }
 
 impl NodeCombinations {
-    pub fn new(list: Vec<u32>, min_k: usize) -> Self {
+    pub fn new(list: Vec<usize>, min_k: usize) -> Self {
         let mut combination = vec![];
         let mut results = HashSet::new();
         let mut list = list.clone();
 
         generate_combinations(&mut list, 0, &mut combination, &mut results);
 
-        let mut combinations: Vec<Vec<u32>> = results
+        let mut combinations: Vec<Vec<usize>> = results
             .iter()
             .map(|x| x.clone())
             .filter(|x| x.len() >= min_k)
@@ -50,7 +50,7 @@ impl NodeCombinations {
 
 impl Iterator for NodeCombinations {
     // We can refer to this type using Self::Item
-    type Item = Vec<u32>;
+    type Item = Vec<usize>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let item = self.list.pop();
@@ -66,9 +66,9 @@ impl Iterator for NodeCombinations {
 // Add tests
 #[cfg(test)]
 mod tests {
-    use super::*;
+  use super::*;
 
-    #[test]
+  #[test]
     fn test_node_combinations() {
         let seq = NodeCombinations::new(vec![0b_001, 0b_010, 0b_011], 0);
 

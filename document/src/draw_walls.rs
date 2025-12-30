@@ -3,7 +3,7 @@ use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use lib::renders::generated::fragment::MAP_PATHS;
 use lib::renders::svg::Svg;
 
-pub fn add_walls(key: u32, svg: &mut Svg) {
+pub fn add_walls(key: usize, svg: &mut Svg) {
     let invert = key & IN == IN;
     let wall_key = (IN & key) | WA;
     let wall = MAP_PATHS.get(&wall_key).unwrap();

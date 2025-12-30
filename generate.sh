@@ -3,7 +3,7 @@ set -e
 
 FOLDER=$(cd `dirname $0` && pwd)
 
-rm -rf cli/*.svg
+# rm -rf cli/*.svg
 
 cd ${FOLDER}/generate
 cargo run --package generate -- svg

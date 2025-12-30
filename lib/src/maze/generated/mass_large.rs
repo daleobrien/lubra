@@ -1,5 +1,5 @@
 /* This file is generated. */
-pub fn list_of_possible_mass_for_a_mask (base4_mask:u32) -> Vec<u32> {
+pub fn list_of_possible_mass_for_a_mask (base4_mask:usize) -> Vec<u32> {
   match base4_mask {
          0 => vec![0],
          1 => vec![1],

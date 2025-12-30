@@ -32,20 +32,18 @@ fn main() {
     // let start = Instant::now();
     // println!("Generating nets ... ");
 
-    // let mut maze = Maze::new(100, 64, true, false, false, Some(0));
-    // maze.reduce_nets(4);
-    // let name = format!("100-by-64-sample-normal-00");
-    // let _ = maze.render(name.to_string(), SVG);
-
-    let mut maze = Maze::new(10, 7, true, true, true, Some(10));
-    maze.reduce_nets(10);
-    let name = format!("50-by-32-sample-normal-03");
+    let mut maze = Maze::new(100, 64, true, false, false, Some(0));
+    maze.reduce_nets(4);
+    let name = format!("100-by-64-sample-normal-00");
     let _ = maze.render(name.to_string(), SVG);
 
-    // Small test maze with node numbers for easy verification
-    // let mut maze = Maze::new(5, 5, false, true, true, Some(0));
-    // let name = format!("test-maze-with-node-numbers");
-    // let _ = maze.render(name.to_string(), SVG);
+    let seed = 10;
+    let mut maze = Maze::new(10, 7, true, true, true, Some(seed));
+    maze.reduce_nets(10);
+    let name = format!("50-by-32-sample-normal-{seed}");
+    let _ = maze.render(name.to_string(), SVG);
+
+
 
     // for i in 1..101 {
     //     let mut maze = Maze::new(3, 3, true, false, Some(i));

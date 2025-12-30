@@ -1,5 +1,5 @@
 /* This file is generated. */
-pub fn empty_fragments (mask:u32) -> bool {
+pub fn empty_fragments (mask:usize) -> bool {
   match mask {
  /*4/14      */   0b00_000000_000000_000000_001001_001000 =>  true,
  /*34/14     */   0b00_000000_000000_000000_001001_001100 =>  true,

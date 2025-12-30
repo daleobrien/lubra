@@ -19,7 +19,7 @@ impl fmt::Display for Coordinate {
 #[derive(Clone, Copy, Debug)]
 pub struct CoordinateAndNet {
     pub coordinate: Coordinate,
-    pub net: u32,
+    pub net: usize,
 }
 
 impl fmt::Display for CoordinateAndNet {
@@ -57,10 +57,10 @@ impl Hash for Coordinate {
 
 pub fn add(u: usize, i: i32) -> Option<usize> {
     if i.is_negative() {
-        if u < i.wrapping_abs() as u32 as usize {
+        if u < i.wrapping_abs() as usize {
             return None;
         }
-        let r = u - i.wrapping_abs() as u32 as usize;
+        let r = u - i.wrapping_abs() as usize;
         return Some(r);
     }
     let r = u + i as usize;
@@ -68,7 +68,7 @@ pub fn add(u: usize, i: i32) -> Option<usize> {
 }
 
 impl CoordinateAndNet {
-    pub fn new(coordinate: Coordinate, net: u32) -> CoordinateAndNet {
+    pub fn new(coordinate: Coordinate, net: usize) -> CoordinateAndNet {
         return CoordinateAndNet { coordinate, net };
     }
 }

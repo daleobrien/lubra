@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 
-fn list_to_rust_vector_u32<T: ToString>(list: &[T]) -> String {
+fn list_to_rust_vector_usize<T: ToString>(list: &[T]) -> String {
     let elements: Vec<String> = list
         .iter()
         .map(|n| format!("{}u32", n.to_string()))
@@ -12,25 +12,25 @@ fn list_to_rust_vector_u32<T: ToString>(list: &[T]) -> String {
 
 fn list_to_rust_vector_vec<T: ToString>(list: &[T]) -> String {
     let elements: Vec<String> = list.iter().map(|item| item.to_string()).collect();
-    return format!("vec![{}]", elements.join(", "));
+    format!("vec![{}]", elements.join(", "))
 }
 
 fn list_of_lists_to_rust_vector<T: ToString>(list: &[Vec<T>]) -> String {
     let elements: Vec<String> = list
         .iter()
-        .map(|item| list_to_rust_vector_u32(item))
+        .map(|item| list_to_rust_vector_usize(item))
         .collect();
-    return list_to_rust_vector_vec(&elements);
+    list_to_rust_vector_vec(&elements)
 }
 
-pub fn write_nets_to_file(nets_by_mask: HashMap<u32, Vec<Vec<u32>>>, file_name: &str) {
-    let mut keys = nets_by_mask.keys().collect::<Vec<&u32>>();
+pub fn write_nets_to_file(nets_by_mask: HashMap<usize, Vec<Vec<usize>>>, file_name: &str) {
+    let mut keys = nets_by_mask.keys().collect::<Vec<&usize>>();
     keys.sort();
     let mut file = File::create(file_name).expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
 
     let _ = file.write_all(
-        b"pub fn list_of_possible_nets_for_a_mask (base4_mask:u32) -> Vec<Vec<u32>> {\n",
+        b"pub fn list_of_possible_nets_for_a_mask (base4_mask:usize) -> Vec<Vec<u32>> {\n",
     );
     let _ = file.write_all(b"  match base4_mask {\n");
     for key in keys {
@@ -47,14 +47,14 @@ pub fn write_nets_to_file(nets_by_mask: HashMap<u32, Vec<Vec<u32>>>, file_name: 
     let _ = file.flush();
 }
 
-pub fn write_mass_to_file(mass_by_mask: HashMap<u32, Vec<u32>>, file_name: &str) {
-    let mut keys = mass_by_mask.keys().collect::<Vec<&u32>>();
+pub fn write_mass_to_file(mass_by_mask: HashMap<usize, Vec<usize>>, file_name: &str) {
+    let mut keys = mass_by_mask.keys().collect::<Vec<&usize>>();
     keys.sort();
     let mut file = File::create(file_name).expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
 
     let _ =
-        file.write_all(b"pub fn list_of_possible_mass_for_a_mask (base4_mask:u32) -> Vec<u32> {\n");
+        file.write_all(b"pub fn list_of_possible_mass_for_a_mask (base4_mask:usize) -> Vec<u32> {\n");
     let _ = file.write_all(b"  match base4_mask {\n");
     for key in keys {
         let mut mass = mass_by_mask[key].clone();
@@ -72,12 +72,12 @@ pub fn write_mass_to_file(mass_by_mask: HashMap<u32, Vec<u32>>, file_name: &str)
 mod tests {
   use std::{assert_eq, vec};
 
-  use crate::writer::{list_of_lists_to_rust_vector, list_to_rust_vector_u32};
+  use crate::writer::{list_of_lists_to_rust_vector, list_to_rust_vector_usize};
 
   #[test]
-    fn test_list_to_rust_vector_u32() {
+    fn test_list_to_rust_vector_usize() {
         assert_eq!(
-            list_to_rust_vector_u32(&vec![1u32, 2u32, 3u32]),
+            list_to_rust_vector_usize(&vec![1u32, 2u32, 3u32]),
             "vec![1u32, 2u32, 3u32]"
         );
     }
@@ -85,7 +85,7 @@ mod tests {
     #[test]
     fn test_list_of_lists_to_rust_vector() {
         assert_eq!(
-            list_of_lists_to_rust_vector(&vec![vec![3], vec![4, 5, 6]]),
+            list_of_lists_to_rust_vector(&vec![vec![3u32], vec![4u32, 5u32, 6u32]]),
             "vec![vec![3u32], vec![4u32, 5u32, 6u32]]"
         );
     }

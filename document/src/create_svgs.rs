@@ -33,7 +33,7 @@ pub fn create_svgs() {
             continue;
         }
 
-        if key & WA != 0u32 {
+        if key & WA != 0usize {
             continue;
         }
 

@@ -39,7 +39,7 @@ use crate::fragments::frag_wall::l_wall;
 
 pub fn trim_whitespace(s: &str) -> String {
     let words: Vec<_> = s.split_whitespace().collect();
-    return words.join(" ");
+    words.join(" ")
 }
 
 pub fn generate_all_shapes() {
@@ -198,7 +198,7 @@ pub fn generate_all_shapes() {
                 } else if paths[&blank_key] != "".to_string() {
                     println!(
                         "Not adding blank key: {}",
-                        print_bits(blank_key.to_u32().unwrap())
+                        print_bits(blank_key.to_usize().unwrap())
                     );
                 }
             }
@@ -209,35 +209,35 @@ pub fn generate_all_shapes() {
     let mut file = File::create("../lib/src/renders/generated/fragment.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
-    let _ = file.write(b"pub static MAP_PATHS: Map<u32, &'static str> = phf_map! {\n");
+    let _ = file.write(b"pub static MAP_PATHS: Map<usize, &'static str> = phf_map! {\n");
 
-    let mut keys: HashMap<u32, Vec<u32>> = HashMap::new();
-    let mut empty_fragments: HashSet<u32> = HashSet::new();
+    let mut keys: HashMap<usize, Vec<usize>> = HashMap::new();
+    let mut empty_fragments: HashSet<usize> = HashSet::new();
 
     for (key, value) in paths {
         // Store to render library
-        let key_as_u32 = key.to_u32().unwrap();
+        let key = key.to_usize().unwrap();
         let _ = write!(
-            file,
-            " /* {:<10} */ {}u32 =>  \"{}\",\n",
-            print_bits(key_as_u32),
-            key,
-            trim_whitespace(value.as_str())
+          file,
+          " /* {:<10} */ {}usize =>  \"{}\",\n",
+          print_bits(key),
+          key,
+          trim_whitespace(value.as_str())
         );
 
         if value.is_empty() {
-            empty_fragments.insert(key_as_u32);
+            empty_fragments.insert(key);
             continue;
         }
 
         // Store to documentation library
-        let index = key_as_u32 & (IN | NL);
+        let index = key & (IN | NL);
 
         if !keys.contains_key(&index) {
-            keys.entry(index).or_insert_with(Vec::new).push(key_as_u32);
+            keys.entry(index).or_insert_with(Vec::new).push(key);
         } else {
-            if !keys[&index].contains(&key_as_u32) {
-                keys.entry(index).or_insert_with(Vec::new).push(key_as_u32);
+            if !keys[&index].contains(&key) {
+                keys.entry(index).or_insert_with(Vec::new).push(key);
             }
         }
     }
@@ -248,7 +248,7 @@ pub fn generate_all_shapes() {
     let mut file = File::create("../document/src/variants.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(
-        b"pub fn list_of_variants (mask:u32) -> Vec<u32> {
+        b"pub fn list_of_variants (mask:usize) -> Vec<usize> {
   match mask {\n",
     );
 
@@ -280,7 +280,7 @@ pub fn generate_all_shapes() {
     let _ = file.write(b"/* This file is generated. */\n");
 
     let _ = file.write(
-        b"pub fn empty_fragments (mask:u32) -> bool {
+        b"pub fn empty_fragments (mask:usize) -> bool {
   match mask {\n",
     );
 
