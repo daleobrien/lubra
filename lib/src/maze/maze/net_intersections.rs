@@ -50,12 +50,18 @@ impl Maze {
                     match (index_n, index_m) {
                         (Some(index_n), Some(index_m)) => {
                             // These two sets are connected, so we can merge them
-                            // None: `m > n` is always true.
-                            let (left, right) = node_to_set.split_at_mut(index_m);
-                            let set_n = &mut left[index_n];
-                            let set_m = &right[0];
-                            set_n.extend(set_m.iter());
-                            node_to_set.remove(index_m);
+                            // We need to ensure we split at the higher index to avoid bounds errors
+                            let (lower_idx, higher_idx) = if index_n < index_m {
+                                (index_n, index_m)
+                            } else {
+                                (index_m, index_n)
+                            };
+
+                            let (left, right) = node_to_set.split_at_mut(higher_idx);
+                            let set_lower = &mut left[lower_idx];
+                            let set_higher = &right[0];
+                            set_lower.extend(set_higher.iter());
+                            node_to_set.remove(higher_idx);
 
                             shared_coords.insert((n, m), intersecting);
                         }
