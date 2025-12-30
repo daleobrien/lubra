@@ -12,30 +12,9 @@ use std::fs;
 use usvg;
 use usvg::fontdb;
 
-#[cfg(debug_assertions)]
-use common::bit_utils::print_nets;
-
 /// Rendering methods for the Maze struct.
 /// These methods handle SVG/PNG generation and file saving.
 impl Maze {
-    #[cfg(debug_assertions)]
-    fn print_out_networks(&self) {
-        println!("");
-        let rows: Vec<_> = self.tiles.rows_iter().collect();
-
-        let text = rows
-            .into_iter()
-            .rev() // Reverse the rows
-            .map(|row| {
-                row.map(|t| format!("{:^10}", print_nets(&t.nodes)))
-                    .collect::<Vec<_>>()
-                    .join("|")
-            })
-            .collect::<Vec<_>>()
-            .join("\n");
-        println!("{}\n", text);
-    }
-
     pub fn render(&mut self, file_name: String, file_type: FileType) -> Result<(), Box<dyn Error>> {
         //let start = Instant::now();
         //#[cfg(debug_assertions)]
