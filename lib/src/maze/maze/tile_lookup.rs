@@ -67,7 +67,7 @@ impl Maze {
 
         let tile = Tile::new(nets, true);
         self.update_network(&tile, i, j);
-        return tile;
+        tile
     }
 }
 
