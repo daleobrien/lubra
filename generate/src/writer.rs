@@ -5,7 +5,7 @@ use std::io::prelude::*;
 fn list_to_rust_vector_usize<T: ToString>(list: &[T]) -> String {
     let elements: Vec<String> = list
         .iter()
-        .map(|n| format!("{}u32", n.to_string()))
+        .map(|n| format!("{}", n.to_string()))
         .collect();
     return format!("vec![{}]", elements.join(", "));
 }
@@ -30,7 +30,7 @@ pub fn write_nets_to_file(nets_by_mask: HashMap<usize, Vec<Vec<usize>>>, file_na
     let _ = file.write(b"/* This file is generated. */\n");
 
     let _ = file.write_all(
-        b"pub fn list_of_possible_nets_for_a_mask (base4_mask:usize) -> Vec<Vec<u32>> {\n",
+        b"pub fn list_of_possible_nets_for_a_mask (base4_mask:usize) -> Vec<Vec<usize>> {\n",
     );
     let _ = file.write_all(b"  match base4_mask {\n");
     for key in keys {

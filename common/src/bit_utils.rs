@@ -6,7 +6,7 @@ pub fn get_mass(nets: &Vec<usize>) -> usize {
     let mut mass = 1 * nets.len();
     for net in nets {
         match net.count_ones() {
-            2 => mass *= 10,
+            2 => mass *= 5,
             3 => mass *= 5,
             4 => mass *= 2,
             _ => mass *= 1,
