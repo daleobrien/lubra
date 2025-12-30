@@ -39,7 +39,9 @@ fn main() {
 
     let seed = 2;
     let mut maze = Maze::new(10, 7, true, true, true, Some(seed));
+  //  let mut maze = Maze::new(10, 7, true, true, true, None);
     maze.reduce_nets(10);
+  maze.remove_cycles();
     let name = format!("50-by-32-sample-normal-{seed}");
     let _ = maze.render(name.to_string(), SVG);
 
@@ -51,7 +53,6 @@ fn main() {
     //     let _ = maze.render(name.to_string(), SVG);
     // }
     //
-    // maze.remove_cycles();
 
 
 }

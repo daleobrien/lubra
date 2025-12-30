@@ -4,7 +4,6 @@ use crate::maze::tile::Tile;
 use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD};
 use common::types::coordinate::add;
 use rand_distr::num_traits::ToPrimitive;
-use std::collections::HashSet;
 
 /// Net operation methods for the Maze struct.
 /// These methods handle network management including net reduction

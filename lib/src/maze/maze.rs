@@ -11,6 +11,7 @@ mod tile_lookup;
 mod render;
 mod grid_generation;
 mod net_intersections;
+mod remove_cycles;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {

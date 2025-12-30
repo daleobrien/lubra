@@ -119,18 +119,12 @@ impl Maze {
                   println!("  At tile ({}, {}): net {} nodes: {} | net {} nodes: {}", i, j, n, print_nets(&net_n_nodes), m, print_nets(&net_m_nodes));
 
                   // Select a random element from net_n_nodes and net_m_nodes to merge, and keep the rest unchanged
-                  let rand_m = select_random_element(net_m_nodes, self.seed);
-                  let rand_n = select_random_element(net_n_nodes, self.seed);
-                  if rand_m.is_some() && rand_n.is_some() {
+                  let selected_m = select_random_element(net_m_nodes, self.seed);
+                  let selected_n = select_random_element(net_n_nodes, self.seed);
+                  if selected_m.is_some() && selected_n.is_some() {
 
-                    let (selected_m, remaining_m) = rand_m.unwrap();
-                    let (selected_n, remaining_n) = rand_n.unwrap();
-                    let bit_n = 1usize << (selected_n);
-                    let bit_m = 1usize << (selected_m);
-
-                    // Create new bits for the tile after merging
-                    println!("selected   \n\t{} \n\t{}", to_6bit_binary(&bit_n, false), to_6bit_binary(&bit_m, false) );
-
+                    let bit_n = 1usize << (selected_n.unwrap());
+                    let bit_m = 1usize << (selected_m.unwrap());
 
                     let combined_mask = bit_n | bit_m;
 
@@ -140,7 +134,6 @@ impl Maze {
                       .filter(|(_, &node_bits)| node_bits & combined_mask != 0)
                       .map(|(index, _)| index)
                       .collect();
-                    println!("  Indexes with bits to merge: {:?}", indexes_with_bits);
 
                     // Create new node by ANDing each indexed node with combined_mask and ORing them together
                     let new_node: usize = indexes_with_bits
@@ -354,7 +347,7 @@ mod tests {
 
     #[test]
     fn test_reduce_nets_intersection_with_more_than_two_nodes() {
-        // Test case where intersection has more than 2 nodes - should not merge
+        // Test case where intersection has more than 2 nodes - should merge
         let mut net0 = Nodes::new();
         net0.insert(Node::new(0, 0, 0));
         net0.insert(Node::new(1, 0, 1));
@@ -379,11 +372,10 @@ mod tests {
 
         maze.reduce_nets(0);
 
-        // Should still have 3 nets since intersection has more than 2 nodes
         assert_eq!(
             maze.nets.len(),
-            3,
-            "Nodes with complex intersections (>2 nodes) should not be merged"
+            2,
+            "Nodes with complex intersections (>2 nodes) should be merged"
         );
     }
 

@@ -22,6 +22,7 @@ impl Maze {
        // TODO: Determine orientations of first tile
         let tile = Tile::new(vec![N5], true);
         self.tiles[(0, 0)] = tile;
+       // TODO: Determine which node to use as the last tile (i,j) => ?
 
         let mut indices: Vec<(usize, usize)> = (0..number_of_rows)
             .flat_map(|j| (0..number_of_columns).map(move |i| (j, i)))

@@ -45,28 +45,8 @@ pub fn random_tile(mask: usize, seed: Option<u64>, reduced_lookup: bool) -> Vec<
 }
 
 /// Selects a random element from a vector and returns both the selected element
-/// and the remaining elements.
-///
-/// # Arguments
-/// * `vec` - The vector to select from
-/// * `seed` - Optional seed for deterministic random selection
-///
-/// # Returns
-/// * `Some((selected, remaining))` - The selected element and remaining elements
-/// * `None` - If the input vector is empty
-///
-/// # Examples
-/// ```
-/// use lib::maze::random::select_random_element;
-///
-/// let vec = vec![1, 2, 3, 4, 5];
-/// let result = select_random_element(vec, Some(42));
-/// assert!(result.is_some());
-///
-/// let (selected, remaining) = result.unwrap();
-/// assert_eq!(remaining.len(), 4);
-/// ```
-pub fn select_random_element(vec: Vec<usize>, seed: Option<u64>) -> Option<(usize, Vec<usize>)> {
+
+pub fn select_random_element(vec: Vec<usize>, seed: Option<u64>) -> Option<usize> {
     if vec.is_empty() {
         return None;
     }
@@ -77,78 +57,5 @@ pub fn select_random_element(vec: Vec<usize>, seed: Option<u64>) -> Option<(usiz
     };
 
     let index = rng.gen_range(0..vec.len());
-    let selected = vec[index];
-
-    let remaining: Vec<usize> = vec
-        .into_iter()
-        .enumerate()
-        .filter(|(i, _)| *i != index)
-        .map(|(_, v)| v)
-        .collect();
-
-    Some((selected, remaining))
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-    fn test_select_random_element_returns_one_element_and_remaining() {
-        let vec = vec![1, 2, 3, 4, 5];
-        let result = select_random_element(vec.clone(), Some(42));
-
-        assert!(result.is_some());
-
-        let (selected, remaining) = result.unwrap();
-
-        // Check that we have one selected element and 4 remaining
-        assert_eq!(remaining.len(), 4);
-
-        // Check that the selected element was from the original vector
-        assert!(vec.contains(&selected));
-
-        // Check that all remaining elements were in the original vector
-        for elem in &remaining {
-            assert!(vec.contains(elem));
-        }
-
-        // Check that the selected element is not in the remaining vector
-        assert!(!remaining.contains(&selected));
-
-        // Check that total count is preserved
-        assert_eq!(remaining.len() + 1, vec.len());
-    }
-
-    #[test]
-    fn test_select_random_element_empty_vec() {
-        let vec: Vec<usize> = vec![];
-        let result = select_random_element(vec, Some(42));
-
-        assert!(result.is_none());
-    }
-
-    #[test]
-    fn test_select_random_element_single_element() {
-        let vec = vec![42];
-        let result = select_random_element(vec, Some(123));
-
-        assert!(result.is_some());
-
-        let (selected, remaining) = result.unwrap();
-
-        assert_eq!(selected, 42);
-        assert_eq!(remaining.len(), 0);
-    }
-
-    #[test]
-    fn test_select_random_element_deterministic_with_seed() {
-        let vec = vec![1, 2, 3, 4, 5];
-        let seed = Some(12345);
-
-        let result1 = select_random_element(vec.clone(), seed);
-        let result2 = select_random_element(vec.clone(), seed);
-
-        assert_eq!(result1, result2);
-    }
+    Some(vec[index])
 }

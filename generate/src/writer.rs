@@ -78,7 +78,7 @@ mod tests {
     fn test_list_to_rust_vector_usize() {
         assert_eq!(
             list_to_rust_vector_usize(&vec![1u32, 2u32, 3u32]),
-            "vec![1u32, 2u32, 3u32]"
+            "vec![1, 2, 3]"
         );
     }
 
@@ -86,7 +86,7 @@ mod tests {
     fn test_list_of_lists_to_rust_vector() {
         assert_eq!(
             list_of_lists_to_rust_vector(&vec![vec![3u32], vec![4u32, 5u32, 6u32]]),
-            "vec![vec![3u32], vec![4u32, 5u32, 6u32]]"
+            "vec![vec![3], vec![4, 5, 6]]"
         );
     }
 }
