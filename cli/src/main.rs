@@ -37,7 +37,7 @@ fn main() {
     // let name = format!("100-by-64-sample-normal-00");
     // let _ = maze.render(name.to_string(), SVG);
 
-    let seed = 2;
+    let seed = 1;
     let mut maze = Maze::new(10, 7, true, true, true, Some(seed));
   //  let mut maze = Maze::new(10, 7, true, true, true, None);
     maze.reduce_nets(10);

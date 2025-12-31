@@ -95,17 +95,15 @@ impl Maze {
             // Build adjacency map for this network
             let adjacency = self.build_adjacency_map(nodes);
 
-            // Track visited tiles (i, j) globally and tiles in current DFS path
-            // Using tile position instead of full Node since nodes in the same tile
-            // are considered the same node for cycle detection
-            let mut visited: HashSet<(usize, usize)> = HashSet::new();
-            let mut rec_stack: HashSet<(usize, usize)> = HashSet::new();
+            // Track visited nodes globally and nodes in current DFS path
+            // Nodes in the same internal net on a tile are marked together as visited
+            let mut visited: HashSet<Node> = HashSet::new();
+            let mut rec_stack: HashSet<Node> = HashSet::new();
             let mut path = Vec::new();
 
-            // Try starting DFS from each unvisited tile
+            // Try starting DFS from each unvisited node
             for &start_node in nodes.iter() {
-                let start_tile = (start_node.i, start_node.j);
-                if !visited.contains(&start_tile) {
+                if !visited.contains(&start_node) {
                     if let Some(cycle) = self.dfs_detect_cycle(
                         start_node,
                         None,
@@ -238,75 +236,112 @@ impl Maze {
     /// DFS-based cycle detection. Returns Some(cycle) if a cycle is found.
     ///
     /// # Arguments
-    /// * `current` - Current node being visited
+    /// * `current` - Current node being visited (entry point to this tile)
     /// * `parent_tile` - Parent tile position (to avoid detecting trivial back-edges)
     /// * `adjacency` - Adjacency map of the graph
-    /// * `visited` - Set of all visited tile positions (i, j)
-    /// * `rec_stack` - Set of tile positions in current recursion stack (path)
+    /// * `visited` - Set of all visited nodes (nodes in the same internal net are marked together)
+    /// * `rec_stack` - Set of nodes in current recursion stack (path)
     /// * `path` - Current path being explored (as nodes for cycle reporting)
     ///
     /// # Returns
     /// Some(Vec<Node>) containing the cycle if found, None otherwise
     ///
-    /// Note: Uses tile positions (i, j) for cycle detection since nodes within
-    /// the same tile are considered the same node.
+    /// Note: Nodes within the same tile that are connected (same internal net) are
+    /// considered the same node and visited together. However, separate nets on
+    /// the same tile are treated as different nodes.
     fn dfs_detect_cycle(
         &self,
         current: Node,
         parent_tile: Option<(usize, usize)>,
         adjacency: &HashMap<Node, Vec<Node>>,
-        visited: &mut HashSet<(usize, usize)>,
-        rec_stack: &mut HashSet<(usize, usize)>,
+        visited: &mut HashSet<Node>,
+        rec_stack: &mut HashSet<Node>,
         path: &mut Vec<Node>,
     ) -> Option<Vec<Node>> {
         let current_tile = (current.i, current.j);
-        visited.insert(current_tile);
-        rec_stack.insert(current_tile);
-        path.push(current);
 
-        if let Some(neighbors) = adjacency.get(&current) {
-            for &neighbor in neighbors {
-                let neighbor_tile = (neighbor.i, neighbor.j);
+        // Find all nodes on this tile that are reachable from the entry node
+        // via intra-tile connections (i.e., in the same net within this tile)
+        let mut reachable_on_tile: HashSet<Node> = HashSet::new();
+        let mut to_visit: Vec<Node> = vec![current];
+        while let Some(node) = to_visit.pop() {
+            if reachable_on_tile.contains(&node) {
+                continue;
+            }
+            reachable_on_tile.insert(node);
 
-                // Skip neighbors on the same tile - intra-tile connections don't form cycles
-                if neighbor_tile == current_tile {
-                    continue;
-                }
-
-                // Skip the parent tile to avoid detecting trivial back-edges
-                if Some(neighbor_tile) == parent_tile {
-                    continue;
-                }
-
-                if !visited.contains(&neighbor_tile) {
-                    // Recurse to unvisited neighbor
-                    if let Some(cycle) = self.dfs_detect_cycle(
-                        neighbor,
-                        Some(current_tile),
-                        adjacency,
-                        visited,
-                        rec_stack,
-                        path,
-                    ) {
-                        return Some(cycle);
+            // Find intra-tile neighbors (same tile, connected via adjacency)
+            if let Some(neighbors) = adjacency.get(&node) {
+                for &neighbor in neighbors {
+                    if neighbor.i == current.i && neighbor.j == current.j {
+                        // Same tile - this is an intra-tile connection
+                        if !reachable_on_tile.contains(&neighbor) {
+                            to_visit.push(neighbor);
+                        }
                     }
-                } else if rec_stack.contains(&neighbor_tile) {
-                    // Found a back edge to a tile in current path - this is a cycle!
-                    // Find the position in path where this tile first appears
-                    let cycle_start = path
-                        .iter()
-                        .position(|n| n.i == neighbor.i && n.j == neighbor.j)
-                        .unwrap();
-                    let mut cycle = path[cycle_start..].to_vec();
-                    cycle.push(neighbor); // Close the cycle
-                    return Some(cycle);
                 }
             }
         }
 
-        // Backtrack
+        // Mark all reachable nodes on this tile as visited and in rec_stack
+        for &node in &reachable_on_tile {
+            visited.insert(node);
+            rec_stack.insert(node);
+        }
+        path.push(current);
+
+        // Collect inter-tile neighbors from all reachable nodes on this tile
+        let mut inter_tile_neighbors: Vec<Node> = Vec::new();
+        for &node in &reachable_on_tile {
+            if let Some(neighbors) = adjacency.get(&node) {
+                for &neighbor in neighbors {
+                    let neighbor_tile = (neighbor.i, neighbor.j);
+                    // Only collect inter-tile neighbors (different tile)
+                    if neighbor_tile != current_tile {
+                        inter_tile_neighbors.push(neighbor);
+                    }
+                }
+            }
+        }
+
+        for neighbor in inter_tile_neighbors {
+            let neighbor_tile = (neighbor.i, neighbor.j);
+
+            // Skip the parent tile to avoid detecting trivial back-edges
+            if Some(neighbor_tile) == parent_tile {
+                continue;
+            }
+
+            if !visited.contains(&neighbor) {
+                // Recurse to unvisited neighbor
+                if let Some(cycle) = self.dfs_detect_cycle(
+                    neighbor,
+                    Some(current_tile),
+                    adjacency,
+                    visited,
+                    rec_stack,
+                    path,
+                ) {
+                    return Some(cycle);
+                }
+            } else if rec_stack.contains(&neighbor) {
+                // Found a back edge to a node in current path - this is a cycle!
+                // Find the position in path where this node (or a connected node on same tile) first appears
+                let cycle_start = path
+                    .iter()
+                    .position(|n| n.i == neighbor.i && n.j == neighbor.j)
+                    .unwrap();
+                let mut cycle = path[cycle_start..].to_vec();
+                cycle.push(neighbor); // Close the cycle
+                return Some(cycle);
+            }
+        }
+
+        // Backtrack - remove all reachable nodes from rec_stack
         path.pop();
-        rec_stack.remove(&current_tile);
+        for &node in &reachable_on_tile {
+            rec_stack.remove(&node);
+        }
         None
     }
 
@@ -656,7 +691,7 @@ mod tests {
   fn test_dfs_detect_cycle_single_tile_one_cycle() {
     // Test DFS cycle detection with nodes all on the same tile
     // Since nodes on the same tile are considered the same node, this should NOT detect a cycle
-    let mut maze = Maze::new(2, 2, false, true, true, None);
+    let mut maze = Maze::new(3, 3, false, true, true, None);
 
     place_tile!(maze, vec![N5], 0, 0);
     place_tile!(maze, vec![N5 | N4], 1, 0);
