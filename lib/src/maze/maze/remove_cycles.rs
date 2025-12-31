@@ -16,6 +16,60 @@ pub struct CycleInfo {
 /// Cycle removal methods for the Maze struct.
 /// Detects and handles cycles in the maze network using DFS.
 impl Maze {
+    /// Normalize a cycle to a canonical form for deduplication.
+    ///
+    /// A cycle like [A, B, C, D] is the same as [B, C, D, A] or [D, C, B, A] (reversed).
+    /// This function rotates the cycle to start with the smallest node and ensures
+    /// the second node is smaller than the last node (to handle both directions).
+    ///
+    /// Returns the normalized cycle without the closing duplicate node.
+    fn normalize_cycle(cycle: &[Node]) -> Vec<Node> {
+        if cycle.len() <= 2 {
+            return cycle.to_vec();
+        }
+
+        // Remove the last node if it's a duplicate of the first (closes the cycle)
+        let nodes = if !cycle.is_empty() && cycle[0] == cycle[cycle.len() - 1] {
+            &cycle[..cycle.len() - 1]
+        } else {
+            cycle
+        };
+
+        if nodes.is_empty() {
+            return vec![];
+        }
+
+        // Find the position of the minimum node
+        let min_pos = nodes
+            .iter()
+            .enumerate()
+            .min_by_key(|(_, node)| (node.i, node.j, node.node))
+            .map(|(i, _)| i)
+            .unwrap_or(0);
+
+        // Rotate to start with minimum node
+        let mut normalized: Vec<Node> = nodes[min_pos..]
+            .iter()
+            .chain(nodes[..min_pos].iter())
+            .copied()
+            .collect();
+
+        // Check if we should reverse (to handle both clockwise and counter-clockwise)
+        // Compare the second node with the last node - keep the lexicographically smaller order
+        if normalized.len() > 2 {
+            let second = normalized[1];
+            let last = normalized[normalized.len() - 1];
+            if (last.i, last.j, last.node) < (second.i, second.j, second.node) {
+                // Reverse (keeping first element in place)
+                let first = normalized[0];
+                normalized[1..].reverse();
+                normalized[0] = first;
+            }
+        }
+
+        normalized
+    }
+
     /// Detects all cycles in the network using depth-first search.
     ///
     /// Returns a vector of CycleInfo containing:
@@ -28,21 +82,30 @@ impl Maze {
     /// 2. Perform DFS from each unvisited node
     /// 3. Detect back edges (edges to nodes in the current path)
     /// 4. Extract the cycle when a back edge is found
+    /// 5. Deduplicate cycles by normalizing to canonical form
+    ///
+    /// Note: Nodes within the same tile (same i, j coordinates) are treated as
+    /// the same node for cycle detection, since intra-tile connections don't
+    /// form meaningful cycles.
     pub fn detect_cycles(&self) -> Vec<CycleInfo> {
         let mut all_cycles = Vec::new();
+        let mut seen_cycles: HashSet<Vec<Node>> = HashSet::new();
 
         for (net_idx, nodes) in self.nets.iter().enumerate() {
             // Build adjacency map for this network
             let adjacency = self.build_adjacency_map(nodes);
 
-            // Track visited nodes globally and nodes in current DFS path
-            let mut visited = HashSet::new();
-            let mut rec_stack = HashSet::new();
+            // Track visited tiles (i, j) globally and tiles in current DFS path
+            // Using tile position instead of full Node since nodes in the same tile
+            // are considered the same node for cycle detection
+            let mut visited: HashSet<(usize, usize)> = HashSet::new();
+            let mut rec_stack: HashSet<(usize, usize)> = HashSet::new();
             let mut path = Vec::new();
 
-            // Try starting DFS from each unvisited node
+            // Try starting DFS from each unvisited tile
             for &start_node in nodes.iter() {
-                if !visited.contains(&start_node) {
+                let start_tile = (start_node.i, start_node.j);
+                if !visited.contains(&start_tile) {
                     if let Some(cycle) = self.dfs_detect_cycle(
                         start_node,
                         None,
@@ -51,10 +114,18 @@ impl Maze {
                         &mut rec_stack,
                         &mut path,
                     ) {
-                        all_cycles.push(CycleInfo {
-                            net_index: net_idx,
-                            cycle_nodes: cycle,
-                        });
+                        // Normalize the cycle to check for duplicates
+                        let normalized = Self::normalize_cycle(&cycle);
+
+                        // Only add if we haven't seen this cycle before
+                        if !seen_cycles.contains(&normalized) {
+                            seen_cycles.insert(normalized);
+                            all_cycles.push(CycleInfo {
+                                net_index: net_idx,
+                                cycle_nodes: cycle,
+                            });
+                        }
+                        // Else: skip this duplicate cycle
                     }
                 }
             }
@@ -84,6 +155,8 @@ impl Maze {
     ///
     /// This handles bidirectional connections.
     fn get_connected_nodes(&self, node: Node, network: &HashSet<Node>) -> Vec<Node> {
+        // TODO: Is this the same as self.nets ?
+
         let mut connected = Vec::new();
 
         // 1. Intra-tile connections: nodes in the same tile and network
@@ -166,39 +239,50 @@ impl Maze {
     ///
     /// # Arguments
     /// * `current` - Current node being visited
-    /// * `parent` - Parent node (to avoid detecting trivial back-edges)
+    /// * `parent_tile` - Parent tile position (to avoid detecting trivial back-edges)
     /// * `adjacency` - Adjacency map of the graph
-    /// * `visited` - Set of all visited nodes
-    /// * `rec_stack` - Set of nodes in current recursion stack (path)
-    /// * `path` - Current path being explored
+    /// * `visited` - Set of all visited tile positions (i, j)
+    /// * `rec_stack` - Set of tile positions in current recursion stack (path)
+    /// * `path` - Current path being explored (as nodes for cycle reporting)
     ///
     /// # Returns
     /// Some(Vec<Node>) containing the cycle if found, None otherwise
+    ///
+    /// Note: Uses tile positions (i, j) for cycle detection since nodes within
+    /// the same tile are considered the same node.
     fn dfs_detect_cycle(
         &self,
         current: Node,
-        parent: Option<Node>,
+        parent_tile: Option<(usize, usize)>,
         adjacency: &HashMap<Node, Vec<Node>>,
-        visited: &mut HashSet<Node>,
-        rec_stack: &mut HashSet<Node>,
+        visited: &mut HashSet<(usize, usize)>,
+        rec_stack: &mut HashSet<(usize, usize)>,
         path: &mut Vec<Node>,
     ) -> Option<Vec<Node>> {
-        visited.insert(current);
-        rec_stack.insert(current);
+        let current_tile = (current.i, current.j);
+        visited.insert(current_tile);
+        rec_stack.insert(current_tile);
         path.push(current);
 
         if let Some(neighbors) = adjacency.get(&current) {
             for &neighbor in neighbors {
-                // Skip the parent to avoid detecting trivial back-edges
-                if Some(neighbor) == parent {
+                let neighbor_tile = (neighbor.i, neighbor.j);
+
+                // Skip neighbors on the same tile - intra-tile connections don't form cycles
+                if neighbor_tile == current_tile {
                     continue;
                 }
 
-                if !visited.contains(&neighbor) {
+                // Skip the parent tile to avoid detecting trivial back-edges
+                if Some(neighbor_tile) == parent_tile {
+                    continue;
+                }
+
+                if !visited.contains(&neighbor_tile) {
                     // Recurse to unvisited neighbor
                     if let Some(cycle) = self.dfs_detect_cycle(
                         neighbor,
-                        Some(current),
+                        Some(current_tile),
                         adjacency,
                         visited,
                         rec_stack,
@@ -206,9 +290,13 @@ impl Maze {
                     ) {
                         return Some(cycle);
                     }
-                } else if rec_stack.contains(&neighbor) {
-                    // Found a back edge to a node in current path - this is a cycle!
-                    let cycle_start = path.iter().position(|&n| n == neighbor).unwrap();
+                } else if rec_stack.contains(&neighbor_tile) {
+                    // Found a back edge to a tile in current path - this is a cycle!
+                    // Find the position in path where this tile first appears
+                    let cycle_start = path
+                        .iter()
+                        .position(|n| n.i == neighbor.i && n.j == neighbor.j)
+                        .unwrap();
                     let mut cycle = path[cycle_start..].to_vec();
                     cycle.push(neighbor); // Close the cycle
                     return Some(cycle);
@@ -218,7 +306,7 @@ impl Maze {
 
         // Backtrack
         path.pop();
-        rec_stack.remove(&current);
+        rec_stack.remove(&current_tile);
         None
     }
 
@@ -287,6 +375,16 @@ impl Maze {
             }
 
             println!("Iteration {}: Found {} cycle(s)", iteration, cycles.len());
+            cycles.iter().for_each(|cycle_info| {
+                println!(
+                    "  Cycle in net {} with {} nodes",
+                    cycle_info.net_index,
+                    cycle_info.cycle_nodes.len()
+                );
+                cycle_info.cycle_nodes.iter().for_each(|node| {
+                    println!("    ({},{}.{})", node.i, node.j, node.node + 1);
+                });
+            });
 
             // Break only the first cycle found
             let cycle_info = &cycles[0];
@@ -301,11 +399,18 @@ impl Maze {
             if cycle_info.cycle_nodes.len() >= 2 {
                 let node_to_remove = cycle_info.cycle_nodes[cycle_info.cycle_nodes.len() - 2];
 
+                println!(
+                    "    Removing node at tile ({}, {}), node index {}",
+                    node_to_remove.i,
+                    node_to_remove.j,
+                    node_to_remove.node + 1
+                );
+
                 // Remove the node from the network
                 if cycle_info.net_index < self.nets.len() {
                     self.nets[cycle_info.net_index].remove(&node_to_remove);
                 }
-              // Update the tile too
+                // Update the tile too
                 if let Some(tile) = self.tiles.get_mut(node_to_remove.j, node_to_remove.i) {
                     if tile.initialised {
                         let node_mask = 1usize << node_to_remove.node;
@@ -341,49 +446,261 @@ mod tests {
   use super::*;
   use crate::maze::maze::FileType::SVG;
   use crate::maze::tile::Tile;
-  use common::consts::{N4, N5, N6};
+  use common::consts::{N2, N4, N5, N6};
 
-  #[test]
-    fn test_remove_cycles_empty_maze() {
+  /// Helper macro to create a tile, update network, and place it in the maze.
+    /// Note: coordinates are swapped between update_network(i, j) and tiles[(j, i)].
+    macro_rules! place_tile {
+        ($maze:expr, $nodes:expr, $i:expr, $j:expr) => {{
+            let tile = Tile::new($nodes, true);
+            $maze.update_network(&tile, $i, $j);
+            $maze.tiles[($j, $i)] = tile;
+        }};
+    }
+
+    #[test]
+    fn test_remove_cycles_with_simple_loop() {
         let mut maze = Maze::new(3, 3, false, true, true, None);
         // Should complete without panicking on an empty maze
 
+        place_tile!(maze, vec![N5], 0, 0);
+        place_tile!(maze, vec![N5 | N4], 1, 0);
+        place_tile!(maze, vec![N5 | N4 | N6], 1, 1);
+        place_tile!(maze, vec![N5 | N6], 0, 1);
+        place_tile!(maze, vec![N5 | N6], 2, 1);
+        place_tile!(maze, vec![N5 | N6], 0, 2);
+        place_tile!(maze, vec![N5 | N6], 1, 2);
+        place_tile!(maze, vec![N5 | N6], 2, 2);
 
-    let tile = Tile::new(vec![N5], true);
-    maze.update_network(&tile, 0, 0);
-    maze.tiles[(0, 0)] = tile;
+        maze.reduce_nets(0);
+        maze.remove_cycles();
 
-    let tile = Tile::new(vec![N5|N4], true);
-    maze.update_network(&tile, 1, 0);
-    maze.tiles[(0, 1)] = tile;
-    let tile = Tile::new(vec![N5|N4|N6], true);
-    maze.update_network(&tile, 1, 1);
-    maze.tiles[(1, 1)] = tile;
+        let name = format!("test-cycle-1");
+        let _ = maze.render(name.to_string(), SVG);
 
-    let tile = Tile::new(vec![N5|N6], true);
-    maze.update_network(&tile, 0, 1);
-    maze.tiles[(1, 0)] = tile;
-
-    let tile = Tile::new(vec![N5|N6], true);
-    maze.update_network(&tile, 2, 1);
-    maze.tiles[(1, 2)] = tile;
-
-    let tile = Tile::new(vec![N5|N6], true);
-    maze.update_network(&tile, 0, 2);
-    maze.tiles[(2, 0)] = tile;
-    let tile = Tile::new(vec![N5|N6], true);
-    maze.update_network(&tile, 1, 2);
-    maze.tiles[(2, 1)] = tile;
-    let tile = Tile::new(vec![N5|N6], true);
-    maze.update_network(&tile, 2, 2);
-    maze.tiles[(2, 2)] = tile;
-
-    maze.reduce_nets(0);
-    maze.remove_cycles();
-
-    let name = format!("test-cycle");
-    let _ = maze.render(name.to_string(), SVG);
-
-    assert_eq!(maze.nets.len(), 1);
+        assert_eq!(maze.nets.len(), 1);
     }
+
+    #[test]
+    fn test_remove_cycles_no_loops() {
+        let mut maze = Maze::new(4, 3, false, true, true, None);
+        // Should complete without panicking on an empty maze
+
+        place_tile!(maze, vec![N5], 0, 0);
+        place_tile!(maze, vec![N5 | N4], 1, 0);
+        place_tile!(maze, vec![N4 | N6, N5 | N2], 1, 1);
+        place_tile!(maze, vec![N2], 3, 0);
+        place_tile!(maze, vec![N5 | N6], 0, 1);
+        place_tile!(maze, vec![N5 | N6], 2, 1);
+        place_tile!(maze, vec![N5 | N6], 0, 2);
+        place_tile!(maze, vec![N5 | N6], 1, 2);
+        place_tile!(maze, vec![N5 | N6], 2, 2);
+
+        maze.reduce_nets(0);
+        maze.remove_cycles();
+
+        let name = format!("test-cycle-2");
+        let _ = maze.render(name.to_string(), SVG);
+
+        assert_eq!(maze.nets.len(), 1);
+    }
+
+    #[test]
+    fn test_normalize_cycle() {
+        // Test that cycle normalization produces consistent results
+        let n1 = Node::new(0, 0, 0);
+        let n2 = Node::new(1, 0, 0);
+        let n3 = Node::new(1, 1, 0);
+        let n4 = Node::new(0, 1, 0);
+
+        // Same cycle in different rotations should normalize to the same form
+        let cycle1 = vec![n1, n2, n3, n4, n1]; // Starts at n1
+        let cycle2 = vec![n2, n3, n4, n1, n2]; // Starts at n2
+        let cycle3 = vec![n3, n4, n1, n2, n3]; // Starts at n3
+        let cycle4 = vec![n4, n1, n2, n3, n4]; // Starts at n4
+
+        let norm1 = Maze::normalize_cycle(&cycle1);
+        let norm2 = Maze::normalize_cycle(&cycle2);
+        let norm3 = Maze::normalize_cycle(&cycle3);
+        let norm4 = Maze::normalize_cycle(&cycle4);
+
+        println!("Normalized cycles:");
+        println!("  cycle1 -> {:?}", norm1);
+        println!("  cycle2 -> {:?}", norm2);
+        println!("  cycle3 -> {:?}", norm3);
+        println!("  cycle4 -> {:?}", norm4);
+
+        // All should normalize to the same cycle
+        assert_eq!(
+            norm1, norm2,
+            "cycle1 and cycle2 should normalize to the same form"
+        );
+        assert_eq!(
+            norm2, norm3,
+            "cycle2 and cycle3 should normalize to the same form"
+        );
+        assert_eq!(
+            norm3, norm4,
+            "cycle3 and cycle4 should normalize to the same form"
+        );
+
+        // Reversed cycle should also normalize to the same form
+        let cycle_rev = vec![n4, n3, n2, n1, n4];
+        let norm_rev = Maze::normalize_cycle(&cycle_rev);
+        println!("  cycle_rev -> {:?}", norm_rev);
+        assert_eq!(
+            norm1, norm_rev,
+            "Reversed cycle should normalize to the same form"
+        );
+    }
+
+    #[test]
+    fn test_detect_cycles_single_tile_no_cycle() {
+        // Test that a "cycle" within a single tile is NOT detected as a cycle
+        // since all nodes on the same tile are considered the same node
+        let mut maze = Maze::new(2, 2, false, true, true, None);
+
+        // Create a single tile with nodes N2-N4-N6 - these form a connected group
+        // but NOT a cycle for maze purposes since they're all on the same tile
+        place_tile!(maze, vec![N2 | N4 | N6], 0, 0);
+
+        // Don't call reduce_nets - we want to test cycle detection directly
+        let cycles = maze.detect_cycles();
+
+        println!("Detected {} cycle(s) in single-tile group", cycles.len());
+
+        // No cycles should be detected - intra-tile connections are not cycles
+        assert_eq!(
+            cycles.len(),
+            0,
+            "Expected 0 cycles for single-tile group, but found {}",
+            cycles.len()
+        );
+    }
+
+    #[test]
+    fn test_remove_cycles_cross_loop() {
+        let mut maze = Maze::new(4, 3, false, true, true, None);
+
+        place_tile!(maze, vec![N5], 0, 0);
+        place_tile!(maze, vec![N5 | N4], 1, 0);
+        place_tile!(maze, vec![N4 | N6 | N5 | N2], 1, 1);
+        place_tile!(maze, vec![N2], 3, 0);
+        place_tile!(maze, vec![N5 | N6], 0, 1);
+        place_tile!(maze, vec![N5 | N6], 2, 1);
+        place_tile!(maze, vec![N5 | N6], 0, 2);
+        place_tile!(maze, vec![N5 | N6], 1, 2);
+        place_tile!(maze, vec![N5 | N6], 2, 2);
+
+        maze.reduce_nets(0);
+
+        let name = format!("test-cycle-3.1");
+        let _ = maze.render(name.to_string(), SVG);
+
+        maze.remove_cycles();
+
+        let name = format!("test-cycle-3.2");
+        let _ = maze.render(name.to_string(), SVG);
+
+        assert_eq!(maze.nets.len(), 1);
+    }
+
+    #[test]
+    fn test_dfs_detect_cycle_single_tile_no_cycle() {
+        // Test DFS cycle detection with nodes all on the same tile
+        // Since nodes on the same tile are considered the same node, this should NOT detect a cycle
+        let mut maze = Maze::new(2, 2, false, true, true, None);
+
+        // Create a single tile with nodes N2|N4|N6
+        // All on tile (0,0), so they're all considered the same node for cycle detection
+        place_tile!(maze, vec![N2 | N4 | N6], 0, 0);
+
+        // Build the network and adjacency map
+        let network = &maze.nets[0];
+        let adjacency = maze.build_adjacency_map(network);
+
+        println!("Network nodes: {:?}", network);
+        println!("Adjacency map:");
+        for (node, neighbors) in &adjacency {
+            println!(
+                "  Node({}, {}, {}) -> {:?}",
+                node.i, node.j, node.node, neighbors
+            );
+        }
+
+        // Run DFS cycle detection from the first node
+        let start_node = *network.iter().next().unwrap();
+        let mut visited = HashSet::new();
+        let mut rec_stack = HashSet::new();
+        let mut path = Vec::new();
+
+        let result = maze.dfs_detect_cycle(
+            start_node,
+            None,
+            &adjacency,
+            &mut visited,
+            &mut rec_stack,
+            &mut path,
+        );
+
+        println!("DFS result: {:?}", result);
+
+        // Should NOT detect a cycle since all nodes are on the same tile
+        assert!(
+            result.is_none(),
+            "Expected no cycle for single-tile connections"
+        );
+    }
+
+  #[test]
+  fn test_dfs_detect_cycle_single_tile_one_cycle() {
+    // Test DFS cycle detection with nodes all on the same tile
+    // Since nodes on the same tile are considered the same node, this should NOT detect a cycle
+    let mut maze = Maze::new(2, 2, false, true, true, None);
+
+    place_tile!(maze, vec![N5], 0, 0);
+    place_tile!(maze, vec![N5 | N4], 1, 0);
+    place_tile!(maze, vec![N5 | N4 | N6], 1, 1);
+    place_tile!(maze, vec![N5 | N6], 0, 1);
+    place_tile!(maze, vec![N5 | N6], 2, 1);
+    place_tile!(maze, vec![N5 | N6], 0, 2);
+    place_tile!(maze, vec![N5 | N6], 1, 2);
+    place_tile!(maze, vec![N5 | N6], 2, 2);
+
+    // Build the network and adjacency map
+    let network = &maze.nets[0];
+    let adjacency = maze.build_adjacency_map(network);
+
+    println!("Network nodes: {:?}", network);
+    println!("Adjacency map:");
+    for (node, neighbors) in &adjacency {
+      println!(
+        "  Node({}, {}, {}) -> {:?}",
+        node.i, node.j, node.node, neighbors
+      );
+    }
+
+    // Run DFS cycle detection from the first node
+    let start_node = *network.iter().next().unwrap();
+    let mut visited = HashSet::new();
+    let mut rec_stack = HashSet::new();
+    let mut path = Vec::new();
+
+    let result = maze.dfs_detect_cycle(
+      start_node,
+      None,
+      &adjacency,
+      &mut visited,
+      &mut rec_stack,
+      &mut path,
+    );
+
+    println!("DFS result: {:?}", result);
+
+    // Should NOT detect a cycle since all nodes are on the same tile
+    assert!(
+      result.is_some(),
+      "Expected no cycle for single-tile connections"
+    );
+  }
 }
