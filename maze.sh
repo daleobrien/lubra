@@ -7,4 +7,4 @@ echo "${FOLDER}"
 
 cd ${FOLDER}/cli
 #rm -f *.svg
-cargo run
+cargo run # --release

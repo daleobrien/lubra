@@ -389,7 +389,6 @@ impl Maze {
     /// After each removal, it re-checks for new cycles. Once all cycles are
     /// broken, it splits disconnected networks into separate components.
     pub fn remove_cycles(&mut self) {
-        println!("Removing cycles ...");
 
         let mut iteration = 0;
         let max_iterations = 100; // Safety limit
@@ -405,41 +404,16 @@ impl Maze {
             let cycles = self.detect_cycles();
 
             if cycles.is_empty() {
-                println!("No more cycles detected");
                 break;
             }
 
-            println!("Iteration {}: Found {} cycle(s)", iteration, cycles.len());
-            cycles.iter().for_each(|cycle_info| {
-                println!(
-                    "  Cycle in net {} with {} nodes",
-                    cycle_info.net_index,
-                    cycle_info.cycle_nodes.len()
-                );
-                cycle_info.cycle_nodes.iter().for_each(|node| {
-                    println!("    ({},{}.{})", node.i, node.j, node.node + 1);
-                });
-            });
-
             // Break only the first cycle found
             let cycle_info = &cycles[0];
-            println!(
-                "  Breaking cycle in net {} with {} nodes",
-                cycle_info.net_index,
-                cycle_info.cycle_nodes.len()
-            );
 
             // Strategy: Remove the last edge in the cycle
             // (the edge that closes the cycle)
             if cycle_info.cycle_nodes.len() >= 2 {
                 let node_to_remove = cycle_info.cycle_nodes[cycle_info.cycle_nodes.len() - 2];
-
-                println!(
-                    "    Removing node at tile ({}, {}), node index {}",
-                    node_to_remove.i,
-                    node_to_remove.j,
-                    node_to_remove.node + 1
-                );
 
                 // Remove the node from the network
                 if cycle_info.net_index < self.nets.len() {
@@ -463,16 +437,13 @@ impl Maze {
         }
 
         // After removing all cycles, split any disconnected networks
-        println!("Splitting disconnected networks...");
         let mut new_nets = Vec::new();
-        for (idx, network) in self.nets.iter().enumerate() {
+        for  network in self.nets.iter() {
             let components = self.split_disconnected_networks(network);
-            println!("  Net {} split into {} components", idx, components.len());
             new_nets.extend(components);
         }
         self.nets = new_nets;
 
-        println!("Cycle removal complete: {} network(s)", self.nets.len());
     }
 }
 

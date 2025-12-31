@@ -2,7 +2,6 @@ use crate::maze::maze::Maze;
 use crate::maze::net::Node;
 use crate::maze::random::select_random_element;
 use crate::maze::tile::Tile;
-use common::bit_utils::{print_nets, to_6bit_binary};
 
 /// Net reduction methods for the Maze struct.
 /// These methods handle reducing the number of nets by merging them.
@@ -25,7 +24,6 @@ impl Maze {
 
         for ((n, m), intersections) in shared_coords.iter() {
             // Must always have at least one element
-            println!("\nChecking nets: (net:{m},net:{n}){:?}", intersections);
 
             // We could loop through, looking for any intersections that are exactly 2
             let mut found = false;
@@ -59,7 +57,6 @@ impl Maze {
                     // Join the nets with the matching indexes
                     // We only have 2 items
                     if indexes.len() == 2 {
-                        println!("Merging nets at tile {n},{m}: ({i},{j})");
                         let first_index = indexes[0];
                         let other_index = indexes[1];
                         let other_net = self.nets[other_index].clone();
@@ -74,18 +71,13 @@ impl Maze {
                 }
             }
             if !found {
-                // We can't merge these nets in a simple way
-                // for these two nets, which points do the share the same tile?
-                println!("\nComplex join with (net:{m},net:{n}), intersections {:?}", intersections);
-
+                // complex merging required
                 // Check if indices are still valid (nets may have been merged/removed)
                 if *n >= self.nets.len() || *m >= self.nets.len() {
                     println!("  WARNING: Net indices ({}, {}) are stale (only {} nets remain after merging)",
                              n, m, self.nets.len());
                     continue;
                 }
-
-                // Implement more complex joins ...
 
                 for (i, j) in intersections {
                   // Get nodes for net n at this tile
@@ -102,21 +94,8 @@ impl Maze {
                     .map(|node| node.node)
                     .collect();
 
-                  // For each n node, to_6bit_binary
-                  net_n_nodes.iter().for_each(|node| {
-                    let p = 1usize<<node;
-                    println!("    net n node: {} => bits: {}", node, to_6bit_binary(&p, false));
-                  });
-                  net_m_nodes.iter().for_each(|node| {
-                    let p = 1usize<<node;
-                    println!("    net m node: {} => bits: {}", node, to_6bit_binary(&p, false));
-                  });
-
-                  // Print the orginal tile at this location
+                  // Print the original tile at this location
                   let original_tile = self.tiles.get(*j, *i).unwrap();
-                  println!("  Original tile bits at ({}, {}): {}", i, j, print_nets(&original_tile.nodes));
-
-                  println!("  At tile ({}, {}): net {} nodes: {} | net {} nodes: {}", i, j, n, print_nets(&net_n_nodes), m, print_nets(&net_m_nodes));
 
                   // Select a random element from net_n_nodes and net_m_nodes to merge, and keep the rest unchanged
                   let selected_m = select_random_element(net_m_nodes, self.seed);
@@ -161,10 +140,6 @@ impl Maze {
 
        // Remove nets that have been merged (are empty)
         self.nets.retain(|net| !net.is_empty());
-
-        //println!("nets  {:?}", self.nets);
-        //println!("tiles  {:?}", self.tiles);
-        // println!("Shared coords: {:?}", shared_coords);
 
         if self.nets.len() > 1 {
             // Recursively reduce nets until we have one
