@@ -1,6 +1,6 @@
 use crate::maze::maze::Maze;
 use crate::maze::tile::Tile;
-use common::consts::N5;
+use common::consts::{N4, N5, N6};
 use common::types::point::{TILE_HEIGHT, TILE_WIDTH};
 use rand::prelude::*;
 use rand::seq::SliceRandom;
@@ -18,11 +18,19 @@ impl Maze {
             None => ChaCha8Rng::from_rng(thread_rng()).unwrap(),
         };
 
-       // Make the first Tile as a simple starting point
-       // TODO: Determine orientations of first tile
-        let tile = Tile::new(vec![N5], true);
+        // Make the first Tile as a simple starting point
+        let tile = if number_of_rows % 2 == 0 {
+            Tile::new(vec![N5], true)
+        } else {
+            Tile::new(vec![N5], true)
+        };
         self.tiles[(0, 0)] = tile;
-       // TODO: Determine which node to use as the last tile (i,j) => ?
+
+       // and make the last tile a simple ending point
+       let last_node = [N5, N6, N4];
+       self.tiles[(number_of_rows-1, number_of_columns-1)] = Tile::new(
+        vec![last_node[(number_of_columns -2 ) % 3]],
+        true);
 
         let mut indices: Vec<(usize, usize)> = (0..number_of_rows)
             .flat_map(|j| (0..number_of_columns).map(move |i| (j, i)))
@@ -37,7 +45,7 @@ impl Maze {
                 continue;
             }
 
-          self.tiles[(j, i)] = self.get_random_tile(i, j);
+            self.tiles[(j, i)] = self.get_random_tile(i, j);
 
             self.seed = match self.seed {
                 Some(s) => Some(s.wrapping_add(1)),
