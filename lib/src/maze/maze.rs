@@ -12,6 +12,7 @@ mod render;
 mod grid_generation;
 mod net_intersections;
 mod remove_cycles;
+mod surrounding_coordinates;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {
