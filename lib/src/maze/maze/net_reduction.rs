@@ -145,9 +145,12 @@ impl Maze {
         if self.nets.len() > 1 {
           // Recursively reduce nets until we have one
           println!("\nWe have disjoint {:?} nets:", self.nets.len());
-          
+
           // TODO: find all the surrounding tiles for each net, and see if any can be merged, if any of those
           // tiles are shared between nets
+          // Some((net_a, net_b, (i, j)))
+          let  x = self.select_common_surrounding_coordinate();
+          println!("  Selected common surrounding coordinate: {:?}", x);
 
         }
 
