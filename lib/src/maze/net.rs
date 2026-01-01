@@ -70,6 +70,36 @@ impl From<Node> for [usize; 3] {
 /// Node positions within nodes are unique (no duplicate positions).
 pub type Nodes = HashSet<Node>;
 
+/// Formats a Nodes set in a compact, readable format.
+///
+/// Output format: `{(i,j):n, (i,j):n, ...}` where each entry shows
+/// the tile coordinates and node index.
+///
+/// # Examples
+/// ```
+/// use lib::maze::net::{Node, Nodes, format_nodes};
+///
+/// let mut nodes = Nodes::new();
+/// nodes.insert(Node::new(0, 0, 1));
+/// nodes.insert(Node::new(1, 2, 3));
+/// println!("{}", format_nodes(&nodes));
+/// // Output like: {(0,0):1, (1,2):3}
+/// ```
+pub fn format_nodes(nodes: &Nodes) -> String {
+    let mut entries: Vec<_> = nodes.iter().collect();
+    // Sort for consistent output
+    entries.sort_by(|a, b| {
+        (a.i, a.j, a.node).cmp(&(b.i, b.j, b.node))
+    });
+
+    let formatted: Vec<String> = entries
+        .iter()
+        .map(|n| format!("({},{}):{}",n.i, n.j, n.node+1))
+        .collect();
+
+    format!("{{{}}}", formatted.join(", "))
+}
+
 /// A collection of all nodes in the maze (the net).
 ///
 /// Each nodes in the collection is independent (though they may intersect at tiles).

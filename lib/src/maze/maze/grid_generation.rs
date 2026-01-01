@@ -24,13 +24,14 @@ impl Maze {
         } else {
             Tile::new(vec![N5], true)
         };
+        self.update_network(&tile, 0, 0);
         self.tiles[(0, 0)] = tile;
 
-       // and make the last tile a simple ending point
-       let last_node = [N5, N6, N4];
-       self.tiles[(number_of_rows-1, number_of_columns-1)] = Tile::new(
-        vec![last_node[(number_of_columns -2 ) % 3]],
-        true);
+        // and make the last tile a simple ending point
+        let last_node = [N5, N6, N4];
+        let tile = Tile::new(vec![last_node[(number_of_columns - 2) % 3]], true);
+        self.update_network(&tile, number_of_columns - 1, number_of_rows - 1);
+        self.tiles[(number_of_rows - 1, number_of_columns - 1)] = tile;
 
         let mut indices: Vec<(usize, usize)> = (0..number_of_rows)
             .flat_map(|j| (0..number_of_columns).map(move |i| (j, i)))

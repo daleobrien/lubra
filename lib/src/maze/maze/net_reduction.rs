@@ -7,10 +7,9 @@ use crate::maze::tile::Tile;
 /// These methods handle reducing the number of nets by merging them.
 impl Maze {
     pub fn reduce_nets(&mut self, lower_limit: usize) {
-
         self.sort_nets_by_length();
-       // remove_short_nets might be broken ... seem to create more disjoint nets!
-       self.remove_short_nets(lower_limit);
+        // remove_short_nets might be broken ... seem to create more disjoint nets!
+        self.remove_short_nets(lower_limit);
 
         // Create a hashSet of the nets, but used just i,j coordinates as the keys
         let coord_maps = self.create_coord_maps();
@@ -81,79 +80,88 @@ impl Maze {
                 }
 
                 for (i, j) in intersections {
-                  // Get nodes for net n at this tile
-                  let net_n_nodes: Vec<usize> = self.nets[*n]
-                    .iter()
-                    .filter(|node| node.i == *i && node.j == *j)
-                    .map(|node| node.node)
-                    .collect();
+                    // Get nodes for net n at this tile
+                    let net_n_nodes: Vec<usize> = self.nets[*n]
+                        .iter()
+                        .filter(|node| node.i == *i && node.j == *j)
+                        .map(|node| node.node)
+                        .collect();
 
-                  // Get nodes for net m at this tile
-                  let net_m_nodes: Vec<usize> = self.nets[*m]
-                    .iter()
-                    .filter(|node| node.i == *i && node.j == *j)
-                    .map(|node| node.node)
-                    .collect();
+                    // Get nodes for net m at this tile
+                    let net_m_nodes: Vec<usize> = self.nets[*m]
+                        .iter()
+                        .filter(|node| node.i == *i && node.j == *j)
+                        .map(|node| node.node)
+                        .collect();
 
-                  // Print the original tile at this location
-                  let original_tile = self.tiles.get(*j, *i).unwrap();
+                    // Print the original tile at this location
+                    let original_tile = self.tiles.get(*j, *i).unwrap();
 
-                  // Select a random element from net_n_nodes and net_m_nodes to merge, and keep the rest unchanged
-                  let selected_m = select_random_element(net_m_nodes, self.seed);
-                  let selected_n = select_random_element(net_n_nodes, self.seed);
-                  if selected_m.is_some() && selected_n.is_some() {
+                    // Select a random element from net_n_nodes and net_m_nodes to merge, and keep the rest unchanged
+                    let selected_m = select_random_element(net_m_nodes, self.seed);
+                    let selected_n = select_random_element(net_n_nodes, self.seed);
+                    if selected_m.is_some() && selected_n.is_some() {
+                        let bit_n = 1usize << (selected_n.unwrap());
+                        let bit_m = 1usize << (selected_m.unwrap());
 
-                    let bit_n = 1usize << (selected_n.unwrap());
-                    let bit_m = 1usize << (selected_m.unwrap());
+                        let combined_mask = bit_n | bit_m;
 
-                    let combined_mask = bit_n | bit_m;
+                        let indexes_with_bits: Vec<usize> = original_tile
+                            .nodes
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, &node_bits)| node_bits & combined_mask != 0)
+                            .map(|(index, _)| index)
+                            .collect();
 
-                    let indexes_with_bits: Vec<usize> = original_tile.nodes
-                      .iter()
-                      .enumerate()
-                      .filter(|(_, &node_bits)| node_bits & combined_mask != 0)
-                      .map(|(index, _)| index)
-                      .collect();
+                        // Create new node by ANDing each indexed node with combined_mask and ORing them together
+                        let new_node: usize = indexes_with_bits
+                            .iter()
+                            .map(|&idx| original_tile.nodes[idx])
+                            .fold(0, |acc, bits| acc | bits);
 
-                    // Create new node by ANDing each indexed node with combined_mask and ORing them together
-                    let new_node: usize = indexes_with_bits
-                      .iter()
-                      .map(|&idx| original_tile.nodes[idx])
-                      .fold(0, |acc, bits| acc | bits);
+                        // Remove the indexed nodes and add the new merged node
+                        let mut new_nodes: Vec<usize> = original_tile
+                            .nodes
+                            .iter()
+                            .enumerate()
+                            .filter(|(idx, _)| !indexes_with_bits.contains(idx))
+                            .map(|(_, &node)| node)
+                            .collect();
 
-                    // Remove the indexed nodes and add the new merged node
-                    let mut new_nodes: Vec<usize> = original_tile.nodes
-                      .iter()
-                      .enumerate()
-                      .filter(|(idx, _)| !indexes_with_bits.contains(idx))
-                      .map(|(_, &node)| node)
-                      .collect();
+                        new_nodes.push(new_node);
 
-                    new_nodes.push(new_node);
-
-                    let _ = self.tiles.set(*j, *i, Tile::new(new_nodes, true));
-                  } else {
-                    println!("  WARNING: Could not select random nodes for merging at tile ({}, {})", i, j);
-                  }
+                        let _ = self.tiles.set(*j, *i, Tile::new(new_nodes, true));
+                    } else {
+                        println!(
+                            "  WARNING: Could not select random nodes for merging at tile ({}, {})",
+                            i, j
+                        );
+                    }
                 }
             }
-         }
+        }
 
-       // Remove nets that have been merged (are empty)
+        // Remove nets that have been merged (are empty)
         self.nets.retain(|net| !net.is_empty());
 
         if self.nets.len() > 1 {
-          // Recursively reduce nets until we have one
-          println!("\nWe have disjoint {:?} nets:", self.nets.len());
+            // Recursively reduce nets until we have one
+            println!("\nWe have disjoint {:?} nets:", self.nets.len());
 
-          // TODO: find all the surrounding tiles for each net, and see if any can be merged, if any of those
-          // tiles are shared between nets
-          // Some((net_a, net_b, (i, j)))
-          let  x = self.select_common_surrounding_coordinate();
-          println!("  Selected common surrounding coordinate: {:?}", x);
-
+            // TODO: find all the surrounding tiles for each net, and see if any can be merged, if any of those
+            // tiles are shared between nets
+            if let Some(info) = self.select_common_surrounding_coordinate_with_info() {
+                println!(
+                    "Connecting nets {} and {}",
+                    info.net_a_index, info.net_b_index
+                );
+                println!("  Common coordinate: {:?}", info.common_coordinate);
+                println!("  Net A has {} tiles", info.net_a_coordinates.len());
+                println!("  Net B has {} tiles", info.net_b_coordinates.len());
+                println!("  Proximity: {:?}", info.proximity_level);
+            }
         }
-
     }
 }
 
@@ -301,7 +309,11 @@ mod tests {
         maze.reduce_nets(0);
 
         // Should still have 2 nets since they don't intersect
-        assert_eq!(maze.nets.len(), 2, "Non-intersecting nets should not be merged");
+        assert_eq!(
+            maze.nets.len(),
+            2,
+            "Non-intersecting nets should not be merged"
+        );
     }
 
     #[test]
