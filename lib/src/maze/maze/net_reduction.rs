@@ -7,6 +7,7 @@ use crate::maze::tile::Tile;
 /// These methods handle reducing the number of nets by merging them.
 impl Maze {
     pub fn reduce_nets(&mut self, lower_limit: usize) {
+
         self.sort_nets_by_length();
        // remove_short_nets might be broken ... seem to create more disjoint nets!
        self.remove_short_nets(lower_limit);
@@ -18,7 +19,7 @@ impl Maze {
         // But faster to get them all at once, and then not use the later ones we no longer
         // need
 
-        // We can do the below until there is only none list
+        // We can do the below until there is only one list
         // Alter node and track which nets can be merged, since we need to do it on one pass?
         let shared_coords = Self::get_intersections(coord_maps);
 
@@ -142,34 +143,14 @@ impl Maze {
         self.nets.retain(|net| !net.is_empty());
 
         if self.nets.len() > 1 {
-            // Recursively reduce nets until we have one
+          // Recursively reduce nets until we have one
           println!("\nWe have disjoint {:?} nets:", self.nets.len());
+          
+          // TODO: find all the surrounding tiles for each net, and see if any can be merged, if any of those
+          // tiles are shared between nets
+
         }
-        /*
 
-        net_1 = [[i,j,k], [i,j,k], <n>] .. these are sets of tiles that are connected.
-        net_2 = [[i,j,k], [i,j,k], <m>]
-
-        Take the shortest net, and iterate over it looking for the first adjacent tile that is not part of the net.
-        Then replace the matching tile such that the nets are connected and move the short net over to the larger net.
-
-        Repeat until we only have one net.
-
-        The surrounding_tiles are of the form:
-
-                    1
-                  ╱ ╲
-                4      5
-              ╱         ╲
-             2  ━  6  ━   3
-
-            Either up or down
-
-            ▽△▽△▽      △▽△▽△:
-            △▽▲▽△  or  ▽△▼△▽
-            ▽△▽△▽      △▽△▽△
-
-         */
     }
 }
 
