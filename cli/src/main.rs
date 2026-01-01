@@ -32,24 +32,33 @@ fn main() {
     // let start = Instant::now();
     // println!("Generating nets ... ");
 
-    let n = 50;
-    let m = 32;
-    let seed = 0;
-    let mut maze = Maze::new(n, m, true, false, false, Some(seed));
-    maze.reduce_nets(4);
-    maze.remove_cycles();
-    let name = format!("{n}-by-{m}-sample-normal-{seed}");
-    let _ = maze.render(name.to_string(), SVG);
-
     let seed = 3;
-    let mut maze = Maze::new(10, 7, true, true, true, Some(seed));
-    //  let mut maze = Maze::new(10, 7, true, true, true, None);
-    maze.reduce_nets(10);
-    let name = format!("50-by-32-sample-normal-{seed}.1");
-    let _ = maze.render(name.to_string(), SVG);
-    maze.remove_cycles();
-    let name = format!("50-by-32-sample-normal-{seed}.2");
-    let _ = maze.render(name.to_string(), SVG);
+    // for n in 3..5 {
+    //     for m in 3..5 {
+    //         let mut maze = Maze::new(n, m, true, true, true, Some(seed));
+    //         maze.reduce_nets(0);
+    //         maze.remove_cycles();
+    //         let name = format!("{n}-by-{m}-sample-normal-{seed}");
+    //         let _ = maze.render(name.to_string(), SVG);
+    //     }
+    // }
+  let n = 4;
+  let m = 3;
+  let mut maze = Maze::new(n, m, true, true, true, Some(seed));
+  maze.reduce_nets(0);
+  maze.remove_cycles();
+  let name = format!("{n}-by-{m}-sample-normal-{seed}");
+  let _ = maze.render(name.to_string(), SVG);
+
+    // let seed = 3;
+    // let mut maze = Maze::new(10, 7, true, true, true, Some(seed));
+    // //  let mut maze = Maze::new(10, 7, true, true, true, None);
+    // maze.reduce_nets(10);
+    // let name = format!("50-by-32-sample-normal-{seed}.1");
+    // let _ = maze.render(name.to_string(), SVG);
+    // maze.remove_cycles();
+    // let name = format!("50-by-32-sample-normal-{seed}.2");
+    // let _ = maze.render(name.to_string(), SVG);
 
     // for i in 1..101 {
     //     let mut maze = Maze::new(20, 14, true, false, false, Some(i));
