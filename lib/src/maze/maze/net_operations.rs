@@ -7,6 +7,11 @@ use rand_distr::num_traits::ToPrimitive;
 
 impl Maze {
     pub fn remove_short_nets(&mut self, lower_limit: usize) {
+
+        if lower_limit == 0 {
+            return;
+        }
+      
         // Strip out small nets
         self.nets.retain(|nets| {
             // Remove small nets
