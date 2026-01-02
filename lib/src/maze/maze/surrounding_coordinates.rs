@@ -1,5 +1,5 @@
 use crate::maze::maze::Maze;
-use common::consts::NODE_TO_COORD;
+use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD};
 use common::types::coordinate::add;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
@@ -448,6 +448,239 @@ impl Maze {
 
         let coords: Vec<(usize, usize)> = common.iter().cloned().collect();
         select_random(coords, self.seed)
+    }
+
+    /// Finds pairs of adjacent tiles between two nets.
+    ///
+    /// Returns a vector of coordinate pairs `((i1, j1), (i2, j2))` where:
+    /// - `(i1, j1)` is a tile coordinate in net A
+    /// - `(i2, j2)` is a tile coordinate in net B
+    /// - The two tiles are adjacent to each other
+    ///
+    /// This represents the closest possible connections between two nets
+    /// where tiles from each net are directly adjacent.
+    ///
+    /// # Arguments
+    /// * `net_a` - Index of the first net
+    /// * `net_b` - Index of the second net
+    /// * `find_one` - If `true`, returns immediately when the first adjacent pair is found
+    ///
+    /// # Returns
+    /// A vector of adjacent tile pairs between the two nets.
+    /// If `find_one` is `true`, returns a vector with at most one pair.
+    pub fn find_adjacent_tile_pairs(
+        &self,
+        net_a: usize,
+        net_b: usize,
+        find_one: bool,
+    ) -> Vec<((usize, usize), (usize, usize))> {
+        let tiles_a = self.get_tiles_for_net(net_a);
+        let tiles_b = self.get_tiles_for_net(net_b);
+        let mut pairs = Vec::new();
+
+        // Always iterate the smaller net first for better performance
+        let (swapped, source_tiles, target_tiles) = if tiles_a.len() > tiles_b.len() {
+            (true, &tiles_b, &tiles_a)
+        } else {
+            (false, &tiles_a, &tiles_b)
+        };
+
+        // For each tile in source net, check if any tile in target net is adjacent
+        for &(i_src, j_src) in source_tiles {
+            let k = (i_src + (3 * (j_src % 2))) % 6;
+            let coords = NODE_TO_COORD[k];
+
+            // Check all 6 adjacent positions
+            for node_idx in 0..6 {
+                let coord = coords[node_idx];
+                if let (Some(x), Some(y)) = (add(i_src, coord.0), add(j_src, coord.1)) {
+                    // Check bounds
+                    if x < self.number_of_columns && y < self.number_of_rows {
+                        if target_tiles.contains(&(x, y)) {
+                            // Return the pair in the original net order (a, b)
+                            if swapped {
+                                pairs.push(((x, y), (i_src, j_src)));
+                            } else {
+                                pairs.push(((i_src, j_src), (x, y)));
+                            }
+                            if find_one {
+                                return pairs;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        pairs
+    }
+
+    /// Finds one adjacent tile pair between two nets, if any exists.
+    ///
+    /// This is a convenience method that calls `find_adjacent_tile_pairs(net_a, net_b, true)`
+    /// and returns the result as an `Option`.
+    ///
+    /// # Arguments
+    /// * `net_a` - Index of the first net
+    /// * `net_b` - Index of the second net
+    ///
+    /// # Returns
+    /// `Some(((i1, j1), (i2, j2)))` if an adjacent tile pair exists,
+    /// `None` if no adjacent tiles exist between the nets
+    pub fn find_one_adjacent_tile_pair(
+        &self,
+        net_a: usize,
+        net_b: usize,
+    ) -> Option<((usize, usize), (usize, usize))> {
+        let pairs = self.find_adjacent_tile_pairs(net_a, net_b, true);
+        pairs.first().cloned()
+    }
+
+    /// Returns the connecting node mask needed to join two adjacent tiles.
+    ///
+    /// Given two adjacent tiles at coordinates `(i1, j1)` and `(i2, j2)`,
+    /// this function determines which node index they share (i.e., which
+    /// side of the hexagon they are adjacent on), and returns the bit mask
+    /// that needs to be applied to both tiles to connect them.
+    ///
+    /// # Arguments
+    /// * `(i1, j1)` - Coordinates of the first tile
+    /// * `(i2, j2)` - Coordinates of the second tile (must be adjacent to first)
+    ///
+    /// # Returns
+    /// `Some((node_index, mask))` where:
+    /// - `node_index` is the node index (0-5 for N1-N6) that connects the tiles
+    /// - `mask` is the bit mask (e.g., N1, N2, etc.) to apply to both tiles
+    /// Returns `None` if the tiles are not adjacent or cannot be determined
+    ///
+    /// # Example
+    /// ```
+    /// // If tile at (2,2) is adjacent to tile at (3,2) on node 0 (N1)
+    /// let result = maze.get_connecting_node_mask((2, 2), (3, 2));
+    /// assert_eq!(result, Some((0, N1)));
+    /// ```
+    pub fn get_connecting_node_mask(
+        &self,
+        tile_a: (usize, usize),
+        tile_b: (usize, usize),
+    ) -> Option<(usize, usize)> {
+        let (i1, j1) = tile_a;
+        let (i2, j2) = tile_b;
+
+        // Determine which node index connects tile_a to tile_b
+        let k = (i1 + (3 * (j1 % 2))) % 6;
+        let coords = NODE_TO_COORD[k];
+
+        // Check each of the 6 adjacent positions from tile_a
+        for node_idx in 0..6 {
+            let coord = coords[node_idx];
+            if let (Some(x), Some(y)) = (add(i1, coord.0), add(j1, coord.1)) {
+                if x == i2 && y == j2 {
+                    // Found the node index that connects tile_a to tile_b
+                    let mask = match node_idx {
+                        0 => N1,
+                        1 => N2,
+                        2 => N3,
+                        3 => N4,
+                        4 => N5,
+                        5 => N6,
+                        _ => unreachable!(),
+                    };
+                    return Some((node_idx, mask));
+                }
+            }
+        }
+
+        // Try the reverse direction (tile_b to tile_a)
+        let k2 = (i2 + (3 * (j2 % 2))) % 6;
+        let coords2 = NODE_TO_COORD[k2];
+
+        for node_idx in 0..6 {
+            let coord = coords2[node_idx];
+            if let (Some(x), Some(y)) = (add(i2, coord.0), add(j2, coord.1)) {
+                if x == i1 && y == j1 {
+                    // Found the node index that connects tile_b to tile_a
+                    let mask = match node_idx {
+                        0 => N1,
+                        1 => N2,
+                        2 => N3,
+                        3 => N4,
+                        4 => N5,
+                        5 => N6,
+                        _ => unreachable!(),
+                    };
+                    return Some((node_idx, mask));
+                }
+            }
+        }
+
+        None
+    }
+
+    /// Returns connecting node masks for all adjacent tile pairs between two nets.
+    ///
+    /// For each pair of adjacent tiles found between `net_a` and `net_b`,
+    /// this function returns the node index and bit mask needed to connect
+    /// those tiles.
+    ///
+    /// # Arguments
+    /// * `net_a` - Index of the first net
+    /// * `net_b` - Index of the second net
+    ///
+    /// # Returns
+    /// A vector of `((i1, j1), (i2, j2), (node_idx, mask))` where:
+    /// - `(i1, j1)` and `(i2, j2)` are adjacent tile coordinates
+    /// - `node_idx` is the connecting node index (0-5 for N1-N6)
+    /// - `mask` is the bit mask (e.g., N1, N2, etc.) to apply to both tiles
+    ///
+    /// # Example
+    /// ```
+    /// let masks = maze.get_connecting_masks_for_nets(0, 1);
+    /// for ((i1, j1), (i2, j2), (node_idx, mask)) in masks {
+    ///     println!("Connect ({}, {}) to ({}, {}) via node {} (mask: {:b})",
+    ///         i1, j1, i2, j2, node_idx + 1, mask);
+    /// }
+    /// ```
+    pub fn get_connecting_masks_for_nets(
+        &self,
+        net_a: usize,
+        net_b: usize,
+    ) -> Vec<((usize, usize), (usize, usize), (usize, usize))> {
+        let adjacent_pairs = self.find_adjacent_tile_pairs(net_a, net_b, false);
+        let mut masks = Vec::new();
+
+        for &((i1, j1), (i2, j2)) in &adjacent_pairs {
+            if let Some((node_idx, mask)) = self.get_connecting_node_mask((i1, j1), (i2, j2)) {
+                masks.push(((i1, j1), (i2, j2), (node_idx, mask)));
+            }
+        }
+
+        masks
+    }
+
+    /// Returns one connecting node mask for an adjacent tile pair between two nets.
+    ///
+    /// Finds one pair of adjacent tiles between `net_a` and `net_b` and returns
+    /// the connecting node mask needed to join them.
+    ///
+    /// # Arguments
+    /// * `net_a` - Index of the first net
+    /// * `net_b` - Index of the second net
+    ///
+    /// # Returns
+    /// `Some(((i1, j1), (i2, j2), (node_idx, mask)))` if an adjacent pair exists,
+    /// `None` if no adjacent tiles exist between the nets
+    pub fn get_one_connecting_mask_for_nets(
+        &self,
+        net_a: usize,
+        net_b: usize,
+    ) -> Option<((usize, usize), (usize, usize), (usize, usize))> {
+        if let Some(((i1, j1), (i2, j2))) = self.find_one_adjacent_tile_pair(net_a, net_b) {
+            self.get_connecting_node_mask((i1, j1), (i2, j2))
+                .map(|(node_idx, mask)| ((i1, j1), (i2, j2), (node_idx, mask)))
+        } else {
+            None
+        }
     }
 }
 
@@ -935,6 +1168,127 @@ mod tests {
         // Should NOT include tiles that are only adjacent
         assert!(!tiles.contains(&(3, 2)));
         assert!(!tiles.contains(&(4, 2)));
+        #[test]
+        fn test_get_connecting_node_mask() {
+            // Create two nets with adjacent tiles
+            let mut net0 = Nodes::new();
+            net0.insert(Node::new(2, 2, 0));  // Tile at (2,2)
+
+            let mut net1 = Nodes::new();
+            net1.insert(Node::new(3, 2, 0));  // Tile at (3,2) - adjacent to (2,2) on node 0 (N1)
+
+            let maze = create_test_maze_with_nets(vec![net0, net1], 8, 8);
+
+            // Test getting connecting mask between adjacent tiles
+            let result = maze.get_connecting_node_mask((2, 2), (3, 2));
+            assert!(result.is_some(), "Should find connecting node mask for adjacent tiles");
+            let (node_idx, mask) = result.unwrap();
+            assert_eq!(node_idx, 0, "Should connect on node 0 (N1)");
+            assert_eq!(mask, N1, "Mask should be N1");
+
+            // Test reverse direction (should give same result)
+            let reverse_result = maze.get_connecting_node_mask((3, 2), (2, 2));
+            assert!(reverse_result.is_some(), "Should work in reverse direction");
+            let (node_idx_rev, mask_rev) = reverse_result.unwrap();
+            assert_eq!(node_idx_rev, 0, "Should connect on node 0 (N1) in reverse");
+            assert_eq!(mask_rev, N1, "Mask should be N1 in reverse");
+
+            // Test with non-adjacent tiles
+            let non_adjacent = maze.get_connecting_node_mask((2, 2), (5, 5));
+            assert!(non_adjacent.is_none(), "Should return None for non-adjacent tiles");
+
+            // Test with out-of-bounds coordinates
+            let out_of_bounds = maze.get_connecting_node_mask((0, 0), (10, 10));
+            assert!(out_of_bounds.is_none(), "Should return None for out-of-bounds tiles");
+        }
+
+        #[test]
+        fn test_get_connecting_masks_for_nets() {
+            // Create two nets with multiple adjacent tiles
+            let mut net0 = Nodes::new();
+            net0.insert(Node::new(2, 2, 0));  // Tile at (2,2)
+            net0.insert(Node::new(3, 3, 1));  // Tile at (3,3)
+
+            let mut net1 = Nodes::new();
+            net1.insert(Node::new(3, 2, 0));  // Tile at (3,2) - adjacent to (2,2) on node 0 (N1)
+            net1.insert(Node::new(4, 3, 1));  // Tile at (4,3) - adjacent to (3,3) on node 1 (N2)
+
+            let maze = create_test_maze_with_nets(vec![net0, net1], 8, 8);
+
+            // Test getting all connecting masks
+            let masks = maze.get_connecting_masks_for_nets(0, 1);
+            // Should find at least 2 connections
+            assert!(!masks.is_empty(), "Should find connecting masks for adjacent nets");
+
+            // Verify each mask is valid
+            for &((i1, j1), (i2, j2), (node_idx, mask)) in &masks {
+                assert_ne!((i1, j1), (i2, j2), "Tiles should be different");
+                assert!(node_idx < 6, "Node index should be 0-5");
+                assert!(mask == N1 || mask == N2 || mask == N3 || mask == N4 || mask == N5 || mask == N6,
+                    "Mask should be one of N1-N6");
+
+                // Verify the tiles are from different nets
+                let net0_tiles = maze.get_tiles_for_net(0);
+                let net1_tiles = maze.get_tiles_for_net(1);
+                assert!(
+                    (net0_tiles.contains(&(i1, j1)) && net1_tiles.contains(&(i2, j2))) ||
+                    (net1_tiles.contains(&(i1, j1)) && net0_tiles.contains(&(i2, j2))),
+                    "Tiles should be from different nets"
+                );
+            }
+
+            // Test with nets that have no adjacent tiles
+            let mut net2 = Nodes::new();
+            net2.insert(Node::new(0, 0, 0));
+            let mut net3 = Nodes::new();
+            net3.insert(Node::new(6, 6, 0));
+            let maze2 = create_test_maze_with_nets(vec![net2, net3], 8, 8);
+
+            let no_masks = maze2.get_connecting_masks_for_nets(0, 1);
+            assert!(no_masks.is_empty(), "Should return empty vector when no adjacent tiles exist");
+        }
+
+        #[test]
+        fn test_get_one_connecting_mask_for_nets() {
+            // Create two nets with adjacent tiles
+            let mut net0 = Nodes::new();
+            net0.insert(Node::new(2, 2, 0));  // Tile at (2,2)
+            net0.insert(Node::new(2, 3, 1));  // Another tile in same net
+
+            let mut net1 = Nodes::new();
+            net1.insert(Node::new(3, 2, 0));  // Tile at (3,2) - adjacent to (2,2)
+            net1.insert(Node::new(4, 2, 1));  // Tile at (4,2) - adjacent to (3,2) but not to net0
+
+            let maze = create_test_maze_with_nets(vec![net0, net1], 8, 8);
+
+            // Test getting one connecting mask
+            let one_mask = maze.get_one_connecting_mask_for_nets(0, 1);
+            assert!(one_mask.is_some(), "Should find one connecting mask for adjacent nets");
+            let ((i1, j1), (i2, j2), (node_idx, mask)) = one_mask.unwrap();
+            assert_ne!((i1, j1), (i2, j2), "Tiles should be different");
+            assert!(node_idx < 6, "Node index should be 0-5");
+            assert!(mask == N1 || mask == N2 || mask == N3 || mask == N4 || mask == N5 || mask == N6,
+                "Mask should be one of N1-N6");
+
+            // Verify the tiles are from different nets
+            let net0_tiles = maze.get_tiles_for_net(0);
+            let net1_tiles = maze.get_tiles_for_net(1);
+            assert!(
+                (net0_tiles.contains(&(i1, j1)) && net1_tiles.contains(&(i2, j2))) ||
+                (net1_tiles.contains(&(i1, j1)) && net0_tiles.contains(&(i2, j2))),
+                "Tiles should be from different nets"
+            );
+
+            // Test with nets that have no adjacent tiles
+            let mut net2 = Nodes::new();
+            net2.insert(Node::new(0, 0, 0));
+            let mut net3 = Nodes::new();
+            net3.insert(Node::new(6, 6, 0));
+            let maze2 = create_test_maze_with_nets(vec![net2, net3], 8, 8);
+
+            let no_mask = maze2.get_one_connecting_mask_for_nets(0, 1);
+            assert!(no_mask.is_none(), "Should return None when no adjacent tiles exist");
+        }
     }
 
     #[test]
@@ -983,5 +1337,97 @@ mod tests {
             result.is_none(),
             "Should return None when nets have no proximity at any level"
         );
+    }
+
+    #[test]
+    fn test_find_adjacent_tile_pairs() {
+        // Create two nets with adjacent tiles
+        let mut net0 = Nodes::new();
+        net0.insert(Node::new(2, 2, 0));  // Tile at (2,2)
+        net0.insert(Node::new(2, 3, 1));  // Another tile in same net
+
+        let mut net1 = Nodes::new();
+        net1.insert(Node::new(3, 2, 0));  // Tile at (3,2) - adjacent to (2,2)
+        net1.insert(Node::new(4, 2, 1));  // Tile at (4,2) - adjacent to (3,2) but not to net0
+
+        let maze = create_test_maze_with_nets(vec![net0, net1], 8, 8);
+
+        // Test with find_one = false (get all pairs)
+        let all_pairs = maze.find_adjacent_tile_pairs(0, 1, false);
+        // Should find at least one adjacent pair: (2,2) adjacent to (3,2)
+        assert!(!all_pairs.is_empty(), "Should find at least one adjacent tile pair");
+        assert!(all_pairs.iter().any(|&((i1, j1), (i2, j2))|
+            (i1 == 2 && j1 == 2 && i2 == 3 && j2 == 2) ||
+            (i1 == 3 && j1 == 2 && i2 == 2 && j2 == 2)
+        ), "Should find the adjacent pair between (2,2) and (3,2)");
+
+        // Test with find_one = true (get just one pair)
+        let one_pair = maze.find_adjacent_tile_pairs(0, 1, true);
+        assert!(one_pair.len() <= 1, "Should return at most one pair when find_one is true");
+        if !one_pair.is_empty() {
+            // The pair should be a valid adjacent pair
+            let ((i1, j1), (i2, j2)) = one_pair[0];
+            assert_ne!((i1, j1), (i2, j2), "Pair should be two different tiles");
+            // Verify they are from different nets (one from net0, one from net1)
+            let net0_tiles = maze.get_tiles_for_net(0);
+            let net1_tiles = maze.get_tiles_for_net(1);
+            assert!(
+                (net0_tiles.contains(&(i1, j1)) && net1_tiles.contains(&(i2, j2))) ||
+                (net1_tiles.contains(&(i1, j1)) && net0_tiles.contains(&(i2, j2))),
+                "Pair should consist of one tile from each net"
+            );
+        }
+
+        // Test with nets that have no adjacent tiles
+        let mut net2 = Nodes::new();
+        net2.insert(Node::new(0, 0, 0));
+        let mut net3 = Nodes::new();
+        net3.insert(Node::new(6, 6, 0));
+        let maze2 = create_test_maze_with_nets(vec![net2, net3], 8, 8);
+
+        let no_pairs = maze2.find_adjacent_tile_pairs(0, 1, false);
+        assert!(no_pairs.is_empty(), "Should return empty vector when no adjacent tiles exist");
+
+        let no_pairs_one = maze2.find_adjacent_tile_pairs(0, 1, true);
+        assert!(no_pairs_one.is_empty(), "Should return empty vector when no adjacent tiles exist even with find_one");
+    }
+
+    #[test]
+    fn test_find_one_adjacent_tile_pair() {
+        // Create two nets with adjacent tiles
+        let mut net0 = Nodes::new();
+        net0.insert(Node::new(2, 2, 0));  // Tile at (2,2)
+        net0.insert(Node::new(2, 3, 1));  // Another tile in same net
+
+        let mut net1 = Nodes::new();
+        net1.insert(Node::new(3, 2, 0));  // Tile at (3,2) - adjacent to (2,2)
+        net1.insert(Node::new(4, 2, 1));  // Tile at (4,2) - adjacent to (3,2) but not to net0
+
+        let maze = create_test_maze_with_nets(vec![net0, net1], 8, 8);
+
+        // Test with find_one_adjacent_tile_pair (should find one pair)
+        let one_pair = maze.find_one_adjacent_tile_pair(0, 1);
+        assert!(one_pair.is_some(), "Should find at least one adjacent tile pair");
+        let ((i1, j1), (i2, j2)) = one_pair.unwrap();
+        assert_ne!((i1, j1), (i2, j2), "Pair should be two different tiles");
+
+        // Verify they are from different nets (one from net0, one from net1)
+        let net0_tiles = maze.get_tiles_for_net(0);
+        let net1_tiles = maze.get_tiles_for_net(1);
+        assert!(
+            (net0_tiles.contains(&(i1, j1)) && net1_tiles.contains(&(i2, j2))) ||
+            (net1_tiles.contains(&(i1, j1)) && net0_tiles.contains(&(i2, j2))),
+            "Pair should consist of one tile from each net"
+        );
+
+        // Test with nets that have no adjacent tiles
+        let mut net2 = Nodes::new();
+        net2.insert(Node::new(0, 0, 0));
+        let mut net3 = Nodes::new();
+        net3.insert(Node::new(6, 6, 0));
+        let maze2 = create_test_maze_with_nets(vec![net2, net3], 8, 8);
+
+        let no_pair = maze2.find_one_adjacent_tile_pair(0, 1);
+        assert!(no_pair.is_none(), "Should return None when no adjacent tiles exist");
     }
 }

@@ -52,6 +52,7 @@ impl Maze {
                             }
                         })
                         .collect();
+
                     indexes.sort();
 
                     // Join the nets with the matching indexes
@@ -61,7 +62,6 @@ impl Maze {
                         let other_index = indexes[1];
                         let other_net = self.nets[other_index].clone();
                         self.nets[first_index].extend(other_net);
-                        //self.nets.remove(other_index);
                         self.nets[other_index].clear(); // Leave an empty net to avoid messing up indices
                     } else {
                         println!("Error, we don't have 2 indexes to merge {:?}", indexes);
@@ -131,7 +131,9 @@ impl Maze {
 
                         new_nodes.push(new_node);
 
+                        // TODO: Do I also need to updates the nets?
                         let _ = self.tiles.set(*j, *i, Tile::new(new_nodes, true));
+
                     } else {
                         println!(
                             "  WARNING: Could not select random nodes for merging at tile ({}, {})",
@@ -149,17 +151,23 @@ impl Maze {
             // Recursively reduce nets until we have one
             println!("\nWe have disjoint {:?} nets:", self.nets.len());
 
-            // TODO: find all the surrounding tiles for each net, and see if any can be merged, if any of those
-            // tiles are shared between nets
-            if let Some(info) = self.select_common_surrounding_coordinate_with_info() {
-                println!(
-                    "Connecting nets {} and {}",
-                    info.net_a_index, info.net_b_index
-                );
-                println!("  Common coordinate: {:?}", info.common_coordinate);
-                println!("  Net A has {} tiles", info.net_a_coordinates.len());
-                println!("  Net B has {} tiles", info.net_b_coordinates.len());
-                println!("  Proximity: {:?}", info.proximity_level);
+            let adjacent_pairs = self.find_adjacent_tile_pairs(0, 1, true);
+
+            for ((i1, j1), (i2, j2)) in adjacent_pairs {
+                println!("Net 0 tile at ({}, {}) is adjacent to Net 1 tile at ({}, {})", i1, j1, i2, j2);
+                if let Some((net_index, mask)) = self.get_connecting_node_mask((i1, j1),(i2, j2)){
+                    println!("net index -> {} , mask -> 0b{:06b}", net_index, mask);
+
+                    // TODO: For each tile, update the appropriate node that matches the existing net and add in the mask and update the tile.
+                    let _ = self.tiles.set(j1, i1, Tile::new(new_nodes, true));
+                    let _ = self.tiles.set(j2, i2, Tile::new(new_nodes, true));
+
+                    let other_net = self.nets[0].clone();
+                    self.nets[0].extend(other_net);
+                    self.nets[1].clear();
+                    self.nets.retain(|net| !net.is_empty());
+
+                };
             }
         }
     }
