@@ -563,7 +563,7 @@ impl Maze {
         &self,
         tile_a: (usize, usize),
         tile_b: (usize, usize),
-    ) -> Option<(usize, usize)> {
+    ) -> Option<usize> {
         let (i1, j1) = tile_a;
         let (i2, j2) = tile_b;
 
@@ -586,7 +586,7 @@ impl Maze {
                         5 => N6,
                         _ => unreachable!(),
                     };
-                    return Some((node_idx, mask));
+                    return Some(mask);
                 }
             }
         }
@@ -609,7 +609,7 @@ impl Maze {
                         5 => N6,
                         _ => unreachable!(),
                     };
-                    return Some((node_idx, mask));
+                    return Some(mask);
                 }
             }
         }
@@ -645,13 +645,13 @@ impl Maze {
         &self,
         net_a: usize,
         net_b: usize,
-    ) -> Vec<((usize, usize), (usize, usize), (usize, usize))> {
+    ) -> Vec<((usize, usize), (usize, usize), usize)> {
         let adjacent_pairs = self.find_adjacent_tile_pairs(net_a, net_b, false);
         let mut masks = Vec::new();
 
         for &((i1, j1), (i2, j2)) in &adjacent_pairs {
-            if let Some((node_idx, mask)) = self.get_connecting_node_mask((i1, j1), (i2, j2)) {
-                masks.push(((i1, j1), (i2, j2), (node_idx, mask)));
+            if let Some( mask) = self.get_connecting_node_mask((i1, j1), (i2, j2)) {
+                masks.push(((i1, j1), (i2, j2), mask));
             }
         }
 
@@ -674,10 +674,10 @@ impl Maze {
         &self,
         net_a: usize,
         net_b: usize,
-    ) -> Option<((usize, usize), (usize, usize), (usize, usize))> {
+    ) -> Option<((usize, usize), (usize, usize), usize)> {
         if let Some(((i1, j1), (i2, j2))) = self.find_one_adjacent_tile_pair(net_a, net_b) {
             self.get_connecting_node_mask((i1, j1), (i2, j2))
-                .map(|(node_idx, mask)| ((i1, j1), (i2, j2), (node_idx, mask)))
+                .map(|mask| ((i1, j1), (i2, j2),  mask))
         } else {
             None
         }
@@ -1168,8 +1168,9 @@ mod tests {
         // Should NOT include tiles that are only adjacent
         assert!(!tiles.contains(&(3, 2)));
         assert!(!tiles.contains(&(4, 2)));
-        #[test]
-        fn test_get_connecting_node_mask() {
+
+    #[test]
+    fn test_get_connecting_node_mask() {
             // Create two nets with adjacent tiles
             let mut net0 = Nodes::new();
             net0.insert(Node::new(2, 2, 0));  // Tile at (2,2)
@@ -1182,15 +1183,13 @@ mod tests {
             // Test getting connecting mask between adjacent tiles
             let result = maze.get_connecting_node_mask((2, 2), (3, 2));
             assert!(result.is_some(), "Should find connecting node mask for adjacent tiles");
-            let (node_idx, mask) = result.unwrap();
-            assert_eq!(node_idx, 0, "Should connect on node 0 (N1)");
+            let mask = result.unwrap();
             assert_eq!(mask, N1, "Mask should be N1");
 
             // Test reverse direction (should give same result)
             let reverse_result = maze.get_connecting_node_mask((3, 2), (2, 2));
             assert!(reverse_result.is_some(), "Should work in reverse direction");
-            let (node_idx_rev, mask_rev) = reverse_result.unwrap();
-            assert_eq!(node_idx_rev, 0, "Should connect on node 0 (N1) in reverse");
+            let mask_rev = reverse_result.unwrap();
             assert_eq!(mask_rev, N1, "Mask should be N1 in reverse");
 
             // Test with non-adjacent tiles
@@ -1221,9 +1220,8 @@ mod tests {
             assert!(!masks.is_empty(), "Should find connecting masks for adjacent nets");
 
             // Verify each mask is valid
-            for &((i1, j1), (i2, j2), (node_idx, mask)) in &masks {
+            for &((i1, j1), (i2, j2), mask) in &masks {
                 assert_ne!((i1, j1), (i2, j2), "Tiles should be different");
-                assert!(node_idx < 6, "Node index should be 0-5");
                 assert!(mask == N1 || mask == N2 || mask == N3 || mask == N4 || mask == N5 || mask == N6,
                     "Mask should be one of N1-N6");
 
@@ -1264,9 +1262,8 @@ mod tests {
             // Test getting one connecting mask
             let one_mask = maze.get_one_connecting_mask_for_nets(0, 1);
             assert!(one_mask.is_some(), "Should find one connecting mask for adjacent nets");
-            let ((i1, j1), (i2, j2), (node_idx, mask)) = one_mask.unwrap();
+            let ((i1, j1), (i2, j2), mask) = one_mask.unwrap();
             assert_ne!((i1, j1), (i2, j2), "Tiles should be different");
-            assert!(node_idx < 6, "Node index should be 0-5");
             assert!(mask == N1 || mask == N2 || mask == N3 || mask == N4 || mask == N5 || mask == N6,
                 "Mask should be one of N1-N6");
 

@@ -1,5 +1,8 @@
+use common::bit_utils::{print_nets, to_6bit_binary, to_bits};
+
 use crate::maze::maze::Maze;
-use crate::maze::net::Node;
+use crate::maze::net::{Node, format_nodes};
+use common::bit_utils::print_bits;
 use crate::maze::random::select_random_element;
 use crate::maze::tile::Tile;
 
@@ -154,18 +157,56 @@ impl Maze {
             let adjacent_pairs = self.find_adjacent_tile_pairs(0, 1, true);
 
             for ((i1, j1), (i2, j2)) in adjacent_pairs {
-                println!("Net 0 tile at ({}, {}) is adjacent to Net 1 tile at ({}, {})", i1, j1, i2, j2);
-                if let Some((net_index, mask)) = self.get_connecting_node_mask((i1, j1),(i2, j2)){
-                    println!("net index -> {} , mask -> 0b{:06b}", net_index, mask);
+                //println!("Net 0 tile at ({}, {}) is adjacent to Net 1 tile at ({}, {})", i1, j1, i2, j2);
 
-                    // TODO: For each tile, update the appropriate node that matches the existing net and add in the mask and update the tile.
-                    let _ = self.tiles.set(j1, i1, Tile::new(new_nodes, true));
-                    let _ = self.tiles.set(j2, i2, Tile::new(new_nodes, true));
+                // find the node at (i1, j1) in net_a
+                let node_a:Vec<usize> = self.nets[0].iter().filter(|net| net.i==i1 && net.j==j1).map(|net| net.node ).collect();
+                let node_b:Vec<usize> = self.nets[1].iter().filter(|net| net.i==i2 && net.j==j2).map(|net| net.node ).collect();
 
-                    let other_net = self.nets[0].clone();
-                    self.nets[0].extend(other_net);
+                // List of node indexs at each net, 0 based
+                let net_a_as_bits = node_a.iter().map(|n| 1<<n).fold(0, |a, b| a | b);
+                let net_b_as_bits = node_b.iter().map(|n| 1<<n).fold(0, |a, b| a | b);
+                println!("net_a_as_bits ({i1},{j1}) {}",to_6bit_binary(&net_a_as_bits, false));
+                println!("net_b_as_bits ({i2},{j2}) {}",to_6bit_binary(&net_b_as_bits, false));
+
+                if let Some(mask) = self.get_connecting_node_mask((i1, j1),(i2, j2)){
+                    println!("mask -> 0b{:06b}", mask);
+
+                    // Update tile A (belongs to net 0)
+                    // Tile can have more than one net, so can't use tile.bits
+                    let tile_a = self.tiles.get(j1, i1).unwrap();
+                    let mut new_nodes_a = tile_a.nodes.clone();
+                    for (idx, node) in new_nodes_a.iter_mut().enumerate() {
+                        if *node == net_a_as_bits {
+                            println!(" --- a ({i1},{j1}) --- {} : 0b{:06b}", idx, *node);
+                            *node |= mask;
+                            break;
+                        }
+                    }
+                    let _ = self.tiles.set(j1, i1, Tile::new(new_nodes_a, true));
+
+                    // Update tile B (belongs to net 1)
+                    let tile_b = self.tiles.get(j2, i2).unwrap();
+                    let mut new_nodes_b = tile_b.nodes.clone();
+                    for (idx, node) in new_nodes_b.iter_mut().enumerate() {
+                        if *node == net_b_as_bits {
+                            println!(" --- b ({i2},{j2}) --- {} : 0b{:06b}", idx, *node);
+                            *node |= mask;
+                            break;
+                        }
+                    }
+                    let _ = self.tiles.set(j2, i2, Tile::new(new_nodes_b, true));
+
+
+
+
+
+                    // // Merge net 1 into net 0
+                    let net1_nodes = self.nets[1].clone();
+                    self.nets[0].extend(net1_nodes);
                     self.nets[1].clear();
                     self.nets.retain(|net| !net.is_empty());
+
 
                 };
             }
@@ -319,8 +360,8 @@ mod tests {
         // Should still have 2 nets since they don't intersect
         assert_eq!(
             maze.nets.len(),
-            2,
-            "Non-intersecting nets should not be merged"
+            1,
+            "Adj nets should be merged"
         );
     }
 
@@ -353,7 +394,7 @@ mod tests {
 
         assert_eq!(
             maze.nets.len(),
-            2,
+            1,
             "Nodes with complex intersections (>2 nodes) should be merged"
         );
     }
