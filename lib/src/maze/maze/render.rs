@@ -16,6 +16,16 @@ use usvg::fontdb;
 /// These methods handle SVG/PNG generation and file saving.
 impl Maze {
     pub fn render(&mut self, file_name: String, file_type: FileType) -> Result<(), Box<dyn Error>> {
+        self.render_with_options(file_name, file_type, false, false)
+    }
+
+    pub fn render_with_options(
+        &mut self,
+        file_name: String,
+        file_type: FileType,
+        background: bool,
+        debug: bool,
+    ) -> Result<(), Box<dyn Error>> {
         //let start = Instant::now();
         //#[cfg(debug_assertions)]
         //self.print_out_networks();
@@ -42,7 +52,7 @@ impl Maze {
                     coord,
                     self.boundaries,
                     &surrounding_tiles,
-                    false, //i == 200 && j == 1,
+                    debug, // Use debug parameter
                 );
                 all_catorised_nets.extend(cat_nets);
             }
@@ -90,8 +100,8 @@ impl Maze {
         //let start = Instant::now();
 
         match file_type {
-            SVG => return self.save_as_svg(svg.to_string(false), file_name),
-            PNG => return self.save_as_png(svg.to_string(false).as_str(), file_name),
+            SVG => return self.save_as_svg(svg.to_string(background), file_name),
+            PNG => return self.save_as_png(svg.to_string(background).as_str(), file_name),
         }
     }
 

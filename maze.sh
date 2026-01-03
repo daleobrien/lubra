@@ -8,5 +8,6 @@ echo "${FOLDER}"
 cd ${FOLDER}/cli
 #rm -f *.svg
 cargo build # --release
+
 echo "Running ..."
-time cargo run # --release
+time ./target.tmp/debug/lubra --seed 3 -B -N
