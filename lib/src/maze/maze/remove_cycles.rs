@@ -13,9 +13,13 @@ pub struct CycleInfo {
     pub cycle_nodes: Vec<Node>,
 }
 
+
+
 /// Cycle removal methods for the Maze struct.
 /// Detects and handles cycles in the maze network using DFS.
 impl Maze {
+
+
     /// Normalize a cycle to a canonical form for deduplication.
     ///
     /// A cycle like [A, B, C, D] is the same as [B, C, D, A] or [D, C, B, A] (reversed).
@@ -131,6 +135,8 @@ impl Maze {
 
         all_cycles
     }
+
+
 
     /// Build adjacency map for nodes in a network.
     /// Each node maps to its connected neighbors within the same network.
@@ -389,6 +395,15 @@ impl Maze {
     /// After each removal, it re-checks for new cycles. Once all cycles are
     /// broken, it splits disconnected networks into separate components.
     pub fn remove_cycles(&mut self) {
+        // Precompute adjacency maps for all networks to avoid recomputation
+        let mut network_adjacencies: Vec<HashMap<Node, Vec<Node>>> = Vec::new();
+        for network in self.nets.iter() {
+            if network.is_empty() {
+                network_adjacencies.push(HashMap::new());
+            } else {
+                network_adjacencies.push(self.build_adjacency_map(network));
+            }
+        }
 
         let mut iteration = 0;
         let max_iterations = 100; // Safety limit
@@ -401,7 +416,7 @@ impl Maze {
                 break;
             }
 
-            let cycles = self.detect_cycles();
+            let cycles = self.detect_cycles_with_adjacency(&network_adjacencies);
 
             if cycles.is_empty() {
                 break;
@@ -418,6 +433,8 @@ impl Maze {
                 // Remove the node from the network
                 if cycle_info.net_index < self.nets.len() {
                     self.nets[cycle_info.net_index].remove(&node_to_remove);
+                    // Update the adjacency map for this network
+                    network_adjacencies[cycle_info.net_index] = self.build_adjacency_map(&self.nets[cycle_info.net_index]);
                 }
                 // Update the tile too
                 if let Some(tile) = self.tiles.get_mut(node_to_remove.j, node_to_remove.i) {
@@ -438,12 +455,158 @@ impl Maze {
 
         // After removing all cycles, split any disconnected networks
         let mut new_nets = Vec::new();
-        for  network in self.nets.iter() {
+        for network in self.nets.iter() {
             let components = self.split_disconnected_networks(network);
             new_nets.extend(components);
         }
         self.nets = new_nets;
+    }
 
+    /// Detect cycles using precomputed adjacency maps.
+    /// This is faster than detect_cycles() which rebuilds adjacency maps each time.
+    fn detect_cycles_with_adjacency(&self, adjacencies: &[HashMap<Node, Vec<Node>>]) -> Vec<CycleInfo> {
+        let mut all_cycles = Vec::new();
+        let mut seen_cycles: HashSet<Vec<Node>> = HashSet::new();
+
+        for (net_idx, nodes) in self.nets.iter().enumerate() {
+            if nodes.is_empty() {
+                continue;
+            }
+
+            let adjacency = &adjacencies[net_idx];
+
+            // Track visited nodes globally and nodes in current DFS path
+            // Nodes in the same internal net on a tile are marked together as visited
+            let mut visited: HashSet<Node> = HashSet::new();
+            let mut rec_stack: HashSet<Node> = HashSet::new();
+            let mut path = Vec::new();
+
+            // Try starting DFS from each unvisited node
+            for &start_node in nodes.iter() {
+                if !visited.contains(&start_node) {
+                    if let Some(cycle) = self.dfs_detect_cycle_with_adjacency(
+                        start_node,
+                        None,
+                        adjacency,
+                        &mut visited,
+                        &mut rec_stack,
+                        &mut path,
+                    ) {
+                        // Normalize the cycle to check for duplicates
+                        let normalized = Self::normalize_cycle(&cycle);
+
+                        // Only add if we haven't seen this cycle before
+                        if !seen_cycles.contains(&normalized) {
+                            seen_cycles.insert(normalized);
+                            all_cycles.push(CycleInfo {
+                                net_index: net_idx,
+                                cycle_nodes: cycle,
+                            });
+                        }
+                        // Else: skip this duplicate cycle
+                    }
+                }
+            }
+        }
+
+        all_cycles
+    }
+
+    /// DFS cycle detection using precomputed adjacency map.
+    fn dfs_detect_cycle_with_adjacency(
+        &self,
+        current: Node,
+        parent_tile: Option<(usize, usize)>,
+        adjacency: &HashMap<Node, Vec<Node>>,
+        visited: &mut HashSet<Node>,
+        rec_stack: &mut HashSet<Node>,
+        path: &mut Vec<Node>,
+    ) -> Option<Vec<Node>> {
+        let current_tile = (current.i, current.j);
+
+        // Find all nodes on this tile that are reachable from the entry node
+        // via intra-tile connections (i.e., in the same net within this tile)
+        let mut reachable_on_tile: HashSet<Node> = HashSet::new();
+        let mut to_visit: Vec<Node> = vec![current];
+        while let Some(node) = to_visit.pop() {
+            if reachable_on_tile.contains(&node) {
+                continue;
+            }
+            reachable_on_tile.insert(node);
+
+            // Find intra-tile neighbors (same tile, connected via adjacency)
+            if let Some(neighbors) = adjacency.get(&node) {
+                for &neighbor in neighbors {
+                    if neighbor.i == current.i && neighbor.j == current.j {
+                        // Same tile - this is an intra-tile connection
+                        if !reachable_on_tile.contains(&neighbor) {
+                            to_visit.push(neighbor);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Mark all reachable nodes on this tile as visited and in rec_stack
+        for &node in &reachable_on_tile {
+            visited.insert(node);
+            rec_stack.insert(node);
+        }
+        path.push(current);
+
+        // Collect inter-tile neighbors from all reachable nodes on this tile
+        let mut inter_tile_neighbors: Vec<Node> = Vec::new();
+        for &node in &reachable_on_tile {
+            if let Some(neighbors) = adjacency.get(&node) {
+                for &neighbor in neighbors {
+                    let neighbor_tile = (neighbor.i, neighbor.j);
+                    // Only collect inter-tile neighbors (different tile)
+                    if neighbor_tile != current_tile {
+                        inter_tile_neighbors.push(neighbor);
+                    }
+                }
+            }
+        }
+
+        for neighbor in inter_tile_neighbors {
+            let neighbor_tile = (neighbor.i, neighbor.j);
+
+            // Skip the parent tile to avoid detecting trivial back-edges
+            if Some(neighbor_tile) == parent_tile {
+                continue;
+            }
+
+            if !visited.contains(&neighbor) {
+                // Recurse to unvisited neighbor
+                if let Some(cycle) = self.dfs_detect_cycle_with_adjacency(
+                    neighbor,
+                    Some(current_tile),
+                    adjacency,
+                    visited,
+                    rec_stack,
+                    path,
+                ) {
+                    return Some(cycle);
+                }
+            } else if rec_stack.contains(&neighbor) {
+                // Found a back edge to a node in current path - this is a cycle!
+                // Find the position in path where this node (or a connected node on same tile) first appears
+                let cycle_start = path
+                    .iter()
+                    .position(|n| n.i == neighbor.i && n.j == neighbor.j)
+                    .unwrap();
+                let mut cycle = path[cycle_start..].to_vec();
+                cycle.push(neighbor); // Close the cycle
+                return Some(cycle);
+            }
+        }
+
+        // Backtrack - remove all reachable nodes from rec_stack
+        path.pop();
+        for &node in &reachable_on_tile {
+            rec_stack.remove(&node);
+        }
+        None
     }
 }
 

@@ -7,4 +7,6 @@ echo "${FOLDER}"
 
 cd ${FOLDER}/cli
 #rm -f *.svg
-cargo run # --release
+cargo build # --release
+echo "Running ..."
+time cargo run # --release
