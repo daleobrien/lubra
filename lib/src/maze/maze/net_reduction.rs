@@ -178,35 +178,36 @@ impl Maze {
                     let mut new_nodes_a = tile_a.nodes.clone();
                     for (idx, node) in new_nodes_a.iter_mut().enumerate() {
                         if *node == net_a_as_bits {
-                            println!(" --- a ({i1},{j1}) --- {} : 0b{:06b}", idx, *node);
-                            *node |= mask;
+                            print!(" --- a ({i1},{j1}) --- {} : 0b{:06b}", idx, *node);
+                            *node |= mask; // This isn't correct, or is it?
+                            println!(" -> 0b{:06b}", *node);
                             break;
                         }
                     }
-                    let _ = self.tiles.set(j1, i1, Tile::new(new_nodes_a, true));
+                    let tile = Tile::new(new_nodes_a, true);
+                    self.update_network(&tile, i1, j2);
+                    let _ = self.tiles.set(j1, i1, tile);
 
                     // Update tile B (belongs to net 1)
                     let tile_b = self.tiles.get(j2, i2).unwrap();
                     let mut new_nodes_b = tile_b.nodes.clone();
                     for (idx, node) in new_nodes_b.iter_mut().enumerate() {
                         if *node == net_b_as_bits {
-                            println!(" --- b ({i2},{j2}) --- {} : 0b{:06b}", idx, *node);
-                            *node |= mask;
+                            print!(" --- b ({i2},{j2}) --- {} : 0b{:06b}", idx, *node);
+                            *node |= mask; // This isn't correct, or is it?
+                            println!(" -> 0b{:06b}", *node);
                             break;
                         }
                     }
-                    let _ = self.tiles.set(j2, i2, Tile::new(new_nodes_b, true));
+                    let tile = Tile::new(new_nodes_b, true);
+                    self.update_network(&tile, i1, j2);
+                    let _ = self.tiles.set(j2, i2, tile);
 
-
-
-
-
-                    // // Merge net 1 into net 0
-                    let net1_nodes = self.nets[1].clone();
-                    self.nets[0].extend(net1_nodes);
-                    self.nets[1].clear();
+                    // Merge net 1 into net 0
+                    let other_nets = self.nets[0].clone();
+                    self.nets[1].extend(other_nets);
+                    self.nets[0].clear();
                     self.nets.retain(|net| !net.is_empty());
-
 
                 };
             }

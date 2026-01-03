@@ -78,6 +78,7 @@ impl Maze {
                 x: coordinate_and_net.coordinate.i as f64,
                 y: coordinate_and_net.coordinate.j as f64,
             };
+            // TODO: will this work? nets that extend to other tiles should be on a different layer?
             svg.add_fragment(frag.unwrap(), point, 1);
         }
 
