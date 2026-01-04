@@ -3,6 +3,7 @@ use crate::maze::net::Node;
 use common::consts::NODE_TO_COORD;
 use common::types::coordinate::add;
 use std::collections::{HashMap, HashSet};
+use std::time::Instant;
 
 /// Information about a detected cycle in the network.
 #[derive(Debug, Clone)]
@@ -75,7 +76,8 @@ impl Maze {
 
     /// Build adjacency map for nodes in a network.
     /// Each node maps to its connected neighbors within the same network.
-    fn build_adjacency_map(&self, nodes: &HashSet<Node>) -> HashMap<Node, Vec<Node>> {
+    fn build_adjacency_map(&self, nodes: &HashSet<Node>, debug: bool) -> HashMap<Node, Vec<Node>> {
+        let start = Instant::now();
         // Build coordinate lookup map for O(1) node lookup
         let coord_map: HashMap<(usize, usize, usize), Node> = nodes
             .iter()
@@ -134,17 +136,33 @@ impl Maze {
             }
         }
 
+        if debug {
+            println!("Building adjacency map for {} nodes took: {:?}", nodes.len(), start.elapsed());
+        }
         symmetric_adjacency
+    }
+
+    /// Remove a node from an adjacency map, updating all neighbor references.
+    /// This is more efficient than rebuilding the entire adjacency map.
+    fn remove_node_from_adjacency(adjacency: &mut HashMap<Node, Vec<Node>>, node: Node) {
+        // Remove the node itself
+        adjacency.remove(&node);
+
+        // Remove references to this node from all neighbors
+        for (_, neighbors) in adjacency.iter_mut() {
+            neighbors.retain(|&n| n != node);
+        }
     }
 
     /// Split a network into connected components.
     ///
     /// After removing nodes, a network might become disconnected.
     /// This method finds all connected components and returns them as separate networks.
-    fn split_disconnected_networks(&self, nodes: &HashSet<Node>) -> Vec<HashSet<Node>> {
+    fn split_disconnected_networks(&self, nodes: &HashSet<Node>, debug: bool) -> Vec<HashSet<Node>> {
+        let start = Instant::now();
         let mut components = Vec::new();
         let mut visited = HashSet::new();
-        let adjacency = self.build_adjacency_map(nodes);
+        let adjacency = self.build_adjacency_map(nodes, debug);
 
         for &start_node in nodes.iter() {
             if visited.contains(&start_node) {
@@ -172,32 +190,60 @@ impl Maze {
             components.push(component);
         }
 
+        if debug {
+            println!("Splitting disconnected networks ({} nodes) took: {:?}", nodes.len(), start.elapsed());
+        }
         components
     }
 
-    pub fn remove_cycles(&mut self) {
+    pub fn remove_cycles(&mut self, debug: bool) {
         let mut iteration = 0;
         let max_iterations = 100; // Safety limit
 
+        let initial_total_nodes: usize = self.nets.iter().map(|net| net.len()).sum();
+        if debug {
+            println!("Starting cycle removal: {} networks, {} total nodes", self.nets.len(), initial_total_nodes);
+        }
+
         // Precompute adjacency maps for all networks using optimized O(N) builder
+        let adj_start = Instant::now();
         let mut network_adjacencies: Vec<HashMap<Node, Vec<Node>>> = Vec::new();
         for network in self.nets.iter() {
             if network.is_empty() {
                 network_adjacencies.push(HashMap::new());
             } else {
-                network_adjacencies.push(self.build_adjacency_map(network));
+                network_adjacencies.push(self.build_adjacency_map(network, debug));
             }
         }
+        if debug {
+            println!("Building adjacency maps took: {:?}", adj_start.elapsed());
+            let non_empty_adj: usize = network_adjacencies.iter().filter(|adj| !adj.is_empty()).count();
+            println!("  Non-empty adjacency maps: {}", non_empty_adj);
+        }
 
+        let detection_start = Instant::now();
         loop {
             iteration += 1;
+            if debug {
+                println!("Cycle removal iteration {}", iteration);
+            }
             if iteration > max_iterations {
                 println!("Warning: Reached maximum iterations");
                 break;
             }
 
-            let cycles = self.detect_cycles_with_adjacency(&network_adjacencies);
+            let cycle_start = Instant::now();
+            let cycles = self.detect_cycles_with_adjacency(&network_adjacencies, debug);
+            if debug {
+                if iteration == 1 {
+                    println!("First cycle detection took: {:?}", cycle_start.elapsed());
+                }
+                println!("  Found {} cycles", cycles.len());
+            }
             if cycles.is_empty() {
+                if debug {
+                    println!("Total cycle detection time: {:?}", detection_start.elapsed());
+                }
                 break;
             }
 
@@ -208,12 +254,18 @@ impl Maze {
                 let node_to_remove = cycle_info.cycle_nodes[cycle_info.cycle_nodes.len() - 2];
 
                 // Remove the node from the network
+                let removal_start = Instant::now();
+                if debug {
+                    println!("  Removing node {:?} from network {} (cycle length {})",
+                             node_to_remove, cycle_info.net_index, cycle_info.cycle_nodes.len());
+                }
                 if cycle_info.net_index < self.nets.len() {
                     self.nets[cycle_info.net_index].remove(&node_to_remove);
 
                     // Update the adjacency map for this network incrementally
-                    let new_adjacency = self.build_adjacency_map(&self.nets[cycle_info.net_index]);
-                    network_adjacencies[cycle_info.net_index] = new_adjacency;
+                    if let Some(adjacency) = network_adjacencies.get_mut(cycle_info.net_index) {
+                        Self::remove_node_from_adjacency(adjacency, node_to_remove);
+                    }
                 }
 
                 // Update the tile
@@ -230,21 +282,36 @@ impl Maze {
                         tile.nodes.push(node_mask);
                     }
                 }
+                if debug {
+                    let current_size = self.nets[cycle_info.net_index].len();
+                    println!("  Network {} now has {} nodes", cycle_info.net_index, current_size);
+                    if iteration == 1 {
+                        println!("First cycle removal took: {:?}", removal_start.elapsed());
+                    }
+                }
             }
         }
 
         // After removing all cycles, split any disconnected networks
+        let split_start = Instant::now();
         let mut new_nets = Vec::new();
         for network in self.nets.iter() {
-            let components = self.split_disconnected_networks(network);
+            let components = self.split_disconnected_networks(network, debug);
             new_nets.extend(components);
         }
         self.nets = new_nets;
+        if debug {
+            println!("Splitting disconnected networks took: {:?}", split_start.elapsed());
+            let final_nodes: usize = self.nets.iter().map(|net| net.len()).sum();
+            println!("Cycle removal completed: {} networks, {} total nodes (removed {} nodes)",
+                     self.nets.len(), final_nodes, initial_total_nodes - final_nodes);
+        }
     }
 
     /// Detect cycles using precomputed adjacency maps.
     /// This is faster than detect_cycles() which rebuilds adjacency maps each time.
-    fn detect_cycles_with_adjacency(&self, adjacencies: &[HashMap<Node, Vec<Node>>]) -> Vec<CycleInfo> {
+    fn detect_cycles_with_adjacency(&self, adjacencies: &[HashMap<Node, Vec<Node>>], debug: bool) -> Vec<CycleInfo> {
+        let start = Instant::now();
         let mut all_cycles = Vec::new();
         let mut seen_cycles: HashSet<Vec<Node>> = HashSet::new();
 
@@ -261,6 +328,9 @@ impl Maze {
             let mut rec_stack: HashSet<Node> = HashSet::new();
             let mut path = Vec::new();
 
+            // Count cycles found in this network
+            let mut network_cycle_count = 0;
+
             // Try starting DFS from each unvisited node
             for &start_node in nodes.iter() {
                 if !visited.contains(&start_node) {
@@ -271,6 +341,7 @@ impl Maze {
                         &mut visited,
                         &mut rec_stack,
                         &mut path,
+                        debug,
                     ) {
                         // Normalize the cycle to check for duplicates
                         let normalized = Self::normalize_cycle(&cycle);
@@ -282,13 +353,22 @@ impl Maze {
                                 net_index: net_idx,
                                 cycle_nodes: cycle,
                             });
+                            network_cycle_count += 1;
                         }
                         // Else: skip this duplicate cycle
                     }
                 }
             }
+
+            if debug && network_cycle_count > 0 {
+                println!("  Network {}: found {} cycles ({} nodes)", net_idx, network_cycle_count, nodes.len());
+            }
         }
 
+        if debug {
+            println!("Cycle detection function took: {:?}", start.elapsed());
+            println!("Total cycles found: {}", all_cycles.len());
+        }
         all_cycles
     }
 
@@ -301,6 +381,7 @@ impl Maze {
         visited: &mut HashSet<Node>,
         rec_stack: &mut HashSet<Node>,
         path: &mut Vec<Node>,
+        debug: bool,
     ) -> Option<Vec<Node>> {
         let current_tile = (current.i, current.j);
 
@@ -365,7 +446,11 @@ impl Maze {
                     visited,
                     rec_stack,
                     path,
+                    debug,
                 ) {
+                    // if debug {
+                    //     println!("DFS recursion found cycle of length {}", cycle.len());
+                    // }
                     return Some(cycle);
                 }
             } else if rec_stack.contains(&neighbor) {
@@ -377,6 +462,9 @@ impl Maze {
                     .unwrap();
                 let mut cycle = path[cycle_start..].to_vec();
                 cycle.push(neighbor); // Close the cycle
+                // if debug {
+                //     println!("DFS found back-edge cycle of length {} ({cycle_start})", cycle.len());
+                // }
                 return Some(cycle);
             }
         }
@@ -422,7 +510,7 @@ mod tests {
         place_tile!(maze, vec![N5 | N6], 2, 2);
 
         maze.reduce_nets(0);
-        maze.remove_cycles();
+        maze.remove_cycles(false);
 
         let name = format!("test-cycle-1");
         let _ = maze.render(name.to_string(), SVG);
@@ -446,7 +534,7 @@ mod tests {
         place_tile!(maze, vec![N5 | N6], 2, 2);
 
         maze.reduce_nets(0);
-        maze.remove_cycles();
+        maze.remove_cycles(false);
 
         let name = format!("test-cycle-2");
         let _ = maze.render(name.to_string(), SVG);
@@ -514,7 +602,7 @@ mod tests {
         place_tile!(maze, vec![N2 | N4 | N6], 0, 0);
 
         // Don't call reduce_nets - we want to test cycle detection directly
-        maze.remove_cycles();
+        maze.remove_cycles(false);
 
         // No cycles should be detected - intra-tile connections are not cycles
         assert_eq!(maze.nets.len(), 1);
@@ -540,7 +628,7 @@ mod tests {
         let name = format!("test-cycle-3.1");
         let _ = maze.render(name.to_string(), SVG);
 
-        maze.remove_cycles();
+        maze.remove_cycles(false);
 
         let name = format!("test-cycle-3.2");
         let _ = maze.render(name.to_string(), SVG);

@@ -92,7 +92,15 @@ fn main() {
         println!("Maze creation took: {:?}", maze_creation_time);
     }
 
-
+    // Remove cycles if requested
+    if args.remove_cycles {
+        let cycles_start = Instant::now();
+        maze.remove_cycles(args.debug);
+        let cycles_time = cycles_start.elapsed();
+        if args.debug {
+            println!("Cycle removal took: {:?}", cycles_time);
+        }
+    }
 
     // Apply net reduction if requested
     if args.reduce > 0 {
@@ -104,15 +112,7 @@ fn main() {
         }
     }
 
-    // Remove cycles if requested
-    if args.remove_cycles {
-        let cycles_start = Instant::now();
-        maze.remove_cycles();
-        let cycles_time = cycles_start.elapsed();
-        if args.debug {
-            println!("Cycle removal took: {:?}", cycles_time);
-        }
-    }
+
 
     // Generate output filename
     let filename = if let Some(output) = args.output {
