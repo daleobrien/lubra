@@ -141,14 +141,65 @@ impl Maze {
     /// Build adjacency map for nodes in a network.
     /// Each node maps to its connected neighbors within the same network.
     fn build_adjacency_map(&self, nodes: &HashSet<Node>) -> HashMap<Node, Vec<Node>> {
+        // Build coordinate lookup map for O(1) node lookup
+        let coord_map: HashMap<(usize, usize, usize), Node> = nodes
+            .iter()
+            .map(|&node| ((node.i, node.j, node.node), node))
+            .collect();
+
         let mut adjacency: HashMap<Node, Vec<Node>> = HashMap::new();
 
+        // First pass: build adjacency with forward connections
         for &node in nodes.iter() {
-            let neighbors = self.get_connected_nodes(node, nodes);
+            let mut neighbors = Vec::new();
+
+            // 1. Intra-tile connections
+            if let Some(tile) = self.tiles.get(node.j, node.i) {
+                if tile.initialised {
+                    for net_bits in &tile.nodes {
+                        let node_mask = 1usize << node.node;
+                        if net_bits & node_mask != 0 {
+                            for other_node_idx in 0..6 {
+                                if other_node_idx != node.node {
+                                    let other_mask = 1usize << other_node_idx;
+                                    if net_bits & other_mask != 0 {
+                                        let other_node = Node::new(node.i, node.j, other_node_idx);
+                                        if nodes.contains(&other_node) {
+                                            neighbors.push(other_node);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2. Inter-tile connections (forward direction)
+            let mapping = NODE_TO_COORD[(node.i + (3 * (node.j % 2))) % 6];
+            let coord = mapping[node.node];
+            if let (Some(adj_i), Some(adj_j)) = (add(node.i, coord.0), add(node.j, coord.1)) {
+                if let Some(&adjacent_node) = coord_map.get(&(adj_i, adj_j, node.node)) {
+                    if nodes.contains(&adjacent_node) {
+                        neighbors.push(adjacent_node);
+                    }
+                }
+            }
+
             adjacency.insert(node, neighbors);
         }
 
-        adjacency
+        // Second pass: ensure symmetry by adding reverse edges
+        let mut symmetric_adjacency = adjacency.clone();
+        for (node, neighbors) in adjacency.iter() {
+            for &neighbor in neighbors {
+                symmetric_adjacency.entry(neighbor)
+                    .or_insert_with(Vec::new)
+                    .push(*node);
+            }
+        }
+
+        symmetric_adjacency
     }
 
     /// Get nodes that are connected to the given node within the network.
@@ -159,24 +210,23 @@ impl Maze {
     ///
     /// This handles bidirectional connections.
     fn get_connected_nodes(&self, node: Node, network: &HashSet<Node>) -> Vec<Node> {
-        // TODO: Is this the same as self.nets ?
+        let coord_map: HashMap<(usize, usize, usize), Node> = network
+            .iter()
+            .map(|&node| ((node.i, node.j, node.node), node))
+            .collect();
 
         let mut connected = Vec::new();
 
-        // 1. Intra-tile connections: nodes in the same tile and network
-        // Check the tile to see which nodes are connected within it
+        // 1. Intra-tile connections
         if let Some(tile) = self.tiles.get(node.j, node.i) {
             if tile.initialised {
-                // For each net in the tile, check if our node is part of it
                 for net_bits in &tile.nodes {
                     let node_mask = 1usize << node.node;
                     if net_bits & node_mask != 0 {
-                        // Our node is part of this net, find other nodes in same net
                         for other_node_idx in 0..6 {
                             if other_node_idx != node.node {
                                 let other_mask = 1usize << other_node_idx;
                                 if net_bits & other_mask != 0 {
-                                    // This node is also part of the same net
                                     let other_node = Node::new(node.i, node.j, other_node_idx);
                                     if network.contains(&other_node) {
                                         connected.push(other_node);
@@ -189,50 +239,37 @@ impl Maze {
             }
         }
 
-        // 2. Inter-tile connections: node -> adjacent tile's corresponding node
+        // 2. Inter-tile connections (forward direction)
         let mapping = NODE_TO_COORD[(node.i + (3 * (node.j % 2))) % 6];
         let coord = mapping[node.node];
-
-        let adj_i = add(node.i, coord.0);
-        let adj_j = add(node.j, coord.1);
-
-        match (adj_i, adj_j) {
-            (Some(i), Some(j)) => {
-                let adjacent_node = Node::new(i, j, node.node);
-                if network.contains(&adjacent_node) && !connected.contains(&adjacent_node) {
+        if let (Some(adj_i), Some(adj_j)) = (add(node.i, coord.0), add(node.j, coord.1)) {
+            if let Some(&adjacent_node) = coord_map.get(&(adj_i, adj_j, node.node)) {
+                if network.contains(&adjacent_node) {
                     connected.push(adjacent_node);
                 }
             }
-            _ => {}
         }
 
-        // 3. Reverse inter-tile connections: find nodes that connect to this node
-        for &other_node in network.iter() {
-            if other_node == node {
+        // 3. Reverse inter-tile connections (ensuring symmetry)
+        for (&(i, j, node_idx), &other_node) in coord_map.iter() {
+            if (i, j, node_idx) == (node.i, node.j, node.node) {
                 continue;
             }
 
-            // Skip nodes in same tile (already handled above)
-            if other_node.i == node.i && other_node.j == node.j {
+            // Skip nodes in same tile (already handled)
+            if i == node.i && j == node.j {
                 continue;
             }
 
             // Check if other_node connects to our node
-            let other_mapping = NODE_TO_COORD[(other_node.i + (3 * (other_node.j % 2))) % 6];
-            let other_coord = other_mapping[other_node.node];
-
-            let target_i = add(other_node.i, other_coord.0);
-            let target_j = add(other_node.j, other_coord.1);
-
-            match (target_i, target_j) {
-                (Some(i), Some(j)) => {
-                    if i == node.i && j == node.j && other_node.node == node.node {
-                        if !connected.contains(&other_node) {
-                            connected.push(other_node);
-                        }
+            let other_mapping = NODE_TO_COORD[(i + (3 * (j % 2))) % 6];
+            let other_coord = other_mapping[node_idx];
+            if let (Some(target_i), Some(target_j)) = (add(i, other_coord.0), add(j, other_coord.1)) {
+                if target_i == node.i && target_j == node.j && node_idx == node.node {
+                    if !connected.contains(&other_node) {
+                        connected.push(other_node);
                     }
                 }
-                _ => {}
             }
         }
 
@@ -394,8 +431,36 @@ impl Maze {
     /// This method iteratively detects cycles and removes nodes to break them.
     /// After each removal, it re-checks for new cycles. Once all cycles are
     /// broken, it splits disconnected networks into separate components.
+    /// Helper to remove a node from a network and update the corresponding tile
+    fn remove_node_from_network(&mut self, node: Node, net_idx: usize) {
+        // Remove the node from the network
+        if net_idx < self.nets.len() {
+            self.nets[net_idx].remove(&node);
+        }
+
+        // Update the tile
+        if let Some(tile) = self.tiles.get_mut(node.j, node.i) {
+            if tile.initialised {
+                let node_mask = 1usize << node.node;
+                // Find the subnet that contains this node and remove it
+                tile.nodes.iter_mut().for_each(|net_bits| {
+                    if *net_bits & node_mask != 0 {
+                        *net_bits &= !node_mask;
+                    }
+                });
+                // Add the node as its own separate subnet
+                tile.nodes.push(node_mask);
+            }
+        }
+    }
+
+
+
     pub fn remove_cycles(&mut self) {
-        // Precompute adjacency maps for all networks to avoid recomputation
+        let mut iteration = 0;
+        let max_iterations = 100; // Safety limit
+
+        // Precompute adjacency maps for all networks using optimized O(N) builder
         let mut network_adjacencies: Vec<HashMap<Node, Vec<Node>>> = Vec::new();
         for network in self.nets.iter() {
             if network.is_empty() {
@@ -405,10 +470,6 @@ impl Maze {
             }
         }
 
-        let mut iteration = 0;
-        let max_iterations = 100; // Safety limit
-
-        // Iteratively break cycles one at a time
         loop {
             iteration += 1;
             if iteration > max_iterations {
@@ -417,36 +478,36 @@ impl Maze {
             }
 
             let cycles = self.detect_cycles_with_adjacency(&network_adjacencies);
-
             if cycles.is_empty() {
                 break;
             }
 
-            // Break only the first cycle found
+            // Break only the first cycle found (simpler, more predictable)
             let cycle_info = &cycles[0];
-
-            // Strategy: Remove the last edge in the cycle
-            // (the edge that closes the cycle)
             if cycle_info.cycle_nodes.len() >= 2 {
+                // Remove the second-to-last node in the cycle (edge that closes the cycle)
                 let node_to_remove = cycle_info.cycle_nodes[cycle_info.cycle_nodes.len() - 2];
 
                 // Remove the node from the network
                 if cycle_info.net_index < self.nets.len() {
                     self.nets[cycle_info.net_index].remove(&node_to_remove);
-                    // Update the adjacency map for this network
-                    network_adjacencies[cycle_info.net_index] = self.build_adjacency_map(&self.nets[cycle_info.net_index]);
+
+                    // Update the adjacency map for this network incrementally
+                    let new_adjacency = self.build_adjacency_map(&self.nets[cycle_info.net_index]);
+                    network_adjacencies[cycle_info.net_index] = new_adjacency;
                 }
-                // Update the tile too
+
+                // Update the tile
                 if let Some(tile) = self.tiles.get_mut(node_to_remove.j, node_to_remove.i) {
                     if tile.initialised {
                         let node_mask = 1usize << node_to_remove.node;
-                        // Find the node that has the bit set and remove that bit
+                        // Find the subnet that contains this node and remove it
                         tile.nodes.iter_mut().for_each(|net_bits| {
                             if *net_bits & node_mask != 0 {
                                 *net_bits &= !node_mask;
                             }
                         });
-                        // Add the bit as a node
+                        // Add the node as its own separate subnet
                         tile.nodes.push(node_mask);
                     }
                 }
