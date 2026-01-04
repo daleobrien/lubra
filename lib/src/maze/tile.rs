@@ -2,7 +2,7 @@ use std::fmt;
 
 use rand_distr::num_traits::ToPrimitive;
 
-use common::bit_utils::{print_bits, print_nets, sort_upper_bits, to_6bit_binary};
+use common::bit_utils::{sort_upper_bits, to_6bit_binary};
 use common::consts::{IN, NL, WA};
 use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
@@ -114,11 +114,11 @@ impl Tile {
         let mut complex_net: ComplexNet = ComplexNet::new();
 
         if list_of_adj_and_nets.is_some() {
-            let x = list_of_adj_and_nets
-                .unwrap()
-                .iter()
-                .map(|&x| (*x)[0].2)
-                .collect::<Vec<_>>();
+            // let x = list_of_adj_and_nets
+            //     .unwrap()
+            //     .iter()
+            //     .map(|&x| (*x)[0].2)
+            //     .collect::<Vec<_>>();
             // if debug {
             //     println!(
             //         "find_best_path: {}  -> \"{}\" [{:?}]",
@@ -196,7 +196,7 @@ impl Tile {
         complex_net: &mut ComplexNet,
         adj_net: usize,
         node_number: usize,
-        debug: bool,
+        _debug: bool,
     ) {
         let coord = get_connected_coords_at_coords(coordinate, node_number);
 
