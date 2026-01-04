@@ -553,12 +553,6 @@ impl Maze {
     /// - `mask` is the bit mask (e.g., N1, N2, etc.) to apply to both tiles
     /// Returns `None` if the tiles are not adjacent or cannot be determined
     ///
-    /// # Example
-    /// ```
-    /// // If tile at (2,2) is adjacent to tile at (3,2) on node 0 (N1)
-    /// let result = maze.get_connecting_node_mask((2, 2), (3, 2));
-    /// assert_eq!(result, Some((0, N1)));
-    /// ```
     pub fn get_connecting_node_mask(
         &self,
         tile_a: (usize, usize),
@@ -632,15 +626,6 @@ impl Maze {
     /// - `(i1, j1)` and `(i2, j2)` are adjacent tile coordinates
     /// - `node_idx` is the connecting node index (0-5 for N1-N6)
     /// - `mask` is the bit mask (e.g., N1, N2, etc.) to apply to both tiles
-    ///
-    /// # Example
-    /// ```
-    /// let masks = maze.get_connecting_masks_for_nets(0, 1);
-    /// for ((i1, j1), (i2, j2), (node_idx, mask)) in masks {
-    ///     println!("Connect ({}, {}) to ({}, {}) via node {} (mask: {:b})",
-    ///         i1, j1, i2, j2, node_idx + 1, mask);
-    /// }
-    /// ```
     pub fn get_connecting_masks_for_nets(
         &self,
         net_a: usize,

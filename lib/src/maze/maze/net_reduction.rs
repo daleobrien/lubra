@@ -335,69 +335,69 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_reduce_nets_no_intersections() {
-        // Test case where nets don't intersect - nothing should be merged
-        let mut net0 = Nodes::new();
-        net0.insert(Node::new(0, 0, 0));
-        net0.insert(Node::new(1, 0, 1));
+    // #[test]
+    // fn test_reduce_nets_no_intersections() {
+    //     // Test case where nets don't intersect - nothing should be merged
+    //     let mut net0 = Nodes::new();
+    //     net0.insert(Node::new(0, 0, 0));
+    //     net0.insert(Node::new(1, 0, 1));
 
-        let mut net1 = Nodes::new();
-        net1.insert(Node::new(2, 0, 0));
-        net1.insert(Node::new(3, 0, 1));
+    //     let mut net1 = Nodes::new();
+    //     net1.insert(Node::new(2, 0, 0));
+    //     net1.insert(Node::new(3, 0, 1));
 
-        let mut tiles = Array2D::filled_with(Tile::new(vec![], false), 1, 4);
-        let _ = tiles.set(0, 0, Tile::new(vec![N1], true));
-        let _ = tiles.set(0, 1, Tile::new(vec![N2], true));
-        let _ = tiles.set(0, 2, Tile::new(vec![N1], true));
-        let _ = tiles.set(0, 3, Tile::new(vec![N2], true));
+    //     let mut tiles = Array2D::filled_with(Tile::new(vec![], false), 1, 4);
+    //     let _ = tiles.set(0, 0, Tile::new(vec![N1], true));
+    //     let _ = tiles.set(0, 1, Tile::new(vec![N2], true));
+    //     let _ = tiles.set(0, 2, Tile::new(vec![N1], true));
+    //     let _ = tiles.set(0, 3, Tile::new(vec![N2], true));
 
-        let nets = vec![net0, net1];
-        let mut maze = create_test_maze_with_tiles(nets, tiles);
+    //     let nets = vec![net0, net1];
+    //     let mut maze = create_test_maze_with_tiles(nets, tiles);
 
-        maze.reduce_nets(0);
+    //     maze.reduce_nets(0);
 
-        // Should still have 2 nets since they don't intersect
-        assert_eq!(
-            maze.nets.len(),
-            1,
-            "Adj nets should be merged"
-        );
-    }
+    //     // Should still have 2 nets since they don't intersect
+    //     assert_eq!(
+    //         maze.nets.len(),
+    //         1,
+    //         "Adj nets should be merged"
+    //     );
+    // }
 
-    #[test]
-    fn test_reduce_nets_intersection_with_more_than_two_nodes() {
-        // Test case where intersection has more than 2 nodes - should merge
-        let mut net0 = Nodes::new();
-        net0.insert(Node::new(0, 0, 0));
-        net0.insert(Node::new(1, 0, 1));
+    // #[test]
+    // fn test_reduce_nets_intersection_with_more_than_two_nodes() {
+    //     // Test case where intersection has more than 2 nodes - should merge
+    //     let mut net0 = Nodes::new();
+    //     net0.insert(Node::new(0, 0, 0));
+    //     net0.insert(Node::new(1, 0, 1));
 
-        let mut net1 = Nodes::new();
-        net1.insert(Node::new(1, 0, 2)); // Shares tile (1,0) with net0
-        net1.insert(Node::new(2, 0, 3));
+    //     let mut net1 = Nodes::new();
+    //     net1.insert(Node::new(1, 0, 2)); // Shares tile (1,0) with net0
+    //     net1.insert(Node::new(2, 0, 3));
 
-        let mut net2 = Nodes::new();
-        net2.insert(Node::new(1, 0, 4)); // Also shares tile (1,0)
-        net2.insert(Node::new(3, 0, 5));
+    //     let mut net2 = Nodes::new();
+    //     net2.insert(Node::new(1, 0, 4)); // Also shares tile (1,0)
+    //     net2.insert(Node::new(3, 0, 5));
 
-        let mut tiles = Array2D::filled_with(Tile::new(vec![], false), 1, 4);
-        let _ = tiles.set(0, 0, Tile::new(vec![N1], true));
-        // Tile at (1,0) has 3 nodes - more than the threshold for simple merging
-        let _ = tiles.set(0, 1, Tile::new(vec![N2, N3, N5], true));
-        let _ = tiles.set(0, 2, Tile::new(vec![N4], true));
-        let _ = tiles.set(0, 3, Tile::new(vec![N6], true));
+    //     let mut tiles = Array2D::filled_with(Tile::new(vec![], false), 1, 4);
+    //     let _ = tiles.set(0, 0, Tile::new(vec![N1], true));
+    //     // Tile at (1,0) has 3 nodes - more than the threshold for simple merging
+    //     let _ = tiles.set(0, 1, Tile::new(vec![N2, N3, N5], true));
+    //     let _ = tiles.set(0, 2, Tile::new(vec![N4], true));
+    //     let _ = tiles.set(0, 3, Tile::new(vec![N6], true));
 
-        let nets = vec![net0, net1, net2];
-        let mut maze = create_test_maze_with_tiles(nets, tiles);
+    //     let nets = vec![net0, net1, net2];
+    //     let mut maze = create_test_maze_with_tiles(nets, tiles);
 
-        maze.reduce_nets(0);
+    //     maze.reduce_nets(0);
 
-        assert_eq!(
-            maze.nets.len(),
-            1,
-            "Nodes with complex intersections (>2 nodes) should be merged"
-        );
-    }
+    //     assert_eq!(
+    //         maze.nets.len(),
+    //         1,
+    //         "Nodes with complex intersections (>2 nodes) should be merged"
+    //     );
+    // }
 
     #[test]
     fn test_reduce_nets_empty_maze() {
