@@ -9,6 +9,11 @@ use crate::maze::tile::Tile;
 /// These methods handle reducing the number of nets by merging them.
 impl Maze {
     pub fn reduce_nets(&mut self, lower_limit: usize) {
+
+        if self.nets.len() <= 1 {
+            return
+        }
+
         self.sort_nets_by_length();
         // remove_short_nets might be broken ... seem to create more disjoint nets!
         self.remove_short_nets(lower_limit);
