@@ -19,7 +19,6 @@ pub struct CycleInfo {
 /// Detects and handles cycles in the maze network using DFS.
 impl Maze {
 
-
     /// Normalize a cycle to a canonical form for deduplication.
     ///
     /// A cycle like [A, B, C, D] is the same as [B, C, D, A] or [D, C, B, A] (reversed).
@@ -73,70 +72,6 @@ impl Maze {
 
         normalized
     }
-
-    /// Detects all cycles in the network using depth-first search.
-    ///
-    /// Returns a vector of CycleInfo containing:
-    /// - The network index
-    /// - The nodes that form each cycle (in order)
-    ///
-    /// # Algorithm
-    /// For each network:
-    /// 1. Build an adjacency map showing which nodes connect to which
-    /// 2. Perform DFS from each unvisited node
-    /// 3. Detect back edges (edges to nodes in the current path)
-    /// 4. Extract the cycle when a back edge is found
-    /// 5. Deduplicate cycles by normalizing to canonical form
-    ///
-    /// Note: Nodes within the same tile (same i, j coordinates) are treated as
-    /// the same node for cycle detection, since intra-tile connections don't
-    /// form meaningful cycles.
-    pub fn detect_cycles(&self) -> Vec<CycleInfo> {
-        let mut all_cycles = Vec::new();
-        let mut seen_cycles: HashSet<Vec<Node>> = HashSet::new();
-
-        for (net_idx, nodes) in self.nets.iter().enumerate() {
-            // Build adjacency map for this network
-            let adjacency = self.build_adjacency_map(nodes);
-
-            // Track visited nodes globally and nodes in current DFS path
-            // Nodes in the same internal net on a tile are marked together as visited
-            let mut visited: HashSet<Node> = HashSet::new();
-            let mut rec_stack: HashSet<Node> = HashSet::new();
-            let mut path = Vec::new();
-
-            // Try starting DFS from each unvisited node
-            for &start_node in nodes.iter() {
-                if !visited.contains(&start_node) {
-                    if let Some(cycle) = self.dfs_detect_cycle(
-                        start_node,
-                        None,
-                        &adjacency,
-                        &mut visited,
-                        &mut rec_stack,
-                        &mut path,
-                    ) {
-                        // Normalize the cycle to check for duplicates
-                        let normalized = Self::normalize_cycle(&cycle);
-
-                        // Only add if we haven't seen this cycle before
-                        if !seen_cycles.contains(&normalized) {
-                            seen_cycles.insert(normalized);
-                            all_cycles.push(CycleInfo {
-                                net_index: net_idx,
-                                cycle_nodes: cycle,
-                            });
-                        }
-                        // Else: skip this duplicate cycle
-                    }
-                }
-            }
-        }
-
-        all_cycles
-    }
-
-
 
     /// Build adjacency map for nodes in a network.
     /// Each node maps to its connected neighbors within the same network.
@@ -202,192 +137,6 @@ impl Maze {
         symmetric_adjacency
     }
 
-    /// Get nodes that are connected to the given node within the network.
-    ///
-    /// For a hexagonal grid, connections can be:
-    /// 1. Intra-tile: nodes within the same tile that share the same net
-    /// 2. Inter-tile: nodes in adjacent tiles (matching node indices)
-    ///
-    /// This handles bidirectional connections.
-    fn get_connected_nodes(&self, node: Node, network: &HashSet<Node>) -> Vec<Node> {
-        let coord_map: HashMap<(usize, usize, usize), Node> = network
-            .iter()
-            .map(|&node| ((node.i, node.j, node.node), node))
-            .collect();
-
-        let mut connected = Vec::new();
-
-        // 1. Intra-tile connections
-        if let Some(tile) = self.tiles.get(node.j, node.i) {
-            if tile.initialised {
-                for net_bits in &tile.nodes {
-                    let node_mask = 1usize << node.node;
-                    if net_bits & node_mask != 0 {
-                        for other_node_idx in 0..6 {
-                            if other_node_idx != node.node {
-                                let other_mask = 1usize << other_node_idx;
-                                if net_bits & other_mask != 0 {
-                                    let other_node = Node::new(node.i, node.j, other_node_idx);
-                                    if network.contains(&other_node) {
-                                        connected.push(other_node);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // 2. Inter-tile connections (forward direction)
-        let mapping = NODE_TO_COORD[(node.i + (3 * (node.j % 2))) % 6];
-        let coord = mapping[node.node];
-        if let (Some(adj_i), Some(adj_j)) = (add(node.i, coord.0), add(node.j, coord.1)) {
-            if let Some(&adjacent_node) = coord_map.get(&(adj_i, adj_j, node.node)) {
-                if network.contains(&adjacent_node) {
-                    connected.push(adjacent_node);
-                }
-            }
-        }
-
-        // 3. Reverse inter-tile connections (ensuring symmetry)
-        for (&(i, j, node_idx), &other_node) in coord_map.iter() {
-            if (i, j, node_idx) == (node.i, node.j, node.node) {
-                continue;
-            }
-
-            // Skip nodes in same tile (already handled)
-            if i == node.i && j == node.j {
-                continue;
-            }
-
-            // Check if other_node connects to our node
-            let other_mapping = NODE_TO_COORD[(i + (3 * (j % 2))) % 6];
-            let other_coord = other_mapping[node_idx];
-            if let (Some(target_i), Some(target_j)) = (add(i, other_coord.0), add(j, other_coord.1)) {
-                if target_i == node.i && target_j == node.j && node_idx == node.node {
-                    if !connected.contains(&other_node) {
-                        connected.push(other_node);
-                    }
-                }
-            }
-        }
-
-        connected
-    }
-
-    /// DFS-based cycle detection. Returns Some(cycle) if a cycle is found.
-    ///
-    /// # Arguments
-    /// * `current` - Current node being visited (entry point to this tile)
-    /// * `parent_tile` - Parent tile position (to avoid detecting trivial back-edges)
-    /// * `adjacency` - Adjacency map of the graph
-    /// * `visited` - Set of all visited nodes (nodes in the same internal net are marked together)
-    /// * `rec_stack` - Set of nodes in current recursion stack (path)
-    /// * `path` - Current path being explored (as nodes for cycle reporting)
-    ///
-    /// # Returns
-    /// Some(Vec<Node>) containing the cycle if found, None otherwise
-    ///
-    /// Note: Nodes within the same tile that are connected (same internal net) are
-    /// considered the same node and visited together. However, separate nets on
-    /// the same tile are treated as different nodes.
-    fn dfs_detect_cycle(
-        &self,
-        current: Node,
-        parent_tile: Option<(usize, usize)>,
-        adjacency: &HashMap<Node, Vec<Node>>,
-        visited: &mut HashSet<Node>,
-        rec_stack: &mut HashSet<Node>,
-        path: &mut Vec<Node>,
-    ) -> Option<Vec<Node>> {
-        let current_tile = (current.i, current.j);
-
-        // Find all nodes on this tile that are reachable from the entry node
-        // via intra-tile connections (i.e., in the same net within this tile)
-        let mut reachable_on_tile: HashSet<Node> = HashSet::new();
-        let mut to_visit: Vec<Node> = vec![current];
-        while let Some(node) = to_visit.pop() {
-            if reachable_on_tile.contains(&node) {
-                continue;
-            }
-            reachable_on_tile.insert(node);
-
-            // Find intra-tile neighbors (same tile, connected via adjacency)
-            if let Some(neighbors) = adjacency.get(&node) {
-                for &neighbor in neighbors {
-                    if neighbor.i == current.i && neighbor.j == current.j {
-                        // Same tile - this is an intra-tile connection
-                        if !reachable_on_tile.contains(&neighbor) {
-                            to_visit.push(neighbor);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Mark all reachable nodes on this tile as visited and in rec_stack
-        for &node in &reachable_on_tile {
-            visited.insert(node);
-            rec_stack.insert(node);
-        }
-        path.push(current);
-
-        // Collect inter-tile neighbors from all reachable nodes on this tile
-        let mut inter_tile_neighbors: Vec<Node> = Vec::new();
-        for &node in &reachable_on_tile {
-            if let Some(neighbors) = adjacency.get(&node) {
-                for &neighbor in neighbors {
-                    let neighbor_tile = (neighbor.i, neighbor.j);
-                    // Only collect inter-tile neighbors (different tile)
-                    if neighbor_tile != current_tile {
-                        inter_tile_neighbors.push(neighbor);
-                    }
-                }
-            }
-        }
-
-        for neighbor in inter_tile_neighbors {
-            let neighbor_tile = (neighbor.i, neighbor.j);
-
-            // Skip the parent tile to avoid detecting trivial back-edges
-            if Some(neighbor_tile) == parent_tile {
-                continue;
-            }
-
-            if !visited.contains(&neighbor) {
-                // Recurse to unvisited neighbor
-                if let Some(cycle) = self.dfs_detect_cycle(
-                    neighbor,
-                    Some(current_tile),
-                    adjacency,
-                    visited,
-                    rec_stack,
-                    path,
-                ) {
-                    return Some(cycle);
-                }
-            } else if rec_stack.contains(&neighbor) {
-                // Found a back edge to a node in current path - this is a cycle!
-                // Find the position in path where this node (or a connected node on same tile) first appears
-                let cycle_start = path
-                    .iter()
-                    .position(|n| n.i == neighbor.i && n.j == neighbor.j)
-                    .unwrap();
-                let mut cycle = path[cycle_start..].to_vec();
-                cycle.push(neighbor); // Close the cycle
-                return Some(cycle);
-            }
-        }
-
-        // Backtrack - remove all reachable nodes from rec_stack
-        path.pop();
-        for &node in &reachable_on_tile {
-            rec_stack.remove(&node);
-        }
-        None
-    }
-
     /// Split a network into connected components.
     ///
     /// After removing nodes, a network might become disconnected.
@@ -425,36 +174,6 @@ impl Maze {
 
         components
     }
-
-    /// Remove cycles from the network by breaking cycle edges.
-    ///
-    /// This method iteratively detects cycles and removes nodes to break them.
-    /// After each removal, it re-checks for new cycles. Once all cycles are
-    /// broken, it splits disconnected networks into separate components.
-    /// Helper to remove a node from a network and update the corresponding tile
-    fn remove_node_from_network(&mut self, node: Node, net_idx: usize) {
-        // Remove the node from the network
-        if net_idx < self.nets.len() {
-            self.nets[net_idx].remove(&node);
-        }
-
-        // Update the tile
-        if let Some(tile) = self.tiles.get_mut(node.j, node.i) {
-            if tile.initialised {
-                let node_mask = 1usize << node.node;
-                // Find the subnet that contains this node and remove it
-                tile.nodes.iter_mut().for_each(|net_bits| {
-                    if *net_bits & node_mask != 0 {
-                        *net_bits &= !node_mask;
-                    }
-                });
-                // Add the node as its own separate subnet
-                tile.nodes.push(node_mask);
-            }
-        }
-    }
-
-
 
     pub fn remove_cycles(&mut self) {
         let mut iteration = 0;
@@ -795,17 +514,11 @@ mod tests {
         place_tile!(maze, vec![N2 | N4 | N6], 0, 0);
 
         // Don't call reduce_nets - we want to test cycle detection directly
-        let cycles = maze.detect_cycles();
-
-        println!("Detected {} cycle(s) in single-tile group", cycles.len());
+        maze.remove_cycles();
 
         // No cycles should be detected - intra-tile connections are not cycles
-        assert_eq!(
-            cycles.len(),
-            0,
-            "Expected 0 cycles for single-tile group, but found {}",
-            cycles.len()
-        );
+        assert_eq!(maze.nets.len(), 1);
+
     }
 
     #[test]
@@ -834,103 +547,4 @@ mod tests {
 
         assert_eq!(maze.nets.len(), 1);
     }
-
-    #[test]
-    fn test_dfs_detect_cycle_single_tile_no_cycle() {
-        // Test DFS cycle detection with nodes all on the same tile
-        // Since nodes on the same tile are considered the same node, this should NOT detect a cycle
-        let mut maze = Maze::new(2, 2, false, true, true, None);
-
-        // Create a single tile with nodes N2|N4|N6
-        // All on tile (0,0), so they're all considered the same node for cycle detection
-        place_tile!(maze, vec![N2 | N4 | N6], 0, 0);
-
-        // Build the network and adjacency map
-        let network = &maze.nets[0];
-        let adjacency = maze.build_adjacency_map(network);
-
-        println!("Network nodes: {:?}", network);
-        println!("Adjacency map:");
-        for (node, neighbors) in &adjacency {
-            println!(
-                "  Node({}, {}, {}) -> {:?}",
-                node.i, node.j, node.node, neighbors
-            );
-        }
-
-        // Run DFS cycle detection from the first node
-        let start_node = *network.iter().next().unwrap();
-        let mut visited = HashSet::new();
-        let mut rec_stack = HashSet::new();
-        let mut path = Vec::new();
-
-        let result = maze.dfs_detect_cycle(
-            start_node,
-            None,
-            &adjacency,
-            &mut visited,
-            &mut rec_stack,
-            &mut path,
-        );
-
-        println!("DFS result: {:?}", result);
-
-        // Should NOT detect a cycle since all nodes are on the same tile
-        assert!(
-            result.is_none(),
-            "Expected no cycle for single-tile connections"
-        );
-    }
-
-  #[test]
-  fn test_dfs_detect_cycle_single_tile_one_cycle() {
-    // Test DFS cycle detection with nodes all on the same tile
-    // Since nodes on the same tile are considered the same node, this should NOT detect a cycle
-    let mut maze = Maze::new(3, 3, false, true, true, None);
-
-    place_tile!(maze, vec![N5], 0, 0);
-    place_tile!(maze, vec![N5 | N4], 1, 0);
-    place_tile!(maze, vec![N5 | N4 | N6], 1, 1);
-    place_tile!(maze, vec![N5 | N6], 0, 1);
-    place_tile!(maze, vec![N5 | N6], 2, 1);
-    place_tile!(maze, vec![N5 | N6], 0, 2);
-    place_tile!(maze, vec![N5 | N6], 1, 2);
-    place_tile!(maze, vec![N5 | N6], 2, 2);
-
-    // Build the network and adjacency map
-    let network = &maze.nets[0];
-    let adjacency = maze.build_adjacency_map(network);
-
-    println!("Network nodes: {:?}", network);
-    println!("Adjacency map:");
-    for (node, neighbors) in &adjacency {
-      println!(
-        "  Node({}, {}, {}) -> {:?}",
-        node.i, node.j, node.node, neighbors
-      );
-    }
-
-    // Run DFS cycle detection from the first node
-    let start_node = *network.iter().next().unwrap();
-    let mut visited = HashSet::new();
-    let mut rec_stack = HashSet::new();
-    let mut path = Vec::new();
-
-    let result = maze.dfs_detect_cycle(
-      start_node,
-      None,
-      &adjacency,
-      &mut visited,
-      &mut rec_stack,
-      &mut path,
-    );
-
-    println!("DFS result: {:?}", result);
-
-    // Should NOT detect a cycle since all nodes are on the same tile
-    assert!(
-      result.is_some(),
-      "Expected no cycle for single-tile connections"
-    );
-  }
 }
