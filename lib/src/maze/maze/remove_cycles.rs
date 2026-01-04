@@ -247,46 +247,75 @@ impl Maze {
                 break;
             }
 
-            // Break only the first cycle found (simpler, more predictable)
-            let cycle_info = &cycles[0];
-            if cycle_info.cycle_nodes.len() >= 2 {
-                // Remove the second-to-last node in the cycle (edge that closes the cycle)
-                let node_to_remove = cycle_info.cycle_nodes[cycle_info.cycle_nodes.len() - 2];
+            // Break all cycles found in this iteration
+            let removal_start = Instant::now();
+            let mut cycles_removed = 0;
 
-                // Remove the node from the network
-                let removal_start = Instant::now();
-                if debug {
-                    println!("  Removing node {:?} from network {} (cycle length {})",
-                             node_to_remove, cycle_info.net_index, cycle_info.cycle_nodes.len());
+            // Collect unique nodes to remove per network to avoid duplicate removals
+            let mut nodes_to_remove_per_net: HashMap<usize, HashSet<Node>> = HashMap::new();
+
+            for cycle_info in &cycles {
+                if cycle_info.cycle_nodes.len() >= 2 {
+                    // Remove the second-to-last node in the cycle (edge that closes the cycle)
+                    let node_to_remove = cycle_info.cycle_nodes[cycle_info.cycle_nodes.len() - 2];
+
+                    nodes_to_remove_per_net
+                        .entry(cycle_info.net_index)
+                        .or_insert_with(HashSet::new)
+                        .insert(node_to_remove);
+
+                    cycles_removed += 1;
                 }
-                if cycle_info.net_index < self.nets.len() {
-                    self.nets[cycle_info.net_index].remove(&node_to_remove);
+            }
 
-                    // Update the adjacency map for this network incrementally
-                    if let Some(adjacency) = network_adjacencies.get_mut(cycle_info.net_index) {
-                        Self::remove_node_from_adjacency(adjacency, node_to_remove);
+            // Actually remove nodes from each network
+            for (net_index, nodes_to_remove) in nodes_to_remove_per_net {
+                if net_index < self.nets.len() {
+                    if debug {
+                        println!("  Removing {} nodes from network {}", nodes_to_remove.len(), net_index);
                     }
-                }
 
-                // Update the tile
-                if let Some(tile) = self.tiles.get_mut(node_to_remove.j, node_to_remove.i) {
-                    if tile.initialised {
-                        let node_mask = 1usize << node_to_remove.node;
-                        // Find the subnet that contains this node and remove it
-                        tile.nodes.iter_mut().for_each(|net_bits| {
-                            if *net_bits & node_mask != 0 {
-                                *net_bits &= !node_mask;
+                    // Remove nodes from network
+                    for node in &nodes_to_remove {
+                        self.nets[net_index].remove(node);
+                    }
+
+                    // Update adjacency maps for this network
+                    if let Some(adjacency) = network_adjacencies.get_mut(net_index) {
+                        for node in &nodes_to_remove {
+                            Self::remove_node_from_adjacency(adjacency, *node);
+                        }
+                    }
+
+                    // Update tiles for each removed node
+                    for node in &nodes_to_remove {
+                        if let Some(tile) = self.tiles.get_mut(node.j, node.i) {
+                            if tile.initialised {
+                                let node_mask = 1usize << node.node;
+                                // Find the subnet that contains this node and remove it
+                                tile.nodes.iter_mut().for_each(|net_bits| {
+                                    if *net_bits & node_mask != 0 {
+                                        *net_bits &= !node_mask;
+                                    }
+                                });
+                                // Add the node as its own separate subnet
+                                tile.nodes.push(node_mask);
                             }
-                        });
-                        // Add the node as its own separate subnet
-                        tile.nodes.push(node_mask);
+                        }
+                    }
+
+                    if debug {
+                        let current_size = self.nets[net_index].len();
+                        println!("  Network {} now has {} nodes", net_index, current_size);
                     }
                 }
-                if debug {
-                    let current_size = self.nets[cycle_info.net_index].len();
-                    println!("  Network {} now has {} nodes", cycle_info.net_index, current_size);
+            }
+
+            if debug {
+                if cycles_removed > 0 {
+                    println!("  Removed {} cycles in this iteration", cycles_removed);
                     if iteration == 1 {
-                        println!("First cycle removal took: {:?}", removal_start.elapsed());
+                        println!("First cycle removal batch took: {:?}", removal_start.elapsed());
                     }
                 }
             }
@@ -539,6 +568,7 @@ mod tests {
         let name = format!("test-cycle-2");
         let _ = maze.render(name.to_string(), SVG);
 
+        // Note the nets can be correct, bit the SVG isn't?
         assert_eq!(maze.nets.len(), 1);
     }
 
@@ -624,15 +654,45 @@ mod tests {
         place_tile!(maze, vec![N5 | N6], 2, 2);
 
         maze.reduce_nets(0);
-
-        let name = format!("test-cycle-3.1");
-        let _ = maze.render(name.to_string(), SVG);
-
         maze.remove_cycles(false);
-
-        let name = format!("test-cycle-3.2");
-        let _ = maze.render(name.to_string(), SVG);
 
         assert_eq!(maze.nets.len(), 1);
     }
+
+#[test]
+fn test_remove_cycles_two_cycles_same_net() {
+    let mut maze = Maze::new(5, 5, false, true, true, None);
+
+    // Create two cycles within the same network
+    // First cycle
+    place_tile!(maze, vec![N5], 0, 0);
+    place_tile!(maze, vec![N5 | N4], 1, 0);
+    place_tile!(maze, vec![N4 | N6 | N5], 1, 1);
+    place_tile!(maze, vec![N5 | N6], 0, 1);
+    place_tile!(maze, vec![N5 | N6], 2, 1);
+    place_tile!(maze, vec![N5 | N6], 0, 2);
+    place_tile!(maze, vec![N5 | N6], 1, 2);
+    place_tile!(maze, vec![N5 | N6| N4], 2, 2);
+
+    // Second cycle
+    place_tile!(maze, vec![N6| N4], 3, 2);
+    place_tile!(maze, vec![N6| N5| N4], 3, 3);
+    place_tile!(maze, vec![N5| N4], 2, 3);
+    place_tile!(maze, vec![N5| N4], 4, 3);
+    place_tile!(maze, vec![N5| N4], 2, 4);
+    place_tile!(maze, vec![N5| N4], 3, 4);
+    place_tile!(maze, vec![N5| N4], 4, 4);
+
+    let name = format!("test-two-cycles-1");
+    let _ = maze.render(name.to_string(), SVG);
+
+    maze.reduce_nets(0);
+    maze.remove_cycles(false);
+
+    let name = format!("test-two-cycles-2");
+    let _ = maze.render(name.to_string(), SVG);
+
+    // After cycle removal, we should have at least one network
+    assert!(maze.nets.len() >= 1);
+   }
 }
