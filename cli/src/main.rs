@@ -92,6 +92,16 @@ fn main() {
         println!("Maze creation took: {:?}", maze_creation_time);
     }
 
+    // Apply net reduction if requested
+if args.reduce > 0 {
+    let reduce_start = Instant::now();
+    maze.reduce_nets(args.reduce);
+    let reduce_time = reduce_start.elapsed();
+    if args.debug {
+        println!("Net reduction took: {:?}", reduce_time);
+    }
+}
+
     // Remove cycles if requested
     if args.remove_cycles {
         let cycles_start = Instant::now();
@@ -102,15 +112,8 @@ fn main() {
         }
     }
 
-    // Apply net reduction if requested
-    if args.reduce > 0 {
-        let reduce_start = Instant::now();
-        maze.reduce_nets(args.reduce);
-        let reduce_time = reduce_start.elapsed();
-        if args.debug {
-            println!("Net reduction took: {:?}", reduce_time);
-        }
-    }
+
+
 
 
 
