@@ -127,15 +127,15 @@ fn main() {
     // Render the maze
     let file_type: FileType = args.format.clone().into();
 
-    if args.debug {
-        println!("Rendering maze {}x{} with seed {:?}", args.width, args.height, args.seed);
-        println!("Output: {}.{}", filename, match args.format {
-            Format::Svg => "svg",
-            Format::Png => "png",
-        });
-        println!("Settings: boundaries={}, show_node_numbers={}, randomise={}, background={}",
-                 args.boundaries, args.show_node_numbers, args.randomise, args.background);
-    }
+    // if args.debug {
+    //     println!("Rendering maze {}x{} with seed {:?}", args.width, args.height, args.seed);
+    //     println!("Output: {}.{}", filename, match args.format {
+    //         Format::Svg => "svg",
+    //         Format::Png => "png",
+    //     });
+    //     println!("Settings: boundaries={}, show_node_numbers={}, randomise={}, background={}",
+    //              args.boundaries, args.show_node_numbers, args.randomise, args.background);
+    // }
 
     let render_start = Instant::now();
     let result = maze.render_with_options(filename, file_type, args.background, args.debug);
