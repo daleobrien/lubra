@@ -62,34 +62,21 @@ impl Tile {
 
         let mut render_nets = CataloguedNet::new();
 
-        if debug {
-            println!("NETS: {coordinate} -> {:?}", print_nets(&self.nodes));
-        }
+        // if debug {
+        //     println!("NETS: {coordinate} -> {:?}", print_nets(&self.nodes));
+        // }
         for net in self.nodes {
             // Now we need to look for related tiles ...
 
-            if debug {
-                println!("\nNET_: {coordinate} -> {:?}", print_bits(net));
-            }
+            // if debug {
+            //     println!("\nNET_: {coordinate} -> {:?}", print_bits(net));
+            // }
             // This needs to return a net to use, and a list of adjacent nets to remove.
             let complex_net = Self::find_best_path(coordinate, &surrounding_tiles, &net, debug);
 
             if complex_net.is_some() {
-                if debug {
-                    println!(
-                        "CMPX: {:?} :: {:?}",
-                        print_bits(net),
-                        surrounding_tiles
-                            .iter()
-                            .map(|t| print_bits(t.unwrap().bits))
-                            .collect::<Vec<_>>()
-                    );
-                }
                 render_nets.add(complex_net.unwrap());
             } else {
-                if debug {
-                    println!("SIM : {:?} ::", print_bits(net));
-                }
                 // Simple path
                 let path = MAP_PATHS.get(&net);
 
@@ -98,14 +85,6 @@ impl Tile {
                     render_nets
                         .visible
                         .push(CoordinateAndNet::new(coordinate, net));
-                    // } else {
-                    //     if debug {
-                    //         println!(
-                    //             "No path for bits: {} @ {:?}",
-                    //             to_6bit_binary(&net, true),
-                    //             coordinate
-                    //         );
-                    //     }
                 }
             }
         }
@@ -140,14 +119,14 @@ impl Tile {
                 .iter()
                 .map(|&x| (*x)[0].2)
                 .collect::<Vec<_>>();
-            if debug {
-                println!(
-                    "find_best_path: {}  -> \"{}\" [{:?}]",
-                    coordinate,
-                    print_bits(*net),
-                    x.iter().map(|n| print_bits(*n)).collect::<Vec<String>>()
-                );
-            }
+            // if debug {
+            //     println!(
+            //         "find_best_path: {}  -> \"{}\" [{:?}]",
+            //         coordinate,
+            //         print_bits(*net),
+            //         x.iter().map(|n| print_bits(*n)).collect::<Vec<String>>()
+            //     );
+            // }
             for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
                 //
                 if Self::all_match(surrounding_tiles, adj_and_nets, debug) {
@@ -165,13 +144,13 @@ impl Tile {
                     let bits = new_bits;
 
                     if MAP_PATHS.contains_key(&bits) {
-                        if debug {
-                            println!(
-                                "__D : {c}  -> \"{b}\"",
-                                c = coordinate,
-                                b = to_6bit_binary(&bits, false),
-                            );
-                        }
+                        // if debug {
+                        //     println!(
+                        //         "__D : {c}  -> \"{b}\"",
+                        //         c = coordinate,
+                        //         b = to_6bit_binary(&bits, false),
+                        //     );
+                        // }
 
                         // Adjacent tiles masks
                         let adj_nets_1 = (bits >> 6) & NL;
@@ -185,14 +164,14 @@ impl Tile {
                                     ((net & NL) & adj_net).trailing_zeros().to_usize().unwrap();
 
                                 // -------
-                                if debug {
-                                    println!(
-                                        "ADJ : {c}  -> {b} {adj_nets_1}",
-                                        c = coordinate,
-                                        b = print_bits(adj_net),
-                                        adj_nets_1 = print_bits(adj_nets_1),
-                                    );
-                                }
+                                // if debug {
+                                //     println!(
+                                //         "ADJ : {c}  -> {b} {adj_nets_1}",
+                                //         c = coordinate,
+                                //         b = print_bits(adj_net),
+                                //         adj_nets_1 = print_bits(adj_nets_1),
+                                //     );
+                                // }
                                 Self::add_node_to_hidden(
                                     coordinate,
                                     &mut complex_net,
@@ -225,15 +204,15 @@ impl Tile {
             let index_as_mask = 1 << node_number;
             if index_as_mask.to_usize().unwrap() & adj_net != 0 {
                 // Also, is node_number in adj_net
-                if debug {
-                    println!(
-                        "ADD : {}  -> node # {n} {b} {x}",
-                        coord.unwrap(),
-                        n = node_number + 1,
-                        b = print_bits(adj_net),
-                        x = adj_net & index_as_mask != 0
-                    );
-                }
+                // if debug {
+                //     println!(
+                //         "ADD : {}  -> node # {n} {b} {x}",
+                //         coord.unwrap(),
+                //         n = node_number + 1,
+                //         b = print_bits(adj_net),
+                //         x = adj_net & index_as_mask != 0
+                //     );
+                // }
                 complex_net
                     .hidden_neighbours
                     .insert(CoordinateAndNet::new(coord.unwrap(), adj_net));

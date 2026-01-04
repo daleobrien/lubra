@@ -1,8 +1,7 @@
-use common::bit_utils::{print_nets, to_6bit_binary, to_bits};
+use common::bit_utils::{to_6bit_binary};
 
 use crate::maze::maze::Maze;
-use crate::maze::net::{Node, format_nodes};
-use common::bit_utils::print_bits;
+use crate::maze::net::{Node};
 use crate::maze::random::select_random_element;
 use crate::maze::tile::Tile;
 

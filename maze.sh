@@ -10,4 +10,4 @@ cd ${FOLDER}/cli
 cargo build # --release
 
 echo "Running ..."
-time ./target.tmp/debug/lubra --seed 3 -B -N
+time ./target.tmp/debug/lubra --seed 3 -W 40 -H 30 -B -N --debug

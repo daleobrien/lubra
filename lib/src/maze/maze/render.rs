@@ -9,6 +9,7 @@ use common::types::coordinate::{CataloguedNet, Coordinate, CoordinateAndNet};
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
 use std::error::Error;
 use std::fs;
+use std::time::Instant;
 use usvg;
 use usvg::fontdb;
 
@@ -26,9 +27,7 @@ impl Maze {
         background: bool,
         debug: bool,
     ) -> Result<(), Box<dyn Error>> {
-        //let start = Instant::now();
-        //#[cfg(debug_assertions)]
-        //self.print_out_networks();
+        let start = Instant::now();
 
         let margin = 5.0;
         let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;
@@ -58,8 +57,10 @@ impl Maze {
             }
         }
 
-        // println!("render took (1) {:?}", start.elapsed());
-        // let start = Instant::now();
+        if debug {
+            println!("render took (1) {:?}", start.elapsed());
+        }
+        let start = Instant::now();
 
         for coordinate_and_net in all_catorised_nets.visible.iter() {
             // We don't want to draw the hidden nets
@@ -96,12 +97,13 @@ impl Maze {
             add_node_numbers(&mut svg, self.number_of_columns, self.number_of_rows);
         }
 
-        //println!("render took (2) {:?}", start.elapsed());
-        //let start = Instant::now();
+        if debug {
+            println!("render took (2) {:?}", start.elapsed());
+        }
 
         match file_type {
-            SVG => return self.save_as_svg(svg.to_string(background), file_name),
-            PNG => return self.save_as_png(svg.to_string(background).as_str(), file_name),
+            SVG => return self.save_as_svg(svg.to_string(background), file_name, debug),
+            PNG => return self.save_as_png(svg.to_string(background).as_str(), file_name, debug),
         }
     }
 
@@ -109,8 +111,15 @@ impl Maze {
         &mut self,
         content: String,
         file_name: String,
+        debug: bool,
     ) -> Result<(), Box<dyn Error>> {
-        let _ = fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
+        if debug {
+            let start = Instant::now();
+            let _ = fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
+            println!("SVG file write took: {:?}", start.elapsed());
+        } else {
+            let _ = fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
+        }
         return Ok(());
     }
 
@@ -118,24 +127,40 @@ impl Maze {
         &mut self,
         svg_content: &str,
         file_name: String,
+        debug: bool,
     ) -> Result<(), Box<dyn Error>> {
         let input = format!("{}.png", file_name);
         let mut fontdb = fontdb::Database::new();
         fontdb.load_system_fonts();
+
+        let parse_start = Instant::now();
         let tree = usvg::Tree::from_str(svg_content, &usvg::Options::default(), &fontdb).unwrap();
+        if debug {
+            println!("SVG parsing took: {:?}", parse_start.elapsed());
+        }
 
         let zoom = 1f32;
         let pixmap_size = tree.size().to_int_size().scale_by(zoom).unwrap();
-        println!("Size w:{} h:{}", pixmap_size.width(), pixmap_size.height());
+        if debug {
+            println!("Size w:{} h:{}", pixmap_size.width(), pixmap_size.height());
+        }
 
         let mut pixmap = tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height()).unwrap();
 
         let render_ts = tiny_skia::Transform::from_scale(zoom, zoom);
 
         // This is very slow when running on debug builds !!!
+        let render_start = Instant::now();
         resvg::render(&tree, render_ts, &mut pixmap.as_mut());
+        if debug {
+            println!("Rendering to PNG took: {:?}", render_start.elapsed());
+        }
 
+        let write_start = Instant::now();
         pixmap.save_png(&input).unwrap();
+        if debug {
+            println!("PNG file write took: {:?}", write_start.elapsed());
+        }
 
         Ok(())
     }

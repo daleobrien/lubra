@@ -1,5 +1,6 @@
 use clap::Parser;
 use lib::maze::maze::{FileType, Maze};
+use std::time::Instant;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -70,12 +71,14 @@ impl From<Format> for FileType {
 
 fn main() {
     let args = Args::parse();
+    let total_start = Instant::now();
 
     // Set up debug output if requested
     if args.debug {
         println!("Debug mode enabled");
     }
 
+    let maze_start = Instant::now();
     let mut maze = Maze::new(
         args.width,
         args.height,
@@ -84,15 +87,31 @@ fn main() {
         args.show_node_numbers,
         args.seed,
     );
+    let maze_creation_time = maze_start.elapsed();
+    if args.debug {
+        println!("Maze creation took: {:?}", maze_creation_time);
+    }
+
+
 
     // Apply net reduction if requested
     if args.reduce > 0 {
+        let reduce_start = Instant::now();
         maze.reduce_nets(args.reduce);
+        let reduce_time = reduce_start.elapsed();
+        if args.debug {
+            println!("Net reduction took: {:?}", reduce_time);
+        }
     }
 
     // Remove cycles if requested
     if args.remove_cycles {
+        let cycles_start = Instant::now();
         maze.remove_cycles();
+        let cycles_time = cycles_start.elapsed();
+        if args.debug {
+            println!("Cycle removal took: {:?}", cycles_time);
+        }
     }
 
     // Generate output filename
@@ -118,14 +137,28 @@ fn main() {
                  args.boundaries, args.show_node_numbers, args.randomise, args.background);
     }
 
-    match maze.render_with_options(filename, file_type, args.background, args.debug) {
+    let render_start = Instant::now();
+    let result = maze.render_with_options(filename, file_type, args.background, args.debug);
+    let render_time = render_start.elapsed();
+    let total_time = total_start.elapsed();
+
+    match result {
         Ok(_) => {
+            if args.debug {
+                println!("Rendering took: {:?}", render_time);
+
+            }
+
+            println!("Total execution time: {:?}", total_time);
             if args.debug {
                 println!("Maze rendered successfully");
             }
         }
         Err(e) => {
             eprintln!("Error rendering maze: {}", e);
+            if args.debug {
+                println!("Total execution time before error: {:?}", total_time);
+            }
             std::process::exit(1);
         }
     }
