@@ -87,7 +87,11 @@ impl Maze {
         let mut adjacency: HashMap<Node, Vec<Node>> = HashMap::new();
 
         // First pass: build adjacency with forward connections
-        for &node in nodes.iter() {
+        // Sort nodes for deterministic iteration order
+        let mut sorted_nodes: Vec<&Node> = nodes.iter().collect();
+        sorted_nodes.sort_by_key(|n| (n.i, n.j, n.node));
+
+        for &node in sorted_nodes {
             let mut neighbors = Vec::new();
 
             // 1. Intra-tile connections
@@ -123,6 +127,8 @@ impl Maze {
                 }
             }
 
+            // Sort neighbors for deterministic order
+            neighbors.sort_by_key(|n| (n.i, n.j, n.node));
             adjacency.insert(node, neighbors);
         }
 
@@ -134,6 +140,11 @@ impl Maze {
                     .or_insert_with(Vec::new)
                     .push(*node);
             }
+        }
+
+        // Sort all neighbor lists for deterministic order
+        for neighbors in symmetric_adjacency.values_mut() {
+            neighbors.sort_by_key(|n| (n.i, n.j, n.node));
         }
 
         if debug {
@@ -164,7 +175,11 @@ impl Maze {
         let mut visited = HashSet::new();
         let adjacency = self.build_adjacency_map(nodes, debug);
 
-        for &start_node in nodes.iter() {
+        // Sort nodes for deterministic iteration order
+        let mut sorted_nodes: Vec<&Node> = nodes.iter().collect();
+        sorted_nodes.sort_by_key(|n| (n.i, n.j, n.node));
+
+        for &start_node in sorted_nodes {
             if visited.contains(&start_node) {
                 continue;
             }
@@ -233,7 +248,7 @@ impl Maze {
             }
 
             let cycle_start = Instant::now();
-            let cycles = self.detect_cycles_with_adjacency(&network_adjacencies, debug);
+            let mut cycles = self.detect_cycles_with_adjacency(&network_adjacencies, debug);
             if debug {
                 if iteration == 1 {
                     println!("First cycle detection took: {:?}", cycle_start.elapsed());
@@ -246,6 +261,24 @@ impl Maze {
                 }
                 break;
             }
+
+            // Sort cycles for deterministic processing
+            cycles.sort_by(|a, b| {
+                // First by network index
+                a.net_index.cmp(&b.net_index)
+                    // Then by cycle length
+                    .then(a.cycle_nodes.len().cmp(&b.cycle_nodes.len()))
+                    // Then by the nodes themselves for tie-breaking
+                    .then_with(|| {
+                        for (node_a, node_b) in a.cycle_nodes.iter().zip(b.cycle_nodes.iter()) {
+                            let cmp = (node_a.i, node_a.j, node_a.node).cmp(&(node_b.i, node_b.j, node_b.node));
+                            if cmp != std::cmp::Ordering::Equal {
+                                return cmp;
+                            }
+                        }
+                        a.cycle_nodes.len().cmp(&b.cycle_nodes.len())
+                    })
+            });
 
             // Break all cycles found in this iteration
             let removal_start = Instant::now();
@@ -265,30 +298,43 @@ impl Maze {
                         .insert(node_to_remove);
 
                     cycles_removed += 1;
+
+                    // Log which cycle and node we're removing
+                    println!("[Cycle removal] Network {}: removing node {:?} from cycle of length {}",
+                             cycle_info.net_index, node_to_remove, cycle_info.cycle_nodes.len());
+                    println!("[Cycle removal] Full cycle: {:?}", cycle_info.cycle_nodes);
                 }
             }
 
             // Actually remove nodes from each network
-            for (net_index, nodes_to_remove) in nodes_to_remove_per_net {
+            // Sort by network index for deterministic processing
+            let mut sorted_entries: Vec<(usize, HashSet<Node>)> = nodes_to_remove_per_net.into_iter().collect();
+            sorted_entries.sort_by_key(|(net_idx, _)| *net_idx);
+
+            for (net_index, nodes_to_remove) in sorted_entries {
                 if net_index < self.nets.len() {
                     if debug {
                         println!("  Removing {} nodes from network {}", nodes_to_remove.len(), net_index);
                     }
+                    println!("X[Cycle removal] Network {}: removing {} nodes: {:?}",
+                             net_index, nodes_to_remove.len(), nodes_to_remove);
 
                     // Remove nodes from network
-                    for node in &nodes_to_remove {
+                    let mut sorted_nodes: Vec<&Node> = nodes_to_remove.iter().collect();
+                    sorted_nodes.sort_by_key(|n| (n.i, n.j, n.node));
+                    for node in &sorted_nodes {
                         self.nets[net_index].remove(node);
                     }
 
                     // Update adjacency maps for this network
                     if let Some(adjacency) = network_adjacencies.get_mut(net_index) {
-                        for node in &nodes_to_remove {
-                            Self::remove_node_from_adjacency(adjacency, *node);
+                        for node in &sorted_nodes {
+                            Self::remove_node_from_adjacency(adjacency, **node);
                         }
                     }
 
                     // Update tiles for each removed node
-                    for node in &nodes_to_remove {
+                    for node in &sorted_nodes {
                         if let Some(tile) = self.tiles.get_mut(node.j, node.i) {
                             if tile.initialised {
                                 let node_mask = 1usize << node.node;
@@ -361,7 +407,11 @@ impl Maze {
             let mut network_cycle_count = 0;
 
             // Try starting DFS from each unvisited node
-            for &start_node in nodes.iter() {
+            // Sort nodes for deterministic iteration order
+            let mut sorted_nodes: Vec<&Node> = nodes.iter().collect();
+            sorted_nodes.sort_by_key(|n| (n.i, n.j, n.node));
+
+            for &start_node in sorted_nodes {
                 if !visited.contains(&start_node) {
                     if let Some(cycle) = self.dfs_detect_cycle_with_adjacency(
                         start_node,
@@ -377,12 +427,18 @@ impl Maze {
 
                         // Only add if we haven't seen this cycle before
                         if !seen_cycles.contains(&normalized) {
-                            seen_cycles.insert(normalized);
+                            seen_cycles.insert(normalized.clone());
                             all_cycles.push(CycleInfo {
                                 net_index: net_idx,
-                                cycle_nodes: cycle,
+                                cycle_nodes: cycle.clone(),
                             });
                             network_cycle_count += 1;
+                            // Log cycle even when debug=false to understand non-determinism
+                            println!("[Cycle detection] Network {}: found cycle of length {}: {:?}",
+                                     net_idx, cycle.len(), normalized);
+                        } else {
+                            println!("[Cycle detection] Network {}: skipped duplicate cycle: {:?}",
+                                     net_idx, normalized);
                         }
                         // Else: skip this duplicate cycle
                     }
@@ -397,6 +453,8 @@ impl Maze {
         if debug {
             println!("Cycle detection function took: {:?}", start.elapsed());
             println!("Total cycles found: {}", all_cycles.len());
+        } else {
+            println!("[Cycle detection] Total cycles found: {}", all_cycles.len());
         }
         all_cycles
     }
@@ -438,7 +496,10 @@ impl Maze {
         }
 
         // Mark all reachable nodes on this tile as visited and in rec_stack
-        for &node in &reachable_on_tile {
+        // Sort reachable nodes for deterministic iteration
+        let mut reachable_sorted: Vec<&Node> = reachable_on_tile.iter().collect();
+        reachable_sorted.sort_by_key(|n| (n.i, n.j, n.node));
+        for &node in reachable_sorted {
             visited.insert(node);
             rec_stack.insert(node);
         }
@@ -446,7 +507,10 @@ impl Maze {
 
         // Collect inter-tile neighbors from all reachable nodes on this tile
         let mut inter_tile_neighbors: Vec<Node> = Vec::new();
-        for &node in &reachable_on_tile {
+        // Sort reachable nodes for deterministic iteration
+        let mut reachable_sorted: Vec<&Node> = reachable_on_tile.iter().collect();
+        reachable_sorted.sort_by_key(|n| (n.i, n.j, n.node));
+        for &node in reachable_sorted {
             if let Some(neighbors) = adjacency.get(&node) {
                 for &neighbor in neighbors {
                     let neighbor_tile = (neighbor.i, neighbor.j);
@@ -500,7 +564,10 @@ impl Maze {
 
         // Backtrack - remove all reachable nodes from rec_stack
         path.pop();
-        for &node in &reachable_on_tile {
+        // Sort reachable nodes for deterministic iteration
+        let mut reachable_sorted: Vec<&Node> = reachable_on_tile.iter().collect();
+        reachable_sorted.sort_by_key(|n| (n.i, n.j, n.node));
+        for &node in reachable_sorted {
             rec_stack.remove(&node);
         }
         None
@@ -538,12 +605,18 @@ mod tests {
         place_tile!(maze, vec![N5 | N6], 1, 2);
         place_tile!(maze, vec![N5 | N6], 2, 2);
 
+        println!("Before reduce_nets: {} networks", maze.nets.len());
         maze.reduce_nets(0);
+        println!("After reduce_nets: {} networks", maze.nets.len());
         maze.remove_cycles(false);
 
         let name = format!("test-cycle-1");
         let _ = maze.render(name.to_string(), SVG);
 
+        println!("Final nets: {} networks", maze.nets.len());
+        for (i, net) in maze.nets.iter().enumerate() {
+            println!("  Network {}: {} nodes", i, net.len());
+        }
         assert_eq!(maze.nets.len(), 1);
     }
 
@@ -695,4 +768,98 @@ fn test_remove_cycles_two_cycles_same_net() {
     // After cycle removal, we should have at least one network
     assert!(maze.nets.len() >= 1);
    }
+
+#[test]
+fn test_remove_cycles_two_cycles_same_net_overlapping() {
+    let mut maze = Maze::new(5, 5, false, true, true, None);
+
+    // First cycle (2x2)
+    place_tile!(maze, vec![N5], 0, 0);
+    place_tile!(maze, vec![N5 | N4], 1, 0);
+    place_tile!(maze, vec![N4 | N6 | N5], 1, 1);
+    place_tile!(maze, vec![N5 | N6], 0, 1);
+
+    // Second cycle overlapping at tile (1,1)
+    place_tile!(maze, vec![N5 | N6], 2, 1);
+    place_tile!(maze, vec![N6 | N5], 2, 2);
+    place_tile!(maze, vec![N5 | N4 | N6], 1, 2);
+
+    // Additional tiles to ensure connectivity
+    place_tile!(maze, vec![N5 | N6], 0, 2);
+    place_tile!(maze, vec![N4| N5 | N6], 1, 3);
+    place_tile!(maze, vec![N5 | N6], 0, 3);
+    place_tile!(maze, vec![N5 | N6], 2, 3);
+    place_tile!(maze, vec![N5 | N6], 0, 4);
+    place_tile!(maze, vec![N5 | N6], 1, 4);
+    place_tile!(maze, vec![N5 | N6], 2, 4);
+
+    let name = format!("test-two-cycles-overlapping-1");
+    let _ = maze.render(name.to_string(), SVG);
+
+    maze.reduce_nets(0);
+    maze.remove_cycles(false);
+
+    let name = format!("test-two-cycles-overlapping-2");
+    let _ = maze.render(name.to_string(), SVG);
+
+    // After cycle removal, we should have at least one network
+    assert!(maze.nets.len() == 1);
+}
+#[test]
+fn test_remove_cycles_five_cycles() {
+    let mut maze = Maze::new(7, 5, false, true, true, None);
+
+    // First cycle (2x2)
+    place_tile!(maze, vec![N5], 0, 0);
+    place_tile!(maze, vec![N5 | N4], 1, 0);
+    place_tile!(maze, vec![N4 | N6 | N5], 1, 1);
+    place_tile!(maze, vec![N5 | N6], 0, 1);
+
+    // Bottom right
+    place_tile!(maze, vec![N4 | N5 | N6], 4, 1);
+    place_tile!(maze, vec![N4 | N6], 5, 1);
+    place_tile!(maze, vec![N4 | N6], 6, 1);
+    place_tile!(maze, vec![N4 | N6], 4, 2);
+    place_tile!(maze, vec![N4 |N5 | N6], 5, 2);
+    place_tile!(maze, vec![N4 | N6], 6, 2);
+
+    // Top right
+    place_tile!(maze, vec![N4 | N6], 4, 3);
+    place_tile!(maze, vec![N4 |N5 | N6], 5, 3);
+    place_tile!(maze, vec![N4 | N6], 6, 3);
+    place_tile!(maze, vec![N4 | N5 | N6], 4, 4);
+    place_tile!(maze, vec![N4 | N6], 5, 4);
+    place_tile!(maze, vec![N4 | N6], 6, 4);
+
+    // Join left and right loops
+    place_tile!(maze, vec![N4 | N5], 3, 4);
+    place_tile!(maze, vec![N4 | N5], 3, 1);
+
+    // Second cycle overlapping at tile (1,1)
+    place_tile!(maze, vec![N5 | N4| N6], 2, 1);
+    place_tile!(maze, vec![N6 | N5], 2, 2);
+    place_tile!(maze, vec![N5 | N4 | N6], 1, 2);
+
+    // Additional tiles to ensure connectivity
+    place_tile!(maze, vec![N5 | N6], 0, 2);
+    place_tile!(maze, vec![N4| N5 | N6], 1, 3);
+    place_tile!(maze, vec![N5 | N6], 0, 3);
+    place_tile!(maze, vec![N5 | N6], 2, 3);
+    place_tile!(maze, vec![N5 | N6], 0, 4);
+    place_tile!(maze, vec![N5 | N6], 1, 4);
+    place_tile!(maze, vec![N5 | N4 | N6], 2, 4);
+
+    let name = format!("test-five-cycles-1");
+    let _ = maze.render(name.to_string(), SVG);
+
+    maze.reduce_nets(0);
+    maze.remove_cycles(false);
+
+    let name = format!("test-five-cycles-2");
+    let _ = maze.render(name.to_string(), SVG);
+
+    // After cycle removal, we should have at least one network
+    assert!(maze.nets.len() == 1);
+}
+
 }
