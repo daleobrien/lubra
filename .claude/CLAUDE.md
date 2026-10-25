@@ -583,7 +583,7 @@ fn test_generated_values_valid() {
 ### Regeneration Workflow
 ```bash
 # Full regeneration (when core logic changes)
-./full.sh
+make full
 
 # Regenerate only SVG fragments
 cd generate && cargo run --bin generate_svg

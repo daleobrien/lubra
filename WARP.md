@@ -118,13 +118,17 @@ cargo run -p generate -- nets
 
 Generated files are written directly into `lib/src/maze/generated/` and `lib/src/renders/generated/`.
 
-## Helper Scripts
+## Makefile
 
-- `generate.sh`: runs generator (both), then CLI, then document.
-- `both.sh`: runs generator `svg`, then CLI.
-- `maze.sh`: builds CLI and runs one debug maze command.
-- `doc.sh`: runs generator `svg`, then document crate, then `typst compile` for docs.
-- `full.sh`: runs generator `nets` + `svg`, then CLI, then document.
+Run `make` to list targets. Pipelines (each step runs from its crate's directory):
+
+- `make generate`: runs generator (both), then CLI, then document.
+- `make both`: runs generator `svg`, then CLI.
+- `make maze`: builds CLI and times one debug maze (override with `MAZE_ARGS="..."`).
+- `make doc`: runs generator `svg`, then document crate, then `typst compile` for docs.
+- `make full`: runs generator `nets` + `svg`, then CLI, then document.
+
+Single steps: `make gen`, `gen-svg`, `gen-nets`, `cli`, `document`, `typst`, `build`, `test`.
 
 ## Build/Test Commands
 
