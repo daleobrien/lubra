@@ -6,11 +6,11 @@ FOLDER=$(cd `dirname $0` && pwd)
 
 # rm -rf cli/*.svg
 
-cd ${FOLDER}/generate
+cd "${FOLDER}/generate"
 cargo run --package generate
 
-cd ${FOLDER}/cli
+cd "${FOLDER}/cli"
 cargo run
 
-cd ${FOLDER}/document
+cd "${FOLDER}/document"
 cargo run
