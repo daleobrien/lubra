@@ -20,13 +20,11 @@ impl Maze {
 
         // Make the first Tile as a simple starting point
         let tile = Tile::new(vec![N5], true);
-        self.update_network(&tile, 0, 0);
         self.tiles[(0, 0)] = tile;
 
         // and make the last tile a simple ending point
         let last_node = [N5, N6, N4];
         let tile = Tile::new(vec![last_node[(number_of_columns - 2) % 3]], true);
-        self.update_network(&tile, number_of_columns - 1, number_of_rows - 1);
         self.tiles[(number_of_rows - 1, number_of_columns - 1)] = tile;
 
         let mut indices: Vec<(usize, usize)> = (0..number_of_rows)
@@ -46,6 +44,9 @@ impl Maze {
 
             self.seed = self.seed.map(|s| s.wrapping_add(1));
         }
+
+        // Nothing reads the net list while tiles are placed, so build it once here.
+        self.rebuild_nets();
 
         self.width = (number_of_columns + 1) as f64 * TILE_WIDTH / 2.0;
         self.height = number_of_rows as f64 * TILE_HEIGHT;

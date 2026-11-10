@@ -285,8 +285,9 @@ creates an empty grid. If `randomise` is set it calls `create_random_grid`
     nets $<-$ `random_tile`(mask, seed, small table)\
     if mask $!= 0$ and nets is empty:#i\
       nets $<-$ `random_tile`(mask, seed, large table)#d\
-    place nets at $(i, j)$ and add them to the global net list\
-    seed $<-$ seed $+ 1$#d
+    place nets at $(i, j)$\
+    seed $<-$ seed $+ 1$#d\
+  build the net list from the tiles (`rebuild_nets`)
 ]
 
 The tiles are visited in random order so that no direction is favoured.
@@ -336,13 +337,11 @@ vary the render order.
 
 == Tracking and reducing nets
 
-As tiles are placed, `update_network` (`maze/maze/net_operations.rs`) keeps
-the maze-wide `Net`: a list of `Nodes`, each a set of `Node { i, j, node }`
-positions (`maze/net.rs`). A new tile net either starts a new entry, extends
-one, or merges several that it bridges.
-
-The list is only an index of what the tiles already say, so after any later
-change `rebuild_nets` (`net_operations.rs`) recomputes it from the tiles. Two
+The maze-wide `Net` is a list of `Nodes`, each a set of `Node { i, j, node }`
+positions (`maze/net.rs`). It is only an index of what the tiles already say,
+so it is never edited directly: `rebuild_nets` (`maze/maze/net_operations.rs`)
+recomputes it from the tiles once all tiles are placed, and again after every
+later change. Two
 node positions are in the same net when they share a tile net, or when they
 are the same node seen from the tiles either side of it. The result is
 ordered by the first tile that uses each net, so it is deterministic.
@@ -548,9 +547,6 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
 - `reduce_nets` stops with more than one net if no shared tile, free node or
   empty tile can join the rest. This hasn't happened in testing: every
   seeded maze in the tests ends as one net.
-- Creating a maze slows down as it grows (about 10 s for 100 × 64 in a debug
-  build), because `update_network` searches the whole net list for every
-  tile it places.
 
 = Arc fragment families
 

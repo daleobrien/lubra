@@ -148,11 +148,12 @@ mod tests {
     use super::*;
     use common::consts::{N2, N4, N5, N6};
 
+    /// Places a tile and rebuilds the net list.
+    /// Note: the tile grid is indexed `tiles[(j, i)]`.
     macro_rules! place_tile {
         ($maze:expr, $nodes:expr, $i:expr, $j:expr) => {{
-            let tile = Tile::new($nodes, true);
-            $maze.update_network(&tile, $i, $j);
-            $maze.tiles[($j, $i)] = tile;
+            $maze.tiles[($j, $i)] = Tile::new($nodes, true);
+            $maze.rebuild_nets();
         }};
     }
 

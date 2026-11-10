@@ -1,12 +1,10 @@
 use crate::maze::maze::Maze;
 use crate::maze::net::{Node, Nodes};
 use crate::maze::tile::Tile;
-use common::consts::{N1, N2, N3, N4, N5, N6, NODE_TO_COORD};
 use common::nodes::get_connected_coords_at_coords;
-use common::types::coordinate::{add, Coordinate};
+use common::types::coordinate::Coordinate;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
-use rand_distr::num_traits::ToPrimitive;
 use std::collections::HashMap;
 
 impl Maze {
@@ -40,74 +38,6 @@ impl Maze {
             }
             false
         });
-    }
-
-    pub(crate) fn update_network(&mut self, tile: &Tile, i: usize, j: usize) {
-        let tile_nets = tile.nodes.clone();
-
-        let mapping = NODE_TO_COORD[(i + (3 * (j % 2))) % 6];
-
-        for net in tile_nets {
-            // TODO: Need to transform this into bits rather than use node indexes
-            let tile_sub_nets: Nodes = [N1, N2, N3, N4, N5, N6]
-                .iter()
-                .filter(|&node| net & *node == *node)
-                .map(|&node| Node::new(i, j, node.trailing_zeros().to_usize().unwrap()))
-                .collect();
-
-            // For this sub net of the current tile, find which nets they are part of
-            let mut net_indexes: Vec<usize> = Vec::new();
-
-            for (n, nets) in self.nets.iter().enumerate() {
-                for tile_sub_net in tile_sub_nets.iter() {
-                    // Find adjacent tile so we can check if it is part of an existing net
-                    let node_idx = tile_sub_net.node;
-                    let coord = mapping[node_idx];
-                    //
-                    let x = add(i, coord.0);
-                    let y = add(j, coord.1);
-
-                    if let (Some(x), Some(y)) = (x, y) {
-                        if nets.contains(&Node::new(x, y, node_idx)) && !net_indexes.contains(&n) {
-                            net_indexes.push(n);
-                            //break;
-                        }
-                    }
-                }
-            }
-            if net_indexes.len() == 1 {
-                // Append to an existing net
-                let n = net_indexes[0];
-                self.nets[n].extend(tile_sub_nets);
-            } else if net_indexes.is_empty() {
-                // Add a new net
-                self.nets.push(tile_sub_nets);
-            } else if net_indexes.len() > 1 {
-                // Since this tile's subnet was part of 2 or more nets, we can say they are really
-                // the same net. So we need to merge them.
-
-                let n = net_indexes[0];
-                // Keep the net[n] and merge the other nets into it
-                let r = net_indexes[1..].to_vec();
-
-                let mut new_net = Nodes::new();
-                // Add in the bridging net
-                new_net.extend(tile_sub_nets);
-                // Add the rest of the nets
-                for i in net_indexes {
-                    new_net.extend(self.nets[i].clone());
-                }
-
-                self.nets[n] = new_net; // The new merged net
-
-                // Remove the rest of the nets since they are now merged.
-                // Note: This won't have very good performance. It might be the other nets are always towards the end of the list though
-                // which will help.
-                for i in r.iter().rev() {
-                    self.nets.remove(*i);
-                }
-            }
-        }
     }
 }
 
@@ -159,7 +89,7 @@ impl Maze {
     /// Two node positions are in the same net when they belong to the same tile net,
     /// or when they are the same physical node seen from the two tiles either side of
     /// it: logical node `k` of a tile and logical node `k` of the tile across node `k`.
-    /// (Vertex paths continue into the opposite tile only, as in `update_network`.)
+    /// (A path through a vertex continues into the opposite tile only.)
     ///
     /// The result is deterministic: nets are ordered by the first tile (row by row)
     /// that uses them.
@@ -231,6 +161,8 @@ impl Maze {
 mod tests {
     use crate::maze::maze::Maze;
     use crate::maze::net::Nodes;
+    use crate::maze::tile::Tile;
+    use common::consts::{N1, N5};
     use std::collections::BTreeSet;
 
     /// The nets as a set of sorted node lists, so order doesn't matter.
@@ -245,13 +177,35 @@ mod tests {
     }
 
     #[test]
-    fn test_rebuild_nets_matches_incremental_network() {
+    fn test_rebuild_nets_covers_every_node_once() {
         for seed in [1, 2, 3, 7, 42] {
-            let mut maze = Maze::new(12, 8, true, false, false, Some(seed));
-            let incremental = canonical(&maze.nets);
-            maze.rebuild_nets();
-            assert_eq!(canonical(&maze.nets), incremental, "seed {seed}");
+            let maze = Maze::new(12, 8, true, false, false, Some(seed));
+            let mut used = 0;
+            for j in 0..maze.number_of_rows {
+                for i in 0..maze.number_of_columns {
+                    used += maze.tiles[(j, i)]
+                        .nodes
+                        .iter()
+                        .map(|t| t.count_ones() as usize)
+                        .sum::<usize>();
+                }
+            }
+            let listed: usize = maze.nets.iter().map(|net| net.len()).sum();
+            assert_eq!(listed, used, "seed {seed}");
+            assert_eq!(canonical(&maze.nets).len(), maze.nets.len(), "seed {seed}");
         }
+    }
+
+    #[test]
+    fn test_rebuild_nets_joins_across_a_shared_node() {
+        // (0,0) and (1,0) share node 5; (2,0) is separate.
+        let mut maze = Maze::new(3, 1, false, false, false, None);
+        maze.tiles[(0, 0)] = Tile::new(vec![N1 | N5], true);
+        maze.tiles[(0, 1)] = Tile::new(vec![N5], true);
+        maze.tiles[(0, 2)] = Tile::new(vec![N1], true);
+        maze.rebuild_nets();
+        assert_eq!(maze.nets.len(), 2);
+        assert_eq!(maze.nets[0].len(), 3);
     }
 
     #[test]

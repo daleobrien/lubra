@@ -65,9 +65,7 @@ impl Maze {
             nets = random_tile(mask, self.seed, false);
         }
 
-        let tile = Tile::new(nets, true);
-        self.update_network(&tile, i, j);
-        tile
+        Tile::new(nets, true)
     }
 }
 
