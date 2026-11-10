@@ -1,0 +1,58 @@
+use common::consts::FILL;
+use common::define_shape_family;
+use common::macros::{
+  identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw,
+};
+use common::types::format::trimf64;
+use common::types::path::Path;
+use common::types::point::{Point, PATH_WIDTH, S3, TILE_WIDTH};
+
+fn base(invert: bool) -> (Vec<String>, Path) {
+    let w = PATH_WIDTH;
+    let h = PATH_WIDTH / 2.;
+    let r = w / 2.;
+    let x1 = 0.5 - w;
+    let x2 = 0.5 + w;
+    let y1 = S3;
+    let y2 = S3 - h;
+
+    let a = Point { x: x1, y: y1 };
+    let b = Point { x: x1, y: y2 };
+    let c = Point { x: x2, y: y2 };
+    let d = Point { x: x2, y: y1 };
+
+    let mut pts = Path::new(vec![a, b, c, d]);
+    if invert {
+        pts = pts.invert();
+    }
+
+    let r_str = trimf64(TILE_WIDTH * r);
+    (vec![r_str], pts)
+}
+
+fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
+    let d1 = if invert { 0 } else { 1 };
+    let pts = pts.str();
+    format!(
+        "<path stroke='black' fill='{FILL}' d='M{a}L{b}A{r} {r} 0 0 {d1} {c}L{d}'/>",
+        a = pts[0],
+        b = pts[1],
+        c = pts[2],
+        d = pts[3],
+        r = radii[0]
+    )
+}
+
+define_shape_family! {
+    base: base,
+    svg: svg,
+    offset_rotations: &[0, 1, 2, 3],
+    variants: {
+        n1: false, false => identity,
+        n2: false, false => rotate_ccw,
+        n3: false, false => rotate_cw,
+        n4: true, false => reflect_then_rotate_cw,
+        n5: true, false => reflect_then_rotate_ccw,
+        n6: true, false => reflect,
+    }
+}

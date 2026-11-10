@@ -1,4 +1,5 @@
-/target
+/target.tmp
+**/target.tmp
 .idea/vcs.xml
 .idea/runConfigurations/Run.xml
 .idea/modules.xml
@@ -10,3 +11,17 @@ cli/test-all.svg
 cli/test-one-tile.svg
 *.svg
 .idea/inspectionProfiles/Project_Default.xml
+.idea/runConfigurations/Run_Maze.xml
+typst/Maze.pdf
+typst/main.pdf
+typst/shapes.pdf
+typst/tiles_grid.typ
+typst/tiles.pdf
+test/
+target/rust-analyzer/metadata/sysroot/Cargo.lock
+target/rust-analyzer/metadata/workspace/Cargo.lock
+.idea/copilot.data.migration.agent.xml
+__pycache__/main.cpython-313.pyc
+.idea/copilot.data.migration.ask.xml
+.idea/copilot.data.migration.ask2agent.xml
+.idea/copilot.data.migration.edit.xml

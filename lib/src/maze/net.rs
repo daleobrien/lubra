@@ -1,202 +1,108 @@
-/*
- This file is generated from a template, ... edit the template instead.
-*/
+use std::collections::HashSet;
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
-pub fn calculate_nets (tile:u32) -> Vec<Vec<u32>> {
-	match tile { 
-	   0b00000000000001 => vec![ vec![1, 6] ],
-	   0b00000000000010 => vec![ vec![2, 5] ],
-	   0b00000000000011 => vec![ vec![1, 6], vec![2, 5] ],
-	   0b00000000000100 => vec![ vec![3, 4] ],
-	   0b00000000000101 => vec![ vec![1, 6], vec![3, 4] ],
-	   0b00000000000110 => vec![ vec![2, 5], vec![3, 4] ],
-	   0b00000000000111 => vec![ vec![1, 6], vec![2, 5], vec![3, 4] ],
-	   0b00000000001000 => vec![ vec![4, 5] ],
-	   0b00000000001001 => vec![ vec![1, 6], vec![4, 5] ],
-	   0b00000000010000 => vec![ vec![4, 6] ],
-	   0b00000000010010 => vec![ vec![2, 5], vec![4, 6] ],
-	   0b00000000100000 => vec![ vec![5, 6] ],
-	   0b00000000100100 => vec![ vec![3, 4], vec![5, 6] ],
-	   0b00000000111000 => vec![ vec![4, 5, 6] ],
-	   0b00000001000000 => vec![ vec![1] ],
-	   0b00000001000010 => vec![ vec![1], vec![2, 5] ],
-	   0b00000001000100 => vec![ vec![1], vec![3, 4] ],
-	   0b00000001000110 => vec![ vec![1], vec![2, 5], vec![3, 4] ],
-	   0b00000001001000 => vec![ vec![1], vec![4, 5] ],
-	   0b00000001010000 => vec![ vec![1], vec![4, 6] ],
-	   0b00000001010010 => vec![ vec![1], vec![2, 5], vec![4, 6] ],
-	   0b00000001100000 => vec![ vec![1], vec![5, 6] ],
-	   0b00000001100100 => vec![ vec![1], vec![3, 4], vec![5, 6] ],
-	   0b00000001111000 => vec![ vec![1], vec![4, 5, 6] ],
-	   0b00000010000000 => vec![ vec![2] ],
-	   0b00000010000001 => vec![ vec![2], vec![1, 6] ],
-	   0b00000010000100 => vec![ vec![2], vec![3, 4] ],
-	   0b00000010000101 => vec![ vec![2], vec![1, 6], vec![3, 4] ],
-	   0b00000010001000 => vec![ vec![2], vec![4, 5] ],
-	   0b00000010001001 => vec![ vec![2], vec![1, 6], vec![4, 5] ],
-	   0b00000010010000 => vec![ vec![2], vec![4, 6] ],
-	   0b00000010100000 => vec![ vec![2], vec![5, 6] ],
-	   0b00000010100100 => vec![ vec![2], vec![3, 4], vec![5, 6] ],
-	   0b00000010111000 => vec![ vec![2], vec![4, 5, 6] ],
-	   0b00000011000000 => vec![ vec![1], vec![2] ],
-	   0b00000011000100 => vec![ vec![1], vec![2], vec![3, 4] ],
-	   0b00000011001000 => vec![ vec![1], vec![2], vec![4, 5] ],
-	   0b00000011010000 => vec![ vec![1], vec![2], vec![4, 6] ],
-	   0b00000011100000 => vec![ vec![1], vec![2], vec![5, 6] ],
-	   0b00000011100100 => vec![ vec![1], vec![2], vec![3, 4], vec![5, 6] ],
-	   0b00000011111000 => vec![ vec![1], vec![2], vec![4, 5, 6] ],
-	   0b00000100000000 => vec![ vec![3] ],
-	   0b00000100000001 => vec![ vec![3], vec![1, 6] ],
-	   0b00000100000010 => vec![ vec![3], vec![2, 5] ],
-	   0b00000100000011 => vec![ vec![3], vec![1, 6], vec![2, 5] ],
-	   0b00000100001000 => vec![ vec![3], vec![4, 5] ],
-	   0b00000100001001 => vec![ vec![3], vec![1, 6], vec![4, 5] ],
-	   0b00000100010000 => vec![ vec![3], vec![4, 6] ],
-	   0b00000100010010 => vec![ vec![3], vec![2, 5], vec![4, 6] ],
-	   0b00000100100000 => vec![ vec![3], vec![5, 6] ],
-	   0b00000100111000 => vec![ vec![3], vec![4, 5, 6] ],
-	   0b00000101000000 => vec![ vec![1], vec![3] ],
-	   0b00000101000010 => vec![ vec![1], vec![3], vec![2, 5] ],
-	   0b00000101001000 => vec![ vec![1], vec![3], vec![4, 5] ],
-	   0b00000101010000 => vec![ vec![1], vec![3], vec![4, 6] ],
-	   0b00000101010010 => vec![ vec![1], vec![3], vec![2, 5], vec![4, 6] ],
-	   0b00000101100000 => vec![ vec![1], vec![3], vec![5, 6] ],
-	   0b00000101111000 => vec![ vec![1], vec![3], vec![4, 5, 6] ],
-	   0b00000110000000 => vec![ vec![2], vec![3] ],
-	   0b00000110000001 => vec![ vec![2], vec![3], vec![1, 6] ],
-	   0b00000110001000 => vec![ vec![2], vec![3], vec![4, 5] ],
-	   0b00000110001001 => vec![ vec![2], vec![3], vec![1, 6], vec![4, 5] ],
-	   0b00000110010000 => vec![ vec![2], vec![3], vec![4, 6] ],
-	   0b00000110100000 => vec![ vec![2], vec![3], vec![5, 6] ],
-	   0b00000110111000 => vec![ vec![2], vec![3], vec![4, 5, 6] ],
-	   0b00000111000000 => vec![ vec![1], vec![2], vec![3] ],
-	   0b00000111001000 => vec![ vec![1], vec![2], vec![3], vec![4, 5] ],
-	   0b00000111010000 => vec![ vec![1], vec![2], vec![3], vec![4, 6] ],
-	   0b00000111100000 => vec![ vec![1], vec![2], vec![3], vec![5, 6] ],
-	   0b00000111111000 => vec![ vec![1], vec![2], vec![3], vec![4, 5, 6] ],
-	   0b00001000000000 => vec![ vec![4] ],
-	   0b00001000000001 => vec![ vec![4], vec![1, 6] ],
-	   0b00001000000010 => vec![ vec![4], vec![2, 5] ],
-	   0b00001000000011 => vec![ vec![4], vec![1, 6], vec![2, 5] ],
-	   0b00001000100000 => vec![ vec![4], vec![5, 6] ],
-	   0b00001001000000 => vec![ vec![1], vec![4] ],
-	   0b00001001000010 => vec![ vec![1], vec![4], vec![2, 5] ],
-	   0b00001001100000 => vec![ vec![1], vec![4], vec![5, 6] ],
-	   0b00001010000000 => vec![ vec![2], vec![4] ],
-	   0b00001010000001 => vec![ vec![2], vec![4], vec![1, 6] ],
-	   0b00001010100000 => vec![ vec![2], vec![4], vec![5, 6] ],
-	   0b00001011000000 => vec![ vec![1], vec![2], vec![4] ],
-	   0b00001011100000 => vec![ vec![1], vec![2], vec![4], vec![5, 6] ],
-	   0b00001100000000 => vec![ vec![3], vec![4] ],
-	   0b00001100000001 => vec![ vec![3], vec![4], vec![1, 6] ],
-	   0b00001100000010 => vec![ vec![3], vec![4], vec![2, 5] ],
-	   0b00001100000011 => vec![ vec![3], vec![4], vec![1, 6], vec![2, 5] ],
-	   0b00001100100000 => vec![ vec![3], vec![4], vec![5, 6] ],
-	   0b00001101000000 => vec![ vec![1], vec![3], vec![4] ],
-	   0b00001101000010 => vec![ vec![1], vec![3], vec![4], vec![2, 5] ],
-	   0b00001101100000 => vec![ vec![1], vec![3], vec![4], vec![5, 6] ],
-	   0b00001110000000 => vec![ vec![2], vec![3], vec![4] ],
-	   0b00001110000001 => vec![ vec![2], vec![3], vec![4], vec![1, 6] ],
-	   0b00001110100000 => vec![ vec![2], vec![3], vec![4], vec![5, 6] ],
-	   0b00001111000000 => vec![ vec![1], vec![2], vec![3], vec![4] ],
-	   0b00001111100000 => vec![ vec![1], vec![2], vec![3], vec![4], vec![5, 6] ],
-	   0b00010000000000 => vec![ vec![5] ],
-	   0b00010000000001 => vec![ vec![5], vec![1, 6] ],
-	   0b00010000000100 => vec![ vec![5], vec![3, 4] ],
-	   0b00010000000101 => vec![ vec![5], vec![1, 6], vec![3, 4] ],
-	   0b00010000010000 => vec![ vec![5], vec![4, 6] ],
-	   0b00010001000000 => vec![ vec![1], vec![5] ],
-	   0b00010001000100 => vec![ vec![1], vec![5], vec![3, 4] ],
-	   0b00010001010000 => vec![ vec![1], vec![5], vec![4, 6] ],
-	   0b00010010000000 => vec![ vec![2], vec![5] ],
-	   0b00010010000001 => vec![ vec![2], vec![5], vec![1, 6] ],
-	   0b00010010000100 => vec![ vec![2], vec![5], vec![3, 4] ],
-	   0b00010010000101 => vec![ vec![2], vec![5], vec![1, 6], vec![3, 4] ],
-	   0b00010010010000 => vec![ vec![2], vec![5], vec![4, 6] ],
-	   0b00010011000000 => vec![ vec![1], vec![2], vec![5] ],
-	   0b00010011000100 => vec![ vec![1], vec![2], vec![5], vec![3, 4] ],
-	   0b00010011010000 => vec![ vec![1], vec![2], vec![5], vec![4, 6] ],
-	   0b00010100000000 => vec![ vec![3], vec![5] ],
-	   0b00010100000001 => vec![ vec![3], vec![5], vec![1, 6] ],
-	   0b00010100010000 => vec![ vec![3], vec![5], vec![4, 6] ],
-	   0b00010101000000 => vec![ vec![1], vec![3], vec![5] ],
-	   0b00010101010000 => vec![ vec![1], vec![3], vec![5], vec![4, 6] ],
-	   0b00010110000000 => vec![ vec![2], vec![3], vec![5] ],
-	   0b00010110000001 => vec![ vec![2], vec![3], vec![5], vec![1, 6] ],
-	   0b00010110010000 => vec![ vec![2], vec![3], vec![5], vec![4, 6] ],
-	   0b00010111000000 => vec![ vec![1], vec![2], vec![3], vec![5] ],
-	   0b00010111010000 => vec![ vec![1], vec![2], vec![3], vec![5], vec![4, 6] ],
-	   0b00011000000000 => vec![ vec![4], vec![5] ],
-	   0b00011000000001 => vec![ vec![4], vec![5], vec![1, 6] ],
-	   0b00011001000000 => vec![ vec![1], vec![4], vec![5] ],
-	   0b00011010000000 => vec![ vec![2], vec![4], vec![5] ],
-	   0b00011010000001 => vec![ vec![2], vec![4], vec![5], vec![1, 6] ],
-	   0b00011011000000 => vec![ vec![1], vec![2], vec![4], vec![5] ],
-	   0b00011100000000 => vec![ vec![3], vec![4], vec![5] ],
-	   0b00011100000001 => vec![ vec![3], vec![4], vec![5], vec![1, 6] ],
-	   0b00011101000000 => vec![ vec![1], vec![3], vec![4], vec![5] ],
-	   0b00011110000000 => vec![ vec![2], vec![3], vec![4], vec![5] ],
-	   0b00011110000001 => vec![ vec![2], vec![3], vec![4], vec![5], vec![1, 6] ],
-	   0b00011111000000 => vec![ vec![1], vec![2], vec![3], vec![4], vec![5] ],
-	   0b00100000000000 => vec![ vec![6] ],
-	   0b00100000000010 => vec![ vec![6], vec![2, 5] ],
-	   0b00100000000100 => vec![ vec![6], vec![3, 4] ],
-	   0b00100000000110 => vec![ vec![6], vec![2, 5], vec![3, 4] ],
-	   0b00100000001000 => vec![ vec![6], vec![4, 5] ],
-	   0b00100001000000 => vec![ vec![1], vec![6] ],
-	   0b00100001000010 => vec![ vec![1], vec![6], vec![2, 5] ],
-	   0b00100001000100 => vec![ vec![1], vec![6], vec![3, 4] ],
-	   0b00100001000110 => vec![ vec![1], vec![6], vec![2, 5], vec![3, 4] ],
-	   0b00100001001000 => vec![ vec![1], vec![6], vec![4, 5] ],
-	   0b00100010000000 => vec![ vec![2], vec![6] ],
-	   0b00100010000100 => vec![ vec![2], vec![6], vec![3, 4] ],
-	   0b00100010001000 => vec![ vec![2], vec![6], vec![4, 5] ],
-	   0b00100011000000 => vec![ vec![1], vec![2], vec![6] ],
-	   0b00100011000100 => vec![ vec![1], vec![2], vec![6], vec![3, 4] ],
-	   0b00100011001000 => vec![ vec![1], vec![2], vec![6], vec![4, 5] ],
-	   0b00100100000000 => vec![ vec![3], vec![6] ],
-	   0b00100100000010 => vec![ vec![3], vec![6], vec![2, 5] ],
-	   0b00100100001000 => vec![ vec![3], vec![6], vec![4, 5] ],
-	   0b00100101000000 => vec![ vec![1], vec![3], vec![6] ],
-	   0b00100101000010 => vec![ vec![1], vec![3], vec![6], vec![2, 5] ],
-	   0b00100101001000 => vec![ vec![1], vec![3], vec![6], vec![4, 5] ],
-	   0b00100110000000 => vec![ vec![2], vec![3], vec![6] ],
-	   0b00100110001000 => vec![ vec![2], vec![3], vec![6], vec![4, 5] ],
-	   0b00100111000000 => vec![ vec![1], vec![2], vec![3], vec![6] ],
-	   0b00100111001000 => vec![ vec![1], vec![2], vec![3], vec![6], vec![4, 5] ],
-	   0b00101000000000 => vec![ vec![4], vec![6] ],
-	   0b00101000000010 => vec![ vec![4], vec![6], vec![2, 5] ],
-	   0b00101001000000 => vec![ vec![1], vec![4], vec![6] ],
-	   0b00101001000010 => vec![ vec![1], vec![4], vec![6], vec![2, 5] ],
-	   0b00101010000000 => vec![ vec![2], vec![4], vec![6] ],
-	   0b00101011000000 => vec![ vec![1], vec![2], vec![4], vec![6] ],
-	   0b00101100000000 => vec![ vec![3], vec![4], vec![6] ],
-	   0b00101100000010 => vec![ vec![3], vec![4], vec![6], vec![2, 5] ],
-	   0b00101101000000 => vec![ vec![1], vec![3], vec![4], vec![6] ],
-	   0b00101101000010 => vec![ vec![1], vec![3], vec![4], vec![6], vec![2, 5] ],
-	   0b00101110000000 => vec![ vec![2], vec![3], vec![4], vec![6] ],
-	   0b00101111000000 => vec![ vec![1], vec![2], vec![3], vec![4], vec![6] ],
-	   0b00110000000000 => vec![ vec![5], vec![6] ],
-	   0b00110000000100 => vec![ vec![5], vec![6], vec![3, 4] ],
-	   0b00110001000000 => vec![ vec![1], vec![5], vec![6] ],
-	   0b00110001000100 => vec![ vec![1], vec![5], vec![6], vec![3, 4] ],
-	   0b00110010000000 => vec![ vec![2], vec![5], vec![6] ],
-	   0b00110010000100 => vec![ vec![2], vec![5], vec![6], vec![3, 4] ],
-	   0b00110011000000 => vec![ vec![1], vec![2], vec![5], vec![6] ],
-	   0b00110011000100 => vec![ vec![1], vec![2], vec![5], vec![6], vec![3, 4] ],
-	   0b00110100000000 => vec![ vec![3], vec![5], vec![6] ],
-	   0b00110101000000 => vec![ vec![1], vec![3], vec![5], vec![6] ],
-	   0b00110110000000 => vec![ vec![2], vec![3], vec![5], vec![6] ],
-	   0b00110111000000 => vec![ vec![1], vec![2], vec![3], vec![5], vec![6] ],
-	   0b00111000000000 => vec![ vec![4], vec![5], vec![6] ],
-	   0b00111001000000 => vec![ vec![1], vec![4], vec![5], vec![6] ],
-	   0b00111010000000 => vec![ vec![2], vec![4], vec![5], vec![6] ],
-	   0b00111011000000 => vec![ vec![1], vec![2], vec![4], vec![5], vec![6] ],
-	   0b00111100000000 => vec![ vec![3], vec![4], vec![5], vec![6] ],
-	   0b00111101000000 => vec![ vec![1], vec![3], vec![4], vec![5], vec![6] ],
-	   0b00111110000000 => vec![ vec![2], vec![3], vec![4], vec![5], vec![6] ],
-	   0b00111111000000 => vec![ vec![1], vec![2], vec![3], vec![4], vec![5], vec![6] ],
-       _ => vec![],
-	}
+/// Represents a node position within a hexagonal maze tile.
+///
+/// The node is identified by:
+/// - `i`: The tile's column coordinate
+/// - `j`: The tile's row coordinate
+/// - `node`: The node index within the tile (0-5, corresponding to N1-N6)
+///
+/// # Examples
+/// ```
+/// use lib::maze::net::Node;
+///
+/// let node = Node::new(0, 0, 0); // Tile at (0,0), node 0 (N1)
+/// assert_eq!(node.i, 0);
+/// assert_eq!(node.j, 0);
+/// assert_eq!(node.node, 0);
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Node {
+    pub i: usize,
+    pub j: usize,
+    pub node: usize,
 }
+
+impl Node {
+    /// Creates a new Node at the specified position and node index.
+    ///
+    /// # Arguments
+    /// * `i` - The tile's column coordinate
+    /// * `j` - The tile's row coordinate
+    /// * `node` - The node index (0-5 for N1-N6)
+    pub fn new(i: usize, j: usize, node: usize) -> Self {
+        Self { i, j, node }
+    }
+
+    /// Converts from array representation [i, j, node] to Node.
+    ///
+    /// This is useful for migrating from the old `[usize; 3]` representation.
+    ///
+    /// # Arguments
+    /// * `arr` - Array where arr[0] = i, arr[1] = j, arr[2] = node
+    pub fn from_array(arr: [usize; 3]) -> Self {
+        Self::new(arr[0], arr[1], arr[2])
+    }
+
+    /// Converts to array representation [i, j, node].
+    ///
+    /// This is useful for backwards compatibility or serialization.
+    pub fn to_array(&self) -> [usize; 3] {
+        [self.i, self.j, self.node]
+    }
+}
+
+impl From<[usize; 3]> for Node {
+    fn from(arr: [usize; 3]) -> Self {
+        Self::from_array(arr)
+    }
+}
+
+impl From<Node> for [usize; 3] {
+    fn from(node: Node) -> Self {
+        node.to_array()
+    }
+}
+
+/// A set of connected node positions that form a path through the maze.
+///
+/// Each nodes represents a continuous path where positions are connected across tiles.
+/// Node positions within nodes are unique (no duplicate positions).
+pub type Nodes = HashSet<Node>;
+
+/// Formats a Nodes set in a compact, readable format.
+///
+/// Output format: `{(i,j):n, (i,j):n, ...}` where each entry shows
+/// the tile coordinates and node index.
+///
+/// # Examples
+/// ```
+/// use lib::maze::net::{Node, Nodes, format_nodes};
+///
+/// let mut nodes = Nodes::new();
+/// nodes.insert(Node::new(0, 0, 1));
+/// nodes.insert(Node::new(1, 2, 3));
+/// println!("{}", format_nodes(&nodes));
+/// // Output like: {(0,0):1, (1,2):3}
+/// ```
+pub fn format_nodes(nodes: &Nodes) -> String {
+    let mut entries: Vec<_> = nodes.iter().collect();
+    // Sort for consistent output
+    entries.sort_by(|a, b| {
+        (a.i, a.j, a.node).cmp(&(b.i, b.j, b.node))
+    });
+
+    let formatted: Vec<String> = entries
+        .iter()
+        .map(|n| format!("({},{}):{}",n.i, n.j, n.node+1))
+        .collect();
+
+    format!("{{{}}}", formatted.join(", "))
+}
+
+/// A collection of all nodes in the maze (the net).
+///
+/// Each nodes in the collection is independent (though they may intersect at tiles).
+/// The maze generation and reduction algorithms work to minimize the number of
+/// nodes while maintaining connectivity.
+pub type Net = Vec<Nodes>;

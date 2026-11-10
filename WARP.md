@@ -1,0 +1,151 @@
+# WARP.md
+
+Context for AI tools editing this repository.
+
+## Project Summary
+
+Lubra is a Rust workspace for generating, reducing, and rendering hex-tile mazes. Output is primarily SVG, with optional PNG rendering in the CLI.
+
+## Core Concepts
+
+### Hexagonal Grid Model
+
+- The maze uses a hex-style tile topology where each tile has 6 node positions (`N1..N6`).
+- Tile placement and validation depend on 12 surrounding positions (not 4/8 like square grids).
+- Relative coordinate mapping for node connectivity is pre-defined in `common/src/consts.rs` as `NODE_TO_COORD` (`K0..K5` variants).
+- Tile coordinates are grid indices `(i, j)`, but node adjacency logic depends on node index and parity/orientation mapping.
+
+### Bitmask Encoding
+
+- Tile/node/path data is represented as `usize` bitmasks.
+- Low bits represent local tile nodes (`N1..N6`).
+- Additional bit ranges represent adjacent-node groups (`A1..A6`, `B1..B6`).
+- Flags: `IN` for inverted fragments, `WA` for wall fragments.
+- `NL` masks local-node layer bits, `NX` masks renderable bits used during hide/show checks.
+
+### Net Data Structures
+
+- In `lib/src/maze/net.rs`:
+- `Node { i, j, node }` identifies one node position in one tile.
+- `Nodes = HashSet<Node>` represents a connected component/path.
+- `Net = Vec<Nodes>` is the maze-wide collection of connected components.
+- During rendering, `CataloguedNet` (`common/src/types/coordinate.rs`) separates:
+- `visible: Vec<CoordinateAndNet>`
+- `hidden: HashSet<CoordinateAndNet>`
+- This allows complex multi-tile paths to be drawn once while suppressing overlapping sub-fragments.
+
+### Fragment Rendering Architecture
+
+- `MAP_PATHS` is a generated lookup map from net bitmask -> SVG fragment string.
+- Rendering uses `lib/src/renders/svg.rs` `Svg`, with 6 layers and glyph deduplication via `StringRegistry`.
+- `Svg::add_fragment` emits `<use href='#...'>` instances for fragment reuse rather than duplicating geometry.
+- Node-number overlays are optional (`lib/src/renders/node_numbers.rs`).
+
+## Workspace Layout
+
+Root `Cargo.toml` members:
+- `common` - shared bit/coordinate/types utilities
+- `lib` - core maze generation + render pipeline
+- `cli` - `lubra` command-line app
+- `generate` - code generation for lookup tables and SVG fragments
+- `document` - generates Typst assets/docs from fragment data
+
+## Important Paths
+
+- `lib/src/maze/maze.rs` - `Maze` struct and module composition
+- `lib/src/maze/maze/` - split implementation (`grid_generation`, `net_reduction`, `remove_cycles`, `render`, etc.)
+- `lib/src/maze/tile.rs` - tile net handling and visible/hidden path selection
+- `lib/src/maze/generated/` - generated lookup tables:
+  - `nets_large.rs`, `nets_small.rs`
+  - `mass_large.rs`, `mass_small.rs`
+  - `nets_adjacent.rs`
+- `lib/src/renders/generated/fragment.rs` - generated `MAP_PATHS` SVG fragment map
+- `generate/src/main.rs` - generator entrypoint (`svg`, `nets`, or both)
+- `document/src/main.rs` - generates `typst/svgs`, `typst/tiles`, and Typst include files
+
+## Core Data Model
+
+- A tile has 6 node bits (`N1..N6`) and may include adjacent/flag bits (see `common/src/consts.rs`).
+- A maze is a grid of `Tile` with net lists used for reduction + rendering.
+- Rendering is fragment-based: bitmask -> pre-generated SVG path in `MAP_PATHS`.
+- Rendering tracks `visible` and `hidden` nets to avoid double-drawing overlaps.
+
+## Key Algorithms
+
+- `create_random_grid` (`lib/src/maze/maze/grid_generation.rs`) fills the grid while checking surrounding compatibility masks.
+- `get_surrounding_tile_connections` (`lib/src/maze/adjacent.rs`) builds a constraint mask from 12 neighboring tiles.
+- `random_tile` (`lib/src/maze/random.rs`) chooses valid net sets from generated lookup tables using weighted random selection.
+- `reduce_nets`, `remove_short_nets`, `sort_nets_by_length`, `get_intersections` perform net simplification/merging.
+- `remove_cycles` attempts to remove cyclic structures after reduction to simplify final paths.
+- `Tile::generate_hidden_and_visible_nets` + `find_best_path` decide whether a path is rendered as a local fragment or a complex multi-tile fragment.
+
+## Generation + Rendering Flow
+
+1. `Maze::new(...)` optionally calls `create_random_grid`.
+2. Grid generation uses 12-neighbor constraint masks and weighted random tile selection (`lib/src/maze/random.rs`).
+3. Optional `reduce_nets(lower_limit)` and `remove_cycles(debug)`.
+4. `render_with_options(...)` builds layer data via `Svg` and writes SVG or PNG.
+
+## CLI Behavior (`cli/src/main.rs`)
+
+Binary: `lubra`
+
+Key options:
+- `-W, --width`, `-H, --height`
+- `--seed`
+- `--reduce <usize>` (passed as lower-limit to `Maze::reduce_nets`)
+- `--remove-cycles <bool>` (default true)
+- `-F, --format <svg|png>`
+- `-o, --output <name>` (no extension)
+- `-B` boundaries, `-N` node numbers, `-R` randomise, `--background`, `--debug`
+
+Default output base name: `{width}-by-{height}-sample-normal`.
+
+## Generator Commands
+
+`generate` crate has a single binary with subcommand-style args:
+
+```bash
+# both (default)
+cargo run -p generate
+
+# only SVG fragments/adjacent path data
+cargo run -p generate -- svg
+
+# only net/mass lookup tables
+cargo run -p generate -- nets
+```
+
+Generated files are written directly into `lib/src/maze/generated/` and `lib/src/renders/generated/`.
+
+## Makefile
+
+Run `make` to list targets. Pipelines (each step runs from its crate's directory):
+
+- `make generate`: runs generator (both), then CLI, then document.
+- `make both`: runs generator `svg`, then CLI.
+- `make maze`: builds CLI and times one debug maze (override with `MAZE_ARGS="..."`).
+- `make doc`: runs generator `svg`, then document crate, then `typst compile` for docs.
+- `make full`: runs generator `nets` + `svg`, then CLI, then document.
+
+Single steps: `make gen`, `gen-svg`, `gen-nets`, `cli`, `document`, `typst`, `build`, `test`.
+
+## Build/Test Commands
+
+```bash
+cargo build --workspace
+cargo test --workspace
+```
+
+If local `sccache` causes permission issues in constrained environments, use:
+
+```bash
+RUSTC_WRAPPER= cargo test --workspace
+```
+
+## Accuracy Notes For Future Edits
+
+- `common/src` does not contain `shapes/` or `svg/` modules in this repo version.
+- `test/` currently has no meaningful fixtures (only `.DS_Store`).
+- Generator behavior is controlled by args to `generate/src/main.rs`, not separate `generate_svg`/`generate_nets` binaries.
+- `MAP_PATHS` lives at `lib/src/renders/generated/fragment.rs` (not `lib/src/renders/fragment.rs`).

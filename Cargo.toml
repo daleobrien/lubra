@@ -1,12 +1,14 @@
-[registries.crates-io]
-protocol = "sparse"
-
+# cargo-features = ["codegen-backend"]
 [workspace]
-members = [
-    "lib",
-    "cli",
-    "generate"
-]
+resolver = "2"
+members = ["lib", "cli", "generate", "common", "document"]
+
+[profile.dev]
+#codegen-units = 256 # faster builds
+#incremental = true
+#lto = false
+#panic = "abort"
+#debug = 0
 
 [profile.release]
 opt-level = 3
@@ -14,12 +16,11 @@ debug = false
 rpath = false
 lto = false
 debug-assertions = false
-codegen-units = 16
 panic = 'unwind'
 incremental = false
 overflow-checks = false
 strip = true
-
+#codegen-units = 1
 
 [build]
 rustflags = ["-C", "target-cpu=native", "target-feature=+crt-static"]

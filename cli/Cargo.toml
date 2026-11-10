@@ -7,7 +7,11 @@ default-run = "lubra"
 
 [dependencies]
 lib = { path = "../lib" }
+clap = { version = "4.5.1", features = ["derive"] }
 
 [[bin]]
 name = "lubra"
 path = "src/main.rs"
+
+# https://www.zero2prod.com/assets/sample_zero2prod.pdf
+# You can edit ~/.cargo/config to add a linker flag, e.g.:

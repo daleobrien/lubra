@@ -1,0 +1,9 @@
+[package]
+name = "document"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lib = { path = "../lib" }
+common = { path = "../common" }
+itertools = "0.11.0"

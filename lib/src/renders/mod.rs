@@ -1,6 +1,5 @@
-pub mod glyph;
-pub mod lookup;
-pub mod primatives;
-mod shapes;
-pub mod strokes;
+pub mod generated;
+pub mod math;
+pub mod node_numbers;
+pub mod registry;
 pub mod svg;

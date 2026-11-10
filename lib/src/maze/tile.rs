@@ -1,256 +1,391 @@
-// use crate::renders::primatives::{Line, Point};
-// use array2d::Array2D;
-use bitflags::bitflags;
-use serde::ser::{Serialize, Serializer};
+use std::fmt;
 
-bitflags! {
-  #[derive(Default, serde::Deserialize)]
-  pub struct Tile: u32 {
+use rand_distr::num_traits::ToPrimitive;
 
-  /*
-    There are only 3 curves and 3 lines, 6 points
-                     [meta,points,curves,lines]
-    thus, 14  bits!  -> 0b00_000000_000_000
-  */
+use common::bit_utils::{sort_upper_bits, to_6bit_binary};
+use common::consts::{IN, NL, WA};
+use common::nodes::get_connected_coords_at_coords;
+use common::types::bits;
+use common::types::coordinate::{CataloguedNet, ComplexNet, Coordinate, CoordinateAndNet};
 
-    const G1 = 0b00_000001_000_001;
-    const G2 = 0b00_000010_000_010;
-    const G3 = 0b00_000100_000_100;
-    const G4 = 0b00_001000_011_100;
-    const G5 = 0b00_010000_101_010;
-    const G6 = 0b00_100000_110_001;
+use crate::maze::generated::nets_adjacent::ADJ_CHECKS;
+use crate::renders::generated::fragment::MAP_PATHS;
 
-    const Z1 = 0b00_000000_000_000; // Empty
-    const Z2 = 0b10_000000_000_000; // Not routed
-    const W1 = 0b01_000000_000_000; // Walls only, used to show the grid
-
-    const L1 = 0b00_000000_000_001; // Simple lines
-    const L2 = 0b00_000000_000_010;
-    const L3 = 0b00_000000_000_100;
-    const LX = 0b00_000000_000_111; // all Lines (any line mask)
-
-    const E1 = 0b00_000000_111_110;
-    const E2 = 0b00_000000_111_101;
-    const E3 = 0b00_000000_111_011;
-
-    const A1 = 0b00_000000_001_000; // Arcs
-    const A2 = 0b00_000000_010_000;
-    const A3 = 0b00_000000_100_000;
-    const AX = 0b00_000000_111_000;
-
-    const Y1 = 0b00_000000_000_110; // Combinations of 2 lines
-    const Y2 = 0b00_000000_000_101;
-    const Y3 = 0b00_000000_000_011;
-
-    const C1 = 0b00_000000_001_001; // Combination of 1 arc and 1 line
-    const C2 = 0b00_000000_010_010;
-    const C3 = 0b00_000000_100_100;
-
-    const T1 = 0b00_100000_000_000; // Points on the edge
-    const T2 = 0b00_010000_000_000;
-    const T3 = 0b00_001000_000_000;
-
-    const N1 = 0b00_000001_000_000; // Points on the vertices
-    const N2 = 0b00_000010_000_000;
-    const N3 = 0b00_000100_000_000;
-
-  }
+#[derive(Clone, PartialEq, Eq, Hash)]
+pub struct Tile {
+    pub nodes: Vec<usize>,
+    pub initialised: bool,
+    pub bits: usize,
 }
 
 impl Tile {
-    pub fn max(&self) -> u32 {
-        // return self.nets.into_iter().max().unwrap_or_default();
-        return 0;
+    pub fn new(nodes: Vec<usize>, initialised: bool) -> Tile {
+        let bits = nodes.iter().fold(0, |a, b| a | b);
+        Tile {
+            nodes,
+            initialised,
+            bits,
+        }
     }
 
-    pub fn rotate_cw(&self) -> Tile {
-        let mut rotated_tile = Self::Z1;
+    pub fn get_first_nodes(&self) -> Vec<usize> {
+        // Get the first set bit from each node
+        self
+            .nodes
+            .iter()
+            .map(|n| n.trailing_zeros().to_usize().unwrap())
+            .collect()
+    }
 
-        if self.contains(Self::W1) {
-            rotated_tile |= Self::W1;
+    pub fn to_string_vec(self) -> String {
+        if self.nodes.is_empty() {
+            return "-".to_string();
         }
-        if self.contains(Self::AX) {
-            rotated_tile |= Self::AX;
-        }
-        if self.contains(Self::LX) {
-            rotated_tile |= Self::LX;
-        }
+        let s: String = self
+            .nodes
+            .iter()
+            .map(|n| to_6bit_binary(n, true))
+            .collect::<Vec<String>>()
+            .join(", ");
 
-        for (a, b) in [
-            (Self::Y1, Self::Y2),
-            (Self::Y2, Self::Y3),
-            (Self::Y3, Self::Y1),
-            (Self::A1, Self::A2),
-            (Self::A2, Self::A3),
-            (Self::A3, Self::A1),
-            (Self::C1, Self::C2),
-            (Self::C2, Self::C3),
-            (Self::C3, Self::C1),
-            (Self::L1, Self::L2),
-            (Self::L2, Self::L3),
-            (Self::L3, Self::L1),
-            (Self::N1, Self::N2),
-            (Self::N2, Self::N3),
-            (Self::N3, Self::N1),
-            (Self::T1, Self::T2),
-            (Self::T2, Self::T3),
-            (Self::T3, Self::T1),
-        ] {
-            if self.contains(a) {
-                rotated_tile |= b;
+        format!("[{s}]", s = s.replace("\"", ""))
+    }
+
+    pub fn generate_hidden_and_visible_nets(
+        self,
+        coordinate: Coordinate,
+        boundaries: bool,
+        surrounding_tiles: &[Option<&Tile>; 12],
+        debug: bool,
+    ) -> CataloguedNet {
+        //
+
+        let mut render_nets = CataloguedNet::new();
+
+        // if debug {
+        //     println!("NETS: {coordinate} -> {:?}", print_nets(&self.nodes));
+        // }
+        for net in self.nodes {
+            // Now we need to look for related tiles ...
+
+            // if debug {
+            //     println!("\nNET_: {coordinate} -> {:?}", print_bits(net));
+            // }
+            // This needs to return a net to use, and a list of adjacent nets to remove.
+            let complex_net = Self::find_best_path(coordinate, &surrounding_tiles, &net, debug);
+
+            if complex_net.is_some() {
+                render_nets.add(complex_net.unwrap());
+            } else {
+                // Simple path
+                let path = MAP_PATHS.get(&net);
+
+                // A simple tile with no adjacent tiles to worry about?
+                if path.is_some() {
+                    render_nets
+                        .visible
+                        .push(CoordinateAndNet::new(coordinate, net));
+                }
             }
         }
-        return rotated_tile;
-    }
-    pub fn rotate_ccw(&self) -> Tile {
-        let mut rotated_tile = Self::Z1;
 
-        if self.contains(Self::W1) {
-            rotated_tile |= Self::W1;
-        }
-        if self.contains(Self::AX) {
-            rotated_tile |= Self::AX;
-        }
-        if self.contains(Self::LX) {
-            rotated_tile |= Self::LX;
-        }
-        for (a, b) in [
-            (Self::Y1, Self::Y3),
-            (Self::Y2, Self::Y1),
-            (Self::Y3, Self::Y2),
-            (Self::A1, Self::A3),
-            (Self::A2, Self::A1),
-            (Self::A3, Self::A2),
-            (Self::C1, Self::C3),
-            (Self::C2, Self::C1),
-            (Self::C3, Self::C2),
-            (Self::L1, Self::L3),
-            (Self::L2, Self::L1),
-            (Self::L3, Self::L2),
-            (Self::N1, Self::N3),
-            (Self::N2, Self::N1),
-            (Self::N3, Self::N2),
-            (Self::T1, Self::T3),
-            (Self::T2, Self::T1),
-            (Self::T3, Self::T2),
-        ] {
-            if self.contains(a) {
-                rotated_tile |= b;
+        if boundaries {
+            let flipped = (coordinate.j + coordinate.i) % 2 == 1;
+            let bits = if flipped { WA | IN } else { WA };
+            let wall = MAP_PATHS.get(&bits);
+            if wall.is_some() {
+                render_nets
+                    .visible
+                    .push(CoordinateAndNet::new(coordinate, bits));
             }
         }
-        return rotated_tile;
+
+        return render_nets;
+    }
+
+    fn find_best_path(
+        coordinate: Coordinate,
+        surrounding_tiles: &&[Option<&Tile>; 12],
+        net: &usize,
+        debug: bool,
+    ) -> Option<ComplexNet> {
+        let list_of_adj_and_nets = ADJ_CHECKS.get(&net);
+
+        let mut complex_net: ComplexNet = ComplexNet::new();
+
+        if list_of_adj_and_nets.is_some() {
+            // let x = list_of_adj_and_nets
+            //     .unwrap()
+            //     .iter()
+            //     .map(|&x| (*x)[0].2)
+            //     .collect::<Vec<_>>();
+            // if debug {
+            //     println!(
+            //         "find_best_path: {}  -> \"{}\" [{:?}]",
+            //         coordinate,
+            //         print_bits(*net),
+            //         x.iter().map(|n| print_bits(*n)).collect::<Vec<String>>()
+            //     );
+            // }
+            for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
+                //
+                if Self::all_match(surrounding_tiles, adj_and_nets, debug) {
+                    // For each subnet, merge them into one net
+                    let adj_net = adj_and_nets
+                        .iter()
+                        .map(|(_, _m, n)| n)
+                        .fold(0, |a, b| a << 6 | b);
+
+                    let mut new_bits = (adj_net << 6) | net;
+
+                    new_bits = sort_upper_bits(new_bits);
+
+                    // From here on, the bits are in the correct orientation rather then logical.
+                    let bits = new_bits;
+
+                    if MAP_PATHS.contains_key(&bits) {
+                        // if debug {
+                        //     println!(
+                        //         "__D : {c}  -> \"{b}\"",
+                        //         c = coordinate,
+                        //         b = to_6bit_binary(&bits, false),
+                        //     );
+                        // }
+
+                        // Adjacent tiles masks
+                        let adj_nets_1 = (bits >> 6) & NL;
+                        let adj_nets_2 = (bits >> 12) & NL;
+                        let adj_nets_3 = (bits >> 18) & NL;
+                        let adj_nets_4 = (bits >> 24) & NL;
+
+                        for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
+                            if adj_net != 0 {
+                                let node_number =
+                                    ((net & NL) & adj_net).trailing_zeros().to_usize().unwrap();
+
+                                // -------
+                                // if debug {
+                                //     println!(
+                                //         "ADJ : {c}  -> {b} {adj_nets_1}",
+                                //         c = coordinate,
+                                //         b = print_bits(adj_net),
+                                //         adj_nets_1 = print_bits(adj_nets_1),
+                                //     );
+                                // }
+                                Self::add_node_to_hidden(
+                                    coordinate,
+                                    &mut complex_net,
+                                    adj_net,
+                                    node_number,
+                                    debug,
+                                );
+                            }
+                        }
+
+                        complex_net.complex_net = CoordinateAndNet::new(coordinate, bits);
+                        return Some(complex_net);
+                    }
+                }
+            }
+        }
+        return None;
+    }
+
+    fn add_node_to_hidden(
+        coordinate: Coordinate,
+        complex_net: &mut ComplexNet,
+        adj_net: usize,
+        node_number: usize,
+        _debug: bool,
+    ) {
+        let coord = get_connected_coords_at_coords(coordinate, node_number);
+
+        if coord.is_some() {
+            let index_as_mask = 1 << node_number;
+            if index_as_mask.to_usize().unwrap() & adj_net != 0 {
+                // Also, is node_number in adj_net
+                // if debug {
+                //     println!(
+                //         "ADD : {}  -> node # {n} {b} {x}",
+                //         coord.unwrap(),
+                //         n = node_number + 1,
+                //         b = print_bits(adj_net),
+                //         x = adj_net & index_as_mask != 0
+                //     );
+                // }
+                complex_net
+                    .hidden_neighbours
+                    .insert(CoordinateAndNet::new(coord.unwrap(), adj_net));
+            }
+        }
+    }
+
+    fn all_match(
+        surrounding_tiles: &[Option<&Tile>; 12],
+        adj_and_nets: &[(usize, bool, usize)],
+        _debug: bool,
+    ) -> bool {
+        let mut all_matched = true;
+
+        // All the adjacent tiles must contain the net to be considered hidden.
+        for (adj_idx, same, pattern) in adj_and_nets.iter() {
+            let &adj_tile = &surrounding_tiles[*adj_idx];
+            // if debug && adj_tile.is_some() {
+            //     println!(
+            //         "_AM : {adj_idx} -> {same} {pattern} U {adj_tile} ?",
+            //         adj_idx = adj_idx,
+            //         same = same,
+            //         pattern = print_bits(*pattern),
+            //         adj_tile = print_bits((adj_tile.unwrap()).bits)
+            //     );
+            // }
+
+            //
+            match adj_tile {
+                Some(a) => {
+                    if *same != a.contain_net(*pattern) {
+                        all_matched = false;
+                    }
+                }
+                _ => {
+                    all_matched = false;
+                }
+            }
+        }
+        // if debug {
+        //     println!("_AM : {all_matched}", all_matched = all_matched);
+        // }
+        all_matched
+    }
+
+    pub fn rotate_cw(&self) -> Vec<usize> {
+        return self
+            .nodes
+            .iter()
+            .map(|n| bits::rotate_bits_345_left_and_012_right(*n))
+            .collect();
+    }
+
+    pub fn rotate_ccw(&self) -> Vec<usize> {
+        return self
+            .nodes
+            .iter()
+            .map(|n| bits::rotate_bits_345_right_and_012_left(*n))
+            .collect();
+    }
+
+    pub fn intersects(&self, other: &Tile) -> bool {
+        return other.bits & self.bits != 0;
+    }
+
+    pub fn contains(&self, node_mask: usize) -> bool {
+        return node_mask & self.bits != 0;
+    }
+
+    pub fn contain_net(&self, net_mask: usize) -> bool {
+        return self.nodes.iter().any(|net| *net == net_mask);
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.nodes.is_empty();
     }
 }
-impl Serialize for Tile {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_u32(self.bits)
-    }
-}
 
-pub fn add(u: usize, i: i32) -> usize {
-    if i.is_negative() {
-        u - i.wrapping_abs() as u32 as usize
-    } else {
-        u + i as usize
-    }
-}
-
-// TODO: dO I need this?
-impl From<[u32; 3]> for Tile {
-    fn from(masks: [u32; 3]) -> Tile {
-        let [point_mask, line_mask, curve_mask] = masks;
-
-        // Nx and Tx
-        let mut value = Tile::from_bits_truncate(0);
-
-        if point_mask & 0b000_001 == 0b000_001 {
-            value |= Tile::N1;
-        };
-        if point_mask & 0b000_010 == 0b000_010 {
-            value |= Tile::N2;
-        };
-        if point_mask & 0b000_100 == 0b000_100 {
-            value |= Tile::N3;
-        };
-
-        if point_mask & 0b100_000 == 0b100_000 {
-            value |= Tile::T1;
-        };
-        if point_mask & 0b010_000 == 0b010_000 {
-            value |= Tile::T2;
-        };
-        if point_mask & 0b001_000 == 0b001_000 {
-            value |= Tile::T3;
-        };
-
-        if curve_mask & 0b011_000 == 0b011_000 {
-            value |= Tile::A1;
-        };
-        if curve_mask & 0b101_000 == 0b101_000 {
-            value |= Tile::A2;
-        };
-        if curve_mask & 0b110_000 == 0b110_000 {
-            value |= Tile::A3;
-        };
-        if line_mask & 0b001 == 0b001 {
-            value |= Tile::L1;
-        };
-        if line_mask & 0b010 == 0b010 {
-            value |= Tile::L2;
-        };
-        if line_mask & 0b100 == 0b100 {
-            value |= Tile::L3;
-        };
-
-        // e.g if A1 and L1 then C1 and clear A1/L1
-        // CXs
-        if value & (Tile::A1 | Tile::L1) == (Tile::A1 | Tile::L1) {
-            value ^= Tile::L1;
-            value |= Tile::C1;
-        }
-        if value & (Tile::A2 | Tile::L2) == (Tile::A2 | Tile::L2) {
-            value ^= Tile::L2;
-            value |= Tile::C2;
-        }
-        if value & (Tile::A3 | Tile::L3) == (Tile::A3 | Tile::L3) {
-            value ^= Tile::L3;
-            value |= Tile::C3;
-        }
-
-        // AX
-        if value & (Tile::AX) == (Tile::AX) {
-            value ^= Tile::AX;
-            value |= Tile::AX;
-        }
-
-        // LX
-        if value & Tile::LX == Tile::LX {
-            value ^= Tile::L1;
-            value ^= Tile::L2;
-            value |= Tile::LX;
-            // L3 is solid
+impl fmt::Debug for Tile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.initialised {
+            write!(f, "{:?}", self.nodes)
         } else {
-            // Yxs
-            if value & (Tile::L2 | Tile::L3) == (Tile::L2 | Tile::L3) {
-                value ^= Tile::L2;
-                value |= Tile::Y1;
-                // L3 is solid
-            }
-            if value & (Tile::L1 | Tile::L3) == (Tile::L1 | Tile::L3) {
-                value ^= Tile::L3;
-                value |= Tile::Y2;
-                // L1 is solid
-            }
-            if value & (Tile::L1 | Tile::L2) == (Tile::L1 | Tile::L2) {
-                value ^= Tile::L1;
-                value |= Tile::Y3;
-                // L2 is solid
-            }
+            write!(f, "uninitialised")
         }
+    }
+}
 
-        value
+impl fmt::Display for Tile {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.initialised {
+            write!(f, "{:?}", self.nodes)
+        } else {
+            write!(f, "?")
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+  use std::{assert_eq, println, vec};
+
+  use common::consts::{N1, N2, N3, N4, N5, N6};
+
+  use crate::maze::tile::Tile;
+
+  #[test]
+    fn test_cw_rotation() {
+        let tile = Tile::new(vec![N1 | N2, N5], true);
+        let rotated_nodes = tile.rotate_cw();
+        println!("CW: {:#06b} {:#06b}", rotated_nodes[0], rotated_nodes[1]);
+        assert_eq!(rotated_nodes, vec![N1 | N3, N6]);
+    }
+
+    #[test]
+    fn test_ccw_rotation() {
+        let tile = Tile::new(vec![N1 | N2, N5], true);
+        let rotated_nodes = tile.rotate_ccw();
+        assert_eq!(rotated_nodes, vec![N2 | N3, N4]);
+    }
+
+    #[test]
+    fn test_bits() {
+        let tile = Tile::new(vec![N1 | N2, N5], true);
+        assert_eq!(tile.bits, N1 | N2 | N5)
+    }
+
+    #[test]
+    fn test_intersects() {
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
+        let tile2 = Tile::new(vec![N2 | N3, N6], true);
+        assert_eq!(tile1.intersects(&tile2), true);
+
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
+        let tile2 = Tile::new(vec![N3, N6], true);
+        assert_eq!(tile1.intersects(&tile2), false);
+    }
+
+    #[test]
+    fn test_contains() {
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
+        assert_eq!(tile1.contains(N1), true);
+        assert_eq!(tile1.contains(N2), true);
+        assert_eq!(tile1.contains(N3), false);
+        assert_eq!(tile1.contains(N4), false);
+        assert_eq!(tile1.contains(N5), true);
+        assert_eq!(tile1.contains(N6), false);
+
+        let tile1 = Tile::new(vec![], true);
+        assert_eq!(tile1.contains(N1), false);
+    }
+
+    #[test]
+    fn test_contain_net() {
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
+        assert_eq!(tile1.contain_net(N1), false);
+        assert_eq!(tile1.contain_net(N2), false);
+        assert_eq!(tile1.contain_net(N1 | N2), true);
+        assert_eq!(tile1.contain_net(N3), false);
+        assert_eq!(tile1.contain_net(N4), false);
+        assert_eq!(tile1.contain_net(N5), true);
+        assert_eq!(tile1.contain_net(N6), false);
+
+        let tile1 = Tile::new(vec![], true);
+        assert_eq!(tile1.contains(N1), false);
+    }
+
+    #[test]
+    fn test_is_empty() {
+        let tile1 = Tile::new(vec![N1 | N2, N5], true);
+        assert_eq!(tile1.is_empty(), false);
+
+        let tile1 = Tile::new(vec![], true);
+        assert_eq!(tile1.is_empty(), true);
     }
 }
