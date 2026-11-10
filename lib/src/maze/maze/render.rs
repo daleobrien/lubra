@@ -89,7 +89,10 @@ impl Maze {
                 x: coordinate_and_net.coordinate.i as f64,
                 y: coordinate_and_net.coordinate.j as f64,
             };
-            // TODO: will this work? nets that extend to other tiles should be on a different layer?
+            // Every fragment is drawn on one layer: where tracks cross, the one drawn
+            // later passes over. Cross-tile fragments don't need a layer of their own
+            // because PATH_WIDTH keeps an arc that dips into a neighbouring tile clear
+            // of that tile's openings.
             svg.add_fragment(frag.unwrap(), point, 1);
         }
 
