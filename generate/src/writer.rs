@@ -53,9 +53,8 @@ pub fn write_mass_to_file(mass_by_mask: HashMap<usize, Vec<usize>>, file_name: &
     );
     let _ = file.write_all(b"  match base4_mask {\n");
     for key in keys {
-        let mut mass = mass_by_mask[key].clone();
-        mass.sort();
-        let content = format!("    {:6?} => &{:?},\n", key, mass);
+        // Keep the order of `nets_by_mask[key]`: entry n is the weight of net set n.
+        let content = format!("    {:6?} => &{:?},\n", key, mass_by_mask[key]);
         let _ = file.write(content.as_bytes());
     }
     let _ = file.write_all(b"    _ => &[],\n");

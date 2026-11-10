@@ -331,7 +331,9 @@ either 1 or 2. Its mass (`get_mass` in `common/src/bit_utils.rs`) is
 $ "mass" = n dot 2^n, quad n = |"nets"| $
 
 so tiles holding more separate nets are favoured, and an empty tile (mass 0)
-is chosen only when it is the only option. `random_tile` (`maze/random.rs`) picks
+is chosen only when it is the only option. Each mass list is in the same order
+as its list of net sets (entry $n$ weighs net set $n$); a test checks every
+mask against `get_mass`. `random_tile` (`maze/random.rs`) picks
 an entry with a Walker alias table (`weighted_rand`) and shuffles the nets to
 vary the render order.
 

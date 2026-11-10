@@ -54,3 +54,37 @@ pub fn select_random_element(vec: Vec<usize>, seed: Option<u64>) -> Option<usize
     let index = rng.gen_range(0..vec.len());
     Some(vec[index])
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use common::bit_utils::get_mass;
+
+    /// Every constraint mask: one decimal digit (0, 1 or 2) per node.
+    fn all_masks() -> impl Iterator<Item = usize> {
+        (0..729).map(|n: usize| {
+            (0..6).fold(0, |mask, digit| {
+                mask + (n / 3usize.pow(digit) % 3) * 10usize.pow(digit)
+            })
+        })
+    }
+
+    #[test]
+    fn test_mass_tables_match_net_tables() {
+        for mask in all_masks() {
+            for (nets, mass) in [
+                (nets_small(mask), mass_small(mask)),
+                (nets_large(mask), mass_large(mask)),
+            ] {
+                if mass.is_empty() {
+                    continue; // mask not in the table
+                }
+                assert_eq!(nets.len(), mass.len(), "mask {mask}");
+                for (net_set, &weight) in nets.iter().zip(mass) {
+                    let expected = get_mass(net_set) as u32;
+                    assert_eq!(weight, expected, "mask {mask}, nets {net_set:?}");
+                }
+            }
+        }
+    }
+}
