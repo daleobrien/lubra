@@ -168,3 +168,29 @@ impl Maze {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::maze::maze::FileType::SVG;
+    use crate::maze::maze::{with_large_stack, Maze};
+
+    #[test]
+    fn test_render_is_byte_identical_for_a_seed() {
+        with_large_stack(|| {
+            let dir = std::env::temp_dir();
+            let render = |name: &str| {
+                let mut maze = Maze::new(12, 8, true, true, false, Some(3));
+                maze.reduce_nets(1);
+                maze.remove_cycles(false);
+                let path = dir.join(name);
+                maze.render(path.to_string_lossy().into_owned(), SVG)
+                    .expect("render failed");
+                let svg_path = path.with_extension("svg");
+                let bytes = std::fs::read(&svg_path).expect("missing SVG");
+                let _ = std::fs::remove_file(svg_path);
+                bytes
+            };
+            assert!(render("lubra-determinism-a") == render("lubra-determinism-b"));
+        });
+    }
+}

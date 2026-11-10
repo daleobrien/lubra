@@ -404,7 +404,8 @@ and no debug output.
   `background`, the SVG gets a light-blue background.
 
 Each distinct fragment is stored once in a `StringRegistry` and emitted as
-a `<g>` in `<defs>`. Every placement is a `<use href>` positioned at
+a `<g>` in `<defs>`, in the order fragments were first used, so a seeded
+maze always produces a byte-identical file. Every placement is a `<use href>` positioned at
 $(i dot W / 2, j dot H)$. The y axis is flipped so that row 0 is at the bottom.
 
 Tracks may pass over one another. Each fragment is a white fill (80% opaque)
@@ -544,8 +545,6 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
 - `reduce_nets` stops with more than one net if no shared tile, free node or
   empty tile can join the rest. This hasn't happened in testing: every
   seeded maze in the tests ends as one net.
-- `<defs>` in the SVG are written in `HashMap` order, so two runs with the
-  same seed draw the same maze but the files aren't byte-identical.
 - In a debug build, creating a random maze needs more than the 2 MiB stack a
   test thread gets, because the generated lookup functions have very large
   stack frames. Tests that build random mazes run through `with_large_stack`.

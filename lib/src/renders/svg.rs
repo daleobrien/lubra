@@ -72,11 +72,7 @@ impl Svg {
 
         s.push_str("<defs>");
         for (name, content) in self.glyphs.iter() {
-            s.push_str(&format!(
-                "<g id='{name}'>{content}</g>",
-                name = *name,
-                content = content
-            ));
+            s.push_str(&format!("<g id='{name}'>{content}</g>"));
         }
         s.push_str("</defs>");
 

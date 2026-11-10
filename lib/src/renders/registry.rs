@@ -1,11 +1,14 @@
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
+/// Deduplicates strings (SVG fragments), giving each distinct one an id.
+///
+/// Ids are handed out in order from 0, and iteration follows the ids, so the
+/// output depends only on the order strings were added. This keeps a seeded
+/// maze's SVG byte-identical between runs.
 pub struct StringRegistry {
-    set: HashMap<String, usize>,
-    map: HashMap<usize, String>,
-    counter: AtomicUsize,
+    ids: HashMap<String, usize>,
+    values: Vec<String>,
 }
 
 impl Default for StringRegistry {
@@ -17,53 +20,40 @@ impl Default for StringRegistry {
 impl StringRegistry {
     pub fn new() -> Self {
         StringRegistry {
-            counter: AtomicUsize::new(0),
-            map: HashMap::new(),
-            set: HashMap::new(),
+            ids: HashMap::new(),
+            values: Vec::new(),
         }
     }
 
+    /// Returns the id of `value`, adding it if it hasn't been seen before.
     pub fn add(&mut self, value: &str) -> usize {
-        match self.set.entry(value.to_string()) {
+        match self.ids.entry(value.to_string()) {
             Entry::Occupied(e) => *e.get(),
             Entry::Vacant(e) => {
-                let id = self.counter.fetch_add(1, Ordering::Relaxed);
+                let id = self.values.len();
                 e.insert(id);
-                self.map.insert(id, value.to_string());
+                self.values.push(value.to_string());
                 id
             }
         }
     }
 
     pub fn get(&self, id: usize) -> Option<&String> {
-        self.map.get(&id)
+        self.values.get(id)
     }
 
-    pub(crate) fn iter(&self) -> StringRegistryIter<'_> {
-        StringRegistryIter {
-            inner: self.map.iter(),
-        }
-    }
-}
-
-pub struct StringRegistryIter<'a> {
-    inner: std::collections::hash_map::Iter<'a, usize, String>,
-}
-
-impl<'a> Iterator for StringRegistryIter<'a> {
-    type Item = (&'a usize, &'a String);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.inner.next()
+    /// The `(id, value)` pairs in id order.
+    pub(crate) fn iter(&self) -> impl Iterator<Item = (usize, &String)> {
+        self.values.iter().enumerate()
     }
 }
 
 impl IntoIterator for StringRegistry {
     type Item = (usize, String);
-    type IntoIter = std::collections::hash_map::IntoIter<usize, String>;
+    type IntoIter = std::iter::Enumerate<std::vec::IntoIter<String>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.map.into_iter()
+        self.values.into_iter().enumerate()
     }
 }
 
@@ -116,5 +106,17 @@ mod tests {
         let id1 = registry.add("Item");
         let id2 = registry.add("Item");
         assert_eq!(id1, id2);
+    }
+
+    #[test]
+    fn test_iter_follows_insertion_order() {
+        let mut registry = StringRegistry::new();
+        for value in ["c", "a", "b", "a", "d"] {
+            registry.add(value);
+        }
+        let values: Vec<_> = registry.iter().map(|(_, v)| v.as_str()).collect();
+        assert_eq!(values, ["c", "a", "b", "d"]);
+        let ids: Vec<_> = registry.iter().map(|(id, _)| id).collect();
+        assert_eq!(ids, [0, 1, 2, 3]);
     }
 }
