@@ -75,8 +75,8 @@ Root `Cargo.toml` members:
 - `create_random_grid` (`lib/src/maze/maze/grid_generation.rs`) fills the grid while checking surrounding compatibility masks.
 - `get_surrounding_tile_connections` (`lib/src/maze/adjacent.rs`) builds a constraint mask from 12 neighboring tiles.
 - `random_tile` (`lib/src/maze/random.rs`) chooses valid net sets from generated lookup tables using weighted random selection.
-- `reduce_nets`, `remove_short_nets`, `sort_nets_by_length`, `get_intersections` perform net simplification/merging.
-- `remove_cycles` attempts to remove cyclic structures after reduction to simplify final paths.
+- `rebuild_nets` recomputes the net list from the tiles; `reduce_nets` (with `remove_short_nets`) joins all nets into one via shared tiles, free nodes or empty tiles.
+- `remove_cycles` cuts loops (Kruskal over tile-net hubs) so the maze is a single tree; it never splits a net.
 - `Tile::generate_hidden_and_visible_nets` + `find_best_path` decide whether a path is rendered as a local fragment or a complex multi-tile fragment.
 
 ## Generation + Rendering Flow

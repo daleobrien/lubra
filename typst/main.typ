@@ -140,8 +140,10 @@ and _inverted_ (flipped vertically, flag `IN`).
 )
 
 `TILE_WIDTH` is 120 SVG units, `TILE_HEIGHT` is $120 dot sqrt(3) / 2$, and
-paths are `PATH_WIDTH` $= 0.11$ tile widths wide, which is narrow enough
-that fragments in neighbouring tiles never overlap.
+tracks are `PATH_WIDTH` $= 0.09$ tile widths wide. Some arcs (for example
+the vertex arc 2–3) bulge past their tile's edge. At this width they stay
+clear of the neighbouring tile's opening, so a track that passes over another
+never leaves a seam where it crosses a tile boundary (see @rendering).
 
 == Grid and orientation
 
@@ -320,12 +322,12 @@ their weights ("mass"). It writes four functions:
 
 `NodeCombinations` lists every set of non-overlapping nets. Each set is
 registered under every mask it satisfies, with each used node marked as
-either 1 or 2. Its mass is
+either 1 or 2. Its mass (`get_mass` in `common/src/bit_utils.rs`) is
 
-$ "mass" = |"nets"| dot product_("net") w("net"), quad w = cases(20 & "2 nodes", 5 & "3 nodes", 2 & "4 nodes", 1 & "otherwise") $
+$ "mass" = n dot 2^n, quad n = |"nets"| $
 
-so simple corridors are strongly favoured, and an empty tile (mass 0) is
-chosen only when it is the only option. `random_tile` (`maze/random.rs`) picks
+so tiles holding more separate nets are favoured, and an empty tile (mass 0)
+is chosen only when it is the only option. `random_tile` (`maze/random.rs`) picks
 an entry with a Walker alias table (`weighted_rand`) and shuffles the nets to
 vary the render order.
 
@@ -336,41 +338,54 @@ the maze-wide `Net`: a list of `Nodes`, each a set of `Node { i, j, node }`
 positions (`maze/net.rs`). A new tile net either starts a new entry, extends
 one, or merges several that it bridges.
 
-`reduce_nets(lower_limit)` (`maze/maze/net_reduction.rs`) tries to join the
-disconnected nets. It does nothing if there is at most one net. Otherwise:
+The list is only an index of what the tiles already say, so after any later
+change `rebuild_nets` (`net_operations.rs`) recomputes it from the tiles. Two
+node positions are in the same net when they share a tile net, or when they
+are the same node seen from the tiles either side of it. The result is
+ordered by the first tile that uses each net, so it is deterministic.
 
-+ sort the nets by size and remove every net with at most `lower_limit`
-  nodes, deleting it from the tiles (`remove_short_nets`);
-+ find pairs of nets that pass through the same tile (`get_intersections`),
-  skipping pairs already linked through another net;
-+ for each pair: if a shared tile holds exactly two nets, replace them with
-  one combined net and join the two nets. Otherwise, in every shared tile,
-  pick a random node of each net (`select_random_element`) and combine the
-  tile nets that contain them;
-+ drop the nets that were merged away;
-+ if more than one net is left, use `find_adjacent_tile_pairs` to find
-  neighbouring tiles of the first two nets and open the node between them
-  (`get_connecting_node_mask`), joining those two nets.
+`reduce_nets(lower_limit)` (`maze/maze/net_reduction.rs`) joins the nets
+into one:
 
-The neighbour search (`maze/maze/surrounding_coordinates.rs`) tries three
-tiers in turn: tiles in both nets, tiles in one net next to the other, and
-empty tiles next to both.
++ rebuild the net list and remove every net with at most `lower_limit`
+  node positions from the tiles (`remove_short_nets`; 0 keeps them all);
++ repeat passes until one net is left, or a pass joins nothing. Each pass
+  uses the first of these that joins anything:
+  - *shared tile*: merge two tile nets of different nets that pass through
+    the same tile into one tile net;
+  - *free node*: open a node that is unused on both sides between
+    neighbouring tiles of different nets, and add it to a tile net on each
+    side. A vertex is only opened if none of its flanking tiles uses it;
+  - *empty tile*: give an empty tile a two-node net joining tile nets of
+    different nets on two of its sides.
++ rebuild the net list after every pass.
+
+Within a pass a union-find over the nets allows each pair of nets to be
+joined only once, so joins never create a loop. Candidates are shuffled with
+the maze's seed, so a seeded maze always reduces the same way.
 
 == Removing cycles
 
-`remove_cycles(debug)` (`maze/maze/remove_cycles.rs`) turns each net into a
-tree, so there is only one route between any two points:
+`remove_cycles(debug)` (`maze/maze/remove_cycles.rs`) turns the maze into a
+tree, with exactly one route between any two points, without splitting it.
+It treats the maze as a graph with two kinds of vertex, node positions and
+tile nets, and two kinds of join:
 
-+ build a node adjacency map for every net;
-+ find cycles with a depth-first search and normalise them, so the same
-  loop found from different starting points is counted once;
-+ for each cycle, remove its second-to-last node from the net. In the tile,
-  that node is split off its tile net and kept as a single-node net (a dead
-  end);
-+ repeat until no cycles remain (at most 100 passes);
-+ split any net that is now disconnected into its connected components.
+- a _crossing_ join links a node position to the same node in the tile
+  across it. Each position has at most one partner, so these joins alone can
+  never form a loop;
+- a _tile_ join links a tile net to each of its node positions. Treating the
+  tile net as a hub, rather than joining its nodes to each other, means a
+  junction is not mistaken for a loop.
 
-= Rendering
+The joins are added to a union-find in Kruskal order: all crossing joins
+first, then the tile joins shuffled with the maze's seed. A tile join whose
+two ends are already connected would close a loop, so it is cut instead.
+That node is detached from its tile net and kept as a single-node net, which
+is drawn as a dead end. Cutting a join that closes a loop never disconnects
+anything, so the number of nets doesn't change.
+
+= Rendering <rendering>
 
 `Maze::render_with_options(file_name, file_type, background, debug)`
 (`maze/maze/render.rs`) produces an `Svg` (`lib/src/renders/svg.rs`) and saves
@@ -390,8 +405,14 @@ and no debug output.
 
 Each distinct fragment is stored once in a `StringRegistry` and emitted as
 a `<g>` in `<defs>`. Every placement is a `<use href>` positioned at
-$(i dot W / 2, j dot H)$. The SVG has six layers, drawn bottom to top, and
-the y axis is flipped so that row 0 is at the bottom.
+$(i dot W / 2, j dot H)$. The y axis is flipped so that row 0 is at the bottom.
+
+Tracks may pass over one another. Each fragment is a white fill (80% opaque)
+followed by its black walls, so the track drawn later passes over and the one
+beneath shows through faintly as grey. All fragments go on one layer, in tile
+order. This only looks right because `PATH_WIDTH` keeps every crossing inside
+a single tile; at 0.11 the over/under order could flip at a tile boundary and
+leave a black seam across a corridor.
 
 == Adjacent (complex) fragments <adjacent>
 
@@ -520,11 +541,14 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
 
 = Current limitations
 
-- `reduce_nets` only connects the first two remaining nets in its final
-  step. The code also marks `remove_short_nets` and the complex merge (which
-  doesn't update the net list) as unfinished.
-- Fragments are drawn on one layer, so nets that extend into a neighbouring
-  tile can overlap in the wrong order (a TODO in `render.rs`).
+- `reduce_nets` stops with more than one net if no shared tile, free node or
+  empty tile can join the rest. This hasn't happened in testing: every
+  seeded maze in the tests ends as one net.
+- `<defs>` in the SVG are written in `HashMap` order, so two runs with the
+  same seed draw the same maze but the files aren't byte-identical.
+- In a debug build, creating a random maze needs more than the 2 MiB stack a
+  test thread gets, because the generated lookup functions have very large
+  stack frames. Tests that build random mazes run through `with_large_stack`.
 
 = Arc fragment families
 
