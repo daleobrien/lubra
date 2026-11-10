@@ -3,14 +3,11 @@ use crate::maze::tile::Tile;
 use array2d::Array2D;
 
 // Import the implementation modules
-mod create_coord_maps;
 mod grid_generation;
-mod net_intersections;
 mod net_operations;
 mod net_reduction;
 mod remove_cycles;
 mod render;
-mod sort_nets_by_length;
 mod surrounding_coordinates;
 mod tile_lookup;
 
@@ -67,4 +64,19 @@ impl Maze {
         }
         obj
     }
+}
+
+/// Runs `test` on a thread with a 64 MiB stack.
+///
+/// Building a random maze in a debug build needs more than the 2 MiB stack a test
+/// thread gets (the generated lookup functions have very large frames), so tests
+/// that call `Maze::new(.., randomise: true, ..)` run through this.
+#[cfg(test)]
+pub(crate) fn with_large_stack<F: FnOnce() + Send + 'static>(test: F) {
+    std::thread::Builder::new()
+        .stack_size(64 << 20)
+        .spawn(test)
+        .expect("failed to spawn test thread")
+        .join()
+        .expect("test thread panicked");
 }
