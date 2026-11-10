@@ -146,7 +146,6 @@ impl Maze {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::maze::maze::with_large_stack;
     use common::consts::{N2, N4, N5, N6};
 
     macro_rules! place_tile {
@@ -334,29 +333,25 @@ mod tests {
 
     #[test]
     fn test_remove_cycles_random_mazes() {
-        with_large_stack(|| {
-            for seed in [1, 2, 3, 7, 42] {
-                let mut maze = Maze::new(20, 14, true, false, false, Some(seed));
-                maze.rebuild_nets();
-                let nets_before = maze.nets.len();
-                assert!(maze.loop_count() > 0, "seed {seed} should start with loops");
-                maze.remove_cycles(false);
-                assert_eq!(maze.loop_count(), 0, "seed {seed}");
-                assert_eq!(maze.nets.len(), nets_before, "seed {seed} split a net");
-            }
-        });
+        for seed in [1, 2, 3, 7, 42] {
+            let mut maze = Maze::new(20, 14, true, false, false, Some(seed));
+            maze.rebuild_nets();
+            let nets_before = maze.nets.len();
+            assert!(maze.loop_count() > 0, "seed {seed} should start with loops");
+            maze.remove_cycles(false);
+            assert_eq!(maze.loop_count(), 0, "seed {seed}");
+            assert_eq!(maze.nets.len(), nets_before, "seed {seed} split a net");
+        }
     }
 
     #[test]
     fn test_remove_cycles_after_reduce_leaves_one_tree() {
-        with_large_stack(|| {
-            for seed in 1..=10 {
-                let mut maze = Maze::new(30, 20, true, false, false, Some(seed));
-                maze.reduce_nets(1);
-                maze.remove_cycles(false);
-                assert_eq!(maze.nets.len(), 1, "seed {seed}");
-                assert_eq!(maze.loop_count(), 0, "seed {seed}");
-            }
-        });
+        for seed in 1..=10 {
+            let mut maze = Maze::new(30, 20, true, false, false, Some(seed));
+            maze.reduce_nets(1);
+            maze.remove_cycles(false);
+            assert_eq!(maze.nets.len(), 1, "seed {seed}");
+            assert_eq!(maze.loop_count(), 0, "seed {seed}");
+        }
     }
 }

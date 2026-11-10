@@ -15,7 +15,7 @@ pub fn random_tile(mask: usize, seed: Option<u64>, reduced_lookup: bool) -> Vec<
     };
 
     if possible_nets.len() == 1 {
-        return possible_nets[0].clone();
+        return possible_nets[0].to_vec();
     }
 
     let possible_mass = if reduced_lookup {
@@ -30,11 +30,11 @@ pub fn random_tile(mask: usize, seed: Option<u64>, reduced_lookup: bool) -> Vec<
     };
 
     // Weighted Random pick
-    let builder = WalkerTableBuilder::new(&possible_mass);
+    let builder = WalkerTableBuilder::new(possible_mass);
     let nets_table = builder.build();
 
     let index = nets_table.next_rng(&mut rng);
-    let mut nets = possible_nets[index].clone();
+    let mut nets = possible_nets[index].to_vec();
     // Shuffle the nets so that the render order changes
     nets.shuffle(&mut rng);
     nets

@@ -229,7 +229,7 @@ impl Maze {
 
 #[cfg(test)]
 mod tests {
-    use crate::maze::maze::{with_large_stack, Maze};
+    use crate::maze::maze::Maze;
     use crate::maze::net::Nodes;
     use std::collections::BTreeSet;
 
@@ -246,31 +246,27 @@ mod tests {
 
     #[test]
     fn test_rebuild_nets_matches_incremental_network() {
-        with_large_stack(|| {
-            for seed in [1, 2, 3, 7, 42] {
-                let mut maze = Maze::new(12, 8, true, false, false, Some(seed));
-                let incremental = canonical(&maze.nets);
-                maze.rebuild_nets();
-                assert_eq!(canonical(&maze.nets), incremental, "seed {seed}");
-            }
-        });
+        for seed in [1, 2, 3, 7, 42] {
+            let mut maze = Maze::new(12, 8, true, false, false, Some(seed));
+            let incremental = canonical(&maze.nets);
+            maze.rebuild_nets();
+            assert_eq!(canonical(&maze.nets), incremental, "seed {seed}");
+        }
     }
 
     #[test]
     fn test_rebuild_nets_is_deterministic() {
-        with_large_stack(|| {
-            let mut a = Maze::new(12, 8, true, false, false, Some(5));
-            let mut b = Maze::new(12, 8, true, false, false, Some(5));
-            a.rebuild_nets();
-            b.rebuild_nets();
-            let order = |m: &Maze| {
-                m.nets
-                    .iter()
-                    .map(|net| net.iter().map(|n| (n.i, n.j, n.node)).min())
-                    .collect::<Vec<_>>()
-            };
-            assert_eq!(order(&a), order(&b));
-        });
+        let mut a = Maze::new(12, 8, true, false, false, Some(5));
+        let mut b = Maze::new(12, 8, true, false, false, Some(5));
+        a.rebuild_nets();
+        b.rebuild_nets();
+        let order = |m: &Maze| {
+            m.nets
+                .iter()
+                .map(|net| net.iter().map(|n| (n.i, n.j, n.node)).min())
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(order(&a), order(&b));
     }
 
     #[test]

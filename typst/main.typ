@@ -320,6 +320,9 @@ their weights ("mass"). It writes four functions:
   nets, including single-node dead ends. Used only when the small table has
   no option for a constrained tile.
 
+Each is a `match` on the mask that returns `&'static` slices of constant data,
+so a lookup allocates nothing and needs only a small stack frame.
+
 `NodeCombinations` lists every set of non-overlapping nets. Each set is
 registered under every mask it satisfies, with each used node marked as
 either 1 or 2. Its mass (`get_mass` in `common/src/bit_utils.rs`) is
@@ -545,9 +548,9 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
 - `reduce_nets` stops with more than one net if no shared tile, free node or
   empty tile can join the rest. This hasn't happened in testing: every
   seeded maze in the tests ends as one net.
-- In a debug build, creating a random maze needs more than the 2 MiB stack a
-  test thread gets, because the generated lookup functions have very large
-  stack frames. Tests that build random mazes run through `with_large_stack`.
+- Creating a maze slows down as it grows (about 10 s for 100 × 64 in a debug
+  build), because `update_network` searches the whole net list for every
+  tile it places.
 
 = Arc fragment families
 

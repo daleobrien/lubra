@@ -65,18 +65,3 @@ impl Maze {
         obj
     }
 }
-
-/// Runs `test` on a thread with a 64 MiB stack.
-///
-/// Building a random maze in a debug build needs more than the 2 MiB stack a test
-/// thread gets (the generated lookup functions have very large frames), so tests
-/// that call `Maze::new(.., randomise: true, ..)` run through this.
-#[cfg(test)]
-pub(crate) fn with_large_stack<F: FnOnce() + Send + 'static>(test: F) {
-    std::thread::Builder::new()
-        .stack_size(64 << 20)
-        .spawn(test)
-        .expect("failed to spawn test thread")
-        .join()
-        .expect("test thread panicked");
-}

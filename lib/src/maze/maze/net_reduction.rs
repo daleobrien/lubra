@@ -288,7 +288,6 @@ impl Maze {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::maze::maze::with_large_stack;
     use crate::maze::net::Net;
     use array2d::Array2D;
     use common::consts::{N1, N5, N6};
@@ -413,25 +412,21 @@ mod tests {
 
     #[test]
     fn test_reduce_nets_random_mazes_end_with_one_valid_net() {
-        with_large_stack(|| {
-            for seed in [1, 2, 3, 7, 42, 99] {
-                let mut maze = Maze::new(16, 10, true, false, false, Some(seed));
-                maze.reduce_nets(1);
-                assert_eq!(maze.nets.len(), 1, "seed {seed}");
-                assert_valid(&maze);
-            }
-        });
+        for seed in [1, 2, 3, 7, 42, 99] {
+            let mut maze = Maze::new(16, 10, true, false, false, Some(seed));
+            maze.reduce_nets(1);
+            assert_eq!(maze.nets.len(), 1, "seed {seed}");
+            assert_valid(&maze);
+        }
     }
 
     #[test]
     fn test_reduce_nets_is_reproducible_for_a_seed() {
-        with_large_stack(|| {
-            let reduce = || {
-                let mut maze = Maze::new(16, 10, true, false, false, Some(11));
-                maze.reduce_nets(1);
-                maze.tiles.as_row_major()
-            };
-            assert!(reduce() == reduce());
-        });
+        let reduce = || {
+            let mut maze = Maze::new(16, 10, true, false, false, Some(11));
+            maze.reduce_nets(1);
+            maze.tiles.as_row_major()
+        };
+        assert!(reduce() == reduce());
     }
 }
