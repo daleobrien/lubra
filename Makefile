@@ -1,6 +1,6 @@
-# Replaces the old helper scripts (generate.sh, both.sh, maze.sh, doc.sh, full.sh).
-# Each crate is run from its own directory, as the scripts did, so output files
-# land in the same places.
+# Build, generation and documentation tasks for the Lubra workspace.
+# Each crate is run from its own directory, so output files land where the code
+# expects them.
 
 CARGO ?= cargo
 TYPST ?= typst
@@ -16,15 +16,15 @@ MAZE_ARGS ?= --seed 3 -W 40 -H 30 -B -N --debug
 
 help:
 	@echo "Pipelines:"
-	@echo "  make generate  generator (svg + nets), then CLI, then document   (was generate.sh)"
-	@echo "  make both      generator svg, then CLI                           (was both.sh)"
-	@echo "  make maze      build CLI and time one debug maze                 (was maze.sh)"
-	@echo "  make doc       generator svg, document, then typst compile       (was doc.sh)"
-	@echo "  make full      generator nets + svg, then CLI, then document     (was full.sh)"
+	@echo "  make generate  generator (svg + nets), then CLI, then document"
+	@echo "  make both      generator svg, then CLI"
+	@echo "  make maze      build CLI and time one debug maze"
+	@echo "  make doc       generator svg, document, then typst compile"
+	@echo "  make full      generator nets + svg, then CLI, then document"
 	@echo "Steps:"
 	@echo "  make gen | gen-svg | gen-nets | cli | document | typst | build | test"
 
-# Pipelines (same order as the old scripts)
+# Pipelines
 generate: gen cli document
 both: gen-svg cli
 doc: gen-svg document typst

@@ -193,8 +193,8 @@ if !interects(&nets) {
 ### Code Generation Patterns
 
 This project generates significant amounts of code:
-- SVG path fragments in `lib/src/renders/fragment.rs`
-- Net lookup tables in `lib/src/maze/nets_*.rs` and `mass_*.rs`
+- SVG path fragments in `lib/src/renders/generated/fragment.rs`
+- Net lookup tables in `lib/src/maze/generated/nets_*.rs` and `mass_*.rs`
 - Generated code is checked into version control
 - Regenerate only when core tile logic changes
 
@@ -508,9 +508,10 @@ Don't prematurely optimize. The generated lookup tables and bit operations are a
 ## Code Generation
 
 ### Generator Organization
-Located in `generate/` crate with multiple binaries:
-- `generate_svg` - Creates SVG path fragments
-- `generate_nets` - Creates net lookup tables
+Located in the `generate/` crate: one binary whose argument selects the generator (run via the Makefile):
+- `make gen-svg` (`generate svg`) - Creates SVG path fragments
+- `make gen-nets` (`generate nets`) - Creates net lookup tables
+- `make gen` - Runs both
 
 ### Writing New Generators
 
@@ -586,17 +587,17 @@ fn test_generated_values_valid() {
 make full
 
 # Regenerate only SVG fragments
-cd generate && cargo run --bin generate_svg
+make gen-svg
 
 # Regenerate only net tables
-cd generate && cargo run --bin generate_nets
+make gen-nets
 
 # Verify changes compile
 cargo build --release
 
 # Review diffs before committing
-git diff lib/src/renders/fragment.rs
-git diff lib/src/maze/nets_*.rs
+git diff lib/src/renders/generated/fragment.rs
+git diff lib/src/maze/generated/nets_*.rs
 ```
 
 ---
@@ -836,7 +837,7 @@ Before considering code complete:
 
 ### Project Documentation
 - `WARP.md` - Comprehensive project overview and architecture
-- `lib/src/renders/fragment.rs` - Generated SVG fragments (reference, don't edit)
+- `lib/src/renders/generated/fragment.rs` - Generated SVG fragments (reference, don't edit)
 - `common/src/consts.rs` - All bit flag constants and coordinate mappings
 
 ### Rust Resources
