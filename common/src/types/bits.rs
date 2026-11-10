@@ -10,7 +10,7 @@ pub fn rotate_bits_345_left_and_012_right(value: usize) -> usize {
     let bits_345_2 = value << 1 & 0b110_000_110_000_110_000_110_000_110_000;
     let bits_012_1 = value << 2 & 0b000_100_000_100_000_100_000_100_000_100;
     let bits_012_2 = value >> 1 & 0b000_011_000_011_000_011_000_011_000_011;
-    return (WA & value) | bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
+    (WA & value) | bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2
 }
 
 pub fn rotate_bits_345_right_and_012_left(value: usize) -> usize {
@@ -18,12 +18,12 @@ pub fn rotate_bits_345_right_and_012_left(value: usize) -> usize {
     let bits_345_2 = value << 2 & 0b100_000_100_000_100_000_100_000_100_000;
     let bits_012_1 = value << 1 & 0b000_110_000_110_000_110_000_110_000_110;
     let bits_012_2 = value >> 2 & 0b000_001_000_001_000_001_000_001_000_001;
-    return (WA & value) | bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2;
+    (WA & value) | bits_345_1 | bits_345_2 | bits_012_1 | bits_012_2
 }
 
 //#[memoize] // Not sure if this will really help, so leave it out for now.
 fn coordinate_to_index_and_flip(coordinate: Coordinate) -> (usize, bool) {
-    return (coordinate.i % 3, (coordinate.j + coordinate.i) % 2 == 1);
+    (coordinate.i % 3, (coordinate.j + coordinate.i) % 2 == 1)
 }
 
 pub fn transform_tile(value: usize, coordinate: Coordinate) -> usize {
@@ -39,18 +39,18 @@ pub fn transform_tile(value: usize, coordinate: Coordinate) -> usize {
     } else {
         rotated_net
     };
-    return sort_upper_bits(bits);
+    sort_upper_bits(bits)
 }
 
 #[cfg(test)]
 mod tests {
-  use std::assert_eq;
+    use std::assert_eq;
 
-  use crate::consts::{N1, N2, N3, N4, N5, N6};
+    use crate::consts::{N1, N2, N3, N4, N5, N6};
 
-  use super::*;
+    use super::*;
 
-  #[test]
+    #[test]
     fn test_transform_vertex() {
         assert_eq!(transform_tile(N1, Coordinate { i: 0, j: 0 }), N1);
         assert_eq!(transform_tile(N1, Coordinate { i: 1, j: 0 }), IN | N2);

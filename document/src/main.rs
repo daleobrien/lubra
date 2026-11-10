@@ -3,7 +3,11 @@ mod create_svgs;
 mod create_tiles;
 mod create_typst;
 mod draw_walls;
+#[rustfmt::skip]
+#[allow(clippy::all)]
 mod empty;
+#[rustfmt::skip]
+#[allow(clippy::all)]
 mod variants;
 
 fn main() {

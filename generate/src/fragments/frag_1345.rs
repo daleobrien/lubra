@@ -1,7 +1,7 @@
 use common::consts::FILL;
 use common::define_shape_family;
 use common::macros::{
-  identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw,
+    identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw,
 };
 use common::types::format::trimf64;
 use common::types::path::Path;
@@ -10,11 +10,11 @@ use common::types::point::{Point, PATH_WIDTH, S2, S3, S4, S5, TILE_WIDTH};
 fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
     let pt1 = Point {
-        x: 0.5f64 + ((-1.) * w),
+        x: 0.5f64 + -w,
         y: S3,
     };
     let pt2 = Point {
-        x: 0.5f64 + ((-1.) * w),
+        x: 0.5f64 + -w,
         y: S4,
     };
     let pt3 = Point {
@@ -30,7 +30,7 @@ fn base(invert: bool) -> (Vec<String>, Path) {
         y: 0.25f64 * S2 * (1. + ((-2.) * w)),
     };
     let pt6 = Point {
-        x: 0.666667f64 + ((-1.) * w),
+        x: 0.666667f64 + -w,
         y: S5,
     };
     let pt7 = Point {
@@ -73,7 +73,7 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let pts = if invert { pts.invert() } else { pts };
     let r1s = trimf64(TILE_WIDTH * (1. / 6. - w));
     let r1l = trimf64(TILE_WIDTH * (1. / 6. + w));
-    return (vec![r1s, r1l], pts);
+    (vec![r1s, r1l], pts)
 }
 
 fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
@@ -81,7 +81,7 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let r1s = &radii[0];
     let r1l = &radii[1];
     let pts = pts.str();
-    return format!(
+    format!(
         "<path fill='{fill}' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}L{d}A{r1l} {r1l} 0 0 {d2} {e}A{r1s} {r1s} 0 0 {d1} {f}A{r1l} {r1l} 0 0 {d2} {g}L{h}L{i}L{j}A{r1s} {r1s} 0 0 {d1} {k}L{l}A{r1s} {r1s} 0 0 {d1} {m}L{n}'/>\
         <path stroke='black' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}M{d}A{r1l} {r1l} 0 0 {d2} {e}A{r1s} {r1s} 0 0 {d1} {f}A{r1l} {r1l} 0 0 {d2} {g}L{h}M{i}L{j}A{r1s} {r1s} 0 0 {d1} {k}M{l}A{r1s} {r1s} 0 0 {d1} {m}L{n}'/>",
         a = pts[0],
@@ -99,7 +99,7 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
         m = pts[12],
         n = pts[13],
         fill = FILL,
-    );
+    )
 }
 
 define_shape_family! {

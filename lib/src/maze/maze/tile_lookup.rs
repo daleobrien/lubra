@@ -22,7 +22,7 @@ impl Maze {
             (Some(x), Some(y)) => self.tiles.get(y, x),
             _ => None, // Out of bounds, not possible tile
         };
-        return result;
+        result
     }
 
     pub(crate) fn get_connected_titles_for_tile(&self, i: usize, j: usize) -> [Option<&Tile>; 12] {
@@ -51,7 +51,7 @@ impl Maze {
            result[7] will always return the tile that is adjacent to node 6.
         */
 
-        return NODE_TO_COORD[k % 6].map(|coord| self.get_tile_relative_position((i, j), coord));
+        NODE_TO_COORD[k % 6].map(|coord| self.get_tile_relative_position((i, j), coord))
     }
 
     pub(crate) fn get_random_tile(&mut self, i: usize, j: usize) -> Tile {
@@ -60,7 +60,7 @@ impl Maze {
 
         // Try simple, then complex options
         let mut nets = random_tile(mask, self.seed, true);
-        if mask != 0 && nets.len() == 0 {
+        if mask != 0 && nets.is_empty() {
             // If we can't find a tile that fits, try again without the mask
             nets = random_tile(mask, self.seed, false);
         }
@@ -73,9 +73,9 @@ impl Maze {
 
 #[cfg(test)]
 mod tests {
-  use crate::maze::maze::Maze;
+    use crate::maze::maze::Maze;
 
-  #[test]
+    #[test]
     fn test_surrounding_for_island() {
         let maze = Maze::new(1, 1, false, false, false, None);
 
@@ -92,7 +92,7 @@ mod tests {
     fn test_surrounding_for_x_0() {
         let maze = Maze::new(9, 9, false, false, false, None);
 
-        let expected = vec![
+        let expected = [
             vec![1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0],
             vec![0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0],
             vec![0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1],
@@ -100,14 +100,14 @@ mod tests {
             vec![0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1],
             vec![1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1],
         ];
-        for i in 0..6 {
+        for (i, expected_row) in expected.iter().enumerate() {
             let surrounding_tiles = maze.get_connected_titles_for_tile(i, 0);
 
             let result: Vec<usize> = surrounding_tiles
                 .iter()
                 .map(|t| if t.is_some() { 1 } else { 0 })
                 .collect::<Vec<usize>>();
-            assert_eq!(result, expected[i]);
+            assert_eq!(&result, expected_row);
         }
     }
 }

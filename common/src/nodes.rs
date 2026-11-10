@@ -19,5 +19,5 @@ pub fn get_connected_coords_at_coords(
         };
         return Some(coord);
     }
-    return None;
+    None
 }

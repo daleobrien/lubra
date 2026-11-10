@@ -93,14 +93,14 @@ fn main() {
     }
 
     // Apply net reduction if requested
-if args.reduce > 0 {
-    let reduce_start = Instant::now();
-    maze.reduce_nets(args.reduce);
-    let reduce_time = reduce_start.elapsed();
-    if args.debug {
-        println!("Net reduction took: {:?}", reduce_time);
+    if args.reduce > 0 {
+        let reduce_start = Instant::now();
+        maze.reduce_nets(args.reduce);
+        let reduce_time = reduce_start.elapsed();
+        if args.debug {
+            println!("Net reduction took: {:?}", reduce_time);
+        }
     }
-}
 
     // Remove cycles if requested
     if args.remove_cycles {
@@ -112,33 +112,34 @@ if args.reduce > 0 {
         }
     }
 
-
-
-
-
-
     // Generate output filename
     let filename = if let Some(output) = args.output {
         output
     } else {
-        format!(
-            "{}-by-{}-sample-normal",
-            args.width, args.height
-        )
+        format!("{}-by-{}-sample-normal", args.width, args.height)
     };
 
     // Render the maze
     let file_type: FileType = args.format.clone().into();
 
     if args.debug {
-        println!("Rendering maze {}x{} with seed {:?}", args.width, args.height, args.seed);
-        println!("Output: {}.{}", filename, match args.format {
-            Format::Svg => "svg",
-            Format::Png => "png",
-        });
-        println!("... settings: boundaries={}, show_node_numbers={}, randomise={}, background={}",
-                 args.boundaries, args.show_node_numbers, args.randomise, args.background);
-     }
+        println!(
+            "Rendering maze {}x{} with seed {:?}",
+            args.width, args.height, args.seed
+        );
+        println!(
+            "Output: {}.{}",
+            filename,
+            match args.format {
+                Format::Svg => "svg",
+                Format::Png => "png",
+            }
+        );
+        println!(
+            "... settings: boundaries={}, show_node_numbers={}, randomise={}, background={}",
+            args.boundaries, args.show_node_numbers, args.randomise, args.background
+        );
+    }
 
     let render_start = Instant::now();
     let result = maze.render_with_options(filename, file_type, args.background, args.debug);
@@ -149,7 +150,6 @@ if args.reduce > 0 {
         Ok(_) => {
             if args.debug {
                 println!("Rendering took: {:?}", render_time);
-
             }
 
             println!("Total execution time: {:?}", total_time);

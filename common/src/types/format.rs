@@ -16,18 +16,15 @@
 /// ```
 pub fn trimf64(num: f64) -> String {
     let formatted = format!("{:.*}", 1, num);
-    let trimmed = formatted
-        .trim_end_matches('0')
-        .trim_end_matches('.')
-        .trim();
-    return trimmed.to_string();
+    let trimmed = formatted.trim_end_matches('0').trim_end_matches('.').trim();
+    trimmed.to_string()
 }
 
 #[cfg(test)]
 mod tests {
-  use super::*;
+    use super::*;
 
-  #[test]
+    #[test]
     fn test_trimf64_strip_positive_integer() {
         assert_eq!(trimf64(1.0), "1");
     }

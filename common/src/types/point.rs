@@ -8,7 +8,7 @@ pub struct Point {
     pub y: f64,
 }
 
-pub const S1: f64 = 1.4142135623730950488016887242096980f64; /* sqrt(2) */
+pub const S1: f64 = std::f64::consts::SQRT_2;
 pub const S2: f64 = 1.7320508075688772935274463415058723f64; /* sqrt(3) */
 pub const S3: f64 = 0.8660254037844386467637231707529362f64; /* sqrt(3)/2 */
 pub const S4: f64 = 0.5773502691896257645091487805019575f64; /* 1/sqrt(3) */
@@ -72,7 +72,7 @@ impl Point {
     }
 
     pub fn trim(self) -> String {
-        return format!("{} {}", trimf64(self.x), trimf64(self.y));
+        format!("{} {}", trimf64(self.x), trimf64(self.y))
     }
 
     fn rotate(&self, invert: bool, index: usize, offset_rotations: Vec<usize>, ccw: bool) -> Point {
@@ -95,19 +95,19 @@ impl Point {
         }
         // relative rotation, these points are diffs, so don't need a pivot point
 
-        return Point {
+        Point {
             x: self.x * c - self.y * s,
             y: self.x * s + self.y * c,
-        };
+        }
     }
     pub fn rotate_ccw(&self, invert: bool, index: usize, offset_rotations: Vec<usize>) -> Point {
         // (Sin(120º), Cos(120º))
-        return self.rotate(invert, index, offset_rotations, true);
+        self.rotate(invert, index, offset_rotations, true)
     }
 
     pub fn rotate_cw(&self, invert: bool, index: usize, offset_rotations: Vec<usize>) -> Point {
         // (Sin(-120º), Cos(-120º))
-        return self.rotate(invert, index, offset_rotations, false);
+        self.rotate(invert, index, offset_rotations, false)
     }
 
     pub fn invert(&self) -> Point {

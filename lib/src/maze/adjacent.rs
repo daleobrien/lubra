@@ -16,15 +16,15 @@ pub const ADJ_N3R: usize = 11usize;
 fn tile_is_empty(tile: &Option<&Tile>) -> bool {
     //
     match *tile {
-        Some(t) => return !t.initialised, // A tile, may or may not be free
-        None => return false,             // It's not really empty, but it's not a tile either.
+        Some(t) => !t.initialised, // A tile, may or may not be free
+        None => false,             // It's not really empty, but it's not a tile either.
     }
 }
 
 fn tile_contains(tile: &Option<&Tile>, node_idx: usize) -> bool {
     match *tile {
-        Some(t) => return t.contains(node_idx),
-        None => return false,
+        Some(t) => t.contains(node_idx),
+        None => false,
     }
 }
 
@@ -40,7 +40,7 @@ fn mask_for_tile_vertex(
     let l_adjacent = &relative_tiles[idxs[2]];
     let r_adjacent = &relative_tiles[idxs[3]];
 
-    let node_value = 1 << relative_idx as usize;
+    let node_value = 1 << relative_idx;
 
     if tile_is_empty(opposite) {
         if !tile_contains(left, node_value)
@@ -71,9 +71,9 @@ fn mask_for_tile_vertex(
 fn mask_for_tile_side(relative_idx: usize, relative_tiles: &[Option<&Tile>; 12]) -> usize {
     let adjacent = &relative_tiles[relative_idx];
 
-    let node_value = 1 << relative_idx as usize;
+    let node_value = 1 << relative_idx;
 
-    if tile_is_empty(&adjacent) {
+    if tile_is_empty(adjacent) {
         return match relative_idx + 1 {
             4 => 2000,
             5 => 20000,
@@ -82,7 +82,7 @@ fn mask_for_tile_side(relative_idx: usize, relative_tiles: &[Option<&Tile>; 12])
         };
     }
 
-    if tile_contains(&adjacent, node_value) {
+    if tile_contains(adjacent, node_value) {
         return match relative_idx + 1 {
             4 => 1000,
             5 => 10000,
@@ -96,23 +96,21 @@ fn mask_for_tile_side(relative_idx: usize, relative_tiles: &[Option<&Tile>; 12])
 
 pub fn get_surrounding_tile_connections(surrounding_tiles: &[Option<&Tile>; 12]) -> usize {
     // Node 1
-    return mask_for_tile_vertex(ADJ_N1, [ADJ_N4, ADJ_N5, ADJ_N1L, ADJ_N1R], surrounding_tiles)
+    mask_for_tile_vertex(ADJ_N1, [ADJ_N4, ADJ_N5, ADJ_N1L, ADJ_N1R], surrounding_tiles)
     // Node 2
     + mask_for_tile_vertex(ADJ_N2, [ADJ_N4, ADJ_N6, ADJ_N2L, ADJ_N2R], surrounding_tiles)
     // Node 3
     + mask_for_tile_vertex(ADJ_N3, [ADJ_N5, ADJ_N6, ADJ_N3L, ADJ_N3R], surrounding_tiles)
     + mask_for_tile_side(ADJ_N4, surrounding_tiles)
     + mask_for_tile_side(ADJ_N5, surrounding_tiles)
-    + mask_for_tile_side(ADJ_N6, surrounding_tiles);
+    + mask_for_tile_side(ADJ_N6, surrounding_tiles)
 }
 
 #[cfg(debug_assertions)]
 fn string_for_tile(tile: Option<&Tile>) -> String {
     match tile {
-        Some(t) => {
-            return t.clone().to_string_vec();
-        }
-        None => return "⌀".to_string(),
+        Some(t) => t.clone().to_string_vec(),
+        None => "⌀".to_string(),
     }
 }
 

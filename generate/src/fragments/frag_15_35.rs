@@ -13,11 +13,11 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let r2: f64 = (1. + (2. * r1)) / (4. + (12. * r1));
 
     let pt1 = Point {
-        x: 0.5f64 + ((-1.) * w),
+        x: 0.5f64 + -w,
         y: S3,
     };
     let pt2 = Point {
-        x: (1. + ((r1 * r1) * (12. + ((-24.) * w))) + (r1 * (5. + ((-12.) * w))) + ((-1.) * w))
+        x: (1. + ((r1 * r1) * (12. + ((-24.) * w))) + (r1 * (5. + ((-12.) * w))) + -w)
             / (2. + (12. * r1) + (24. * (r1 * r1))),
         y: (S2 * (1. + (8. * (r1 * r1)) + w + (r1 * (5. + (4. * w)))))
             / (2. + (12. * r1) + (24. * (r1 * r1))),
@@ -31,31 +31,25 @@ fn base(invert: bool) -> (Vec<String>, Path) {
             + (((-1.)
                 + ((-5.) * r1)
                 + ((-12.) * (r1 * r1))
-                + ((-1.) * w)
+                + -w
                 + ((-12.) * r1 * w)
                 + ((-24.) * (r1 * r1) * w))
                 / (2. + (12. * r1) + (24. * (r1 * r1)))),
         y: S3
             + (((1.5f64
                 * (1. + (4. * r1))
-                * (1. + (5. * r1) + (8. * (r1 * r1)) + ((-1.) * w) + ((-4.) * r1 * w)))
+                * (1. + (5. * r1) + (8. * (r1 * r1)) + -w + ((-4.) * r1 * w)))
                 / (1. + (6. * r1) + (12. * (r1 * r1))))
-                / (((-1.) * S2) + ((-4.) * S2 * r1))),
+                / (-S2 + ((-4.) * S2 * r1))),
     };
-    let pt5 = Point {
-        x: 1. + ((-1.) * w),
-        y: 0.,
-    };
+    let pt5 = Point { x: 1. + -w, y: 0. };
     let pt6 = Point { x: 1. + w, y: 0. };
     let pt7 = Point {
         x: 1.5f64
-            + (((-1.)
-                + ((-1.) * (r1 * r1) * (12. + ((-24.) * w)))
-                + ((-1.) * r1 * (5. + ((-12.) * w)))
-                + w)
+            + (((-1.) + (-(r1 * r1) * (12. + ((-24.) * w))) + (-r1 * (5. + ((-12.) * w))) + w)
                 / (2. + (12. * r1) + (24. * (r1 * r1)))),
         y: S3
-            + (((-1.) * S2 * (1. + (8. * (r1 * r1)) + w + (r1 * (5. + (4. * w)))))
+            + ((-S2 * (1. + (8. * (r1 * r1)) + w + (r1 * (5. + (4. * w)))))
                 / (2. + (12. * r1) + (24. * (r1 * r1)))),
     };
     let pt8 = Point {
@@ -67,9 +61,9 @@ fn base(invert: bool) -> (Vec<String>, Path) {
             / (2. + (12. * r1) + (24. * (r1 * r1))),
         y: (((-1.5f64)
             * (1. + (4. * r1))
-            * (1. + (5. * r1) + (8. * (r1 * r1)) + ((-1.) * w) + ((-4.) * r1 * w)))
+            * (1. + (5. * r1) + (8. * (r1 * r1)) + -w + ((-4.) * r1 * w)))
             / (1. + (6. * r1) + (12. * (r1 * r1))))
-            / (((-1.) * S2) + ((-4.) * S2 * r1)),
+            / (-S2 + ((-4.) * S2 * r1)),
     };
     let pt10 = Point {
         x: 0.5f64 + w,
@@ -85,7 +79,7 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let r1s = trimf64(TILE_WIDTH * (r1 - w));
     let r2s = trimf64(TILE_WIDTH * (r2 - w));
 
-    return (vec![r1s, r1l, r2s, r2l], pts);
+    (vec![r1s, r1l, r2s, r2l], pts)
 }
 
 fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
@@ -94,7 +88,7 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let [r1s, r1l, r2s, r2l] = radii.as_slice() else {
         panic!("Expected 4 radii");
     };
-    return format!(
+    format!(
         "\
         <path fill='{FILL}' d='\
            M{a}\
@@ -128,7 +122,7 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
         h = pts[7],
         i = pts[8],
         j = pts[9],
-    );
+    )
 }
 
 define_shape_family! {

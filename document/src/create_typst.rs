@@ -22,7 +22,7 @@ pub fn create_typst_doc(path_name: &str, typst_filename: &str, columns: usize, v
                 .collect::<Vec<_>>()
                 .join(" ")
                 .chars()
-                .filter(|c| c.is_digit(10) || c.is_whitespace())
+                .filter(|c| c.is_ascii_digit() || c.is_whitespace())
                 .collect::<String>();
             format!("  make{version}(\"{path_name}/{file_name}\", \"{name}\")")
         })

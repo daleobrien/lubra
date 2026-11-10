@@ -7,7 +7,7 @@ use num_traits::ToPrimitive;
 
 use common::bit_utils::{print_bits, sort_upper_bits, to_6bit_binary};
 use common::consts::{
-  A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, WA,
+    A1, A2, A3, A4, A5, A6, B1, B2, B3, B5, B6, IN, N1, N2, N3, N4, N5, N6, NL, NO, WA,
 };
 
 use crate::fragments::frag_1::{n1, n2, n3, n4, n5, n6};
@@ -32,8 +32,8 @@ use crate::fragments::frag_16::{n16, n25, n34};
 use crate::fragments::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
 use crate::fragments::frag_arcs::{a46, n45, n456, n56};
 use crate::fragments::frag_complex_arcs::{
-  n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
-  n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
+    n45_14_35, n45_24, n45_24_15, n45_24_35, n45_35, n46_14, n46_14_26, n46_14_36, n46_15_26,
+    n46_24_36, n46_35, n56_15, n56_15_36, n56_26, n56_35_26,
 };
 use crate::fragments::frag_wall::l_wall;
 
@@ -193,9 +193,9 @@ pub fn generate_all_shapes() {
                 let blank_key = ((key_base << 6) | key_a | (key & WA & IN))
                     .to_usize()
                     .unwrap_or_default();
-                if !paths.contains_key(&blank_key) {
-                    paths.insert(blank_key, "".to_string());
-                } else if paths[&blank_key] != "".to_string() {
+                if let std::collections::btree_map::Entry::Vacant(e) = paths.entry(blank_key) {
+                    e.insert("".to_string());
+                } else if !paths[&blank_key].is_empty() {
                     println!(
                         "Not adding blank key: {}",
                         print_bits(blank_key.to_usize().unwrap())
@@ -206,7 +206,8 @@ pub fn generate_all_shapes() {
     }
 
     // Change this to a look up function rather than a class with a HashMap.
-    let mut file = File::create("../lib/src/renders/generated/fragment.rs").expect("File Creation failed");
+    let mut file =
+        File::create("../lib/src/renders/generated/fragment.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
     let _ = file.write(b"pub static MAP_PATHS: Map<usize, &'static str> = phf_map! {\n");
@@ -217,12 +218,12 @@ pub fn generate_all_shapes() {
     for (key, value) in paths {
         // Store to render library
         let key = key.to_usize().unwrap();
-        let _ = write!(
-          file,
-          " /* {:<10} */ {}usize =>  \"{}\",\n",
-          print_bits(key),
-          key,
-          trim_whitespace(value.as_str())
+        let _ = writeln!(
+            file,
+            " /* {:<10} */ {}usize =>  \"{}\",",
+            print_bits(key),
+            key,
+            trim_whitespace(value.as_str())
         );
 
         if value.is_empty() {
@@ -234,10 +235,10 @@ pub fn generate_all_shapes() {
         let index = key & (IN | NL);
 
         if !keys.contains_key(&index) {
-            keys.entry(index).or_insert_with(Vec::new).push(key);
+            keys.entry(index).or_default().push(key);
         } else {
             if !keys[&index].contains(&key) {
-                keys.entry(index).or_insert_with(Vec::new).push(key);
+                keys.entry(index).or_default().push(key);
             }
         }
     }
@@ -254,7 +255,7 @@ pub fn generate_all_shapes() {
 
     let variant_keys = keys.keys().sorted().collect::<Vec<_>>();
     for key in variant_keys {
-        let value = keys.get(&key).unwrap();
+        let value = keys.get(key).unwrap();
         // Store to render library
 
         let value = value
@@ -264,11 +265,11 @@ pub fn generate_all_shapes() {
             .unique()
             .join(", ");
 
-        let _ = write!(
+        let _ = writeln!(
             file,
-            "/* {:<10} */    {} =>  vec![{}],\n",
+            "/* {:<10} */    {} =>  vec![{}],",
             print_bits(*key),
-            to_6bit_binary(&key, false),
+            to_6bit_binary(key, false),
             value,
         );
     }
@@ -285,11 +286,11 @@ pub fn generate_all_shapes() {
     );
 
     for key in empty_fragments.iter().sorted() {
-        let _ = write!(
+        let _ = writeln!(
             file,
-            " /*{:<10}*/   {} =>  true,\n",
+            " /*{:<10}*/   {} =>  true,",
             print_bits(*key),
-            to_6bit_binary(&key, false)
+            to_6bit_binary(key, false)
         );
     }
     let _ = file.write(b"    _ => false\n   }\n");

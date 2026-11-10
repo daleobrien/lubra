@@ -16,14 +16,14 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let r2 = trimf64(TILE_WIDTH * (1.0 - PATH_WIDTH));
     let pts = Path::new(vec![a, b, c, d]);
     let pts = if invert { pts.invert() } else { pts };
-    return (vec![r1, r2], pts);
+    (vec![r1, r2], pts)
 }
 
 fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let pts = pts.str();
     let dir1 = if invert { 1 } else { 0 };
     let dir2 = if invert { 0 } else { 1 };
-    return format!(
+    format!(
         "<path fill='{fill}' d='M{a}A{r1} {r1} 0 0 {dir1} {b}L{c}A{r2} {r2} 0 0 {dir2} {d}z'/><path stroke='black' d='M{a}A{r1} {r1} 0 0 {dir1} {b}M{c}A{r2} {r2} 0 0 {dir2} {d}'/>",
         a = pts[0],
         b = pts[1],
@@ -32,7 +32,7 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
         fill=FILL,
         r1 = radii[0],
         r2 = radii[1],
-    );
+    )
 }
 
 define_shape_family! {

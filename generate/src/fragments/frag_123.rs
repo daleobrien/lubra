@@ -5,13 +5,13 @@ use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S3, S4, TILE_WIDTH};
 use std::f64::consts::FRAC_PI_3;
 
-fn base(invert: bool) -> (Vec<String>, Path) {
+fn base(_invert: bool) -> (Vec<String>, Path) {
     let r = PATH_WIDTH * 2.0;
     let w = PATH_WIDTH;
     let x = 0.5 - w;
     let y = (0.5 + w + r) * S4;
-    let a = Point { x: x, y: S3 };
-    let b = Point { x: x, y: y };
+    let a = Point { x, y: S3 };
+    let b = Point { x, y };
     let c = frag_math::polar(Point { x, y }, r, 4.0 * FRAC_PI_3);
     let d = w * Point { x: -0.5, y: S3 };
 

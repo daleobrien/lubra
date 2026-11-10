@@ -25,9 +25,9 @@ macro_rules! define_shape_family {
 /// Common transformation functions that can be used in shape families.
 /// These are the standard transformations for 4-point paths.
 pub mod transforms {
-  use crate::types::path::Path;
+    use crate::types::path::Path;
 
-  #[inline]
+    #[inline]
     pub fn nothing(_pts: Path, _invert: bool, _offset_rotations: &[usize]) -> Path {
         Path::new(vec![])
     }

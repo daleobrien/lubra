@@ -5,9 +5,12 @@ use std::io::Write;
 use common::bit_utils::print_bits;
 use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 
+/// One neighbour check: (neighbour index, must match, expected net in that neighbour).
+type AdjCheck = (usize, bool, usize);
+
 pub fn generate_adjacent_paths() {
     // This is used to look up matching adjacent paths.
-    let mut adj_paths: BTreeMap<usize, Vec<Vec<(usize, bool, usize)>>> = BTreeMap::new();
+    let mut adj_paths: BTreeMap<usize, Vec<Vec<AdjCheck>>> = BTreeMap::new();
 
     // e.g. for a NODE_1-4 we can handle a few different matching tiles
     // The booleans is to make sure it matches, if false, it must not be the tile
@@ -137,7 +140,8 @@ pub fn generate_adjacent_paths() {
     );
 
     // Change this to a look up function rather than a class with a HashMap.
-    let mut file = File::create("../lib/src/maze/generated/nets_adjacent.rs").expect("File Creation failed");
+    let mut file =
+        File::create("../lib/src/maze/generated/nets_adjacent.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
     let _ = file.write(
@@ -154,9 +158,9 @@ pub fn generate_adjacent_paths() {
                 .join(", ");
             subs.push(format!("&[{masks_as_string}]"));
         }
-        let _ = write!(
+        let _ = writeln!(
             file,
-            "  /* {key6bit:^4} */ {key}usize =>  &[{subs}],\n",
+            "  /* {key6bit:^4} */ {key}usize =>  &[{subs}],",
             subs = subs.join(", "),
             key6bit = print_bits(key)
         );

@@ -1,7 +1,7 @@
 use common::consts::FILL;
 use common::define_shape_family;
 use common::macros::{
-  identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw,
+    identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw,
 };
 use common::types::format::trimf64;
 use common::types::path::Path;

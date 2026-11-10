@@ -3,16 +3,16 @@ use crate::maze::tile::Tile;
 use array2d::Array2D;
 
 // Import the implementation modules
-mod net_operations;
-mod net_reduction;
 mod create_coord_maps;
-mod sort_nets_by_length;
-mod tile_lookup;
-mod render;
 mod grid_generation;
 mod net_intersections;
+mod net_operations;
+mod net_reduction;
 mod remove_cycles;
+mod render;
+mod sort_nets_by_length;
 mod surrounding_coordinates;
+mod tile_lookup;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {
@@ -65,6 +65,6 @@ impl Maze {
         if randomise {
             Self::create_random_grid(&mut obj, number_of_columns, number_of_rows);
         }
-        return obj;
+        obj
     }
 }

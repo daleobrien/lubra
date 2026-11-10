@@ -22,6 +22,6 @@ impl Maze {
         //         //  println!("{:?} -> {:?}", coord, nets);
         //     }
         // }
-        return coord_maps;
+        coord_maps
     }
 }

@@ -59,7 +59,7 @@ pub fn create_tiles() {
             continue;
         }
 
-        let mut all_variants:Vec<usize> = vec![];
+        let mut all_variants: Vec<usize> = vec![];
         for net in nets.clone() {
             for variant in list_of_variants(net) {
                 all_variants.push(variant);
@@ -84,10 +84,8 @@ pub fn create_tiles() {
             }
             hashes_written.insert(hash.clone());
 
-            if nets_are_valid(variant.clone()) {
-                if save_nets_to_svg(variant, index) {
-                    index += 1;
-                }
+            if nets_are_valid(variant.clone()) && save_nets_to_svg(variant, index) {
+                index += 1;
             }
         }
     }
@@ -104,7 +102,7 @@ pub fn save_nets_to_svg(nets: Vec<usize>, index: usize) -> bool {
     for net in nets.clone() {
         // Skip Empty nets, some are drawn by their neighbours
         let path = MAP_PATHS.get(&net).unwrap();
-        if path.len() == 0 {
+        if path.is_empty() {
             continue;
         }
         fragment_count += 1;
@@ -119,7 +117,7 @@ pub fn save_nets_to_svg(nets: Vec<usize>, index: usize) -> bool {
     let mut f =
         File::create(format!("./../typst/tiles/{index:04}.svg")).expect("File Creation failed");
     let _ = f.write_all(content.as_bytes());
-    return true;
+    true
 }
 
 fn nets_are_valid(nets: Vec<usize>) -> bool {
@@ -141,19 +139,19 @@ fn nets_are_valid(nets: Vec<usize>) -> bool {
             return false;
         }
     }
-    return true;
+    true
 }
 
 // Add tests here
 #[cfg(test)]
 mod tests {
-  use common::consts::B1;
+    use common::consts::B1;
 
-  use super::*;
+    use super::*;
 
-  #[test]
+    #[test]
     fn test_valild_match() {
-        assert_eq!(nets_are_valid(vec![A1 | B1, A2, A3, A1 | B1]), false);
-        assert_eq!(nets_are_valid(vec![A1 | B1, A2, A3]), true);
+        assert!(!nets_are_valid(vec![A1 | B1, A2, A3, A1 | B1]));
+        assert!(nets_are_valid(vec![A1 | B1, A2, A3]));
     }
 }

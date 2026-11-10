@@ -102,8 +102,8 @@ impl Maze {
         }
 
         match file_type {
-            SVG => return self.save_as_svg(svg.to_string(background), file_name, debug),
-            PNG => return self.save_as_png(svg.to_string(background).as_str(), file_name, debug),
+            SVG => self.save_as_svg(svg.to_string(background), file_name, debug),
+            PNG => self.save_as_png(svg.to_string(background).as_str(), file_name, debug),
         }
     }
 
@@ -115,12 +115,12 @@ impl Maze {
     ) -> Result<(), Box<dyn Error>> {
         if debug {
             let start = Instant::now();
-            let _ = fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
+            fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
             println!("SVG file write took: {:?}", start.elapsed());
         } else {
-            let _ = fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
+            fs::write(format!("{}.svg", file_name), content).expect("Unable to write file");
         }
-        return Ok(());
+        Ok(())
     }
 
     pub fn save_as_png(

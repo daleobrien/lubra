@@ -7,11 +7,10 @@ use rand_distr::num_traits::ToPrimitive;
 
 impl Maze {
     pub fn remove_short_nets(&mut self, lower_limit: usize) {
-
         if lower_limit == 0 {
             return;
         }
-      
+
         // Strip out small nets
         self.nets.retain(|nets| {
             // Remove small nets
@@ -21,24 +20,21 @@ impl Maze {
             // Of the form [(i,j,4), (...), ... ]
             for tile_node in nets.iter() {
                 //
-                let tile = self.tiles.get(tile_node.j, tile_node.i);
-
-                if tile.is_some() {
+                if let Some(tile) = self.tiles.get(tile_node.j, tile_node.i) {
                     let reduced_tile = tile
-                        .unwrap()
                         .nodes
                         .iter()
                         .filter(|&b| {
                             let mask = 1usize << tile_node.node;
-                            return mask & *b != mask;
+                            mask & *b != mask
                         })
-                        .map(|b| *b)
+                        .copied()
                         .collect::<Vec<usize>>();
 
-                    let _ = self.tiles[(tile_node.j, tile_node.i)] = Tile::new(reduced_tile, true);
+                    self.tiles[(tile_node.j, tile_node.i)] = Tile::new(reduced_tile, true);
                 }
             }
-            return false;
+            false
         });
     }
 
@@ -49,7 +45,7 @@ impl Maze {
 
         for net in tile_nets {
             // TODO: Need to transform this into bits rather than use node indexes
-            let tile_sub_nets: Nodes = vec![N1, N2, N3, N4, N5, N6]
+            let tile_sub_nets: Nodes = [N1, N2, N3, N4, N5, N6]
                 .iter()
                 .filter(|&node| net & *node == *node)
                 .map(|&node| Node::new(i, j, node.trailing_zeros().to_usize().unwrap()))
@@ -67,16 +63,11 @@ impl Maze {
                     let x = add(i, coord.0);
                     let y = add(j, coord.1);
 
-                    match (x, y) {
-                        (Some(x), Some(y)) => {
-                            if nets.contains(&Node::new(x, y, node_idx))
-                                && !net_indexes.contains(&n)
-                            {
-                                net_indexes.push(n);
-                                //break;
-                            }
+                    if let (Some(x), Some(y)) = (x, y) {
+                        if nets.contains(&Node::new(x, y, node_idx)) && !net_indexes.contains(&n) {
+                            net_indexes.push(n);
+                            //break;
                         }
-                        _ => {}
                     }
                 }
             }
@@ -84,7 +75,7 @@ impl Maze {
                 // Append to an existing net
                 let n = net_indexes[0];
                 self.nets[n].extend(tile_sub_nets);
-            } else if net_indexes.len() == 0 {
+            } else if net_indexes.is_empty() {
                 // Add a new net
                 self.nets.push(tile_sub_nets);
             } else if net_indexes.len() > 1 {

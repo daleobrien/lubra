@@ -1,7 +1,7 @@
-use common::bit_utils::{to_6bit_binary};
+use common::bit_utils::to_6bit_binary;
 
 use crate::maze::maze::Maze;
-use crate::maze::net::{Node};
+use crate::maze::net::Node;
 use crate::maze::random::select_random_element;
 use crate::maze::tile::Tile;
 
@@ -9,9 +9,8 @@ use crate::maze::tile::Tile;
 /// These methods handle reducing the number of nets by merging them.
 impl Maze {
     pub fn reduce_nets(&mut self, lower_limit: usize) {
-
         if self.nets.len() <= 1 {
-            return
+            return;
         }
 
         self.sort_nets_by_length();
@@ -107,9 +106,9 @@ impl Maze {
                     // Select a random element from net_n_nodes and net_m_nodes to merge, and keep the rest unchanged
                     let selected_m = select_random_element(net_m_nodes, self.seed);
                     let selected_n = select_random_element(net_n_nodes, self.seed);
-                    if selected_m.is_some() && selected_n.is_some() {
-                        let bit_n = 1usize << (selected_n.unwrap());
-                        let bit_m = 1usize << (selected_m.unwrap());
+                    if let (Some(selected_m), Some(selected_n)) = (selected_m, selected_n) {
+                        let bit_n = 1usize << selected_n;
+                        let bit_m = 1usize << selected_m;
 
                         let combined_mask = bit_n | bit_m;
 
@@ -140,7 +139,6 @@ impl Maze {
 
                         // TODO: Do I also need to updates the nets?
                         let _ = self.tiles.set(*j, *i, Tile::new(new_nodes, true));
-
                     } else {
                         println!(
                             "  WARNING: Could not select random nodes for merging at tile ({}, {})",
@@ -164,16 +162,30 @@ impl Maze {
                 //println!("Net 0 tile at ({}, {}) is adjacent to Net 1 tile at ({}, {})", i1, j1, i2, j2);
 
                 // find the node at (i1, j1) in net_a
-                let node_a:Vec<usize> = self.nets[0].iter().filter(|net| net.i==i1 && net.j==j1).map(|net| net.node ).collect();
-                let node_b:Vec<usize> = self.nets[1].iter().filter(|net| net.i==i2 && net.j==j2).map(|net| net.node ).collect();
+                let node_a: Vec<usize> = self.nets[0]
+                    .iter()
+                    .filter(|net| net.i == i1 && net.j == j1)
+                    .map(|net| net.node)
+                    .collect();
+                let node_b: Vec<usize> = self.nets[1]
+                    .iter()
+                    .filter(|net| net.i == i2 && net.j == j2)
+                    .map(|net| net.node)
+                    .collect();
 
                 // List of node indexs at each net, 0 based
-                let net_a_as_bits = node_a.iter().map(|n| 1<<n).fold(0, |a, b| a | b);
-                let net_b_as_bits = node_b.iter().map(|n| 1<<n).fold(0, |a, b| a | b);
-                println!("net_a_as_bits ({i1},{j1}) {}",to_6bit_binary(&net_a_as_bits, false));
-                println!("net_b_as_bits ({i2},{j2}) {}",to_6bit_binary(&net_b_as_bits, false));
+                let net_a_as_bits = node_a.iter().map(|n| 1 << n).fold(0, |a, b| a | b);
+                let net_b_as_bits = node_b.iter().map(|n| 1 << n).fold(0, |a, b| a | b);
+                println!(
+                    "net_a_as_bits ({i1},{j1}) {}",
+                    to_6bit_binary(&net_a_as_bits, false)
+                );
+                println!(
+                    "net_b_as_bits ({i2},{j2}) {}",
+                    to_6bit_binary(&net_b_as_bits, false)
+                );
 
-                if let Some(mask) = self.get_connecting_node_mask((i1, j1),(i2, j2)){
+                if let Some(mask) = self.get_connecting_node_mask((i1, j1), (i2, j2)) {
                     println!("mask -> 0b{:06b}", mask);
 
                     // Update tile A (belongs to net 0)
@@ -212,7 +224,6 @@ impl Maze {
                     self.nets[1].extend(other_nets);
                     self.nets[0].clear();
                     self.nets.retain(|net| !net.is_empty());
-
                 };
             }
         }
@@ -221,13 +232,13 @@ impl Maze {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-  use crate::maze::net::{Net, Node, Nodes};
-  use crate::maze::tile::Tile;
-  use array2d::Array2D;
-  use common::consts::{N1, N2, N3, N4, N5, N6};
+    use super::*;
+    use crate::maze::net::{Net, Node, Nodes};
+    use crate::maze::tile::Tile;
+    use array2d::Array2D;
+    use common::consts::{N1, N2, N3, N4, N5, N6};
 
-  /// Helper function to create a test maze with given nets and tiles
+    /// Helper function to create a test maze with given nets and tiles
     fn create_test_maze_with_tiles(nets: Net, tiles: Array2D<Tile>) -> Maze {
         let rows = tiles.num_rows();
         let cols = tiles.num_columns();

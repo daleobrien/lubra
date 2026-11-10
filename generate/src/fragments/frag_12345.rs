@@ -9,11 +9,11 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
 
     let pt1 = Point {
-        x: 0.5f64 + ((-1.) * w),
+        x: 0.5f64 + -w,
         y: S3,
     };
     let pt2 = Point {
-        x: 0.5f64 + ((-1.) * w),
+        x: 0.5f64 + -w,
         y: S4,
     };
     let pt3 = Point {
@@ -45,7 +45,7 @@ fn base(invert: bool) -> (Vec<String>, Path) {
         y: S5,
     };
     let pt10 = Point {
-        x: 0.666667f64 + ((-1.) * w),
+        x: 0.666667f64 + -w,
         y: S5,
     };
     let pt11 = Point {
@@ -89,7 +89,7 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let pts = if invert { pts.invert() } else { pts };
     let r1s = trimf64(TILE_WIDTH * (1. / 6. - w));
     let r1l = trimf64(TILE_WIDTH * (1. / 6. + w));
-    return (vec![r1s, r1l], pts);
+    (vec![r1s, r1l], pts)
 }
 
 fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
@@ -97,7 +97,7 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let pts = pts.str();
     let r1s = &radii[0];
     let r1l = &radii[1];
-    return format!(
+    format!(
         "<path fill='{fill}' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}L{d}A{r1s} {r1s} 0 0 {d1} {e}L{f}L{g}L{h}A{r1l} {r1l} 0 0 {d2} {i}A{r1s} {r1s} 0 0 {d1} {j}A{r1l} {r1l} 0 0 {d2} {k}L{l}L{m}L{n}A{r1s} {r1s} 0 0 {d1} {o}L{p}A{r1s} {r1s} 0 0 {d1} {q}L{r}'/>
         <path stroke='black' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}M{d}A{r1s} {r1s} 0 0 {d1} {e}L{f}M{g}L{h}A{r1l} {r1l} 0 0 {d2} {i}A{r1s} {r1s} 0 0 {d1} {j}A{r1l} {r1l} 0 0 {d2} {k}L{l}M{m}L{n}A{r1s} {r1s} 0 0 {d1} {o}M{p}A{r1s} {r1s} 0 0 {d1} {q}L{r}'/>",
         a = pts[0],
@@ -119,7 +119,7 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
         q = pts[16],
         r = pts[17],
         fill = FILL,
-    );
+    )
 }
 
 define_shape_family! {

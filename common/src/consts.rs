@@ -10,7 +10,7 @@ pub const N6: usize = 0b00_000_000_000_000_000_000_000_000_100_000;
 pub const IN: usize = 0b01_000_000_000_000_000_000_000_000_000_000; // Inverted
 pub const NO: usize = 0b00_000_000_000_000_000_000_000_000_000_000; // Normal
 pub const WA: usize = 0b10_000_000_000_000_000_000_000_000_000_000; // Indicates it's a wall
-                                                                  // Some masks
+                                                                    // Some masks
 pub const NL: usize = 0b00_000_000_000_000_000_000_000_000_111_111;
 pub const NX: usize = 0b00_111_111_111_111_111_111_111_111_111_111;
 

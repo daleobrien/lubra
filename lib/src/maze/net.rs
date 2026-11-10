@@ -88,13 +88,11 @@ pub type Nodes = HashSet<Node>;
 pub fn format_nodes(nodes: &Nodes) -> String {
     let mut entries: Vec<_> = nodes.iter().collect();
     // Sort for consistent output
-    entries.sort_by(|a, b| {
-        (a.i, a.j, a.node).cmp(&(b.i, b.j, b.node))
-    });
+    entries.sort_by_key(|n| (n.i, n.j, n.node));
 
     let formatted: Vec<String> = entries
         .iter()
-        .map(|n| format!("({},{}):{}",n.i, n.j, n.node+1))
+        .map(|n| format!("({},{}):{}", n.i, n.j, n.node + 1))
         .collect();
 
     format!("{{{}}}", formatted.join(", "))

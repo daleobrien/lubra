@@ -41,6 +41,12 @@ pub struct CataloguedNet {
 }
 
 //
+impl Default for Coordinate {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Coordinate {
     pub fn new() -> Self {
         Self { i: 0, j: 0 }
@@ -64,12 +70,12 @@ pub fn add(u: usize, i: i32) -> Option<usize> {
         return Some(r);
     }
     let r = u + i as usize;
-    return Some(r);
+    Some(r)
 }
 
 impl CoordinateAndNet {
     pub fn new(coordinate: Coordinate, net: usize) -> CoordinateAndNet {
-        return CoordinateAndNet { coordinate, net };
+        CoordinateAndNet { coordinate, net }
     }
 }
 
@@ -93,21 +99,33 @@ pub struct ComplexNet {
     pub complex_net: CoordinateAndNet, // The complex net that will replace more than one net in one go.
 }
 
+impl Default for ComplexNet {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ComplexNet {
     pub fn new() -> ComplexNet {
-        return ComplexNet {
+        ComplexNet {
             hidden_neighbours: HashSet::new(),
             complex_net: CoordinateAndNet::new(Coordinate { i: 0, j: 0 }, 0),
-        };
+        }
+    }
+}
+
+impl Default for CataloguedNet {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
 impl CataloguedNet {
     pub fn new() -> CataloguedNet {
-        return CataloguedNet {
+        CataloguedNet {
             hidden: HashSet::new(),
             visible: vec![],
-        };
+        }
     }
 
     pub fn add(&mut self, complex_net: ComplexNet) {

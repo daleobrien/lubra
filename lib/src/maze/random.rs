@@ -34,18 +34,13 @@ pub fn random_tile(mask: usize, seed: Option<u64>, reduced_lookup: bool) -> Vec<
     let nets_table = builder.build();
 
     let index = nets_table.next_rng(&mut rng);
-    let mut nets = if reduced_lookup {
-        possible_nets[index].clone()
-    } else {
-        possible_nets[index].clone()
-    };
+    let mut nets = possible_nets[index].clone();
     // Shuffle the nets so that the render order changes
     nets.shuffle(&mut rng);
-    return nets;
+    nets
 }
 
-/// Selects a random element from a vector and returns both the selected element
-
+/// Selects a random element from a vector, seeded when `seed` is given.
 pub fn select_random_element(vec: Vec<usize>, seed: Option<u64>) -> Option<usize> {
     if vec.is_empty() {
         return None;

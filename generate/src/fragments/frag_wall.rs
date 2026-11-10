@@ -16,6 +16,10 @@ pub fn l_wall(invert: bool) -> String {
     t = TILE_WIDTH * t;
     let s = t.clone().diff(false).trim();
 
-    format!( "<path fill-opacity='0.0' stroke-opacity='0.1' stroke='red' d='M{a}l{b}l{c}z'/>",
-        a = s[0], b = s[1], c = s[2], )
+    format!(
+        "<path fill-opacity='0.0' stroke-opacity='0.1' stroke='red' d='M{a}l{b}l{c}z'/>",
+        a = s[0],
+        b = s[1],
+        c = s[2],
+    )
 }

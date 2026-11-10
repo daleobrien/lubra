@@ -11,7 +11,7 @@ impl Maze {
     ///
     /// # Arguments
     /// * `coord_maps` - A vector where each entry is a HashMap mapping (i,j) coordinates
-    ///                  to the list of node indices that net uses at that coordinate
+    ///   to the list of node indices that net uses at that coordinate
     ///
     /// # Returns
     /// A HashMap mapping pairs of net indices (n, m) to the set of (i, j) coordinates
@@ -157,8 +157,8 @@ mod tests {
         map1.insert((1, 0), vec![4, 5]);
 
         let mut map2 = HashMap::new();
-        map2.insert((0, 0), vec![1, 2]);  // Shared with net 1
-        map2.insert((0, 1), vec![3, 4]);  // Shared with net 1
+        map2.insert((0, 0), vec![1, 2]); // Shared with net 1
+        map2.insert((0, 1), vec![3, 4]); // Shared with net 1
         map2.insert((2, 2), vec![5, 0]);
 
         let coord_maps = vec![map1, map2];
@@ -183,11 +183,11 @@ mod tests {
         map0.insert((2, 0), vec![2, 3]);
 
         let mut map1 = HashMap::new();
-        map1.insert((0, 0), vec![1, 2]);  // Shared with net 0
-        map1.insert((1, 1), vec![3, 4]);  // Shared with net 2
+        map1.insert((0, 0), vec![1, 2]); // Shared with net 0
+        map1.insert((1, 1), vec![3, 4]); // Shared with net 2
 
         let mut map2 = HashMap::new();
-        map2.insert((1, 1), vec![4, 5]);  // Shared with net 1
+        map2.insert((1, 1), vec![4, 5]); // Shared with net 1
         map2.insert((3, 3), vec![0, 1]);
 
         let coord_maps = vec![map0, map1, map2];
@@ -224,9 +224,9 @@ mod tests {
         map1.insert((2, 0), vec![1, 3]);
 
         let mut map2 = HashMap::new();
-        map2.insert((0, 0), vec![1, 2]);  // Shared
-        map2.insert((0, 1), vec![3, 4]);  // Shared
-        map2.insert((1, 0), vec![5, 0]);  // Shared
+        map2.insert((0, 0), vec![1, 2]); // Shared
+        map2.insert((0, 1), vec![3, 4]); // Shared
+        map2.insert((1, 0), vec![5, 0]); // Shared
         map2.insert((5, 5), vec![1, 2]);
 
         let coord_maps = vec![map1, map2];

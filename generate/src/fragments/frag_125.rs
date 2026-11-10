@@ -1,6 +1,8 @@
 use common::consts::FILL;
 use common::define_shape_family;
-use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
+use common::macros::{
+    identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw,
+};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, TILE_WIDTH};
@@ -12,11 +14,11 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let r2: f64 = (1. + (2. * r1)) / (4. + (12. * r1));
 
     let pt1 = Point {
-        x: 0.5f64 + ((-1.) * w),
+        x: 0.5f64 + -w,
         y: S3,
     };
     let pt2 = Point {
-        x: (1. + ((r1 * r1) * (12. + ((-24.) * w))) + (r1 * (5. + ((-12.) * w))) + ((-1.) * w))
+        x: (1. + ((r1 * r1) * (12. + ((-24.) * w))) + (r1 * (5. + ((-12.) * w))) + -w)
             / (2. + (12. * r1) + (24. * (r1 * r1))),
         y: (S2 * (1. + (8. * (r1 * r1)) + w + (r1 * (5. + (4. * w)))))
             / (2. + (12. * r1) + (24. * (r1 * r1))),
@@ -27,7 +29,7 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     };
     let pt4 = Point {
         x: 0.25f64 * (3. + ((-4.) * S2 * r2) + ((-2.) * w)),
-        y: ((-1.) * r2) + (0.25f64 * S2 * (1. + (2. * w))),
+        y: -r2 + (0.25f64 * S2 * (1. + (2. * w))),
     };
     let pt5 = Point {
         x: (-0.5f64) * w,
@@ -39,11 +41,10 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     };
     let pt7 = Point {
         x: 0.25f64 * (3. + ((-4.) * S2 * r2) + (2. * w)),
-        y: ((-1.) * r2) + (0.25f64 * S2 * (1. + ((-2.) * w))),
+        y: -r2 + (0.25f64 * S2 * (1. + ((-2.) * w))),
     };
     let pt8 = Point {
-        x: (5. + ((-1.) * S2) + (4. * S2 * w) + (2. * r1 * (8. + ((-1.) * S2) + (6. * S2 * w))))
-            / (8. + (24. * r1)),
+        x: (5. + -S2 + (4. * S2 * w) + (2. * r1 * (8. + -S2 + (6. * S2 * w)))) / (8. + (24. * r1)),
         y: ((-3.) + (3. * S2) + (2. * r1 * ((-3.) + (4. * S2) + ((-6.) * w))) + ((-4.) * w))
             / (8. + (24. * r1)),
     };
@@ -65,9 +66,9 @@ fn base(invert: bool) -> (Vec<String>, Path) {
             / (2. + (12. * r1) + (24. * (r1 * r1))),
         y: (((-1.5f64)
             * (1. + (4. * r1))
-            * (1. + (5. * r1) + (8. * (r1 * r1)) + ((-1.) * w) + ((-4.) * r1 * w)))
+            * (1. + (5. * r1) + (8. * (r1 * r1)) + -w + ((-4.) * r1 * w)))
             / (1. + (6. * r1) + (12. * (r1 * r1))))
-            / (((-1.) * S2) + ((-4.) * S2 * r1)),
+            / (-S2 + ((-4.) * S2 * r1)),
     };
     let pt13 = Point {
         x: 0.5f64 + w,
@@ -90,7 +91,7 @@ fn base(invert: bool) -> (Vec<String>, Path) {
 fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
     let pts = pts.str();
-    return format!(
+    format!(
         "<path fill='{fill}' d='\
       M{a}\
       A{r1s} {r1s} 0 0 {d1} {b}\
@@ -137,7 +138,7 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
         r1l = radii[1],
         r2s = radii[2],
         r2l = radii[3],
-    );
+    )
 }
 
 define_shape_family! {

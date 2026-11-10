@@ -19,11 +19,7 @@ impl Maze {
         };
 
         // Make the first Tile as a simple starting point
-        let tile = if number_of_rows % 2 == 0 {
-            Tile::new(vec![N5], true)
-        } else {
-            Tile::new(vec![N5], true)
-        };
+        let tile = Tile::new(vec![N5], true);
         self.update_network(&tile, 0, 0);
         self.tiles[(0, 0)] = tile;
 
@@ -48,10 +44,7 @@ impl Maze {
 
             self.tiles[(j, i)] = self.get_random_tile(i, j);
 
-            self.seed = match self.seed {
-                Some(s) => Some(s.wrapping_add(1)),
-                _ => None,
-            };
+            self.seed = self.seed.map(|s| s.wrapping_add(1));
         }
 
         self.width = (number_of_columns + 1) as f64 * TILE_WIDTH / 2.0;

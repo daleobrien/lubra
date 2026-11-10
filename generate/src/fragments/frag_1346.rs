@@ -9,11 +9,11 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
 
     let pt1 = Point {
-        x: 0.5f64 + ((-1.) * w),
+        x: 0.5f64 + -w,
         y: S3,
     };
     let pt2 = Point {
-        x: 0.5f64 + ((-1.) * w),
+        x: 0.5f64 + -w,
         y: S4,
     };
     let pt3 = Point {
@@ -26,14 +26,14 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     };
     let pt5 = Point {
         x: 0.333333f64,
-        y: (-0.166667f64) + S4 + ((-1.) * w),
+        y: (-0.166667f64) + S4 + -w,
     };
     let pt6 = Point {
-        x: 0.0833333f64 * (8. + ((-1.) * S2) + ((-6.) * S2 * w)),
+        x: 0.0833333f64 * (8. + -S2 + ((-6.) * S2 * w)),
         y: 0.0833333f64 * (1. + (6. * w)),
     };
     let pt7 = Point {
-        x: 0.5f64 + ((-1.) * w),
+        x: 0.5f64 + -w,
         y: 0.,
     };
     let pt8 = Point {

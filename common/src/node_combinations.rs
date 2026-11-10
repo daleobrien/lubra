@@ -37,14 +37,14 @@ impl NodeCombinations {
 
         let mut combinations: Vec<Vec<usize>> = results
             .iter()
-            .map(|x| x.clone())
-            .filter(|x| x.len() >= min_k)
+            .filter(|&x| x.len() >= min_k)
+            .cloned()
             .collect();
 
         combinations.sort();
         combinations.reverse();
 
-        return Self { list: combinations };
+        Self { list: combinations }
     }
 }
 
@@ -54,11 +54,9 @@ impl Iterator for NodeCombinations {
 
     fn next(&mut self) -> Option<Self::Item> {
         let item = self.list.pop();
-        match item {
-            Some(value) => {
-                return Some(value);
-            }
-            None => return None,
+        {
+            let value = item?;
+            Some(value)
         }
     }
 }
@@ -66,9 +64,9 @@ impl Iterator for NodeCombinations {
 // Add tests
 #[cfg(test)]
 mod tests {
-  use super::*;
+    use super::*;
 
-  #[test]
+    #[test]
     fn test_node_combinations() {
         let seq = NodeCombinations::new(vec![0b_001, 0b_010, 0b_011], 0);
 

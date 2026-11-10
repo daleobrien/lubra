@@ -14,12 +14,9 @@ pub struct CycleInfo {
     pub cycle_nodes: Vec<Node>,
 }
 
-
-
 /// Cycle removal methods for the Maze struct.
 /// Detects and handles cycles in the maze network using DFS.
 impl Maze {
-
     /// Normalize a cycle to a canonical form for deduplication.
     ///
     /// A cycle like [A, B, C, D] is the same as [B, C, D, A] or [D, C, B, A] (reversed).
@@ -136,9 +133,7 @@ impl Maze {
         let mut symmetric_adjacency = adjacency.clone();
         for (node, neighbors) in adjacency.iter() {
             for &neighbor in neighbors {
-                symmetric_adjacency.entry(neighbor)
-                    .or_insert_with(Vec::new)
-                    .push(*node);
+                symmetric_adjacency.entry(neighbor).or_default().push(*node);
             }
         }
 
@@ -148,7 +143,11 @@ impl Maze {
         }
 
         if debug {
-            println!("Building adjacency map for {} nodes took: {:?}", nodes.len(), start.elapsed());
+            println!(
+                "Building adjacency map for {} nodes took: {:?}",
+                nodes.len(),
+                start.elapsed()
+            );
         }
         symmetric_adjacency
     }
@@ -160,7 +159,7 @@ impl Maze {
         adjacency.remove(&node);
 
         // Remove references to this node from all neighbors
-        for (_, neighbors) in adjacency.iter_mut() {
+        for neighbors in adjacency.values_mut() {
             neighbors.retain(|&n| n != node);
         }
     }
@@ -169,7 +168,11 @@ impl Maze {
     ///
     /// After removing nodes, a network might become disconnected.
     /// This method finds all connected components and returns them as separate networks.
-    fn split_disconnected_networks(&self, nodes: &HashSet<Node>, debug: bool) -> Vec<HashSet<Node>> {
+    fn split_disconnected_networks(
+        &self,
+        nodes: &HashSet<Node>,
+        debug: bool,
+    ) -> Vec<HashSet<Node>> {
         let start = Instant::now();
         let mut components = Vec::new();
         let mut visited = HashSet::new();
@@ -206,7 +209,11 @@ impl Maze {
         }
 
         if debug {
-            println!("Splitting disconnected networks ({} nodes) took: {:?}", nodes.len(), start.elapsed());
+            println!(
+                "Splitting disconnected networks ({} nodes) took: {:?}",
+                nodes.len(),
+                start.elapsed()
+            );
         }
         components
     }
@@ -217,7 +224,11 @@ impl Maze {
 
         let initial_total_nodes: usize = self.nets.iter().map(|net| net.len()).sum();
         if debug {
-            println!("Starting cycle removal: {} networks, {} total nodes", self.nets.len(), initial_total_nodes);
+            println!(
+                "Starting cycle removal: {} networks, {} total nodes",
+                self.nets.len(),
+                initial_total_nodes
+            );
         }
 
         // Precompute adjacency maps for all networks using optimized O(N) builder
@@ -232,7 +243,10 @@ impl Maze {
         }
         if debug {
             println!("Building adjacency maps took: {:?}", adj_start.elapsed());
-            let non_empty_adj: usize = network_adjacencies.iter().filter(|adj| !adj.is_empty()).count();
+            let non_empty_adj: usize = network_adjacencies
+                .iter()
+                .filter(|adj| !adj.is_empty())
+                .count();
             println!("  Non-empty adjacency maps: {}", non_empty_adj);
         }
 
@@ -257,7 +271,10 @@ impl Maze {
             }
             if cycles.is_empty() {
                 if debug {
-                    println!("Total cycle detection time: {:?}", detection_start.elapsed());
+                    println!(
+                        "Total cycle detection time: {:?}",
+                        detection_start.elapsed()
+                    );
                 }
                 break;
             }
@@ -265,13 +282,18 @@ impl Maze {
             // Sort cycles for deterministic processing
             cycles.sort_by(|a, b| {
                 // First by network index
-                a.net_index.cmp(&b.net_index)
+                a.net_index
+                    .cmp(&b.net_index)
                     // Then by cycle length
                     .then(a.cycle_nodes.len().cmp(&b.cycle_nodes.len()))
                     // Then by the nodes themselves for tie-breaking
                     .then_with(|| {
                         for (node_a, node_b) in a.cycle_nodes.iter().zip(b.cycle_nodes.iter()) {
-                            let cmp = (node_a.i, node_a.j, node_a.node).cmp(&(node_b.i, node_b.j, node_b.node));
+                            let cmp = (node_a.i, node_a.j, node_a.node).cmp(&(
+                                node_b.i,
+                                node_b.j,
+                                node_b.node,
+                            ));
                             if cmp != std::cmp::Ordering::Equal {
                                 return cmp;
                             }
@@ -294,30 +316,43 @@ impl Maze {
 
                     nodes_to_remove_per_net
                         .entry(cycle_info.net_index)
-                        .or_insert_with(HashSet::new)
+                        .or_default()
                         .insert(node_to_remove);
 
                     cycles_removed += 1;
 
                     // Log which cycle and node we're removing
-                    println!("[Cycle removal] Network {}: removing node {:?} from cycle of length {}",
-                             cycle_info.net_index, node_to_remove, cycle_info.cycle_nodes.len());
+                    println!(
+                        "[Cycle removal] Network {}: removing node {:?} from cycle of length {}",
+                        cycle_info.net_index,
+                        node_to_remove,
+                        cycle_info.cycle_nodes.len()
+                    );
                     println!("[Cycle removal] Full cycle: {:?}", cycle_info.cycle_nodes);
                 }
             }
 
             // Actually remove nodes from each network
             // Sort by network index for deterministic processing
-            let mut sorted_entries: Vec<(usize, HashSet<Node>)> = nodes_to_remove_per_net.into_iter().collect();
+            let mut sorted_entries: Vec<(usize, HashSet<Node>)> =
+                nodes_to_remove_per_net.into_iter().collect();
             sorted_entries.sort_by_key(|(net_idx, _)| *net_idx);
 
             for (net_index, nodes_to_remove) in sorted_entries {
                 if net_index < self.nets.len() {
                     if debug {
-                        println!("  Removing {} nodes from network {}", nodes_to_remove.len(), net_index);
+                        println!(
+                            "  Removing {} nodes from network {}",
+                            nodes_to_remove.len(),
+                            net_index
+                        );
                     }
-                    println!("X[Cycle removal] Network {}: removing {} nodes: {:?}",
-                             net_index, nodes_to_remove.len(), nodes_to_remove);
+                    println!(
+                        "X[Cycle removal] Network {}: removing {} nodes: {:?}",
+                        net_index,
+                        nodes_to_remove.len(),
+                        nodes_to_remove
+                    );
 
                     // Remove nodes from network
                     let mut sorted_nodes: Vec<&Node> = nodes_to_remove.iter().collect();
@@ -357,12 +392,13 @@ impl Maze {
                 }
             }
 
-            if debug {
-                if cycles_removed > 0 {
-                    println!("  Removed {} cycles in this iteration", cycles_removed);
-                    if iteration == 1 {
-                        println!("First cycle removal batch took: {:?}", removal_start.elapsed());
-                    }
+            if debug && cycles_removed > 0 {
+                println!("  Removed {} cycles in this iteration", cycles_removed);
+                if iteration == 1 {
+                    println!(
+                        "First cycle removal batch took: {:?}",
+                        removal_start.elapsed()
+                    );
                 }
             }
         }
@@ -376,16 +412,27 @@ impl Maze {
         }
         self.nets = new_nets;
         if debug {
-            println!("Splitting disconnected networks took: {:?}", split_start.elapsed());
+            println!(
+                "Splitting disconnected networks took: {:?}",
+                split_start.elapsed()
+            );
             let final_nodes: usize = self.nets.iter().map(|net| net.len()).sum();
-            println!("Cycle removal completed: {} networks, {} total nodes (removed {} nodes)",
-                     self.nets.len(), final_nodes, initial_total_nodes - final_nodes);
+            println!(
+                "Cycle removal completed: {} networks, {} total nodes (removed {} nodes)",
+                self.nets.len(),
+                final_nodes,
+                initial_total_nodes - final_nodes
+            );
         }
     }
 
     /// Detect cycles using precomputed adjacency maps.
     /// This is faster than detect_cycles() which rebuilds adjacency maps each time.
-    fn detect_cycles_with_adjacency(&self, adjacencies: &[HashMap<Node, Vec<Node>>], debug: bool) -> Vec<CycleInfo> {
+    fn detect_cycles_with_adjacency(
+        &self,
+        adjacencies: &[HashMap<Node, Vec<Node>>],
+        debug: bool,
+    ) -> Vec<CycleInfo> {
         let start = Instant::now();
         let mut all_cycles = Vec::new();
         let mut seen_cycles: HashSet<Vec<Node>> = HashSet::new();
@@ -420,7 +467,6 @@ impl Maze {
                         &mut visited,
                         &mut rec_stack,
                         &mut path,
-                        debug,
                     ) {
                         // Normalize the cycle to check for duplicates
                         let normalized = Self::normalize_cycle(&cycle);
@@ -434,11 +480,17 @@ impl Maze {
                             });
                             network_cycle_count += 1;
                             // Log cycle even when debug=false to understand non-determinism
-                            println!("[Cycle detection] Network {}: found cycle of length {}: {:?}",
-                                     net_idx, cycle.len(), normalized);
+                            println!(
+                                "[Cycle detection] Network {}: found cycle of length {}: {:?}",
+                                net_idx,
+                                cycle.len(),
+                                normalized
+                            );
                         } else {
-                            println!("[Cycle detection] Network {}: skipped duplicate cycle: {:?}",
-                                     net_idx, normalized);
+                            println!(
+                                "[Cycle detection] Network {}: skipped duplicate cycle: {:?}",
+                                net_idx, normalized
+                            );
                         }
                         // Else: skip this duplicate cycle
                     }
@@ -446,7 +498,12 @@ impl Maze {
             }
 
             if debug && network_cycle_count > 0 {
-                println!("  Network {}: found {} cycles ({} nodes)", net_idx, network_cycle_count, nodes.len());
+                println!(
+                    "  Network {}: found {} cycles ({} nodes)",
+                    net_idx,
+                    network_cycle_count,
+                    nodes.len()
+                );
             }
         }
 
@@ -468,7 +525,6 @@ impl Maze {
         visited: &mut HashSet<Node>,
         rec_stack: &mut HashSet<Node>,
         path: &mut Vec<Node>,
-        debug: bool,
     ) -> Option<Vec<Node>> {
         let current_tile = (current.i, current.j);
 
@@ -539,7 +595,6 @@ impl Maze {
                     visited,
                     rec_stack,
                     path,
-                    debug,
                 ) {
                     // if debug {
                     //     println!("DFS recursion found cycle of length {}", cycle.len());
@@ -555,9 +610,9 @@ impl Maze {
                     .unwrap();
                 let mut cycle = path[cycle_start..].to_vec();
                 cycle.push(neighbor); // Close the cycle
-                // if debug {
-                //     println!("DFS found back-edge cycle of length {} ({cycle_start})", cycle.len());
-                // }
+                                      // if debug {
+                                      //     println!("DFS found back-edge cycle of length {} ({cycle_start})", cycle.len());
+                                      // }
                 return Some(cycle);
             }
         }
@@ -576,12 +631,12 @@ impl Maze {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-  use crate::maze::maze::FileType::SVG;
-  use crate::maze::tile::Tile;
-  use common::consts::{N2, N4, N5, N6};
+    use super::*;
+    use crate::maze::maze::FileType::SVG;
+    use crate::maze::tile::Tile;
+    use common::consts::{N2, N4, N5, N6};
 
-  /// Helper macro to create a tile, update network, and place it in the maze.
+    /// Helper macro to create a tile, update network, and place it in the maze.
     /// Note: coordinates are swapped between update_network(i, j) and tiles[(j, i)].
     macro_rules! place_tile {
         ($maze:expr, $nodes:expr, $i:expr, $j:expr) => {{
@@ -610,7 +665,7 @@ mod tests {
         println!("After reduce_nets: {} networks", maze.nets.len());
         maze.remove_cycles(false);
 
-        let name = format!("test-cycle-1");
+        let name = "test-cycle-1".to_string();
         let _ = maze.render(name.to_string(), SVG);
 
         println!("Final nets: {} networks", maze.nets.len());
@@ -638,7 +693,7 @@ mod tests {
         maze.reduce_nets(0);
         maze.remove_cycles(false);
 
-        let name = format!("test-cycle-2");
+        let name = "test-cycle-2".to_string();
         let _ = maze.render(name.to_string(), SVG);
 
         // Note the nets can be correct, bit the SVG isn't?
@@ -709,7 +764,6 @@ mod tests {
 
         // No cycles should be detected - intra-tile connections are not cycles
         assert_eq!(maze.nets.len(), 1);
-
     }
 
     #[test]
@@ -732,134 +786,133 @@ mod tests {
         assert_eq!(maze.nets.len(), 1);
     }
 
-#[test]
-fn test_remove_cycles_two_cycles_same_net() {
-    let mut maze = Maze::new(5, 5, false, true, true, None);
+    #[test]
+    fn test_remove_cycles_two_cycles_same_net() {
+        let mut maze = Maze::new(5, 5, false, true, true, None);
 
-    // Create two cycles within the same network
-    // First cycle
-    place_tile!(maze, vec![N5], 0, 0);
-    place_tile!(maze, vec![N5 | N4], 1, 0);
-    place_tile!(maze, vec![N4 | N6 | N5], 1, 1);
-    place_tile!(maze, vec![N5 | N6], 0, 1);
-    place_tile!(maze, vec![N5 | N6], 2, 1);
-    place_tile!(maze, vec![N5 | N6], 0, 2);
-    place_tile!(maze, vec![N5 | N6], 1, 2);
-    place_tile!(maze, vec![N5 | N6| N4], 2, 2);
+        // Create two cycles within the same network
+        // First cycle
+        place_tile!(maze, vec![N5], 0, 0);
+        place_tile!(maze, vec![N5 | N4], 1, 0);
+        place_tile!(maze, vec![N4 | N6 | N5], 1, 1);
+        place_tile!(maze, vec![N5 | N6], 0, 1);
+        place_tile!(maze, vec![N5 | N6], 2, 1);
+        place_tile!(maze, vec![N5 | N6], 0, 2);
+        place_tile!(maze, vec![N5 | N6], 1, 2);
+        place_tile!(maze, vec![N5 | N6 | N4], 2, 2);
 
-    // Second cycle
-    place_tile!(maze, vec![N6| N4], 3, 2);
-    place_tile!(maze, vec![N6| N5| N4], 3, 3);
-    place_tile!(maze, vec![N5| N4], 2, 3);
-    place_tile!(maze, vec![N5| N4], 4, 3);
-    place_tile!(maze, vec![N5| N4], 2, 4);
-    place_tile!(maze, vec![N5| N4], 3, 4);
-    place_tile!(maze, vec![N5| N4], 4, 4);
+        // Second cycle
+        place_tile!(maze, vec![N6 | N4], 3, 2);
+        place_tile!(maze, vec![N6 | N5 | N4], 3, 3);
+        place_tile!(maze, vec![N5 | N4], 2, 3);
+        place_tile!(maze, vec![N5 | N4], 4, 3);
+        place_tile!(maze, vec![N5 | N4], 2, 4);
+        place_tile!(maze, vec![N5 | N4], 3, 4);
+        place_tile!(maze, vec![N5 | N4], 4, 4);
 
-    let name = format!("test-two-cycles-1");
-    let _ = maze.render(name.to_string(), SVG);
+        let name = "test-two-cycles-1".to_string();
+        let _ = maze.render(name.to_string(), SVG);
 
-    maze.reduce_nets(0);
-    maze.remove_cycles(false);
+        maze.reduce_nets(0);
+        maze.remove_cycles(false);
 
-    let name = format!("test-two-cycles-2");
-    let _ = maze.render(name.to_string(), SVG);
+        let name = "test-two-cycles-2".to_string();
+        let _ = maze.render(name.to_string(), SVG);
 
-    // After cycle removal, we should have at least one network
-    assert!(maze.nets.len() >= 1);
-   }
+        // After cycle removal, we should have at least one network
+        assert!(!maze.nets.is_empty());
+    }
 
-#[test]
-fn test_remove_cycles_two_cycles_same_net_overlapping() {
-    let mut maze = Maze::new(5, 5, false, true, true, None);
+    #[test]
+    fn test_remove_cycles_two_cycles_same_net_overlapping() {
+        let mut maze = Maze::new(5, 5, false, true, true, None);
 
-    // First cycle (2x2)
-    place_tile!(maze, vec![N5], 0, 0);
-    place_tile!(maze, vec![N5 | N4], 1, 0);
-    place_tile!(maze, vec![N4 | N6 | N5], 1, 1);
-    place_tile!(maze, vec![N5 | N6], 0, 1);
+        // First cycle (2x2)
+        place_tile!(maze, vec![N5], 0, 0);
+        place_tile!(maze, vec![N5 | N4], 1, 0);
+        place_tile!(maze, vec![N4 | N6 | N5], 1, 1);
+        place_tile!(maze, vec![N5 | N6], 0, 1);
 
-    // Second cycle overlapping at tile (1,1)
-    place_tile!(maze, vec![N5 | N6], 2, 1);
-    place_tile!(maze, vec![N6 | N5], 2, 2);
-    place_tile!(maze, vec![N5 | N4 | N6], 1, 2);
+        // Second cycle overlapping at tile (1,1)
+        place_tile!(maze, vec![N5 | N6], 2, 1);
+        place_tile!(maze, vec![N6 | N5], 2, 2);
+        place_tile!(maze, vec![N5 | N4 | N6], 1, 2);
 
-    // Additional tiles to ensure connectivity
-    place_tile!(maze, vec![N5 | N6], 0, 2);
-    place_tile!(maze, vec![N4| N5 | N6], 1, 3);
-    place_tile!(maze, vec![N5 | N6], 0, 3);
-    place_tile!(maze, vec![N5 | N6], 2, 3);
-    place_tile!(maze, vec![N5 | N6], 0, 4);
-    place_tile!(maze, vec![N5 | N6], 1, 4);
-    place_tile!(maze, vec![N5 | N6], 2, 4);
+        // Additional tiles to ensure connectivity
+        place_tile!(maze, vec![N5 | N6], 0, 2);
+        place_tile!(maze, vec![N4 | N5 | N6], 1, 3);
+        place_tile!(maze, vec![N5 | N6], 0, 3);
+        place_tile!(maze, vec![N5 | N6], 2, 3);
+        place_tile!(maze, vec![N5 | N6], 0, 4);
+        place_tile!(maze, vec![N5 | N6], 1, 4);
+        place_tile!(maze, vec![N5 | N6], 2, 4);
 
-    let name = format!("test-two-cycles-overlapping-1");
-    let _ = maze.render(name.to_string(), SVG);
+        let name = "test-two-cycles-overlapping-1".to_string();
+        let _ = maze.render(name.to_string(), SVG);
 
-    maze.reduce_nets(0);
-    maze.remove_cycles(false);
+        maze.reduce_nets(0);
+        maze.remove_cycles(false);
 
-    let name = format!("test-two-cycles-overlapping-2");
-    let _ = maze.render(name.to_string(), SVG);
+        let name = "test-two-cycles-overlapping-2".to_string();
+        let _ = maze.render(name.to_string(), SVG);
 
-    // After cycle removal, we should have at least one network
-    assert!(maze.nets.len() == 1);
-}
-#[test]
-fn test_remove_cycles_five_cycles() {
-    let mut maze = Maze::new(7, 5, false, true, true, None);
+        // After cycle removal, we should have at least one network
+        assert!(maze.nets.len() == 1);
+    }
+    #[test]
+    fn test_remove_cycles_five_cycles() {
+        let mut maze = Maze::new(7, 5, false, true, true, None);
 
-    // First cycle (2x2)
-    place_tile!(maze, vec![N5], 0, 0);
-    place_tile!(maze, vec![N5 | N4], 1, 0);
-    place_tile!(maze, vec![N4 | N6 | N5], 1, 1);
-    place_tile!(maze, vec![N5 | N6], 0, 1);
+        // First cycle (2x2)
+        place_tile!(maze, vec![N5], 0, 0);
+        place_tile!(maze, vec![N5 | N4], 1, 0);
+        place_tile!(maze, vec![N4 | N6 | N5], 1, 1);
+        place_tile!(maze, vec![N5 | N6], 0, 1);
 
-    // Bottom right
-    place_tile!(maze, vec![N4 | N5 | N6], 4, 1);
-    place_tile!(maze, vec![N4 | N6], 5, 1);
-    place_tile!(maze, vec![N4 | N6], 6, 1);
-    place_tile!(maze, vec![N4 | N6], 4, 2);
-    place_tile!(maze, vec![N4 |N5 | N6], 5, 2);
-    place_tile!(maze, vec![N4 | N6], 6, 2);
+        // Bottom right
+        place_tile!(maze, vec![N4 | N5 | N6], 4, 1);
+        place_tile!(maze, vec![N4 | N6], 5, 1);
+        place_tile!(maze, vec![N4 | N6], 6, 1);
+        place_tile!(maze, vec![N4 | N6], 4, 2);
+        place_tile!(maze, vec![N4 | N5 | N6], 5, 2);
+        place_tile!(maze, vec![N4 | N6], 6, 2);
 
-    // Top right
-    place_tile!(maze, vec![N4 | N6], 4, 3);
-    place_tile!(maze, vec![N4 |N5 | N6], 5, 3);
-    place_tile!(maze, vec![N4 | N6], 6, 3);
-    place_tile!(maze, vec![N4 | N5 | N6], 4, 4);
-    place_tile!(maze, vec![N4 | N6], 5, 4);
-    place_tile!(maze, vec![N4 | N6], 6, 4);
+        // Top right
+        place_tile!(maze, vec![N4 | N6], 4, 3);
+        place_tile!(maze, vec![N4 | N5 | N6], 5, 3);
+        place_tile!(maze, vec![N4 | N6], 6, 3);
+        place_tile!(maze, vec![N4 | N5 | N6], 4, 4);
+        place_tile!(maze, vec![N4 | N6], 5, 4);
+        place_tile!(maze, vec![N4 | N6], 6, 4);
 
-    // Join left and right loops
-    place_tile!(maze, vec![N4 | N5], 3, 4);
-    place_tile!(maze, vec![N4 | N5], 3, 1);
+        // Join left and right loops
+        place_tile!(maze, vec![N4 | N5], 3, 4);
+        place_tile!(maze, vec![N4 | N5], 3, 1);
 
-    // Second cycle overlapping at tile (1,1)
-    place_tile!(maze, vec![N5 | N4| N6], 2, 1);
-    place_tile!(maze, vec![N6 | N5], 2, 2);
-    place_tile!(maze, vec![N5 | N4 | N6], 1, 2);
+        // Second cycle overlapping at tile (1,1)
+        place_tile!(maze, vec![N5 | N4 | N6], 2, 1);
+        place_tile!(maze, vec![N6 | N5], 2, 2);
+        place_tile!(maze, vec![N5 | N4 | N6], 1, 2);
 
-    // Additional tiles to ensure connectivity
-    place_tile!(maze, vec![N5 | N6], 0, 2);
-    place_tile!(maze, vec![N4| N5 | N6], 1, 3);
-    place_tile!(maze, vec![N5 | N6], 0, 3);
-    place_tile!(maze, vec![N5 | N6], 2, 3);
-    place_tile!(maze, vec![N5 | N6], 0, 4);
-    place_tile!(maze, vec![N5 | N6], 1, 4);
-    place_tile!(maze, vec![N5 | N4 | N6], 2, 4);
+        // Additional tiles to ensure connectivity
+        place_tile!(maze, vec![N5 | N6], 0, 2);
+        place_tile!(maze, vec![N4 | N5 | N6], 1, 3);
+        place_tile!(maze, vec![N5 | N6], 0, 3);
+        place_tile!(maze, vec![N5 | N6], 2, 3);
+        place_tile!(maze, vec![N5 | N6], 0, 4);
+        place_tile!(maze, vec![N5 | N6], 1, 4);
+        place_tile!(maze, vec![N5 | N4 | N6], 2, 4);
 
-    let name = format!("test-five-cycles-1");
-    let _ = maze.render(name.to_string(), SVG);
+        let name = "test-five-cycles-1".to_string();
+        let _ = maze.render(name.to_string(), SVG);
 
-    maze.reduce_nets(0);
-    maze.remove_cycles(false);
+        maze.reduce_nets(0);
+        maze.remove_cycles(false);
 
-    let name = format!("test-five-cycles-2");
-    let _ = maze.render(name.to_string(), SVG);
+        let name = "test-five-cycles-2".to_string();
+        let _ = maze.render(name.to_string(), SVG);
 
-    // After cycle removal, we should have at least one network
-    assert!(maze.nets.len() == 1);
-}
-
+        // After cycle removal, we should have at least one network
+        assert!(maze.nets.len() == 1);
+    }
 }

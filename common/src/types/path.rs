@@ -15,18 +15,22 @@ impl Path {
     pub fn len(self) -> usize {
         self.points.len()
     }
+
+    pub fn is_empty(self) -> bool {
+        self.points.is_empty()
+    }
     pub fn scale(self) -> Path {
-        return Path {
+        Path {
             points: self.iter().map(|p| *p * TILE_WIDTH).collect(),
-        };
+        }
     }
 
     pub fn trim(self) -> Vec<String> {
-        return self.iter().map(|p| p.trim()).collect();
+        self.iter().map(|p| p.trim()).collect()
     }
 
     pub fn str(self) -> Vec<String> {
-        return self.iter().map(|p| (*p * TILE_WIDTH).trim()).collect();
+        self.iter().map(|p| (*p * TILE_WIDTH).trim()).collect()
     }
 
     pub fn invert(self) -> Path {
@@ -53,7 +57,7 @@ impl Path {
 
         let pts = concat(vec![vec![pts[0]], diffs]);
 
-        return Path { points: pts };
+        Path { points: pts }
     }
 
     pub fn rotate_cw(self, invert: bool, offset_rotations: Vec<usize>) -> Path {

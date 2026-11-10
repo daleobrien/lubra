@@ -30,8 +30,7 @@ impl Tile {
 
     pub fn get_first_nodes(&self) -> Vec<usize> {
         // Get the first set bit from each node
-        self
-            .nodes
+        self.nodes
             .iter()
             .map(|n| n.trailing_zeros().to_usize().unwrap())
             .collect()
@@ -74,8 +73,8 @@ impl Tile {
             // This needs to return a net to use, and a list of adjacent nets to remove.
             let complex_net = Self::find_best_path(coordinate, &surrounding_tiles, &net, debug);
 
-            if complex_net.is_some() {
-                render_nets.add(complex_net.unwrap());
+            if let Some(complex_net) = complex_net {
+                render_nets.add(complex_net);
             } else {
                 // Simple path
                 let path = MAP_PATHS.get(&net);
@@ -100,7 +99,7 @@ impl Tile {
             }
         }
 
-        return render_nets;
+        render_nets
     }
 
     fn find_best_path(
@@ -109,11 +108,11 @@ impl Tile {
         net: &usize,
         debug: bool,
     ) -> Option<ComplexNet> {
-        let list_of_adj_and_nets = ADJ_CHECKS.get(&net);
+        let list_of_adj_and_nets = ADJ_CHECKS.get(net);
 
         let mut complex_net: ComplexNet = ComplexNet::new();
 
-        if list_of_adj_and_nets.is_some() {
+        if let Some(list_of_adj_and_nets) = list_of_adj_and_nets {
             // let x = list_of_adj_and_nets
             //     .unwrap()
             //     .iter()
@@ -127,7 +126,7 @@ impl Tile {
             //         x.iter().map(|n| print_bits(*n)).collect::<Vec<String>>()
             //     );
             // }
-            for &adj_and_nets in list_of_adj_and_nets.unwrap().iter() {
+            for &adj_and_nets in list_of_adj_and_nets.iter() {
                 //
                 if Self::all_match(surrounding_tiles, adj_and_nets, debug) {
                     // For each subnet, merge them into one net
@@ -158,7 +157,7 @@ impl Tile {
                         let adj_nets_3 = (bits >> 18) & NL;
                         let adj_nets_4 = (bits >> 24) & NL;
 
-                        for adj_net in vec![adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
+                        for adj_net in [adj_nets_1, adj_nets_2, adj_nets_3, adj_nets_4] {
                             if adj_net != 0 {
                                 let node_number =
                                     ((net & NL) & adj_net).trailing_zeros().to_usize().unwrap();
@@ -188,7 +187,7 @@ impl Tile {
                 }
             }
         }
-        return None;
+        None
     }
 
     fn add_node_to_hidden(
@@ -200,7 +199,7 @@ impl Tile {
     ) {
         let coord = get_connected_coords_at_coords(coordinate, node_number);
 
-        if coord.is_some() {
+        if let Some(coord) = coord {
             let index_as_mask = 1 << node_number;
             if index_as_mask.to_usize().unwrap() & adj_net != 0 {
                 // Also, is node_number in adj_net
@@ -215,7 +214,7 @@ impl Tile {
                 // }
                 complex_net
                     .hidden_neighbours
-                    .insert(CoordinateAndNet::new(coord.unwrap(), adj_net));
+                    .insert(CoordinateAndNet::new(coord, adj_net));
             }
         }
     }
@@ -259,35 +258,33 @@ impl Tile {
     }
 
     pub fn rotate_cw(&self) -> Vec<usize> {
-        return self
-            .nodes
+        self.nodes
             .iter()
             .map(|n| bits::rotate_bits_345_left_and_012_right(*n))
-            .collect();
+            .collect()
     }
 
     pub fn rotate_ccw(&self) -> Vec<usize> {
-        return self
-            .nodes
+        self.nodes
             .iter()
             .map(|n| bits::rotate_bits_345_right_and_012_left(*n))
-            .collect();
+            .collect()
     }
 
     pub fn intersects(&self, other: &Tile) -> bool {
-        return other.bits & self.bits != 0;
+        other.bits & self.bits != 0
     }
 
     pub fn contains(&self, node_mask: usize) -> bool {
-        return node_mask & self.bits != 0;
+        node_mask & self.bits != 0
     }
 
     pub fn contain_net(&self, net_mask: usize) -> bool {
-        return self.nodes.iter().any(|net| *net == net_mask);
+        self.nodes.contains(&net_mask)
     }
 
     pub fn is_empty(&self) -> bool {
-        return self.nodes.is_empty();
+        self.nodes.is_empty()
     }
 }
 
@@ -313,13 +310,13 @@ impl fmt::Display for Tile {
 
 #[cfg(test)]
 mod tests {
-  use std::{assert_eq, println, vec};
+    use std::{assert_eq, println, vec};
 
-  use common::consts::{N1, N2, N3, N4, N5, N6};
+    use common::consts::{N1, N2, N3, N4, N5, N6};
 
-  use crate::maze::tile::Tile;
+    use crate::maze::tile::Tile;
 
-  #[test]
+    #[test]
     fn test_cw_rotation() {
         let tile = Tile::new(vec![N1 | N2, N5], true);
         let rotated_nodes = tile.rotate_cw();
@@ -344,48 +341,48 @@ mod tests {
     fn test_intersects() {
         let tile1 = Tile::new(vec![N1 | N2, N5], true);
         let tile2 = Tile::new(vec![N2 | N3, N6], true);
-        assert_eq!(tile1.intersects(&tile2), true);
+        assert!(tile1.intersects(&tile2));
 
         let tile1 = Tile::new(vec![N1 | N2, N5], true);
         let tile2 = Tile::new(vec![N3, N6], true);
-        assert_eq!(tile1.intersects(&tile2), false);
+        assert!(!tile1.intersects(&tile2));
     }
 
     #[test]
     fn test_contains() {
         let tile1 = Tile::new(vec![N1 | N2, N5], true);
-        assert_eq!(tile1.contains(N1), true);
-        assert_eq!(tile1.contains(N2), true);
-        assert_eq!(tile1.contains(N3), false);
-        assert_eq!(tile1.contains(N4), false);
-        assert_eq!(tile1.contains(N5), true);
-        assert_eq!(tile1.contains(N6), false);
+        assert!(tile1.contains(N1));
+        assert!(tile1.contains(N2));
+        assert!(!tile1.contains(N3));
+        assert!(!tile1.contains(N4));
+        assert!(tile1.contains(N5));
+        assert!(!tile1.contains(N6));
 
         let tile1 = Tile::new(vec![], true);
-        assert_eq!(tile1.contains(N1), false);
+        assert!(!tile1.contains(N1));
     }
 
     #[test]
     fn test_contain_net() {
         let tile1 = Tile::new(vec![N1 | N2, N5], true);
-        assert_eq!(tile1.contain_net(N1), false);
-        assert_eq!(tile1.contain_net(N2), false);
-        assert_eq!(tile1.contain_net(N1 | N2), true);
-        assert_eq!(tile1.contain_net(N3), false);
-        assert_eq!(tile1.contain_net(N4), false);
-        assert_eq!(tile1.contain_net(N5), true);
-        assert_eq!(tile1.contain_net(N6), false);
+        assert!(!tile1.contain_net(N1));
+        assert!(!tile1.contain_net(N2));
+        assert!(tile1.contain_net(N1 | N2));
+        assert!(!tile1.contain_net(N3));
+        assert!(!tile1.contain_net(N4));
+        assert!(tile1.contain_net(N5));
+        assert!(!tile1.contain_net(N6));
 
         let tile1 = Tile::new(vec![], true);
-        assert_eq!(tile1.contains(N1), false);
+        assert!(!tile1.contains(N1));
     }
 
     #[test]
     fn test_is_empty() {
         let tile1 = Tile::new(vec![N1 | N2, N5], true);
-        assert_eq!(tile1.is_empty(), false);
+        assert!(!tile1.is_empty());
 
         let tile1 = Tile::new(vec![], true);
-        assert_eq!(tile1.is_empty(), true);
+        assert!(tile1.is_empty());
     }
 }

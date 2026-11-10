@@ -8,6 +8,12 @@ pub struct StringRegistry {
     counter: AtomicUsize,
 }
 
+impl Default for StringRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StringRegistry {
     pub fn new() -> Self {
         StringRegistry {
@@ -63,10 +69,10 @@ impl IntoIterator for StringRegistry {
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-  use std::assert_eq;
+    use super::*;
+    use std::assert_eq;
 
-  #[test]
+    #[test]
     fn test_string_registry() {
         let mut registry = StringRegistry::new();
 

@@ -17,16 +17,10 @@ pub fn create_lookups(
         let bits = to_bits(&nodes);
         for (n, dont_care_bits) in bit_sequence(64).iter() {
             let index = to_base4(mask_to_bits(bits & !n & 0b111_111) | dont_care_bits);
-            nets_by_mask
-                .entry(index)
-                .or_insert_with(Vec::new)
-                .push(nodes.clone());
+            nets_by_mask.entry(index).or_default().push(nodes.clone());
 
-            mass_by_mask
-                .entry(index)
-                .or_insert_with(Vec::new)
-                .push(mass);
+            mass_by_mask.entry(index).or_default().push(mass);
         }
     }
-    return count;
+    count
 }

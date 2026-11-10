@@ -2,8 +2,8 @@ use itertools::Itertools;
 
 use crate::consts::{IN, NL, WA};
 
-pub fn get_mass(nets: &Vec<usize>) -> usize {
-    let mut mass = 1 * nets.len();
+pub fn get_mass(nets: &[usize]) -> usize {
+    let mut mass = nets.len();
     for net in nets {
         match net.count_ones() {
             2 => mass *= 2,
@@ -15,14 +15,14 @@ pub fn get_mass(nets: &Vec<usize>) -> usize {
     mass
 }
 
-pub fn to_bits(nets: &Vec<usize>) -> usize {
+pub fn to_bits(nets: &[usize]) -> usize {
     if nets.is_empty() {
         return 0;
     }
     nets.iter().fold(0, |a, b| a | b)
 }
 
-pub fn intersects(nets: &Vec<usize>) -> bool {
+pub fn intersects(nets: &[usize]) -> bool {
     let mut combined = 0;
     !nets.is_empty()
         && nets.len() != 1
@@ -43,7 +43,7 @@ pub fn dont_care_to_bits(value: usize) -> usize {
             out |= b;
         }
     }
-    return out;
+    out
 }
 
 pub fn mask_to_bits(value: usize) -> usize {
@@ -56,7 +56,7 @@ pub fn mask_to_bits(value: usize) -> usize {
             out |= b;
         }
     }
-    return out;
+    out
 }
 
 pub fn to_base4(number: usize) -> usize {
@@ -65,7 +65,7 @@ pub fn to_base4(number: usize) -> usize {
         return number;
     }
     let mut result = 0;
-    let mut decimal = number.clone();
+    let mut decimal = number;
     let mut multiplier = 1;
 
     while decimal > 0 {
@@ -75,14 +75,14 @@ pub fn to_base4(number: usize) -> usize {
         decimal /= 4;
     }
 
-    return result;
+    result
 }
 
 pub fn bit_sequence(n: usize) -> Vec<(usize, usize)> {
-    return (0..n)
+    (0..n)
         .into_iter()
         .map(|n| (n, dont_care_to_bits(n)))
-        .collect();
+        .collect()
 }
 
 pub fn to_6bit_binary(value: &usize, reduce: bool) -> String {
@@ -95,7 +95,7 @@ pub fn to_6bit_binary(value: &usize, reduce: bool) -> String {
     }
     let mut text = format!("0b{}", s);
     if reduce {
-        for s in vec![
+        for s in [
             "0b00_000000_000000_000000_000000_",
             "0b00_000000_000000_000000_",
             "0b00_000000_000000_",
@@ -106,7 +106,7 @@ pub fn to_6bit_binary(value: &usize, reduce: bool) -> String {
                 text = text.replace(s, "");
             }
         }
-        for s in vec![
+        for s in [
             "0b01_000000_000000_000000_000000_",
             "0b01_000000_000000_000000_",
             "0b01_000000_000000_",
@@ -116,7 +116,7 @@ pub fn to_6bit_binary(value: &usize, reduce: bool) -> String {
                 text = text.replace(s, "0b01_..._");
             }
         }
-        for s in vec![
+        for s in [
             "0b11_000000_000000_000000_000000_",
             "0b11_000000_000000_000000_",
             "0b11_000000_000000_",
@@ -128,7 +128,7 @@ pub fn to_6bit_binary(value: &usize, reduce: bool) -> String {
         }
     }
 
-    return text;
+    text
 }
 
 const SHIFT_VALUES: [usize; 4] = [6, 12, 18, 24];
@@ -169,23 +169,23 @@ pub fn print_bits(value: usize) -> String {
         .copied() // Use copied() to avoid creating references
         .map(|shift| (value >> shift) & NL)
         .filter(|&x| x != 0) // Exclude values that are all zeros
-        .map(|x| nibble_to_enum_string(x))
+        .map(nibble_to_enum_string)
         .join("/")
 }
 
-pub fn print_nets(nets: &Vec<usize>) -> String {
+pub fn print_nets(nets: &[usize]) -> String {
     nets.iter().map(|x| print_bits(*x)).join(" ")
 }
 
 #[cfg(test)]
 mod tests {
-  use std::{assert_eq, format, vec};
+    use std::{assert_eq, format, vec};
 
-  use crate::consts::{A1, A3, A4, A5, B2, B3, B4, B6, N1, N2, N3, N4, N5, N6};
+    use crate::consts::{A1, A3, A4, A5, B2, B3, B4, B6, N1, N2, N3, N4, N5, N6};
 
-  use super::*;
+    use super::*;
 
-  #[test]
+    #[test]
     fn test_nibble_to_enum_string() {
         assert_eq!(nibble_to_enum_string(N1), "1");
         assert_eq!(nibble_to_enum_string(N2), "2");
@@ -226,12 +226,12 @@ mod tests {
     }
     #[test]
     fn test_to_bits() {
-        assert_eq!(to_bits(&vec![]), 0);
+        assert_eq!(to_bits(&[]), 0);
 
-        assert_eq!(to_bits(&vec![2]), 2);
-        assert_eq!(to_bits(&vec![1, 2]), 3);
+        assert_eq!(to_bits(&[2]), 2);
+        assert_eq!(to_bits(&[1, 2]), 3);
 
-        let b = to_bits(&vec![3, 0b100_000]);
+        let b = to_bits(&[3, 0b100_000]);
         assert_eq!(format!("{:b}", b), "100011");
     }
 
@@ -262,19 +262,13 @@ mod tests {
 
     #[test]
     fn test_intersections() {
-        assert_eq!(intersects(&vec![]), false);
-        assert_eq!(intersects(&vec![0b010_101]), false);
-        assert_eq!(intersects(&vec![0b000_001, 0b000_010]), false);
-        assert_eq!(intersects(&vec![0b000_001, 0b000_011]), true);
-        assert_eq!(intersects(&vec![0b000_001, 0b000_010, 0b000_100]), false);
-        assert_eq!(
-          intersects(&vec![0b000_001, 0b000_010, 0b000_100, 0b001_000]),
-          false
-        );
-        assert_eq!(
-          intersects(&vec![0b000_001, 0b001_000, 0b000_010, 0b001_000]),
-          true
-        );
+        assert!(!intersects(&[]));
+        assert!(!intersects(&[0b010_101]));
+        assert!(!intersects(&[0b000_001, 0b000_010]));
+        assert!(intersects(&[0b000_001, 0b000_011]));
+        assert!(!intersects(&[0b000_001, 0b000_010, 0b000_100]));
+        assert!(!intersects(&[0b000_001, 0b000_010, 0b000_100, 0b001_000]));
+        assert!(intersects(&[0b000_001, 0b001_000, 0b000_010, 0b001_000]));
     }
 
     #[test]

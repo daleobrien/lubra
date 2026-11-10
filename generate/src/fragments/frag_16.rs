@@ -12,21 +12,21 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     };
     let a = Point { x: 0.5, y: S3 };
     let b = Point { x: 0.5, y: 0.0 };
-    let pts  = Path::new(vec![a - w, b - w, b + w, a + w]).diff(invert);
+    let pts = Path::new(vec![a - w, b - w, b + w, a + w]).diff(invert);
 
-    return (vec![], pts);
+    (vec![], pts)
 }
 
 fn svg(_invert: bool, _radii: Vec<String>, pts: Path) -> String {
-  let pts = pts.str();
-    return format!(
+    let pts = pts.str();
+    format!(
         "<path fill='{fill}' d='M{a}l{b}l{c}l{d}z'/><path stroke='black' d='M{a}l{b}m{c}l{d}z'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
         d = pts[3],
         fill = FILL,
-    );
+    )
 }
 
 define_shape_family! {

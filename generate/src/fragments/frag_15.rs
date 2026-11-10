@@ -1,10 +1,11 @@
 use common::consts::FILL;
 use common::define_shape_family;
-use common::macros::{identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw};
+use common::macros::{
+    identity, reflect, reflect_then_rotate_ccw, reflect_then_rotate_cw, rotate_ccw, rotate_cw,
+};
 use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, TILE_WIDTH};
-
 
 fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
@@ -51,11 +52,11 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     (vec![r1s, r2s, r3s, r4s], pts)
 }
 
-pub fn svg(invert: bool, radii: Vec<String>, pts: Path,) -> String {
+pub fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
 
     let pts = pts.str();
-    return format!(
+    format!(
         "<path fill='{fill}' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r2} {r2} 0 0 {d1} {c}L{d}A{r3} {r3} 0 0 {d2} {e}A{r4} {r4} 0 0 {d1} {f}'/><path stroke='black' d='M{a}A{r1} {r1} 0 0 {d2} {b}A{r2} {r2} 0 0 {d1} {c}M{d}A{r3} {r3} 0 0 {d2} {e}A{r4} {r4} 0 0 {d1} {f}'/>",
         a = pts[0],
         b = pts[1],
@@ -68,7 +69,7 @@ pub fn svg(invert: bool, radii: Vec<String>, pts: Path,) -> String {
         r3=radii[2],
         r4=radii[3],
         fill = FILL,
-    );
+    )
 }
 
 define_shape_family! {

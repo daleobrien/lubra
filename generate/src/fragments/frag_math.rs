@@ -5,10 +5,10 @@ use std::f64::consts::FRAC_PI_3;
 
 pub fn polar(p: Point, radius: f64, angle: f64) -> Point {
     let (a, b) = f64::sin_cos(angle);
-    return Point {
+    Point {
         x: p.x + radius * b,
         y: p.y + radius * a,
-    };
+    }
 }
 
 pub fn ax(index: usize, invert: bool) -> (Path, String) {
@@ -37,5 +37,5 @@ pub fn ax(index: usize, invert: bool) -> (Path, String) {
     let b = polar(Point { x, y }, r, end * FRAC_PI_3);
 
     let r = trimf64(TILE_WIDTH * r);
-    return (Path::new(vec![a, b]), r);
+    (Path::new(vec![a, b]), r)
 }

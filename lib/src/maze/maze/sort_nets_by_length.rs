@@ -4,7 +4,7 @@ use crate::maze::maze::Maze;
 impl Maze {
     pub(crate) fn sort_nets_by_length(&mut self) {
         // Sort such that the last net is the shortest, we will be deleting them as we go
-        self.nets.sort_by(|a, b| (&b.len()).cmp(&a.len()));
+        self.nets.sort_by_key(|net| std::cmp::Reverse(net.len()));
     }
 }
 
@@ -114,12 +114,8 @@ mod tests {
         net4.insert(Node::new(8, 8, 8));
         net4.insert(Node::new(9, 9, 9));
 
-        let mut maze = create_test_maze(vec![
-            net1.clone(),
-            net2.clone(),
-            net3.clone(),
-            net4.clone(),
-        ]);
+        let mut maze =
+            create_test_maze(vec![net1.clone(), net2.clone(), net3.clone(), net4.clone()]);
         maze.sort_nets_by_length();
 
         // Should be sorted: 4, 3, 2, 1

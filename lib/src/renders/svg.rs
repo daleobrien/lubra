@@ -70,7 +70,7 @@ impl Svg {
             s = TILE_WIDTH/15.0,
         ));
 
-        s.push_str(&format!("<defs>"));
+        s.push_str("<defs>");
         for (name, content) in self.glyphs.iter() {
             s.push_str(&format!(
                 "<g id='{name}'>{content}</g>",
@@ -78,7 +78,7 @@ impl Svg {
                 content = content
             ));
         }
-        s.push_str(&format!("</defs>"));
+        s.push_str("</defs>");
 
         s.push_str(&format!(
             "<g transform='translate(0,{h}) scale(1, -1)'>",
@@ -89,6 +89,6 @@ impl Svg {
         }
         //
         s.push_str("</g></svg>");
-        return s;
+        s
     }
 }
