@@ -2,13 +2,18 @@ use itertools::Itertools;
 
 use crate::consts::{IN, NL, WA};
 
+/// The weight of a set of tile nets when a random tile is chosen.
+///
+/// Tiles with several separate nets score higher (the count is squared), which
+/// gives more tracks crossing over each other. Three- and four-node nets score
+/// higher than plain two-node tracks, which gives more branching. An empty tile
+/// scores 0, so it is only used when nothing else fits.
 pub fn get_mass(nets: &[usize]) -> usize {
-    let mut mass = nets.len();
+    let mut mass = nets.len() * nets.len();
     for net in nets {
         match net.count_ones() {
-            2 => mass *= 2,
-            3 => mass *= 2,
-            4 => mass *= 2,
+            3 => mass *= 4,
+            4 => mass *= 3,
             _ => mass *= 2,
         }
     }

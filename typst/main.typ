@@ -316,7 +316,7 @@ their weights ("mass"). It writes four functions:
 
 - `nets_small.rs` / `mass_small.rs`: a reduced set of net shapes with no
   dead ends. It uses edge-to-edge lines (4–5, 4–6, 5–6), vertex-to-edge
-  lines, vertex-to-vertex lines and the two 3-ways 1–2–3 and 4–5–6.
+  lines, vertex-to-vertex lines and all twenty 3-way junctions.
 - `nets_large.rs` / `mass_large.rs`: every combination of 1- to 6-node
   nets, including single-node dead ends. Used only when the small table has
   no option for a constrained tile.
@@ -328,10 +328,13 @@ so a lookup allocates nothing and needs only a small stack frame.
 registered under every mask it satisfies, with each used node marked as
 either 1 or 2. Its mass (`get_mass` in `common/src/bit_utils.rs`) is
 
-$ "mass" = n dot 2^n, quad n = |"nets"| $
+$ "mass" = n^2 dot product_("net") w("net"), quad n = |"nets"|, quad w = cases(4 & "3 nodes", 3 & "4 nodes", 2 & "otherwise") $
 
-so tiles holding more separate nets are favoured, and an empty tile (mass 0)
-is chosen only when it is the only option. Each mass list is in the same order
+Squaring $n$ favours tiles that hold several separate nets, which gives more
+tracks crossing over each other. The higher weights for 3- and 4-node nets
+give more branching. An empty tile (mass 0) is chosen only when it is the
+only option. To change the look of the mazes, adjust `get_mass` or the shape
+list in `generate/src/main.rs`, then run `make gen-nets`. Each mass list is in the same order
 as its list of net sets (entry $n$ weighs net set $n$); a test checks every
 mask against `get_mass`. `random_tile` (`maze/random.rs`) picks
 an entry with a Walker alias table (`weighted_rand`) and shuffles the nets to
