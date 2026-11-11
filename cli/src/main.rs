@@ -52,6 +52,10 @@ struct Args {
     /// Remove cycles from the maze
     #[arg(long, default_value_t = true)]
     remove_cycles: bool,
+
+    /// Remove dead ends up to this many tiles long (0 keeps them all)
+    #[arg(long, default_value_t = 2)]
+    trim_dead_ends: usize,
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -109,6 +113,15 @@ fn main() {
         let cycles_time = cycles_start.elapsed();
         if args.debug {
             println!("Cycle removal took: {:?}", cycles_time);
+        }
+    }
+
+    // Trim short dead ends if requested
+    if args.trim_dead_ends > 0 {
+        let trim_start = Instant::now();
+        maze.trim_dead_ends(args.trim_dead_ends);
+        if args.debug {
+            println!("Dead-end trimming took: {:?}", trim_start.elapsed());
         }
     }
 

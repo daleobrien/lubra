@@ -77,6 +77,7 @@ Root `Cargo.toml` members:
 - `random_tile` (`lib/src/maze/random.rs`) chooses valid net sets from generated lookup tables using weighted random selection.
 - `rebuild_nets` recomputes the net list from the tiles; `reduce_nets` (with `remove_short_nets`) joins all nets into one via shared tiles, free nodes or empty tiles.
 - `remove_cycles` cuts loops (Kruskal over tile-net hubs) so the maze is a single tree; it never splits a net.
+- `trim_dead_ends(max_length)` removes dead ends up to that many tiles long (CLI `--trim-dead-ends`, default 2; 0 keeps them all). It trades branching for cleaner tracks.
 - `Tile::generate_hidden_and_visible_nets` + `find_best_path` decide whether a path is rendered as a local fragment or a complex multi-tile fragment.
 
 ## Generation + Rendering Flow

@@ -3,6 +3,7 @@ use crate::maze::tile::Tile;
 use array2d::Array2D;
 
 // Import the implementation modules
+mod dead_ends;
 mod grid_generation;
 mod net_operations;
 mod net_reduction;

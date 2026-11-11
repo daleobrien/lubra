@@ -392,6 +392,27 @@ That node is detached from its tile net and kept as a single-node net, which
 is drawn as a dead end. Cutting a join that closes a loop never disconnects
 anything, so the number of nets doesn't change.
 
+== Trimming dead ends
+
+Because the maze ends up as a tree, every junction needs a branch that stops
+somewhere, so the number of dead ends always tracks the number of junctions.
+Many of those branches are only a tile or two long, because a loop is often
+cut right beside a junction. They are drawn as stubs: a track that stops just
+past a node, or a hook curled into a capped finger.
+
+`trim_dead_ends(max_length)` (`maze/maze/dead_ends.rs`) removes them. A dead
+end is a chain of tile nets from a leaf (joined to one other tile net) through
+plain two-way tile nets to a junction (joined to three or more). Chains of at
+most `max_length` tile nets are deleted and the junction gives up that branch.
+
+- All chains are measured before any are removed, so a junction that loses
+  its short branches is not then trimmed away itself.
+- Chains that include the entrance tile $(0, 0)$ or the exit tile are kept.
+
+This is a trade-off, not a free improvement: trimming removes branching. Over
+ten 30 × 20 mazes, junctions per 100 tiles go from 35 untrimmed to 22 at
+`max_length` 1 and 15 at 2.
+
 = Rendering <rendering>
 
 `Maze::render_with_options(file_name, file_type, background, debug)`
@@ -526,8 +547,8 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
 
 = Command line <cli>
 
-`lubra` (`cli/src/main.rs`) builds one maze, then runs `reduce_nets` and
-`remove_cycles`, then renders it. It writes `<W>-by-<H>-sample-normal.svg`
+`lubra` (`cli/src/main.rs`) builds one maze, then runs `reduce_nets`,
+`remove_cycles` and `trim_dead_ends`, then renders it. It writes `<W>-by-<H>-sample-normal.svg`
 (or `.png`) unless `--output` is given, and prints the total time.
 
 #table(
@@ -545,6 +566,7 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
   [`-d`, `--debug`], [off], [Timings and debug output.],
   [`--reduce`], [1], [`lower_limit` passed to `reduce_nets`; 0 skips reduction.],
   [`--remove-cycles`], [on], [Run `remove_cycles`.],
+  [`--trim-dead-ends`], [2], [Remove dead ends up to this many tiles long; 0 keeps them all.],
 )
 
 = Current limitations
