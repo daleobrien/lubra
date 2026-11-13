@@ -209,10 +209,11 @@ fn main() {
     }
 
     maze.set_show_tile_nets(args.show_tile_nets);
-    // With any debug output on, write the command line above the maze, so a drawing
-    // can be reproduced from the image alone.
+    // With any debug output on, write the command line above the maze (so a drawing
+    // can be reproduced from the image alone) and colour each net's track.
     if args.debug || args.boundaries || args.show_node_numbers || args.show_tile_nets {
         maze.set_caption(Some(command_line()));
+        maze.set_colour_tracks(true);
     }
     let render_start = Instant::now();
     let result = maze.render_with_options(filename, file_type, args.background, args.debug);

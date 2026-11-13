@@ -1,10 +1,11 @@
 use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::maze::{FileType, Maze};
 use crate::renders::generated::fragment::MAP_PATHS;
+use crate::renders::net_colours::{net_colour, net_index};
 use crate::renders::node_numbers::{add_node_numbers, add_tile_nets};
 use crate::renders::svg::Svg;
 use crate::renders::terminal::terminal_fragment;
-use common::consts::NX;
+use common::consts::{NL, NX};
 use common::types::bits;
 use common::types::coordinate::{CataloguedNet, Coordinate, CoordinateAndNet};
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
@@ -99,6 +100,16 @@ impl Maze {
                 continue;
             }
 
+            if self.colour_tracks {
+                // Colour the walls by the tile net this fragment draws.
+                let nodes = coordinate_and_net.net & NL;
+                if let Some(index) = net_index(&self.tiles[(j, i)].nodes, nodes) {
+                    let stroke = format!("stroke='{}'", net_colour(i, j, index));
+                    svg.add_fragment(&frag.unwrap().replace("stroke='black'", &stroke), point, 1);
+                    continue;
+                }
+            }
+
             // Every fragment is drawn on one layer: where tracks cross, the one drawn
             // later passes over. Cross-tile fragments don't need a layer of their own
             // because PATH_WIDTH keeps an arc that dips into a neighbouring tile clear
@@ -110,7 +121,7 @@ impl Maze {
             add_node_numbers(&mut svg, self.number_of_columns, self.number_of_rows);
         }
         if self.show_tile_nets {
-            add_tile_nets(&mut svg, &self.tiles);
+            add_tile_nets(&mut svg, &self.tiles, self.colour_tracks);
         }
 
         if debug {

@@ -65,6 +65,26 @@ impl Svg {
         self.add_coloured_text(text, position, layer_index, "red");
     }
 
+    /// Adds text made of coloured parts, centred on `position`: each `(text, colour)`
+    /// pair is drawn in its own colour.
+    pub fn add_coloured_parts(
+        &mut self,
+        parts: &[(String, &str)],
+        position: Point,
+        layer_index: usize,
+    ) {
+        let spans: String = parts
+            .iter()
+            .map(|(text, colour)| format!("<tspan fill='{colour}'>{}</tspan>", escape_xml(text)))
+            .collect();
+        self.layers[layer_index].push_str(&format!(
+            "<text x='{x:.2}' y='{y:.2}' font-size='12' font-family='monospace' text-anchor='middle' dominant-baseline='middle' transform='scale(1,-1) translate(0,{flip:.2})'>{spans}</text>",
+            x = position.x,
+            y = position.y,
+            flip = -2.0 * position.y,
+        ));
+    }
+
     /// Adds `text` centred on `position`, in `colour` (any SVG colour).
     pub fn add_coloured_text(
         &mut self,

@@ -678,6 +678,9 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
 With `--debug` or any debug overlay (`-B`, `-N`, `-T`) on, it also writes the
 command line above the maze (e.g. `lubra --seed 1 -W 20 -H 12 -B -N -T`), so a
 drawing can be reproduced from the image alone.
+It also colours each net's track walls: nets in one tile get different colours,
+neighbouring tiles start on different colours, and the `-T` labels use the same
+colour for each net (`lib/src/renders/net_colours.rs`).
 
 #table(
   columns: (auto, auto, 1fr),

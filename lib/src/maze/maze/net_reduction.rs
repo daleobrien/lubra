@@ -385,6 +385,7 @@ mod tests {
             show_node_numbers: false,
             show_tile_nets: false,
             caption: None,
+            colour_tracks: false,
         };
         maze.rebuild_nets();
         maze

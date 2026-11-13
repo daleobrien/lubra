@@ -1,4 +1,5 @@
 use crate::maze::tile::Tile;
+use crate::renders::net_colours::net_colour;
 use crate::renders::svg::Svg;
 use array2d::Array2D;
 use common::types::point::{Point, S2, TILE_HEIGHT, TILE_WIDTH};
@@ -43,25 +44,31 @@ fn is_inverted(i: usize, j: usize) -> bool {
     (i + j) % 2 == 1
 }
 
+/// A net's node numbers, e.g. `12` for a net joining nodes 1 and 2.
+fn net_label(net: usize) -> String {
+    (0..6)
+        .filter(|k| net & (1 << k) != 0)
+        .map(|k| char::from(b'1' + k as u8))
+        .collect()
+}
+
 /// The label for a tile's nets: each net's node numbers, nets separated by commas,
 /// e.g. `12,5` for a net joining nodes 1 and 2 and a dead end at node 5.
 pub fn tile_nets_label(tile_nets: &[usize]) -> String {
     tile_nets
         .iter()
-        .map(|net| {
-            (0..6)
-                .filter(|k| net & (1 << k) != 0)
-                .map(|k| char::from(b'1' + k as u8))
-                .collect::<String>()
-        })
+        .map(|&net| net_label(net))
         .collect::<Vec<_>>()
         .join(",")
 }
 
-/// Writes each tile's nets (see `tile_nets_label`) in blue, beside the cell
-/// coordinates: above them in a tile that points up, below in one that points down,
-/// so the label sits towards the tile's point. Empty tiles get no label.
-pub fn add_tile_nets(svg: &mut Svg, tiles: &Array2D<Tile>) {
+/// Writes each tile's nets (see `tile_nets_label`) beside the cell coordinates: above
+/// them in a tile that points up, below in one that points down, so the label sits
+/// towards the tile's point. Empty tiles get no label.
+///
+/// With `coloured`, each net is written in its track colour (see `net_colours`);
+/// otherwise the whole label is blue.
+pub fn add_tile_nets(svg: &mut Svg, tiles: &Array2D<Tile>, coloured: bool) {
     for j in 0..tiles.num_rows() {
         for i in 0..tiles.num_columns() {
             let tile_nets = &tiles[(j, i)].nodes;
@@ -79,7 +86,18 @@ pub fn add_tile_nets(svg: &mut Svg, tiles: &Array2D<Tile>) {
                 x: coordinates.x,
                 y: coordinates.y + offset,
             };
-            svg.add_coloured_text(&tile_nets_label(tile_nets), position, 2, TILE_NET_COLOUR);
+            if coloured {
+                let mut parts = Vec::new();
+                for (index, &net) in tile_nets.iter().enumerate() {
+                    if index > 0 {
+                        parts.push((",".to_string(), "#888"));
+                    }
+                    parts.push((net_label(net), net_colour(i, j, index)));
+                }
+                svg.add_coloured_parts(&parts, position, 2);
+            } else {
+                svg.add_coloured_text(&tile_nets_label(tile_nets), position, 2, TILE_NET_COLOUR);
+            }
         }
     }
 }
@@ -153,7 +171,7 @@ mod tests {
         maze.tiles[(0, 0)] = Tile::new(vec![N5], true);
         maze.tiles[(0, 1)] = Tile::new(vec![N4], true);
         let mut svg = Svg::new(200.0, 200.0);
-        add_tile_nets(&mut svg, &maze.tiles);
+        add_tile_nets(&mut svg, &maze.tiles, false);
         let out = svg.to_string(false);
         // Tile (0,0) points up: its label is above the coordinates; (1,0) points down.
         let up = coordinate_position(0, 0).y + TILE_NET_OFFSET;
@@ -170,5 +188,17 @@ mod tests {
             out.contains(">5</text>") && out.contains(">4</text>"),
             "{out}"
         );
+    }
+
+    #[test]
+    fn test_coloured_tile_net_labels_match_the_track_colours() {
+        let mut maze = crate::maze::maze::Maze::new(1, 1, false, false, false, None);
+        maze.tiles[(0, 0)] = Tile::new(vec![N1 | N2, N5], true);
+        let mut svg = Svg::new(200.0, 200.0);
+        add_tile_nets(&mut svg, &maze.tiles, true);
+        let out = svg.to_string(false);
+        let first = format!("<tspan fill='{}'>12</tspan>", net_colour(0, 0, 0));
+        let second = format!("<tspan fill='{}'>5</tspan>", net_colour(0, 0, 1));
+        assert!(out.contains(&first) && out.contains(&second), "{out}");
     }
 }

@@ -34,6 +34,7 @@ pub struct Maze {
     pub(crate) show_node_numbers: bool,
     pub(crate) show_tile_nets: bool,
     pub(crate) caption: Option<String>,
+    pub(crate) colour_tracks: bool,
 }
 
 impl Maze {
@@ -65,6 +66,7 @@ impl Maze {
             show_node_numbers,
             show_tile_nets: false,
             caption: None,
+            colour_tracks: false,
         };
 
         if randomise {
@@ -81,5 +83,11 @@ impl Maze {
     /// A line of text drawn above the rendered maze, or `None` for no caption.
     pub fn set_caption(&mut self, caption: Option<String>) {
         self.caption = caption;
+    }
+
+    /// Whether to draw each net's track walls in its own colour, for debugging; the
+    /// tile net labels then use the same colours.
+    pub fn set_colour_tracks(&mut self, colour: bool) {
+        self.colour_tracks = colour;
     }
 }
