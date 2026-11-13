@@ -635,6 +635,22 @@ curves. Both its ends point the same way, so the only S that crosses at the
 edge's midpoint is two equal curves of half a tile width (radius 60); that
 radius is fixed by the geometry, not a setting.
 
+=== The two-vertex junction
+
+`frag_135` (`135`, `124`, `236`) joins two vertices of a tile and drops to the
+middle of the edge between them. It used to be two curves merged, which left a
+double hump in the top wall. It is now one arch: the track lifts out of each
+vertex on a side curve (`SIDE_RADIUS`, 60, turning `SIDE_TURN`, 20 degrees),
+crosses over on a top curve (about 59), and the drop meets the top curve with a
+rounded corner of `CORNER_RADIUS` (13, the wall's own radius) on each side. The
+track keeps its full width everywhere.
+
+The bottom edge leaves little room: the drop and its walls take the middle, and
+the corners must fit above the edge. About 13 is the largest corner these side
+settings allow; a larger value stops the generator with a message. Lifting the
+sides more raises the arch, which allows rounder corners but brings it closer
+to tracks in the neighbouring tiles.
+
 = Documentation pipeline
 
 `make document` runs the `document` crate; `make doc` also regenerates the
