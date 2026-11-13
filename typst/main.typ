@@ -108,7 +108,7 @@ Single steps:
   [`make gen`], [`generate` with no argument: SVG fragments and net tables.],
   [`make gen-svg`], [`generate svg`: fragments, `ADJ_CHECKS` and the `document` helper tables.],
   [`make gen-nets`], [`generate nets`: the small and large net/mass lookup tables.],
-  [`make cli`], [The CLI with `CLI_ARGS` (default `-W 20 -H 12 -B -N -T`: a square-looking maze with tile boundaries, node numbers and tile nets).],
+  [`make cli`], [The CLI with `CLI_ARGS` (default `--seed 1 -W 20 -H 12 -B -N -T`: the same square-looking maze every run, with tile boundaries, node numbers and tile nets).],
   [`make document`], [The `document` crate (SVGs and generated Typst files).],
   [`make typst`], [`typst compile` of `shapes.typ`, `tiles.typ` and `main.typ`.],
   [`make build`], [`cargo build --workspace`.],
