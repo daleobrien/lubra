@@ -36,6 +36,7 @@ impl Maze {
 
         // Create header and so on
         let mut svg = Svg::new(w, h);
+        svg.set_caption(self.caption.clone());
 
         let mut all_catorised_nets: CataloguedNet = CataloguedNet::new();
 

@@ -33,6 +33,7 @@ pub struct Maze {
     pub(crate) boundaries: bool,
     pub(crate) show_node_numbers: bool,
     pub(crate) show_tile_nets: bool,
+    pub(crate) caption: Option<String>,
 }
 
 impl Maze {
@@ -63,6 +64,7 @@ impl Maze {
             boundaries,
             show_node_numbers,
             show_tile_nets: false,
+            caption: None,
         };
 
         if randomise {
@@ -74,5 +76,10 @@ impl Maze {
     /// Whether to write each tile's nets (e.g. `12,5`) in blue in the rendered maze.
     pub fn set_show_tile_nets(&mut self, show: bool) {
         self.show_tile_nets = show;
+    }
+
+    /// A line of text drawn above the rendered maze, or `None` for no caption.
+    pub fn set_caption(&mut self, caption: Option<String>) {
+        self.caption = caption;
     }
 }

@@ -86,6 +86,22 @@ impl From<Format> for FileType {
     }
 }
 
+/// The command line this run was started with, e.g. `lubra --seed 1 -W 20 -H 12`.
+/// Arguments containing spaces or quotes are single-quoted, as a shell would need.
+fn command_line() -> String {
+    let quote = |arg: String| {
+        if arg.is_empty() || arg.contains(|c: char| c.is_whitespace() || "'\"$`\\".contains(c)) {
+            format!("'{}'", arg.replace('\'', "'\\''"))
+        } else {
+            arg
+        }
+    };
+    std::iter::once("lubra".to_string())
+        .chain(std::env::args().skip(1).map(quote))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 fn main() {
     let args = Args::parse();
     let total_start = Instant::now();
@@ -193,6 +209,11 @@ fn main() {
     }
 
     maze.set_show_tile_nets(args.show_tile_nets);
+    // With any debug output on, write the command line above the maze, so a drawing
+    // can be reproduced from the image alone.
+    if args.debug || args.boundaries || args.show_node_numbers || args.show_tile_nets {
+        maze.set_caption(Some(command_line()));
+    }
     let render_start = Instant::now();
     let result = maze.render_with_options(filename, file_type, args.background, args.debug);
     let render_time = render_start.elapsed();

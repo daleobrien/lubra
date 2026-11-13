@@ -675,6 +675,9 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
 `remove_cycles`, `trim_dead_ends`, `separate_touching_tracks` and
 `fill_blank_areas`, then renders it. It writes `<W>-by-<H>-sample-normal.svg`
 (or `.png`) unless `--output` is given, and prints the total time.
+With `--debug` or any debug overlay (`-B`, `-N`, `-T`) on, it also writes the
+command line above the maze (e.g. `lubra --seed 1 -W 20 -H 12 -B -N -T`), so a
+drawing can be reproduced from the image alone.
 
 #table(
   columns: (auto, auto, 1fr),

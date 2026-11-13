@@ -623,6 +623,7 @@ mod tests {
             boundaries: false,
             show_node_numbers: false,
             show_tile_nets: false,
+            caption: None,
         }
     }
 

@@ -9,6 +9,19 @@ pub struct Svg {
     height: f64,
     layers: [String; 6], // Layers, fill & stroke, from bottom to top.
     glyphs: StringRegistry,
+    caption: Option<String>,
+}
+
+/// Height of the caption strip above the maze, in SVG units.
+const CAPTION_HEIGHT: f64 = 28.0;
+
+/// Escapes text for use inside an SVG element.
+fn escape_xml(text: &str) -> String {
+    text.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('\'', "&apos;")
+        .replace('"', "&quot;")
 }
 
 impl fmt::Display for Svg {
@@ -24,7 +37,13 @@ impl Svg {
             height,
             layers: std::array::from_fn(|_| String::new()),
             glyphs: StringRegistry::new(),
+            caption: None,
         }
+    }
+
+    /// A line of text drawn above the maze, in a strip added to the top of the image.
+    pub fn set_caption(&mut self, caption: Option<String>) {
+        self.caption = caption;
     }
 
     pub fn add_fragment(&mut self, fragment: &str, index: Point, layer_index: usize) {
@@ -74,11 +93,24 @@ impl Svg {
         };
 
         let margin = 15f64;
+        let caption_height = if self.caption.is_some() {
+            CAPTION_HEIGHT
+        } else {
+            0.0
+        };
         s.push_str(&format!(
-            "<svg viewBox='{m} {m} {w} {h}' width='{w}px' height='{h}px' xmlns='http://www.w3.org/2000/svg' stroke-width='{s}' fill-opacity='0.8' {style} stroke-opacity='1' fill='transparent' stroke-linecap='butt' stroke='transparent'>",
-            m = -margin, w = self.width + margin * 2f64, h = self.height + margin * 2f64,
+            "<svg viewBox='{m} {top} {w} {h}' width='{w}px' height='{h}px' xmlns='http://www.w3.org/2000/svg' stroke-width='{s}' fill-opacity='0.8' {style} stroke-opacity='1' fill='transparent' stroke-linecap='butt' stroke='transparent'>",
+            m = -margin, top = -margin - caption_height, w = self.width + margin * 2f64,
+            h = self.height + margin * 2f64 + caption_height,
             s = TILE_WIDTH/15.0,
         ));
+        if let Some(caption) = &self.caption {
+            s.push_str(&format!(
+                "<text x='0' y='{y}' font-size='16' fill='#333' font-family='monospace' dominant-baseline='middle'>{text}</text>",
+                y = -margin - caption_height / 2.0,
+                text = escape_xml(caption),
+            ));
+        }
 
         s.push_str("<defs>");
         for (name, content) in self.glyphs.iter() {
@@ -96,5 +128,29 @@ impl Svg {
         //
         s.push_str("</g></svg>");
         s
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_caption_adds_a_strip_above_the_maze() {
+        let mut svg = Svg::new(100.0, 50.0);
+        let plain = svg.to_string(false);
+        assert!(plain.contains("viewBox='-15 -15 130 80'"), "{plain}");
+        assert!(!plain.contains("<text"));
+
+        svg.set_caption(Some("lubra --seed 1 -W 'a b' <x> & y".to_string()));
+        let captioned = svg.to_string(false);
+        assert!(
+            captioned.contains("viewBox='-15 -43 130 108'"),
+            "{captioned}"
+        );
+        assert!(
+            captioned.contains(">lubra --seed 1 -W &apos;a b&apos; &lt;x&gt; &amp; y</text>"),
+            "{captioned}"
+        );
     }
 }
