@@ -5,6 +5,10 @@
 CARGO ?= cargo
 TYPST ?= typst
 
+# Arguments for `make cli`. Width is in columns of half-tiles (60 units each)
+# and height in rows (about 104 units each), so W ~ 1.73 * H looks square.
+CLI_ARGS ?= -W 20 -H 12
+
 # Arguments for `make maze`, e.g. make maze MAZE_ARGS="--seed 7 -W 20 -H 20"
 MAZE_ARGS ?= --seed 3 -W 40 -H 30 -B -N --debug
 
@@ -46,7 +50,7 @@ gen-nets:
 	cd generate && $(CARGO) run --package generate -- nets
 
 cli:
-	cd cli && $(CARGO) run
+	cd cli && $(CARGO) run -- $(CLI_ARGS)
 
 document:
 	cd document && $(CARGO) run
