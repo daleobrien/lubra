@@ -4,7 +4,7 @@ use rand::seq::SliceRandom;
 use rand::Rng;
 use rand_chacha::ChaCha8Rng;
 
-use super::fill_clearance::DRAWN_CLEAR;
+use super::touching::Meeting;
 
 use crate::maze::maze::Maze;
 use crate::maze::tile::Tile;
@@ -25,6 +25,9 @@ const MAX_BRANCH: usize = 6;
 
 /// The most tile nets a tile may already hold for a branch to enter it.
 const MAX_SHARED: usize = 2;
+
+/// How often a step of a branch is allowed to cross another track.
+const CROSSING_CHANCE: f64 = 0.35;
 
 impl Maze {
     /// Grows new dead-end branches into blank space until no branch of at least
@@ -78,7 +81,7 @@ impl Maze {
                         _ => continue,
                     };
                     for k in 0..6 {
-                        if self.can_grow_out_of(i, j, bits, k) {
+                        if self.can_grow_out_of(i, j, bits, k, false) {
                             group.push(Seed { i, j, bits, k });
                         }
                     }
@@ -94,55 +97,44 @@ impl Maze {
     /// Whether tile net `bits` of tile `(i, j)` can grow out of node `k`: the node is
     /// free, the tile across it has room, and neither the longer tile net nor the new
     /// end across the node would be drawn touching another track.
-    fn can_grow_out_of(&self, i: usize, j: usize, bits: usize, k: usize) -> bool {
+    fn can_grow_out_of(&self, i: usize, j: usize, bits: usize, k: usize, may_cross: bool) -> bool {
         let Some((bi, bj)) = self.tile_across(i, j, k) else {
             return false;
         };
         !self.is_terminal(bi, bj)
             && self.tiles[(bj, bi)].nodes.len() <= MAX_SHARED
             && self.node_is_free(i, j, k)
-            && self.drawn_clear(i, j, bits | (1 << k), Some(bits), None)
-            && self.drawn_clear(bi, bj, 1 << k, None, Some((k, bits)))
+            && self.drawn_clear(i, j, bits | (1 << k), None, may_cross)
+            && self.drawn_clear(bi, bj, 1 << k, Some((k, bits)), false)
     }
 
     /// Whether tile net `net` can be drawn on tile `(i, j)` without touching any
     /// track it is not joined to, on this tile or the twelve around it.
     ///
-    /// `replacing` is the tile net of this tile that `net` takes the place of.
+    /// Tile nets of this tile that share a node with `net` are the one it replaces.
     /// `joining` is `(position, tile net)` for a neighbouring tile net that is about
-    /// to be joined to `net`, so does not count either.
+    /// to be joined to `net`, so does not count either. With `may_cross`, a two-node
+    /// `net` may also pass cleanly over one other two-node tile net.
     fn drawn_clear(
         &self,
         i: usize,
         j: usize,
         net: usize,
-        replacing: Option<usize>,
         joining: Option<(usize, usize)>,
+        may_cross: bool,
     ) -> bool {
-        let clear = |position: usize, other: usize| {
-            DRAWN_CLEAR[position][net & 63] & (1 << (other & 63)) != 0
-        };
-        let same_tile = self.tiles[(j, i)]
-            .nodes
-            .iter()
-            .all(|&other| Some(other) == replacing || clear(12, other));
-        same_tile
-            && self
-                .get_connected_titles_for_tile(i, j)
-                .iter()
-                .enumerate()
-                .all(|(position, tile)| {
-                    tile.is_none_or(|tile| {
-                        tile.nodes.iter().all(|&other| {
-                            // Positions 0-5 are the tiles across nodes 0-5.
-                            let joined = position < 6
-                                && net & (1 << position) != 0
-                                && (other & (1 << position) != 0
-                                    || joining == Some((position, other)));
-                            joined || clear(position, other)
-                        })
-                    })
-                })
+        let mut crossings = 0;
+        self.meetings(i, j, net)
+            .into_iter()
+            .all(|(other, position, how)| match how {
+                Meeting::Clear => true,
+                // Only one plain track over one other plain track.
+                Meeting::Crossing if may_cross => {
+                    crossings += 1;
+                    crossings == 1 && net.count_ones() == 2 && other.bits.count_ones() == 2
+                }
+                _ => joining == Some((position, other.bits)),
+            })
     }
 
     /// Grows one branch from `seed`. Returns whether it was kept; a branch shorter
@@ -150,7 +142,7 @@ impl Maze {
     fn grow_branch(&mut self, seed: Seed, needed: usize, rng: &mut ChaCha8Rng) -> bool {
         let Seed { i, j, bits, k } = seed;
         // Earlier branches in this pass may have used the seed.
-        if !self.tiles[(j, i)].contain_net(bits) || !self.can_grow_out_of(i, j, bits, k) {
+        if !self.tiles[(j, i)].contain_net(bits) || !self.can_grow_out_of(i, j, bits, k, false) {
             return false;
         }
         let mut undo: Vec<((usize, usize), Tile)> = Vec::new();
@@ -171,8 +163,9 @@ impl Maze {
             if length >= limit {
                 break;
             }
+            let may_cross = rng.gen_bool(CROSSING_CHANCE);
             let exits: Vec<usize> = (0..6)
-                .filter(|&k| self.can_grow_out_of(here.0, here.1, net, k))
+                .filter(|&k| self.can_grow_out_of(here.0, here.1, net, k, may_cross))
                 .collect();
             match exits.choose(rng) {
                 Some(&k) => exit = k,

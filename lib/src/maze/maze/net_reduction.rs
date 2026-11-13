@@ -6,6 +6,7 @@ use rand::seq::SliceRandom;
 use rand_chacha::ChaCha8Rng;
 
 use super::net_operations::DisjointSets;
+use super::touching::Meeting;
 use crate::maze::maze::Maze;
 use crate::maze::net::Node;
 use crate::maze::tile::Tile;
@@ -74,14 +75,50 @@ impl Maze {
 
         let mut rng = self.seeded_rng();
         while self.nets.len() > 1 {
-            let joined = self.join_at_shared_tiles(&mut rng)
-                || self.join_across_free_nodes(&mut rng)
-                || self.join_through_empty_tiles(&mut rng);
+            let joined = self.join_at_shared_tiles(&mut rng, false)
+                || self.join_across_free_nodes(&mut rng, false)
+                || self.join_through_empty_tiles(&mut rng, false);
             if !joined {
                 break;
             }
             self.rebuild_nets();
         }
+    }
+
+    /// Joins separate nets like `reduce_nets`, but only with joins whose reshaped
+    /// tile nets are not drawn touching another track. Nets that cannot be joined
+    /// that way stay separate.
+    pub(super) fn rejoin_nets_tidily(&mut self, rng: &mut ChaCha8Rng) {
+        self.rebuild_nets();
+        while self.nets.len() > 1 {
+            let joined = self.join_at_shared_tiles(rng, true)
+                || self.join_across_free_nodes(rng, true)
+                || self.join_through_empty_tiles(rng, true);
+            if !joined {
+                break;
+            }
+            self.rebuild_nets();
+        }
+    }
+
+    /// The node bits of the tile net that `tile_net` refers to.
+    fn bits_of(&self, tile_net: TileNetRef) -> usize {
+        self.tiles[(tile_net.j, tile_net.i)]
+            .nodes
+            .iter()
+            .copied()
+            .find(|bits| bits & (1 << tile_net.node) != 0)
+            .unwrap_or(0)
+    }
+
+    /// Whether tile net `bits`, drawn on tile `(i, j)`, would touch a track other
+    /// than `partners`: `(position, tile net)` pairs it is about to be joined to.
+    fn would_touch(&self, i: usize, j: usize, bits: usize, partners: &[(usize, usize)]) -> bool {
+        self.meetings(i, j, bits)
+            .into_iter()
+            .any(|(other, position, how)| {
+                how == Meeting::Touching && !partners.contains(&(position, other.bits))
+            })
     }
 
     /// Maps every node position to the index of its net in `self.nets`.
@@ -166,7 +203,7 @@ impl Maze {
     }
 
     /// Merges tile nets of different nets that share a tile. Returns whether any were merged.
-    fn join_at_shared_tiles(&mut self, rng: &mut ChaCha8Rng) -> bool {
+    fn join_at_shared_tiles(&mut self, rng: &mut ChaCha8Rng, tidy: bool) -> bool {
         let owners = self.net_owners();
         let mut candidates: Vec<(TileNetRef, TileNetRef)> = Vec::new();
         for j in 0..self.number_of_rows {
@@ -186,6 +223,10 @@ impl Maze {
         let mut joined_nets = DisjointSets::new(self.nets.len());
         let mut joined = false;
         for (a, b) in candidates {
+            let merged = self.bits_of(a) | self.bits_of(b);
+            if tidy && self.would_touch(a.i, a.j, merged, &[]) {
+                continue;
+            }
             if joined_nets.union(owners[&a.position()], owners[&b.position()]) {
                 self.merge_tile_nets(a.i, a.j, a.node, b.node);
                 joined = true;
@@ -196,7 +237,7 @@ impl Maze {
 
     /// Opens a free node between neighbouring tiles of different nets, extending a tile
     /// net on each side. Returns whether any nets were joined.
-    fn join_across_free_nodes(&mut self, rng: &mut ChaCha8Rng) -> bool {
+    fn join_across_free_nodes(&mut self, rng: &mut ChaCha8Rng, tidy: bool) -> bool {
         let owners = self.net_owners();
         let mut candidates: Vec<(TileNetRef, TileNetRef, usize)> = Vec::new();
         for j in 0..self.number_of_rows {
@@ -227,6 +268,13 @@ impl Maze {
             if !self.node_is_free(a.i, a.j, k) {
                 continue;
             }
+            let (bits_a, bits_b) = (self.bits_of(a), self.bits_of(b));
+            if tidy
+                && (self.would_touch(a.i, a.j, bits_a | (1 << k), &[(k, bits_b)])
+                    || self.would_touch(b.i, b.j, bits_b | (1 << k), &[(k, bits_a)]))
+            {
+                continue;
+            }
             if joined_nets.union(owners[&a.position()], owners[&b.position()]) {
                 self.extend_tile_net(a, k);
                 self.extend_tile_net(b, k);
@@ -238,7 +286,7 @@ impl Maze {
 
     /// Fills an empty tile with a two-node net that connects tile nets of different
     /// nets on two of its sides. Returns whether any nets were joined.
-    fn join_through_empty_tiles(&mut self, rng: &mut ChaCha8Rng) -> bool {
+    fn join_through_empty_tiles(&mut self, rng: &mut ChaCha8Rng, tidy: bool) -> bool {
         let owners = self.net_owners();
         let mut candidates: Vec<EmptyTileRoute> = Vec::new();
         for j in 0..self.number_of_rows {
@@ -281,6 +329,15 @@ impl Maze {
         for EmptyTileRoute { i, j, k1, k2, a, b } in candidates {
             let still_empty = self.tiles[(j, i)].nodes.is_empty();
             if !still_empty || !self.node_is_free(i, j, k1) || !self.node_is_free(i, j, k2) {
+                continue;
+            }
+            let (bits_a, bits_b) = (self.bits_of(a), self.bits_of(b));
+            let route = (1 << k1) | (1 << k2);
+            if tidy
+                && (self.would_touch(i, j, route, &[(k1, bits_a), (k2, bits_b)])
+                    || self.would_touch(a.i, a.j, bits_a | (1 << k1), &[])
+                    || self.would_touch(b.i, b.j, bits_b | (1 << k2), &[]))
+            {
                 continue;
             }
             if joined_nets.union(owners[&a.position()], owners[&b.position()]) {

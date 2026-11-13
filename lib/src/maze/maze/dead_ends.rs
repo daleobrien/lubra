@@ -10,17 +10,17 @@ use common::types::coordinate::Coordinate;
 
 /// A tile net, identified by its tile and its node bits.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-struct TileNet {
-    i: usize,
-    j: usize,
-    bits: usize,
+pub(super) struct TileNet {
+    pub(super) i: usize,
+    pub(super) j: usize,
+    pub(super) bits: usize,
 }
 
 /// A link from one tile net to the tile net across one of its nodes.
 #[derive(Clone, Copy)]
-struct Link {
-    node: usize,
-    to: TileNet,
+pub(super) struct Link {
+    pub(super) node: usize,
+    pub(super) to: TileNet,
 }
 
 impl Maze {
@@ -110,7 +110,12 @@ impl Maze {
 
     /// Rewrites the tile nets of tile `(i, j)`: `edit` maps each to its replacement, or
     /// `None` to remove it.
-    fn edit_tile_nets(&mut self, i: usize, j: usize, edit: impl Fn(usize) -> Option<usize>) {
+    pub(super) fn edit_tile_nets(
+        &mut self,
+        i: usize,
+        j: usize,
+        edit: impl Fn(usize) -> Option<usize>,
+    ) {
         let tile_nets: Vec<usize> = self.tiles[(j, i)]
             .nodes
             .iter()
@@ -120,7 +125,7 @@ impl Maze {
     }
 
     /// For every tile net, the tile nets it joins across its nodes.
-    fn tile_net_links(&self) -> HashMap<TileNet, Vec<Link>> {
+    pub(super) fn tile_net_links(&self) -> HashMap<TileNet, Vec<Link>> {
         let mut owner: HashMap<Node, TileNet> = HashMap::new();
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {

@@ -61,6 +61,10 @@ struct Args {
     /// tiles long (0 leaves blank areas alone)
     #[arg(long, default_value_t = 3)]
     fill: usize,
+
+    /// Leave tracks that are drawn touching each other as they are
+    #[arg(long, default_value_t = false)]
+    keep_touching: bool,
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -127,6 +131,18 @@ fn main() {
         maze.trim_dead_ends(args.trim_dead_ends);
         if args.debug {
             println!("Dead-end trimming took: {:?}", trim_start.elapsed());
+        }
+    }
+
+    // Prune side branches that are drawn touching another track
+    if !args.keep_touching {
+        let separate_start = Instant::now();
+        let left = maze.separate_touching_tracks();
+        if args.debug {
+            println!(
+                "Separating touching tracks took: {:?} ({left} touching pairs left)",
+                separate_start.elapsed()
+            );
         }
     }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measures which tile nets can be drawn near each other without touching.
+"""Measures how pairs of tile nets meet when drawn: clear, crossing or touching.
 
 Usage:
     mkdir /tmp/clearance
@@ -7,10 +7,18 @@ Usage:
     python3 tools/clearance.py /tmp/clearance > lib/src/maze/maze/fill_clearance.rs
 
 The test writes each tile net, alone, on every tile around six centre tiles (one per
-tile kind; the kinds agree, so one table is kept). This script rasterises them (needs rsvg-convert, numpy and Pillow) and,
-for a tile net `a` on a centre tile and a tile net `b` on the same tile (position
-12) or one of its twelve neighbours (positions 0-11, the order of `NODE_TO_COORD`),
-records whether the two drawings share fewer than TOLERANCE pixels.
+tile kind). This script rasterises them (needs rsvg-convert, numpy, Pillow and
+OpenCV) and compares tile net `a` on a centre tile with tile net `b` on the same
+tile (position 12) or one of its twelve neighbours (positions 0-11, the order of
+`NODE_TO_COORD`):
+
+- clear: the drawings stay at least MARGIN units apart;
+- crossing: one drawing cuts the other into separate pieces, so one track passes
+  over the other;
+- anything else is a touch: walls that graze without either track crossing.
+
+Tile kinds agree up to rounding, so one normal and one inverted kind are measured
+and a pair must pass on both.
 """
 import io
 import subprocess
@@ -18,62 +26,103 @@ import sys
 from functools import reduce
 from multiprocessing import Pool
 
+import cv2
 import numpy as np
 from PIL import Image
 
 SCALE = 2
-TOLERANCE = 12
+MARGIN = 2.0  # SVG units of white space required between clear tracks
+KINDS = (0, 3)
+
+MASKS = {}
+BLOBS = {}
 
 
 def mask(path):
     png = subprocess.run(
         ["rsvg-convert", "-z", str(SCALE), path], capture_output=True, check=True
     ).stdout
-    return np.packbits(np.array(Image.open(io.BytesIO(png)))[:, :, 3] > 0)
+    return (np.array(Image.open(io.BytesIO(png)))[:, :, 3] > 0).astype(np.uint8)
+
+
+def pieces(image):
+    return cv2.connectedComponents(image, connectivity=4)[0] - 1
+
+
+def measure(job):
+    """Returns (kind, position, clear rows, crossing rows) for one neighbour position."""
+    kind, p, centre, at = job
+    size = int(round(MARGIN * SCALE)) * 2 + 1
+    brush = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size, size))
+    clear_rows, cross_rows = [0], [0]
+    for a in range(1, 64):
+        shape_a = MASKS[(*centre, a)]
+        wide_a = cv2.dilate(shape_a, brush)
+        clear = cross = 0
+        for b in range(1, 64):
+            if p == 12 and a & b:
+                continue
+            shape_b = MASKS[(*at, b)]
+            if not (wide_a & shape_b).any():
+                clear |= 1 << b
+            elif (
+                (shape_a & shape_b).any()
+                and (
+                    pieces(shape_a & ~shape_b & 1) > BLOBS[(*centre, a)]
+                    or pieces(shape_b & ~shape_a & 1) > BLOBS[(*at, b)]
+                )
+            ):
+                cross |= 1 << b
+        clear_rows.append(clear)
+        cross_rows.append(cross)
+    return kind, p, clear_rows, cross_rows
+
+
+def print_table(name, table):
+    print("#[rustfmt::skip]")
+    print(f"pub(super) const {name}: [[u64; 64]; 13] = [")
+    for p in range(13):
+        rows = [
+            reduce(int.__and__, (table[(kind, p)][a] for kind in KINDS)) for a in range(64)
+        ]
+        print("    [" + ", ".join(f"0x{v:x}" for v in rows) + "],")
+    print("];")
 
 
 def main(directory):
     manifest = [tuple(map(int, line.split())) for line in open(f"{directory}/manifest.txt")]
+    manifest = [row for row in manifest if row[0] in KINDS]
     tiles = sorted({(i, j) for _, _, i, j in manifest})
     names = [(i, j, n) for i, j in tiles for n in range(1, 64)]
     with Pool() as pool:
         masks = pool.map(mask, [f"{directory}/t{i}_{j}_n{n}.svg" for i, j, n in names])
-    masks = dict(zip(names, masks))
-    counts = np.array([bin(v).count("1") for v in range(256)])
+    # Crop every mask to the area any of them uses.
+    used = reduce(np.maximum, masks)
+    ys, xs = np.nonzero(used)
+    pad = 8
+    box = (slice(max(ys.min() - pad, 0), ys.max() + pad), slice(max(xs.min() - pad, 0), xs.max() + pad))
+    for name, image in zip(names, masks):
+        MASKS[name] = np.ascontiguousarray(image[box])
+        BLOBS[name] = pieces(MASKS[name])
 
     centre = {kind: (i, j) for kind, p, i, j in manifest if p == 12}
-    table = {}
-    for kind, p, i, j in manifest:
-        ci, cj = centre[kind]
-        rows = []
-        for a in range(64):
-            bits = 0
-            for b in range(1, 64):
-                if a == 0 or (p == 12 and a & b):
-                    continue
-                shared = counts[masks[(ci, cj, a)] & masks[(i, j, b)]].sum()
-                if shared < TOLERANCE:
-                    bits |= 1 << b
-            rows.append(bits)
-        table[(kind, p)] = rows
+    jobs = [(kind, p, centre[kind], (i, j)) for kind, p, i, j in manifest]
+    with Pool() as pool:
+        results = pool.map(measure, jobs)
+    clear = {(kind, p): rows for kind, p, rows, _ in results}
+    cross = {(kind, p): rows for kind, p, _, rows in results}
 
-    # The six kinds agree up to rounding, so keep one table: clear on every kind.
     print("//! Generated by `tools/clearance.py`; do not edit.")
     print("//!")
-    print("//! `DRAWN_CLEAR[position][a]` has bit `b` set when tile net `a` (node bits) on a")
-    print("//! tile and tile net `b` at `position` can both be drawn without touching.")
-    print("//! Positions 0-11 are the neighbours in `NODE_TO_COORD` order; position 12 is")
-    print("//! the tile itself.")
+    print("//! How tile net `a` (node bits) on a tile meets tile net `b` at `position`:")
+    print("//! positions 0-11 are the neighbours in `NODE_TO_COORD` order and position 12 is")
+    print("//! the tile itself. Bit `b` of `DRAWN_CLEAR[position][a]` is set when the two")
+    print("//! are drawn with white space between them, and of `DRAWN_CROSSING[position][a]`")
+    print("//! when one passes over the other. A pair in neither table touches.")
     print()
-    print("#[rustfmt::skip]")
-    print("pub(super) const DRAWN_CLEAR: [[u64; 64]; 13] = [")
-    for p in range(13):
-        rows = [
-            reduce(int.__and__, (table[(kind, p)][a] for kind in range(6)))
-            for a in range(64)
-        ]
-        print("    [" + ", ".join(f"0x{v:x}" for v in rows) + "],")
-    print("];")
+    print_table("DRAWN_CLEAR", clear)
+    print()
+    print_table("DRAWN_CROSSING", cross)
 
 
 if __name__ == "__main__":

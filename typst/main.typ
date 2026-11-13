@@ -413,6 +413,42 @@ This is a trade-off, not a free improvement: trimming removes branching. Over
 ten 30 × 20 mazes, junctions per 100 tiles go from 35 untrimmed to 22 at
 `max_length` 1 and 15 at 2.
 
+== Separating touching tracks
+
+Tile placement only checks that nodes line up, so two tracks that are not
+joined can be drawn with their walls against each other, on one tile or
+across neighbouring tiles. `separate_touching_tracks`
+(`maze/maze/touching.rs`) removes those touches. It runs after trimming and
+before filling.
+
+How two tile nets meet is a lookup in `maze/maze/fill_clearance.rs`, for a
+tile net on a tile and another on the same tile or one of the twelve around it:
+
+- _clear_: at least 2 units of white space between the drawings;
+- _crossing_: one drawing cuts the other in two, so one track passes over the
+  other. Crossings are kept;
+- _touching_: anything else.
+
+The tables are measured from the rendered fragments by `tools/clearance.py`
+(the steps are in the script) and must be measured again when fragment
+geometry changes. Each tile net is measured alone, so a track drawn as a
+cross-tile fragment (see @adjacent) can sit slightly differently from its
+measurement.
+
+Each round of the pass:
+
++ takes one tile net out of every touching pair, the one with fewer tracks
+  joined to it, and has its neighbours give up the shared nodes;
++ joins the pieces that were beyond it back on with the joins of `reduce_nets`,
+  allowing only joins whose reshaped tile nets touch nothing
+  (`rejoin_nets_tidily`).
+
+Tile nets on the route from the entrance to the exit are never removed, so a
+pair with both tile nets on the route stays touching. After the last round,
+pieces that could not be joined back on are removed. The pass returns the
+number of touching pairs left; over eight 20 × 12 mazes it took about 100
+touching pairs down to between 2 and 9.
+
 == Filling blank areas
 
 After reduction, cycle removal and trimming, parts of the grid are left with
@@ -427,14 +463,15 @@ grows new dead-end branches into that space.
   ones are undone, which keeps stubs out.
 - A branch only enters a tile that holds at most two tile nets, and only where
   its track is drawn clear of every track it is not joined to, on the same
-  tile and the twelve around it. So filling adds no crossings and no touching
-  tracks.
+  tile and the twelve around it. So filling adds no touching tracks.
+- About one step in three, a plain two-node track may instead pass over one
+  other plain track, so filled areas get crossings too. A branch never ends on
+  a crossing.
 - A branch is attached at one end only, so the maze stays a single loop-free
   tree.
 
-The "drawn clear" test is a lookup in `maze/maze/fill_clearance.rs`. That table
-is measured from the rendered fragments by `tools/clearance.py` (the steps are
-in the script), and must be measured again when fragment geometry changes.
+The "drawn clear" test uses the tables described under _Separating touching
+tracks_.
 
 = Rendering <rendering>
 
@@ -583,7 +620,8 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
 = Command line <cli>
 
 `lubra` (`cli/src/main.rs`) builds one maze, then runs `reduce_nets`,
-`remove_cycles`, `trim_dead_ends` and `fill_blank_areas`, then renders it. It writes `<W>-by-<H>-sample-normal.svg`
+`remove_cycles`, `trim_dead_ends`, `separate_touching_tracks` and
+`fill_blank_areas`, then renders it. It writes `<W>-by-<H>-sample-normal.svg`
 (or `.png`) unless `--output` is given, and prints the total time.
 
 #table(
@@ -602,6 +640,7 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
   [`--reduce`], [1], [`lower_limit` passed to `reduce_nets`; 0 skips reduction.],
   [`--remove-cycles`], [on], [Run `remove_cycles`.],
   [`--trim-dead-ends`], [2], [Remove dead ends up to this many tiles long; 0 keeps them all.],
+  [`--keep-touching`], [off], [Skip `separate_touching_tracks`.],
   [`--fill`], [3], [Grow tracks into blank areas; new side branches are at least this many tiles long. 0 leaves blank areas alone.],
 )
 
