@@ -32,6 +32,7 @@ pub struct Maze {
     pub(crate) tiles: Array2D<Tile>,
     pub(crate) boundaries: bool,
     pub(crate) show_node_numbers: bool,
+    pub(crate) show_tile_nets: bool,
 }
 
 impl Maze {
@@ -61,11 +62,17 @@ impl Maze {
             tiles,
             boundaries,
             show_node_numbers,
+            show_tile_nets: false,
         };
 
         if randomise {
             Self::create_random_grid(&mut obj, number_of_columns, number_of_rows);
         }
         obj
+    }
+
+    /// Whether to write each tile's nets (e.g. `12,5`) in blue in the rendered maze.
+    pub fn set_show_tile_nets(&mut self, show: bool) {
+        self.show_tile_nets = show;
     }
 }

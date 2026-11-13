@@ -383,6 +383,7 @@ mod tests {
             tiles,
             boundaries: false,
             show_node_numbers: false,
+            show_tile_nets: false,
         };
         maze.rebuild_nets();
         maze

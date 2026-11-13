@@ -29,6 +29,10 @@ struct Args {
     #[arg(short = 'N', long, default_value_t = false)]
     show_node_numbers: bool,
 
+    /// Show each tile's nets in blue beside its coordinates, e.g. `12,5`
+    #[arg(short = 'T', long, default_value_t = false)]
+    show_tile_nets: bool,
+
     /// Randomize the grid (set false for empty grid)
     #[arg(short = 'R', long, default_value_t = true)]
     randomise: bool,
@@ -179,11 +183,16 @@ fn main() {
             }
         );
         println!(
-            "... settings: boundaries={}, show_node_numbers={}, randomise={}, background={}",
-            args.boundaries, args.show_node_numbers, args.randomise, args.background
+            "... settings: boundaries={}, show_node_numbers={}, show_tile_nets={}, randomise={}, background={}",
+            args.boundaries,
+            args.show_node_numbers,
+            args.show_tile_nets,
+            args.randomise,
+            args.background
         );
     }
 
+    maze.set_show_tile_nets(args.show_tile_nets);
     let render_start = Instant::now();
     let result = maze.render_with_options(filename, file_type, args.background, args.debug);
     let render_time = render_start.elapsed();

@@ -1,7 +1,7 @@
 use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::maze::{FileType, Maze};
 use crate::renders::generated::fragment::MAP_PATHS;
-use crate::renders::node_numbers::add_node_numbers;
+use crate::renders::node_numbers::{add_node_numbers, add_tile_nets};
 use crate::renders::svg::Svg;
 use crate::renders::terminal::terminal_fragment;
 use common::consts::NX;
@@ -107,6 +107,9 @@ impl Maze {
 
         if self.show_node_numbers {
             add_node_numbers(&mut svg, self.number_of_columns, self.number_of_rows);
+        }
+        if self.show_tile_nets {
+            add_tile_nets(&mut svg, &self.tiles);
         }
 
         if debug {

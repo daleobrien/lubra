@@ -43,10 +43,20 @@ impl Svg {
     }
 
     pub fn add_text(&mut self, text: &str, position: Point, layer_index: usize) {
-        // Add a text element at the specified position
+        self.add_coloured_text(text, position, layer_index, "red");
+    }
+
+    /// Adds `text` centred on `position`, in `colour` (any SVG colour).
+    pub fn add_coloured_text(
+        &mut self,
+        text: &str,
+        position: Point,
+        layer_index: usize,
+        colour: &str,
+    ) {
         // Note: The coordinate system will be flipped by the main SVG transform
         self.layers[layer_index].push_str(&format!(
-            "<text x='{x:.2}' y='{y:.2}' font-size='12' fill='red' font-family='monospace' text-anchor='middle' dominant-baseline='middle' transform='scale(1,-1) translate(0,{flip:.2})'>{text}</text>",
+            "<text x='{x:.2}' y='{y:.2}' font-size='12' fill='{colour}' font-family='monospace' text-anchor='middle' dominant-baseline='middle' transform='scale(1,-1) translate(0,{flip:.2})'>{text}</text>",
             x = position.x,
             y = position.y,
             flip = -2.0 * position.y, // Compensate for the flip transform
