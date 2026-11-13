@@ -4,6 +4,8 @@ use array2d::Array2D;
 
 // Import the implementation modules
 mod dead_ends;
+mod fill;
+mod fill_clearance;
 mod grid_generation;
 mod net_operations;
 mod net_reduction;

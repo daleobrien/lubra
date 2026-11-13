@@ -116,7 +116,7 @@ impl Maze {
     }
 
     /// The tile across node `k` of tile `(i, j)`, if it is inside the grid.
-    fn tile_across(&self, i: usize, j: usize, k: usize) -> Option<(usize, usize)> {
+    pub(super) fn tile_across(&self, i: usize, j: usize, k: usize) -> Option<(usize, usize)> {
         let across = get_connected_coords_at_coords(Coordinate { i, j }, k)?;
         self.tiles.get(across.j, across.i)?;
         Some((across.i, across.j))
@@ -124,7 +124,7 @@ impl Maze {
 
     /// Whether node `k` of tile `(i, j)` can carry a new path: it must be unused in
     /// this tile and in the tile across it, and for a vertex, in the tiles flanking it.
-    fn node_is_free(&self, i: usize, j: usize, k: usize) -> bool {
+    pub(super) fn node_is_free(&self, i: usize, j: usize, k: usize) -> bool {
         let mask = 1 << k;
         let surrounding = self.get_connected_titles_for_tile(i, j);
         let in_use = |tile: Option<&Tile>| tile.is_some_and(|t| t.contains(mask));

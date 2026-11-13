@@ -56,6 +56,11 @@ struct Args {
     /// Remove dead ends up to this many tiles long (0 keeps them all)
     #[arg(long, default_value_t = 2)]
     trim_dead_ends: usize,
+
+    /// Grow tracks into blank areas; new side branches are at least this many
+    /// tiles long (0 leaves blank areas alone)
+    #[arg(long, default_value_t = 3)]
+    fill: usize,
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -122,6 +127,15 @@ fn main() {
         maze.trim_dead_ends(args.trim_dead_ends);
         if args.debug {
             println!("Dead-end trimming took: {:?}", trim_start.elapsed());
+        }
+    }
+
+    // Grow tracks into blank areas if requested
+    if args.fill > 0 {
+        let fill_start = Instant::now();
+        maze.fill_blank_areas(args.fill);
+        if args.debug {
+            println!("Blank-area filling took: {:?}", fill_start.elapsed());
         }
     }
 

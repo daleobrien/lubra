@@ -413,6 +413,29 @@ This is a trade-off, not a free improvement: trimming removes branching. Over
 ten 30 × 20 mazes, junctions per 100 tiles go from 35 untrimmed to 22 at
 `max_length` 1 and 15 at 2.
 
+== Filling blank areas
+
+After reduction, cycle removal and trimming, parts of the grid are left with
+no track through them. `fill_blank_areas(min_length)` (`maze/maze/fill.rs`)
+grows new dead-end branches into that space.
+
+- A branch starts at a tile net with one or two nodes and wanders from tile to
+  tile through free nodes, for up to six tiles. Later branches can fork off
+  earlier ones.
+- Existing dead ends are extended first. A branch off a two-node tile net makes
+  a new junction, so it is only kept if it reaches `min_length` tiles; shorter
+  ones are undone, which keeps stubs out.
+- A branch only enters a tile that holds at most two tile nets, and only where
+  its track is drawn clear of every track it is not joined to, on the same
+  tile and the twelve around it. So filling adds no crossings and no touching
+  tracks.
+- A branch is attached at one end only, so the maze stays a single loop-free
+  tree.
+
+The "drawn clear" test is a lookup in `maze/maze/fill_clearance.rs`. That table
+is measured from the rendered fragments by `tools/clearance.py` (the steps are
+in the script), and must be measured again when fragment geometry changes.
+
 = Rendering <rendering>
 
 `Maze::render_with_options(file_name, file_type, background, debug)`
@@ -548,7 +571,7 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
 = Command line <cli>
 
 `lubra` (`cli/src/main.rs`) builds one maze, then runs `reduce_nets`,
-`remove_cycles` and `trim_dead_ends`, then renders it. It writes `<W>-by-<H>-sample-normal.svg`
+`remove_cycles`, `trim_dead_ends` and `fill_blank_areas`, then renders it. It writes `<W>-by-<H>-sample-normal.svg`
 (or `.png`) unless `--output` is given, and prints the total time.
 
 #table(
@@ -567,6 +590,7 @@ Don't edit `fragments.typ` or `tiles_grid.typ` by hand. This file, `more.typ`,
   [`--reduce`], [1], [`lower_limit` passed to `reduce_nets`; 0 skips reduction.],
   [`--remove-cycles`], [on], [Run `remove_cycles`.],
   [`--trim-dead-ends`], [2], [Remove dead ends up to this many tiles long; 0 keeps them all.],
+  [`--fill`], [3], [Grow tracks into blank areas; new side branches are at least this many tiles long. 0 leaves blank areas alone.],
 )
 
 = Current limitations
