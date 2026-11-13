@@ -47,21 +47,25 @@ fn swept(centre: Point, from: Point, to: Point, turn: f64) -> f64 {
     angle.rem_euclid(std::f64::consts::TAU)
 }
 
-/// The radii of the walls (`[tight left, wide left, tight right, wide right]`), the
-/// large-arc flags of the two curves and the six wall points
-/// `[start left, bend left, end left, end right, bend right, start right]`, all in the
-/// frame of `n45_14_35` on a normal tile (inverted when `invert`).
-fn base(invert: bool) -> (Vec<String>, Path) {
+/// Builds an S-curve: from `start` heading `start_heading` (radians), a left turn of
+/// radius `tight_radius`, then a right turn of whatever radius brings the track to
+/// `end` heading `end_heading`, the two tangent where the track bends the other way.
+/// Lengths are in tile widths.
+///
+/// Returns the radii of the walls (`[tight left, wide left, tight right, wide right]`)
+/// and the large-arc flags of the two curves, then the six wall points
+/// `[start left, bend left, end left, end right, bend right, start right]`, ready for
+/// `s_curve_svg`; inverted when `invert`.
+pub fn s_curve_base(
+    invert: bool,
+    start: Point,
+    start_heading: f64,
+    end: Point,
+    end_heading: f64,
+    tight_radius: f64,
+) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
-    let r1 = S_CURVE_TIGHT_RADIUS;
-
-    // The track leaves the top vertex heading down and to the left (as the loop of
-    // old loop did) and arrives at the bottom-right vertex heading straight down
-    // (as the long arc of `frag_arc_long` did). It turns left first, then right.
-    let start = Point::new(0.5, S3);
-    let start_heading = 210f64.to_radians();
-    let end = Point::new(1.0, 0.0);
-    let end_heading = -90f64.to_radians();
+    let r1 = tight_radius;
     let first_turn = 1.0;
     let second_turn = -first_turn;
 
@@ -106,8 +110,24 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     (radii, pts)
 }
 
-/// Draws the track. With `invert`, the curves turn the other way.
-fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
+/// The S-curve in the frame of `n45_14_35` on a normal tile (inverted when `invert`).
+///
+/// The track leaves the top vertex heading down and to the left (as the old loop did)
+/// and arrives at the bottom-right vertex heading straight down (as the long arc of
+/// `frag_arc_long` did).
+fn base(invert: bool) -> (Vec<String>, Path) {
+    s_curve_base(
+        invert,
+        Point::new(0.5, S3),
+        210f64.to_radians(),
+        Point::new(1.0, 0.0),
+        -90f64.to_radians(),
+        S_CURVE_TIGHT_RADIUS,
+    )
+}
+
+/// Draws an S-curve from `s_curve_base`. With `invert`, the curves turn the other way.
+pub fn s_curve_svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
     // In the base frame the tight curve turns left (sweep flag 1) and the wide one right.
     let (s1, s2) = if invert { (0, 1) } else { (1, 0) };
     let p = pts.str();
@@ -130,7 +150,7 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
 
 define_shape_family! {
     base: base,
-    svg: svg,
+    svg: s_curve_svg,
     offset_rotations: &[0, 1, 2, 3, 4, 5],
     variants: {
         n45_14_35: false, false => identity,

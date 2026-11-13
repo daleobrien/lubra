@@ -628,6 +628,13 @@ Radii and gaps are in drawing units (a tile edge is 120); the gap is to the
 vertex-to-edge track on the same tile. Above about 30 they touch. After
 changing it, run `make gen-svg`.
 
+`frag_15_35` (`15/35`, `24/14`, `36/26`) uses the same construction for a track
+from one vertex to the next one round, crossing into the neighbouring tile
+through the middle of the edge between them. It used to be a double S of four
+curves. Both its ends point the same way, so the only S that crosses at the
+edge's midpoint is two equal curves of half a tile width (radius 60); that
+radius is fixed by the geometry, not a setting.
+
 = Documentation pipeline
 
 `make document` runs the `document` crate; `make doc` also regenerates the
