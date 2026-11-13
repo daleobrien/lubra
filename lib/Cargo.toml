@@ -6,14 +6,9 @@ edition = "2021"
 
 [dependencies]
 common = { path = "../common" }
-rand_hc = "0.3.1"
 rand_distr = "0.4.3"
 rand = "0.8.5"
-strum = "0.24"
-strum_macros = "0.24"
-serde = { version = "1.0.136", features = ["derive"] }
 array2d = "0.2.1"
-chrono = "0.4"
 rand_chacha = "0.3.1"
 phf = { version = "0.13.1", features = ["macros"] }
 weighted_rand = "0.4.2"
