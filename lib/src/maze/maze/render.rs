@@ -3,6 +3,7 @@ use crate::maze::maze::{FileType, Maze};
 use crate::renders::generated::fragment::MAP_PATHS;
 use crate::renders::node_numbers::add_node_numbers;
 use crate::renders::svg::Svg;
+use crate::renders::terminal::terminal_fragment;
 use common::consts::NX;
 use common::types::bits;
 use common::types::coordinate::{CataloguedNet, Coordinate, CoordinateAndNet};
@@ -76,6 +77,18 @@ impl Maze {
 
             let net = bits::transform_tile(coordinate_and_net.net, coordinate_and_net.coordinate);
 
+            let point: Point = Point {
+                x: coordinate_and_net.coordinate.i as f64,
+                y: coordinate_and_net.coordinate.j as f64,
+            };
+
+            // The entrance and exit dead ends are drawn as markers.
+            let Coordinate { i, j } = coordinate_and_net.coordinate;
+            if let Some(marker) = terminal_fragment(net).filter(|_| self.is_terminal(i, j)) {
+                svg.add_fragment(&marker, point, 1);
+                continue;
+            }
+
             let frag = MAP_PATHS.get(&net);
 
             if frag.is_none() {
@@ -85,10 +98,6 @@ impl Maze {
                 continue;
             }
 
-            let point: Point = Point {
-                x: coordinate_and_net.coordinate.i as f64,
-                y: coordinate_and_net.coordinate.j as f64,
-            };
             // Every fragment is drawn on one layer: where tracks cross, the one drawn
             // later passes over. Cross-tile fragments don't need a layer of their own
             // because PATH_WIDTH keeps an arc that dips into a neighbouring tile clear

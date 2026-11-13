@@ -115,6 +115,12 @@ impl Maze {
             .collect()
     }
 
+    /// Whether tile `(i, j)` is the entrance (the first tile) or the exit (the last).
+    /// Both hold a single dead end that no pass may extend or route past.
+    pub(crate) fn is_terminal(&self, i: usize, j: usize) -> bool {
+        (i, j) == (0, 0) || (i + 1, j + 1) == (self.number_of_columns, self.number_of_rows)
+    }
+
     /// The tile across node `k` of tile `(i, j)`, if it is inside the grid.
     pub(super) fn tile_across(&self, i: usize, j: usize, k: usize) -> Option<(usize, usize)> {
         let across = get_connected_coords_at_coords(Coordinate { i, j }, k)?;
@@ -199,8 +205,8 @@ impl Maze {
                     let Some((bi, bj)) = self.tile_across(i, j, k) else {
                         continue;
                     };
-                    // Visit each pair of tiles once.
-                    if (bj, bi) < (j, i) {
+                    // Visit each pair of tiles once, and leave the entrance and exit alone.
+                    if (bj, bi) < (j, i) || self.is_terminal(i, j) || self.is_terminal(bi, bj) {
                         continue;
                     }
                     for (ref_a, net_a) in self.tile_nets_with_owner(&owners, i, j) {
@@ -237,7 +243,7 @@ impl Maze {
         let mut candidates: Vec<EmptyTileRoute> = Vec::new();
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
-                if !self.tiles[(j, i)].nodes.is_empty() {
+                if !self.tiles[(j, i)].nodes.is_empty() || self.is_terminal(i, j) {
                     continue;
                 }
                 for k1 in 0..6 {
@@ -247,6 +253,9 @@ impl Maze {
                         else {
                             continue;
                         };
+                        if self.is_terminal(ai, aj) || self.is_terminal(bi, bj) {
+                            continue;
+                        }
                         for (ref_a, net_a) in self.tile_nets_with_owner(&owners, ai, aj) {
                             for (ref_b, net_b) in self.tile_nets_with_owner(&owners, bi, bj) {
                                 if net_a != net_b {
@@ -292,12 +301,18 @@ mod tests {
     use array2d::Array2D;
     use common::consts::{N1, N5, N6};
 
-    /// A maze with the given tile nets (row 0 only), with nets built from the tiles.
+    /// Empty tiles before the test row. The entrance and exit tiles are never joined
+    /// onto, so the row sits between padding; three keeps the row's node pattern
+    /// (neighbours share nodes 5, 6, 4 in turn) the same as starting at column 0.
+    const PAD: usize = 3;
+
+    /// A maze with the given tile nets (row 0 only, after `PAD` empty tiles and before
+    /// one more), with nets built from the tiles.
     fn maze_from_row(row: &[Option<Vec<usize>>]) -> Maze {
-        let mut tiles = Array2D::filled_with(Tile::new(vec![], false), 1, row.len());
+        let mut tiles = Array2D::filled_with(Tile::new(vec![], false), 1, row.len() + PAD + 1);
         for (i, tile_nets) in row.iter().enumerate() {
             if let Some(tile_nets) = tile_nets {
-                tiles[(0, i)] = Tile::new(tile_nets.clone(), true);
+                tiles[(0, i + PAD)] = Tile::new(tile_nets.clone(), true);
             }
         }
         let mut maze = Maze {
@@ -306,7 +321,7 @@ mod tests {
             width: 0.0,
             height: 0.0,
             seed: Some(1),
-            number_of_columns: row.len(),
+            number_of_columns: row.len() + PAD + 1,
             number_of_rows: 1,
             tiles,
             boundaries: false,
@@ -317,7 +332,7 @@ mod tests {
     }
 
     fn tile_nets(maze: &Maze, i: usize) -> Vec<usize> {
-        let mut nets = maze.tiles[(0, i)].nodes.clone();
+        let mut nets = maze.tiles[(0, i + PAD)].nodes.clone();
         nets.sort();
         nets
     }

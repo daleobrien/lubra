@@ -466,6 +466,18 @@ order. This only looks right because `PATH_WIDTH` keeps every crossing inside
 a single tile; at 0.11 the over/under order could flip at a tile boundary and
 leave a black seam across a corridor.
 
+== Entrance and exit markers
+
+The entrance (the first tile) and the exit (the last tile) each hold a single
+dead end at an edge. `is_terminal(i, j)` identifies them, and `reduce_nets` and
+`fill_blank_areas` never extend their track or route another through them.
+
+They are drawn as markers instead of the plain dead end:
+`terminal_fragment` (`lib/src/renders/terminal.rs`) builds the fragment at
+render time. The track runs from the edge towards the tile's centre, each wall
+leaves it on a small blend curve and joins a ring around the centre, and a red
+dot sits in the middle of the ring.
+
 == Adjacent (complex) fragments <adjacent>
 
 Some nets end on an edge node and continue in the neighbouring tile. Drawing

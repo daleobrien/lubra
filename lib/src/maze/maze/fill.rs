@@ -32,7 +32,7 @@ impl Maze {
     ///
     /// A branch starts at a tile net with one or two nodes and wanders from tile to
     /// tile through free nodes. It only enters tiles that hold at most `MAX_SHARED`
-    /// tile nets, and only where it is drawn clear of every other track (see
+    /// tile nets, never the entrance or exit tile, and only where it is drawn clear of every other track (see
     /// `fill_clearance.rs`), so it fills gaps rather than crossing tracks. Existing dead
     /// ends are extended first, with no minimum; a branch off a two-node tile net
     /// makes a new junction, so it is only kept when it reaches `min_length` tiles.
@@ -68,6 +68,9 @@ impl Maze {
         let mut tracks = Vec::new();
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
+                if self.is_terminal(i, j) {
+                    continue;
+                }
                 for &bits in &self.tiles[(j, i)].nodes {
                     let group = match bits.count_ones() {
                         1 => &mut leaves,
@@ -95,7 +98,8 @@ impl Maze {
         let Some((bi, bj)) = self.tile_across(i, j, k) else {
             return false;
         };
-        self.tiles[(bj, bi)].nodes.len() <= MAX_SHARED
+        !self.is_terminal(bi, bj)
+            && self.tiles[(bj, bi)].nodes.len() <= MAX_SHARED
             && self.node_is_free(i, j, k)
             && self.drawn_clear(i, j, bits | (1 << k), Some(bits), None)
             && self.drawn_clear(bi, bj, 1 << k, None, Some((k, bits)))
@@ -269,6 +273,11 @@ mod tests {
             assert_eq!(maze.nets.len(), 1, "seed {seed}");
             assert_eq!(maze.loop_count(), 0, "seed {seed}");
             assert!(used_nodes(&maze) > before, "seed {seed}");
+            // The entrance and exit stay plain dead ends.
+            assert_eq!(maze.tiles[(0, 0)].nodes.len(), 1, "seed {seed}");
+            assert_eq!(maze.tiles[(0, 0)].nodes[0].count_ones(), 1, "seed {seed}");
+            assert_eq!(maze.tiles[(19, 29)].nodes.len(), 1, "seed {seed}");
+            assert_eq!(maze.tiles[(19, 29)].nodes[0].count_ones(), 1, "seed {seed}");
         }
     }
 
