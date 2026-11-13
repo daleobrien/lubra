@@ -599,6 +599,35 @@ centres can be treated differently from end points. A few shapes
 `frag_complex_arcs`) are still written out by hand. `frag_wall` draws the tile
 outline.
 
+=== The S-curve
+
+Six cross-tile combinations (`45/14/35`, `45/15/24`, `46/14/26`, `46/24/36`,
+`56/15/36`, `56/26/35`, in normal and inverted tiles) carry a track from one
+vertex of a tile to another. They used to be a tight loop glued to a long arc
+with a short straight between them, and in six catalogue tiles the loop touched
+the vertex-to-edge track beside it. `frag_s_curve` now draws them as one S: a
+tight curve, then a wide curve the other way, tangent where they meet.
+
+Both ends keep the position and direction of the old pieces, so the
+neighbouring tiles are unchanged. That fixes everything but one radius:
+`S_CURVE_TIGHT_RADIUS` sets the tight curve (to the middle of the track, as a
+fraction of the tile width), and the wide curve follows from it. A larger tight
+curve makes the wide one smaller and brings the track closer to its neighbour:
+
+#table(
+  columns: 3,
+  table.header([Tight curve], [Wide curve], [White gap]),
+  [22], [64], [15],
+  [24], [60], [12],
+  [*26* (default)], [*56*], [*9*],
+  [28], [52], [6],
+  [30], [48], [3],
+)
+
+Radii and gaps are in drawing units (a tile edge is 120); the gap is to the
+vertex-to-edge track on the same tile. Above about 30 they touch. After
+changing it, run `make gen-svg`.
+
 = Documentation pipeline
 
 `make document` runs the `document` crate; `make doc` also regenerates the
