@@ -9,7 +9,7 @@ const RING_RADIUS: f64 = 24.0;
 /// Radius of the curve that blends each track wall into the ring.
 const BLEND_RADIUS: f64 = 8.0;
 /// Radius of the dot in the middle of the ring.
-const DOT_RADIUS: f64 = 10.0;
+const DOT_RADIUS: f64 = 12.0;
 /// Colour of the dot.
 const DOT_COLOUR: &str = "#E02020";
 
