@@ -9,12 +9,13 @@ TYPST ?= typst
 # and height in rows (about 104 units each), so W ~ 1.73 * H looks square.
 # -B draws the tile boundaries, -N the node numbers, -T each tile's nets and -K
 # rings the kinks (the debug overlay); drop them for a clean maze, e.g.
-# make cli CLI_ARGS="-W 20 -H 12".
+# make cli CLI_ARGS="-W 20 -H 12". Mazes are drawn in ink; add -P for plain walls.
 # The fixed seed makes every run draw the same maze; change it to see another.
 CLI_ARGS ?= --seed 1 -W 20 -H 12 -B -N -T -K
 
-# Arguments for `make ink`: the same maze as `make cli`, drawn by hand in ink.
-INK_ARGS ?= --seed 1 -W 20 -H 12 -I -o maze-ink
+# Arguments for `make sample`: the maze shown in the README, without the debug
+# overlay. Drawn in ink, like every maze unless -P (--plain) is given.
+SAMPLE_ARGS ?= --seed 1 -W 20 -H 12 -o ../docs/sample-ink
 
 # Arguments for `make maze`, e.g. make maze MAZE_ARGS="--seed 7 -W 20 -H 20"
 MAZE_ARGS ?= --seed 3 -W 40 -H 30 -B -N --debug
@@ -23,7 +24,7 @@ MAZE_ARGS ?= --seed 3 -W 40 -H 30 -B -N --debug
 # Pipeline prerequisites must run in order.
 .NOTPARALLEL:
 .PHONY: help generate both maze doc full \
-	gen gen-svg gen-nets cli ink document typst build test
+	gen gen-svg gen-nets cli sample document typst build test
 
 help:
 	@echo "Pipelines:"
@@ -33,7 +34,7 @@ help:
 	@echo "  make doc       generator svg, document, then typst compile"
 	@echo "  make full      generator nets + svg, then CLI, then document"
 	@echo "Steps:"
-	@echo "  make gen | gen-svg | gen-nets | cli | ink | document | typst | build | test"
+	@echo "  make gen | gen-svg | gen-nets | cli | sample | document | typst | build | test"
 
 # Pipelines
 generate: gen cli document
@@ -59,8 +60,8 @@ gen-nets:
 cli:
 	cd cli && $(CARGO) run -- $(CLI_ARGS)
 
-ink:
-	cd cli && $(CARGO) run -- $(INK_ARGS)
+sample:
+	cd cli && $(CARGO) run --release -- $(SAMPLE_ARGS)
 
 document:
 	cd document && $(CARGO) run

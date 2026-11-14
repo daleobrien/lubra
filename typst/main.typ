@@ -109,7 +109,7 @@ Single steps:
   [`make gen-svg`], [`generate svg`: fragments, `ADJ_CHECKS` and the `document` helper tables.],
   [`make gen-nets`], [`generate nets`: the small and large net/mass lookup tables.],
   [`make cli`], [The CLI with `CLI_ARGS` (default `--seed 1 -W 20 -H 12 -B -N -T -K`: the same square-looking maze every run, with tile boundaries, node numbers, tile nets and kink rings).],
-  [`make ink`], [The same maze as `make cli`, drawn by hand in ink (`INK_ARGS`), written to `cli/maze-ink.svg`.],
+  [`make sample`], [The maze shown in the README (`SAMPLE_ARGS`), written to `docs/sample-ink.svg`.],
   [`make document`], [The `document` crate (SVGs and generated Typst files).],
   [`make typst`], [`typst compile` of `shapes.typ`, `tiles.typ` and `main.typ`.],
   [`make build`], [`cargo build --workspace`.],
@@ -864,7 +864,7 @@ family (below) left 2.8 per maze, and redrawing the second left none.
 
 == Drawing by hand in ink
 
-`-I` (`--ink`) draws the maze as if by hand, after maze-rs's ink style
+Mazes are drawn as if by hand, after maze-rs's ink style
 (`renders/ink.rs`). Every fragment is flattened to pieces of at most 6 units,
 each point is nudged up to 2 units by a smooth noise field, and the walls are
 drawn in brown ink with a pen whose width wanders between three widths. The
@@ -877,7 +877,8 @@ Tracks pass over one another, so each fragment's inside is painted white
 of the one beneath, which reads as a break in the ink, as in maze-rs. Tile
 outlines (`-B`) and the other debugging aids stay plain. No two tiles look
 alike, so nothing is reused through `<use>`: an inked maze is several times
-bigger than a plain one.
+bigger than a plain one. `-P` (`--plain`) draws the even black walls instead,
+which is what the library does unless `Maze::set_ink` is called.
 
 = Documentation pipeline
 
@@ -929,6 +930,9 @@ colour for each net (`lib/src/renders/net_colours.rs`).
   [`--trim-dead-ends`], [2], [Remove dead ends up to this many tiles long; 0 keeps them all.],
   [`--keep-touching`], [off], [Skip `separate_touching_tracks`.],
   [`--fill`], [2], [Grow tracks into blank areas; new side branches are at least this many tiles long. 0 leaves blank areas alone.],
+  [`-P`, `--plain`], [off], [Even black walls instead of hand-drawn ink.],
+  [`-K`, `--show-kinks`], [off], [Ring every kink and count them in the caption.],
+  [`--kink-stats`], [], [Build this many seeded mazes and print their kinks by fragment, instead of drawing.],
 )
 
 = Current limitations

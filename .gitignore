@@ -10,6 +10,7 @@ test.svg
 cli/test-all.svg
 cli/test-one-tile.svg
 *.svg
+!docs/*.svg
 .idea/inspectionProfiles/Project_Default.xml
 .idea/runConfigurations/Run_Maze.xml
 typst/Maze.pdf
