@@ -95,13 +95,13 @@ pub fn create_tiles() {
 pub fn save_nets_to_svg(nets: Vec<usize>, index: usize) -> bool {
     let mut svg = Svg::new(3f64 * TILE_WIDTH, 3f64 * TILE_HEIGHT);
 
-    let wall = MAP_PATHS.get(&WA).unwrap();
+    let wall = MAP_PATHS.get(&(WA as u64)).unwrap();
     svg.add_fragment(wall, Point { x: 1f64, y: 1f64 }, 0);
 
     let mut fragment_count = 0;
     for net in nets.clone() {
         // Skip Empty nets, some are drawn by their neighbours
-        let path = MAP_PATHS.get(&net).unwrap();
+        let path = MAP_PATHS.get(&(net as u64)).unwrap();
         if path.is_empty() {
             continue;
         }

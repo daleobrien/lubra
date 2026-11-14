@@ -92,7 +92,7 @@ impl Tile {
                 render_nets.add(complex_net);
             } else {
                 // Simple path
-                let path = MAP_PATHS.get(&net);
+                let path = MAP_PATHS.get(&(net as u64));
 
                 // A simple tile with no adjacent tiles to worry about?
                 if path.is_some() {
@@ -106,7 +106,7 @@ impl Tile {
         if boundaries {
             let flipped = (coordinate.j + coordinate.i) % 2 == 1;
             let bits = if flipped { WA | IN } else { WA };
-            let wall = MAP_PATHS.get(&bits);
+            let wall = MAP_PATHS.get(&(bits as u64));
             if wall.is_some() {
                 render_nets
                     .visible
@@ -125,7 +125,7 @@ impl Tile {
         debug: bool,
         corner_hooks: bool,
     ) -> Option<ComplexNet> {
-        let list_of_adj_and_nets = ADJ_CHECKS.get(net);
+        let list_of_adj_and_nets = ADJ_CHECKS.get(&(*net as u64));
 
         let mut complex_net: ComplexNet = ComplexNet::new();
 
@@ -182,7 +182,7 @@ impl Tile {
                     // From here on, the bits are in the correct orientation rather then logical.
                     let bits = new_bits;
 
-                    if MAP_PATHS.contains_key(&bits) {
+                    if MAP_PATHS.contains_key(&(bits as u64)) {
                         // if debug {
                         //     println!(
                         //         "__D : {c}  -> \"{b}\"",
@@ -367,6 +367,17 @@ impl fmt::Display for Tile {
 
 #[cfg(test)]
 mod tests {
+    /// The lookup tables must be keyed by u64: phf hashes a usize at the machine's
+    /// width, so tables built on a 64-bit machine find nothing on 32-bit WebAssembly.
+    #[test]
+    fn test_lookup_tables_are_keyed_by_u64() {
+        use super::{ADJ_CHECKS, MAP_PATHS};
+        let _: &phf::Map<u64, &str> = &MAP_PATHS;
+        type Checks = &'static [&'static [(usize, bool, usize)]];
+        let _: &phf::Map<u64, Checks> = &ADJ_CHECKS;
+        assert!(MAP_PATHS.contains_key(&(common::consts::WA as u64)));
+    }
+
     #[test]
     fn test_reaches_across_vertex() {
         use common::consts::{A1, A2, A3, A4, A5, A6, B3, B4, B5, IN, N1, N2, N3, N4, N5, N6};

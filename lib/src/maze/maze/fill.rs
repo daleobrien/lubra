@@ -375,7 +375,7 @@ mod tests {
             for (i, j) in [(3usize, 3usize), (4, 3), (5, 3), (3, 4), (4, 4), (5, 4)] {
                 for (index, &key) in VERTEX_S_KEYS.iter().enumerate() {
                     let drawn = transform_tile(key, Coordinate { i, j });
-                    let fragment = MAP_PATHS.get(&drawn).expect("vertex S fragment");
+                    let fragment = MAP_PATHS.get(&(drawn as u64)).expect("vertex S fragment");
                     let mut svg = Svg::new(width, height);
                     let at = Point {
                         x: i as f64,

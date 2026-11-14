@@ -24,8 +24,9 @@ pub fn create_svgs() {
         }
     }
 
-    for (&key, value) in MAP_PATHS
+    for (key, value) in MAP_PATHS
         .into_iter()
+        .map(|(&key, value)| (key as usize, value))
         .sorted_by_key(|x| x.0.reverse_bits())
         .rev()
     {

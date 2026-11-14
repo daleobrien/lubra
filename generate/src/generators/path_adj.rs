@@ -196,8 +196,10 @@ pub fn generate_adjacent_paths() {
         File::create("../lib/src/maze/generated/nets_adjacent.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
+    // Keyed by u64, not usize: phf hashes a usize at its machine width, so a map
+    // built on a 64-bit machine would find nothing on 32-bit WebAssembly.
     let _ = file.write(
-        b"pub static ADJ_CHECKS: Map<usize, &'static [&'static [(usize, bool, usize)]]> = phf_map! {\n",
+        b"pub static ADJ_CHECKS: Map<u64, &'static [&'static [(usize, bool, usize)]]> = phf_map! {\n",
     );
     for (key, list_index_and_masks) in adj_paths {
         let mut subs: Vec<String> = vec![];
@@ -212,7 +214,7 @@ pub fn generate_adjacent_paths() {
         }
         let _ = writeln!(
             file,
-            "  /* {key6bit:^4} */ {key}usize =>  &[{subs}],",
+            "  /* {key6bit:^4} */ {key}u64 =>  &[{subs}],",
             subs = subs.join(", "),
             key6bit = print_bits(key)
         );

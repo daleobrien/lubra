@@ -6,7 +6,7 @@ use lib::renders::svg::Svg;
 pub fn add_walls(key: usize, svg: &mut Svg) {
     let invert = key & IN == IN;
     let wall_key = (IN & key) | WA;
-    let wall = MAP_PATHS.get(&wall_key).unwrap();
+    let wall = MAP_PATHS.get(&(wall_key as u64)).unwrap();
 
     // Draw this a few times to highlight the walls of the centre tile.
     svg.add_fragment(wall, Point { x: 2f64, y: 1f64 }, 0);

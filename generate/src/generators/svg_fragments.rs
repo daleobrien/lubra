@@ -235,7 +235,9 @@ pub fn generate_all_shapes() {
         File::create("../lib/src/renders/generated/fragment.rs").expect("File Creation failed");
     let _ = file.write(b"/* This file is generated. */\n");
     let _ = file.write(b"use ::phf::{Map, phf_map};\n\n");
-    let _ = file.write(b"pub static MAP_PATHS: Map<usize, &'static str> = phf_map! {\n");
+    // Keyed by u64, not usize: phf hashes a usize at its machine width, so a map
+    // built on a 64-bit machine would find nothing on 32-bit WebAssembly.
+    let _ = file.write(b"pub static MAP_PATHS: Map<u64, &'static str> = phf_map! {\n");
 
     let mut keys: HashMap<usize, Vec<usize>> = HashMap::new();
     let mut empty_fragments: HashSet<usize> = HashSet::new();
@@ -245,7 +247,7 @@ pub fn generate_all_shapes() {
         let key = key.to_usize().unwrap();
         let _ = writeln!(
             file,
-            " /* {:<10} */ {}usize =>  \"{}\",",
+            " /* {:<10} */ {}u64 =>  \"{}\",",
             print_bits(key),
             key,
             trim_whitespace(value.as_str())

@@ -190,7 +190,7 @@ impl Maze {
                 });
                 continue;
             }
-            match MAP_PATHS.get(&key) {
+            match MAP_PATHS.get(&(key as u64)) {
                 Some(fragment) if !fragment.is_empty() => drawn.push(Drawn {
                     coordinate,
                     logical: coordinate_and_net.net & NX,
