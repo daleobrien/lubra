@@ -661,6 +661,16 @@ again; the generator stops with a message if the curve no longer fits. The
 short walls by the edge opening are unchanged. The curve rounds the inside of
 the junction, so it comes no closer to tracks in neighbouring tiles.
 
+=== The four-way junction with a straight side
+
+`frag_1345` (`1345`, `1246`, `2356`, `1245`, `2346`, `1356`) joins two vertices
+and two edges. Its long wall runs from one edge opening to the far vertex, and
+both ends lie on one straight line at the angle the arms meet them. It used to
+bulge into the junction and back (curve, tight hump, curve), which left a kink;
+it is now straight. A smoother hump into the junction always pinched the track
+below its full width, and a bow outwards crossed into the neighbouring tile
+near an edge opening, so straight is the only kink-free wall that fits.
+
 === The corner hook
 
 Where a track runs into a vertex from one tile and out of it into a dead end in
