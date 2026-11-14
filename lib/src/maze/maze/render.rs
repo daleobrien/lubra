@@ -343,16 +343,21 @@ fn corner_hook_conflicts(
 
     // A vertex S swings into the tiles flanking its vertex. Their own fragments are
     // checked by `blocked`, but only in their single-tile shapes, so keep the S out of
-    // flanking tiles that draw, or are drawn by, a cross-tile fragment.
+    // flanking tiles that draw, or are drawn by, a cross-tile fragment. A fragment that
+    // redraws a junction (`Tile::redraws_junction`) does not count: it stays inside the
+    // space of the single-tile shapes it replaces.
+    let reshapes = |catalogue: &CataloguedNet| {
+        catalogue.visible.iter().any(|v| {
+            let key = v.net & NX;
+            key >> 6 != 0 && !Tile::redraws_junction(key)
+        })
+    };
     let cross_tile_tiles: HashSet<Coordinate> = per_tile
         .iter()
-        .filter(|(_, c)| c.visible.iter().any(|v| (v.net & NX) >> 6 != 0))
-        .map(|(coord, _)| *coord)
-        .chain(
-            per_tile
-                .iter()
-                .flat_map(|(_, c)| c.hidden.iter().map(|h| h.coordinate)),
-        )
+        .filter(|(_, catalogue)| reshapes(catalogue))
+        .flat_map(|(coord, catalogue)| {
+            std::iter::once(*coord).chain(catalogue.hidden.iter().map(|h| h.coordinate))
+        })
         .collect();
     for (coord, catalogue) in per_tile {
         for visible in &catalogue.visible {
@@ -456,7 +461,7 @@ mod tests {
     fn junction_redraws(maze: &Maze) -> usize {
         maze.drawn_fragments(false)
             .iter()
-            .filter(|fragment| ((fragment.key >> 6) & 0b11_1111).count_ones() == 3)
+            .filter(|fragment| crate::maze::tile::Tile::redraws_junction(fragment.key))
             .count()
     }
 

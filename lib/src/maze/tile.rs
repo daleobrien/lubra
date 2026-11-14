@@ -308,6 +308,12 @@ impl Tile {
         })
     }
 
+    /// Whether `key` is a cross-tile fragment that redraws a junction in the tile
+    /// across an edge (`frag_hook_fork`): its neighbour net has three nodes or more.
+    pub fn redraws_junction(key: usize) -> bool {
+        ((key >> 6) & NL).count_ones() > 2
+    }
+
     pub fn rotate_cw(&self) -> Vec<usize> {
         self.nodes
             .iter()

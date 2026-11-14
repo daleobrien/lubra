@@ -805,7 +805,9 @@ The new shape stays inside the space the two nets already took up, so it is
 used only when every other net on the two tiles was drawn clear of the net it
 replaces, not crossing it (`find_best_path` checks the measured same-tile
 table). Over 100 seeded 20 × 12 mazes it was used about 6 times per maze, with
-at least 7.6 units of white to every other track.
+at least 7.6 units of white to every other track. For the same reason it does
+not count as a cross-tile fragment when a vertex S checks its flanking tiles;
+otherwise a hook fork beside an S would turn the S back into two hooks.
 
 === Finding kinks <kinks>
 
