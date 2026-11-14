@@ -26,29 +26,29 @@ const HALF_CIRCLE_RADIUS: f64 = 0.25;
 /// The plain vertex-to-vertex track is an arc of one tile width.
 const VERTEX_ARC_RADIUS: f64 = 1.0;
 
-fn dot(a: Point, b: Point) -> f64 {
+pub(crate) fn dot(a: Point, b: Point) -> f64 {
     a.x * b.x + a.y * b.y
 }
 
-fn cross(a: Point, b: Point) -> f64 {
+pub(crate) fn cross(a: Point, b: Point) -> f64 {
     a.x * b.y - a.y * b.x
 }
 
-fn length(a: Point) -> f64 {
+pub(crate) fn length(a: Point) -> f64 {
     dot(a, a).sqrt()
 }
 
-fn unit(a: Point) -> Point {
+pub(crate) fn unit(a: Point) -> Point {
     a * (1.0 / length(a))
 }
 
 /// `a` turned a quarter turn anticlockwise.
-fn turned(a: Point) -> Point {
+pub(crate) fn turned(a: Point) -> Point {
     Point { x: -a.y, y: a.x }
 }
 
 /// Where node `node` (1-3) of a normal tile is.
-fn vertex(node: usize) -> Point {
+pub(crate) fn vertex(node: usize) -> Point {
     match node {
         1 => Point { x: 0.5, y: S3 },
         2 => Point { x: 0.0, y: 0.0 },
@@ -57,7 +57,7 @@ fn vertex(node: usize) -> Point {
 }
 
 /// The two vertices at the ends of edge `node` (4-6).
-fn edge_ends(node: usize) -> (usize, usize) {
+pub(crate) fn edge_ends(node: usize) -> (usize, usize) {
     match node {
         4 => (1, 2),
         5 => (1, 3),

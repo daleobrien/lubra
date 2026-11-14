@@ -7,6 +7,7 @@ use crate::renders::net_colours::{net_colour, net_index};
 use crate::renders::node_numbers::{add_node_numbers, add_tile_nets};
 use crate::renders::svg::Svg;
 use crate::renders::terminal::terminal_fragment;
+use crate::renders::vertex_s::is_vertex_s;
 use common::consts::{NL, NX, WA};
 use common::types::bits;
 use common::types::coordinate::{CataloguedNet, Coordinate, CoordinateAndNet};
@@ -293,10 +294,11 @@ fn placed(drawn: &[Drawn]) -> Vec<DrawnFragment<'_>> {
 /// A tile is dropped when such a fragment claims a net that something else also draws
 /// (another fragment replacing the same net, or a cross-tile fragment of that net's own
 /// tile), or when `blocked(tile, key)` says its drawing would run into a neighbouring
-/// track. Two vertex S fragments must not share any tile round their vertices
-/// (`footprint`), as their half-circles would cross; the first in grid order is kept. Fragments across a vertex come in pairs (one draws, the tile opposite gets a
-/// blank that hides the first tile's net), so when one tile of a pair is dropped, so is
-/// the other; otherwise the blank would hide a net that is no longer drawn.
+/// track. Two vertex S or sweep fragments must not share any tile round their vertices
+/// (`footprint`), as their curves would cross; the first in grid order is kept, every S
+/// before the sweeps. Most fragments across a vertex come in pairs (one draws, the tile
+/// opposite gets a blank that hides the first tile's net), so when one tile of a pair is
+/// dropped, so is the other; otherwise the blank would hide a net that is no longer drawn.
 fn corner_hook_conflicts(
     per_tile: &[(Coordinate, CataloguedNet)],
     blocked: impl Fn(Coordinate, usize) -> bool,
@@ -369,9 +371,16 @@ fn corner_hook_conflicts(
         }
     }
 
-    // Keep vertex S fragments apart.
+    // Keep vertex S and vertex sweep fragments apart: the first in grid order is kept,
+    // with every S ahead of the sweeps, as an S replaces a kink and a sweep a wiggle.
+    let is_s =
+        |catalogue: &CataloguedNet| catalogue.visible.iter().any(|v| is_vertex_s(v.net & NX));
+    let s_first = per_tile
+        .iter()
+        .filter(|(_, c)| is_s(c))
+        .chain(per_tile.iter().filter(|(_, c)| !is_s(c)));
     let mut taken: HashSet<Coordinate> = HashSet::new();
-    for (coord, catalogue) in per_tile {
+    for (coord, catalogue) in s_first {
         if dropped.contains(coord) {
             continue;
         }
@@ -387,21 +396,20 @@ fn corner_hook_conflicts(
         }
     }
 
-    // Drop partners with them: tiles whose across-vertex fragment hides a net in a
-    // dropped tile, or whose net a dropped tile's fragment hides.
+    // Drop partners with them. A pair hides each other's net (one draws both tracks,
+    // the other draws a blank), so when one is dropped the other must be too. A
+    // fragment that only hides its neighbour's net, such as a vertex sweep, has no
+    // partner: once it is dropped the neighbour's net is simply drawn again.
     loop {
         let mut grew = false;
         for (coord, catalogue) in per_tile.iter().filter(|(_, c)| across(c)) {
-            let hides_dropped = catalogue
-                .hidden
-                .iter()
-                .any(|h| dropped.contains(&h.coordinate));
-            let hidden_by_dropped = per_tile.iter().any(|(other, c)| {
+            let partner_dropped = per_tile.iter().any(|(other, c)| {
                 dropped.contains(other)
                     && across(c)
                     && c.hidden.iter().any(|h| h.coordinate == *coord)
+                    && catalogue.hidden.iter().any(|h| h.coordinate == *other)
             });
-            if !dropped.contains(coord) && (hides_dropped || hidden_by_dropped) {
+            if !dropped.contains(coord) && partner_dropped {
                 dropped.insert(*coord);
                 grew = true;
             }

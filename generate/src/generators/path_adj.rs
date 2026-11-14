@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::Write;
 
 use crate::fragments::frag_hook_fork::hook_forks;
+use crate::fragments::frag_vertex_sweep::vertex_sweeps;
 use common::bit_utils::print_bits;
 use common::consts::{ADJ_N1, ADJ_N2, ADJ_N3, ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 
@@ -169,6 +170,16 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N6, true, N3 | N6)],
         ],
     );
+
+    // A hook whose track came through its vertex along an arc turning the same way:
+    // one sweep (frag_vertex_sweep). Tried last for the hook, so that a tile across
+    // the hook's edge that already draws it (or draws with it) keeps doing so.
+    for (hook, arc, v, _) in vertex_sweeps() {
+        adj_paths
+            .entry(hook)
+            .or_default()
+            .push(vec![(v - 1, true, arc)]);
+    }
 
     // A junction across an edge that hooks round the arc's own vertex: the hook and
     // the arc are drawn as one half-circle (frag_hook_fork). Tried after the rules

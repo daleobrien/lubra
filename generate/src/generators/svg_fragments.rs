@@ -41,6 +41,7 @@ use crate::fragments::frag_s_curve::{
     n45_14_35, n45_24_15, n46_14_26, n46_24_36, n56_15_36, n56_35_26,
 };
 use crate::fragments::frag_vertex_s::{n15_14, n24_26, n36_35};
+use crate::fragments::frag_vertex_sweep::{vertex_sweep, vertex_sweeps};
 use crate::fragments::frag_wall::l_wall;
 
 pub fn trim_whitespace(s: &str) -> String {
@@ -200,7 +201,12 @@ pub fn generate_all_shapes() {
         .into_iter()
         .chain(hook_forks().into_iter().map(|(arc, junction, v, e, x)| {
             (dir | arc | (junction << 6), hook_fork(invert, v, e, x))
-        })) {
+        }))
+        .chain(
+            vertex_sweeps()
+                .into_iter()
+                .map(|(hook, arc, v, p)| (dir | hook | (arc << 6), vertex_sweep(invert, v, p))),
+        ) {
             let sorted_key = sort_upper_bits(key);
             paths.insert(sorted_key.to_usize().unwrap_or_default(), path.clone());
 

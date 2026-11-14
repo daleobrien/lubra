@@ -809,6 +809,28 @@ at least 7.6 units of white to every other track. For the same reason it does
 not count as a cross-tile fragment when a vertex S checks its flanking tiles;
 otherwise a hook fork beside an S would turn the S back into two hooks.
 
+=== The vertex sweep
+
+A wide arc from one vertex to the next can carry on through the second vertex
+into a hook round to the edge beside it. When both turn the same way the hook,
+drawn on its own, still swings out before it turns, which leaves a wiggle after
+the arc. `frag_vertex_sweep` (`14/12`, `15/13`, `24/12`, `26/23`, `35/13`,
+`36/23`) draws the two as one sweep that only turns one way: an arc of radius
+150 that ends a quarter of a tile past the vertex, then an arc of 30 into the
+edge opening. The ends are where they were, and the radii follow from that.
+
+The hook's tile draws it and hides the arc in the tile opposite the vertex. The
+sweep passes beside the vertex and bulges further than the two shapes it
+replaces, so it is treated like the vertex S: its six keys follow the three S
+keys in `VERTEX_S_KEYS`, `tools/clearance.py` measures all nine, and the
+renderer keeps a sweep only where that table says it is clear, no flanking tile
+is part of another cross-tile fragment, and no S or other sweep shares a tile
+round the vertex (an S always wins). Its rule comes last for the hook, so a
+tile across the hook's edge that already draws the hook keeps doing so.
+
+It is rare: over 100 seeded 20 × 12 mazes the pattern occurred 208 times and
+the sweep was kept 11 times, with at least 4 units of white to other tracks.
+
 === Finding kinks <kinks>
 
 `renders/kinks.rs` measures kinks in the maze as drawn. Every wall is straight
