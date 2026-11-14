@@ -469,7 +469,7 @@ grows new dead-end branches into that space.
   a crossing.
 - When nothing more grows, each dead end that is stuck looks for the shortest
   route to an empty tile, of at most `MAX_REACH` (6) tiles, passing other plain
-  tracks at most `MAX_CROSSINGS` (2) times (`reach_gaps`). At each crossing it
+  tracks at most `MAX_CROSSINGS` (3) times (`reach_gaps`). At each crossing it
   goes over or under at random: a tile's nets are drawn in order, so putting
   the new one first sends it under. Growing and reaching alternate until
   neither adds anything.
@@ -705,6 +705,18 @@ turning the same way as the two corners beside the vertex arm. The new walls
 sit further out than the old ones, so the junction is roomier; the measured
 clearance tables did not change.
 
+=== The four-way junction with two edges side by side
+
+`frag_1346` (`1346`, `1256`, `2345`) joins two vertices and two edges that
+share a corner of the tile. The wall between the two edge openings used to
+curve, hump back the other way and curve again; it is now straight, one corner
+of `EDGE_CORNER_RADIUS` (35), straight, as in `frag_1456`. The long wall
+between the two vertex arms had a tight 9-unit corner; it now turns on
+`LONG_CORNER_RADIUS` (60), which bows it out towards the tile's edge and away
+from the junction. Both changes only make the junction roomier. Over 60 seeded
+mazes its nearest neighbouring track stayed 12 units of white away, the same
+as before.
+
 === The crescent
 
 `frag_crescent` (`56/15/26`, `45/24/35`, `46/14/36`) draws a track from one
@@ -794,7 +806,7 @@ mazes instead of drawing one and prints the kinks by fragment, or by pair of
 fragments where the kink is at a join. Over 100 seeded 20 × 12 mazes there were
 9.3 kinks per maze: 68% inside `1456`/`2456`/`3456`, 28% inside
 `1256`/`1346`/`2345`, and 3% at joins between fragments. Redrawing the first
-family (below) left 2.8 per maze.
+family (below) left 2.8 per maze, and redrawing the second left none.
 
 = Documentation pipeline
 

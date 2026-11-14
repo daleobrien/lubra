@@ -3,7 +3,16 @@ use common::define_shape_family;
 use common::macros::{identity, reflect, rotate_cw};
 use common::types::format::trimf64;
 use common::types::path::Path;
-use common::types::point::{Point, PATH_WIDTH, S2, S3, S4, S5, TILE_WIDTH};
+use common::types::point::{Point, PATH_WIDTH, S2, S3, S4, TILE_WIDTH};
+
+/// Radius of the corner wall between the two edge openings (35/120 of a tile).
+/// Larger is a gentler bend with shorter straights; at about 49/120 they vanish.
+pub const EDGE_CORNER_RADIUS: f64 = 35.0 / TILE_WIDTH;
+
+/// Radius of the corner in the long wall between the two vertex arms (60/120 of a
+/// tile). Larger bows the wall further towards the tile's edge; at about 109/120
+/// the straights vanish.
+pub const LONG_CORNER_RADIUS: f64 = 60.0 / TILE_WIDTH;
 
 fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
@@ -24,13 +33,21 @@ fn base(invert: bool) -> (Vec<String>, Path) {
         x: 0.25f64 * (1. + ((-2.) * w)),
         y: 0.25f64 * S2 * (1. + ((-2.) * w)),
     };
+    // The wall between the edge openings runs at 30° from pt4 until it meets the
+    // vertical wall x = 0.5 - w. One arc rounds that 60° turn; its tangent points
+    // lie `along` from where the two straights meet.
+    let edge_corner = Point {
+        x: 0.5 - w,
+        y: pt4.y - (0.5 - w - pt4.x) * S4,
+    };
+    let along = EDGE_CORNER_RADIUS * S4;
     let pt5 = Point {
-        x: 0.333333f64,
-        y: (-0.166667f64) + S4 + -w,
+        x: edge_corner.x - along * S3,
+        y: edge_corner.y + along * 0.5,
     };
     let pt6 = Point {
-        x: 0.0833333f64 * (8. + -S2 + ((-6.) * S2 * w)),
-        y: 0.0833333f64 * (1. + (6. * w)),
+        x: edge_corner.x,
+        y: edge_corner.y - along,
     };
     let pt7 = Point {
         x: 0.5f64 + -w,
@@ -52,13 +69,20 @@ fn base(invert: bool) -> (Vec<String>, Path) {
         x: 0.5f64 * (2. + w),
         y: S3 * w,
     };
+    // The long wall runs at 150° from pt11 until it meets the vertical wall
+    // x = 0.5 + w, and is rounded the same way with its own radius.
+    let long_corner = Point {
+        x: 0.5 + w,
+        y: pt11.y + (pt11.x - (0.5 + w)) * S4,
+    };
+    let along = LONG_CORNER_RADIUS * S4;
     let pt12 = Point {
-        x: 0.0833333f64 * (7. + (6. * w)),
-        y: 0.0833333f64 * S4 * (5. + (18. * w)),
+        x: long_corner.x + along * S3,
+        y: long_corner.y - along * 0.5,
     };
     let pt13 = Point {
-        x: 0.5f64 + w,
-        y: 0.666667f64 * S4,
+        x: long_corner.x,
+        y: long_corner.y + along,
     };
     let pt14 = Point {
         x: 0.5f64 + w,
@@ -71,17 +95,17 @@ fn base(invert: bool) -> (Vec<String>, Path) {
 
     let pts = if invert { pts.invert() } else { pts };
     let r1s = trimf64(TILE_WIDTH * (1. / 6. - w));
-    let r1l = trimf64(TILE_WIDTH * (1. / 6. + w));
-    let r3 = trimf64(TILE_WIDTH * (S5 * w - 1. / 6.));
-    (vec![r1s, r1l, r3], pts)
+    let edge = trimf64(TILE_WIDTH * EDGE_CORNER_RADIUS);
+    let long = trimf64(TILE_WIDTH * LONG_CORNER_RADIUS);
+    (vec![r1s, edge, long], pts)
 }
 
 fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
-    let (d1, d2) = if invert { (0, 1) } else { (1, 0) };
+    let d1 = if invert { 0 } else { 1 };
     let pts = pts.str();
     format!(
-        "<path fill='{fill}' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}L{d}A{r1l} {r1l} 0 0 {d2} {e}A{r3} {r3} 0 0 {d1} {f}A{r1l} {r1l} 0 0 {d2} {g}L{h}A{r1s} {r1s} 0 0 {d1} {i}L{j}L{k}L{l}A{r1s} {r1s} 0 0 {d1} {m}L{n}'/>\
-        <path stroke='black' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}M{d}A{r1l} {r1l} 0 0 {d2} {e}A{r3} {r3} 0 0 {d1} {f}A{r1l} {r1l} 0 0 {d2} {g}M{h}A{r1s} {r1s} 0 0 {d1} {i}L{j}M{k}L{l}A{r1s} {r1s} 0 0 {d1} {m}L{n}'/>",
+        "<path fill='{fill}' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}L{d}L{e}A{edge} {edge} 0 0 {d1} {f}L{g}L{h}A{r1s} {r1s} 0 0 {d1} {i}L{j}L{k}L{l}A{long} {long} 0 0 {d1} {m}L{n}'/>\
+        <path stroke='black' d='M{a}L{b}A{r1s} {r1s} 0 0 {d1} {c}M{d}L{e}A{edge} {edge} 0 0 {d1} {f}L{g}M{h}A{r1s} {r1s} 0 0 {d1} {i}L{j}M{k}L{l}A{long} {long} 0 0 {d1} {m}L{n}'/>",
         a = pts[0],
         b = pts[1],
         c = pts[2],
@@ -97,8 +121,8 @@ fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
         m = pts[12],
         n = pts[13],
         r1s = radii[0],
-        r1l = radii[1],
-        r3 = radii[2],
+        edge = radii[1],
+        long = radii[2],
         fill = FILL,
     )
 }
