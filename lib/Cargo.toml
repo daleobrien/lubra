@@ -12,6 +12,11 @@ array2d = "0.2.1"
 rand_chacha = "0.3.1"
 phf = { version = "0.13.1", features = ["macros"] }
 weighted_rand = "0.4.2"
-usvg = "0.40.0"
-tiny-skia = "0.11.4"
-resvg = "0.40.0"
+# PNG output (`png`, on by default). Off for WebAssembly, which only needs SVG.
+usvg = { version = "0.40.0", optional = true }
+tiny-skia = { version = "0.11.4", optional = true }
+resvg = { version = "0.40.0", optional = true }
+
+[features]
+default = ["png"]
+png = ["dep:usvg", "dep:tiny-skia", "dep:resvg"]

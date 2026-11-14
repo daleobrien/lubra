@@ -154,12 +154,12 @@ impl Maze {
 
     /// Whether tile `(i, j)` is the entrance (the first tile) or the exit (the last).
     /// Both hold a single dead end that no pass may extend or route past.
-    pub(crate) fn is_terminal(&self, i: usize, j: usize) -> bool {
+    pub fn is_terminal(&self, i: usize, j: usize) -> bool {
         (i, j) == (0, 0) || (i + 1, j + 1) == (self.number_of_columns, self.number_of_rows)
     }
 
     /// The tile across node `k` of tile `(i, j)`, if it is inside the grid.
-    pub(super) fn tile_across(&self, i: usize, j: usize, k: usize) -> Option<(usize, usize)> {
+    pub fn tile_across(&self, i: usize, j: usize, k: usize) -> Option<(usize, usize)> {
         let across = get_connected_coords_at_coords(Coordinate { i, j }, k)?;
         self.tiles.get(across.j, across.i)?;
         Some((across.i, across.j))

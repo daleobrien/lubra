@@ -391,6 +391,17 @@ pub fn ink_fragment(fragment: &str, offset: Point, pen: &Pen) -> String {
 /// crossing, as markup. With a `pen` it is pencilled in, gone over twice where on top
 /// and once lightly underneath, as in maze-rs; without, it is a plain red trace.
 pub fn solution_markup(over: &[Vec<Point>], under: &[Vec<Point>], pen: Option<&Pen>) -> String {
+    pencil_markup(over, under, pen, PENCIL)
+}
+
+/// As `solution_markup`, in another colour (any SVG colour), e.g. for a route a
+/// player has drawn.
+pub fn pencil_markup(
+    over: &[Vec<Point>],
+    under: &[Vec<Point>],
+    pen: Option<&Pen>,
+    colour: &str,
+) -> String {
     let mut out = String::new();
     let mut pass = |lines: &[Vec<Point>], salt: u64, width: f64, opacity: &str| {
         let mut d = String::new();
@@ -404,7 +415,7 @@ pub fn solution_markup(over: &[Vec<Point>], under: &[Vec<Point>], pen: Option<&P
         if !d.is_empty() {
             let _ = write!(
                 out,
-                "<path fill='none' stroke='{PENCIL}' stroke-opacity='{opacity}' stroke-width='{width:.2}' stroke-linecap='round' stroke-linejoin='round' d='{d}'/>"
+                "<path fill='none' stroke='{colour}' stroke-opacity='{opacity}' stroke-width='{width:.2}' stroke-linecap='round' stroke-linejoin='round' d='{d}'/>"
             );
         }
     };

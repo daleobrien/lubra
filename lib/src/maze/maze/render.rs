@@ -22,8 +22,6 @@ use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs;
 use std::time::Instant;
-use usvg;
-use usvg::fontdb;
 
 /// Rendering methods for the Maze struct.
 /// These methods handle SVG/PNG generation and file saving.
@@ -39,7 +37,18 @@ impl Maze {
         background: bool,
         debug: bool,
     ) -> Result<(), Box<dyn Error>> {
-        let start = Instant::now();
+        let content = self.svg_markup(background, debug);
+        match file_type {
+            SVG => self.save_as_svg(content, file_name, debug),
+            PNG => self.save_as_png(content.as_str(), file_name, debug),
+        }
+    }
+
+    /// The maze as SVG text, drawn as the render settings say. With `debug`, timings
+    /// are printed (not on WebAssembly, which has no clock to read).
+    pub fn svg_markup(&self, background: bool, debug: bool) -> String {
+        let debug = debug && cfg!(not(target_arch = "wasm32"));
+        let start = debug.then(Instant::now);
 
         let margin = 5.0;
         let w = (self.number_of_columns + 1) as f64 * TILE_WIDTH / 2.0 + 5.0 * margin;
@@ -50,10 +59,10 @@ impl Maze {
         svg.set_caption(self.caption.clone());
 
         let drawn = self.drawn_fragments(debug);
-        if debug {
+        if let Some(start) = start {
             println!("render took (1) {:?}", start.elapsed());
         }
-        let start = Instant::now();
+        let start = debug.then(Instant::now);
 
         let pen = Pen::new(self.seed.unwrap_or_default());
         for fragment in &drawn {
@@ -113,14 +122,10 @@ impl Maze {
             add_tile_nets(&mut svg, &self.tiles, self.colour_tracks);
         }
 
-        if debug {
+        if let Some(start) = start {
             println!("render took (2) {:?}", start.elapsed());
         }
-
-        match file_type {
-            SVG => self.save_as_svg(svg.to_string(background), file_name, debug),
-            PNG => self.save_as_png(svg.to_string(background).as_str(), file_name, debug),
-        }
+        svg.to_string(background)
     }
 
     /// Every fragment the maze draws, in drawing order.
@@ -209,7 +214,42 @@ impl Maze {
     /// Otherwise (across the middle of a junction) it is a smooth curve leaving and
     /// arriving square to the openings.
     fn solution_trace(&self, drawn: &[Drawn]) -> (Vec<Vec<TracePoint>>, Vec<Vec<TracePoint>>) {
-        let route = self.solution_route();
+        self.trace_route(drawn, &self.solution_route())
+    }
+
+    /// Any route through the maze (as `solution_route` lists one) as lines in drawing
+    /// units, split into where it is on top and where it passes under another track.
+    /// A last step with no way out ends where it came in, unless it is the exit.
+    pub fn route_lines(&self, route: &[RouteStep]) -> (Vec<Vec<TracePoint>>, Vec<Vec<TracePoint>>) {
+        let drawn = self.drawn_fragments(false);
+        let end = match route.last() {
+            Some(last) if last.exit.is_none() && !self.is_terminal(last.i, last.j) => {
+                route.len() - 1
+            }
+            _ => route.len(),
+        };
+        self.trace_route(&drawn, &route[..end])
+    }
+
+    /// Where logical node `node` of tile `(i, j)` opens, in drawing units; the middle of
+    /// the tile when there is no node.
+    pub fn opening_point(&self, i: usize, j: usize, node: Option<usize>) -> (f64, f64) {
+        let step = RouteStep {
+            i,
+            j,
+            net: 0,
+            entry: node,
+            exit: None,
+        };
+        endpoint(step, node).at
+    }
+
+    /// `route` as lines in drawing units (see `solution_trace`).
+    fn trace_route(
+        &self,
+        drawn: &[Drawn],
+        route: &[RouteStep],
+    ) -> (Vec<Vec<TracePoint>>, Vec<Vec<TracePoint>>) {
         // Which drawn fragment draws each tile net.
         let mut drawer: HashMap<(Coordinate, usize), usize> = HashMap::new();
         for (index, fragment) in drawn.iter().enumerate() {
@@ -330,12 +370,14 @@ impl Maze {
         Ok(())
     }
 
+    #[cfg(feature = "png")]
     pub fn save_as_png(
         &mut self,
         svg_content: &str,
         file_name: String,
         debug: bool,
     ) -> Result<(), Box<dyn Error>> {
+        use usvg::fontdb;
         let input = format!("{}.png", file_name);
         let mut fontdb = fontdb::Database::new();
         fontdb.load_system_fonts();
@@ -370,6 +412,17 @@ impl Maze {
         }
 
         Ok(())
+    }
+
+    /// PNG output needs the `png` feature (on by default).
+    #[cfg(not(feature = "png"))]
+    pub fn save_as_png(
+        &mut self,
+        _svg_content: &str,
+        _file_name: String,
+        _debug: bool,
+    ) -> Result<(), Box<dyn Error>> {
+        Err("PNG output needs the lib crate's `png` feature".into())
     }
 }
 

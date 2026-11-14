@@ -12,6 +12,7 @@ mod net_reduction;
 mod remove_cycles;
 mod render;
 mod solution;
+pub use solution::RouteStep;
 mod surrounding_coordinates;
 mod tile_lookup;
 pub(crate) mod touching;
@@ -112,5 +113,34 @@ impl Maze {
     /// tile net labels then use the same colours.
     pub fn set_colour_tracks(&mut self, colour: bool) {
         self.colour_tracks = colour;
+    }
+
+    /// A finished maze of `columns` by `rows` tiles from `seed`, made the way the CLI
+    /// makes one by default: nets reduced, loops removed, dead ends of up to two tiles
+    /// trimmed, touching tracks separated and blank areas filled with side branches of
+    /// two tiles or more.
+    pub fn generate(columns: usize, rows: usize, seed: u64) -> Maze {
+        let mut maze = Maze::new(columns, rows, true, false, false, Some(seed));
+        maze.reduce_nets(1);
+        maze.remove_cycles(false);
+        maze.trim_dead_ends(2);
+        maze.separate_touching_tracks();
+        maze.fill_blank_areas(2);
+        maze
+    }
+
+    /// The number of columns of tiles.
+    pub fn columns(&self) -> usize {
+        self.number_of_columns
+    }
+
+    /// The number of rows of tiles.
+    pub fn rows(&self) -> usize {
+        self.number_of_rows
+    }
+
+    /// The tile nets of tile `(i, j)`: each is the logical nodes (bits 0-5) it joins.
+    pub fn tile_nets(&self, i: usize, j: usize) -> &[usize] {
+        &self.tiles[(j, i)].nodes
     }
 }
