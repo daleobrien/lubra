@@ -31,12 +31,11 @@ use crate::fragments::frag_15_straight::{n14_34, n15_25, n24_34, n26_16, n35_25,
 use crate::fragments::frag_16::{n16, n25, n34};
 use crate::fragments::frag_arc_semi::{n45_14, n45_15, n46_24, n46_26, n56_35, n56_36};
 use crate::fragments::frag_arcs::{a46, n45, n456, n56};
-use crate::fragments::frag_complex_arcs::{
-    n45_24, n45_24_35, n45_35, n46_14, n46_14_36, n46_15_26, n46_35, n56_15, n56_26,
-};
+use crate::fragments::frag_complex_arcs::{n45_24, n45_35, n46_14, n46_35, n56_15, n56_26};
 use crate::fragments::frag_corner_hook::{
     n14_14_4, n15_15_5, n24_24_4, n26_26_6, n35_35_5, n36_36_6,
 };
+use crate::fragments::frag_crescent::{n45_24_35, n46_14_36, n46_15_26};
 use crate::fragments::frag_s_curve::{
     n45_14_35, n45_24_15, n46_14_26, n46_24_36, n56_15_36, n56_35_26,
 };

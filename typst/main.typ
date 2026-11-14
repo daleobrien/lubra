@@ -671,6 +671,29 @@ it is now straight. A smoother hump into the junction always pinched the track
 below its full width, and a bow outwards crossed into the neighbouring tile
 near an edge opening, so straight is the only kink-free wall that fits.
 
+=== The five-way junction
+
+`frag_13456` (`13456`, `12456`, `23456`) joins two vertices and all three
+edges, five arms in all. The wall between the two edge openings beside the missing vertex used to
+bulge into the junction and back (curve, tight hump, curve), which left a kink.
+It is now one corner: straight, one curve of `INNER_CORNER_RADIUS` (35), then
+straight into the other opening, turning the same way as the junction's other
+corners. It only moves towards the junction, so the track keeps its full width
+and comes no closer to neighbouring tiles.
+
+=== The crescent
+
+`frag_crescent` (`56/15/26`, `45/24/35`, `46/14/36`) draws a track from one
+vertex round the far side of the tile to the next vertex, through the other two
+edge openings. It used to be two long arcs joined by a short straight, which
+left a corner halfway. All four points lie on a circle centred on the edge
+between the two vertices, so it is now one semicircle of half a tile width.
+`CRESCENT_RADIUS` (0.5) is its one setting: a smaller radius keeps the ends
+where they are and joins two curves of that radius with a straight. The
+semicircle reaches further over the edge openings, so other tracks that cross
+it (as before) cross it a little further out; over 80 seeded 20 × 12 mazes the
+closest track that does not cross it was 6.7 units of white away.
+
 === The vertex S
 
 Where a track passes through a vertex from an edge opening in one tile to an edge
