@@ -467,8 +467,22 @@ grows new dead-end branches into that space.
 - About one step in three, a plain two-node track may instead pass over one
   other plain track, so filled areas get crossings too. A branch never ends on
   a crossing.
+- When nothing more grows, each dead end that is stuck looks for the shortest
+  route to an empty tile, of at most `MAX_REACH` (6) tiles, passing other plain
+  tracks at most `MAX_CROSSINGS` (2) times (`reach_gaps`). At each crossing it
+  goes over or under at random: a tile's nets are drawn in order, so putting
+  the new one first sends it under. Growing and reaching alternate until
+  neither adds anything.
 - A branch is attached at one end only, so the maze stays a single loop-free
   tree.
+
+Reaching adds little: over 40 seeded 20 × 12 mazes it filled 29 of 343 empty
+tiles. After growing, most dead ends cannot move because the track they would
+add touches another, and 87% of the empty tiles sit beside a plain track that
+could only reach them with a side branch shorter than `min_length`. The
+side-branch length is what decides how full the maze is: with `--fill 2` the
+blank pockets inside the maze halve, and with `--fill 1` nine in ten go, at
+the cost of one- and two-tile stubs.
 
 The "drawn clear" test uses the tables described under _Separating touching
 tracks_.
