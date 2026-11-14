@@ -345,10 +345,18 @@ impl Maze {
         let Coordinate { i, j } = coord;
         let tile = self.tiles[(j, i)].clone();
         let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
+        let terminals = [
+            Coordinate { i: 0, j: 0 },
+            Coordinate {
+                i: self.number_of_columns - 1,
+                j: self.number_of_rows - 1,
+            },
+        ];
         tile.generate_hidden_and_visible_nets(
             coord,
             self.boundaries,
             &surrounding_tiles,
+            &terminals,
             debug,
             corner_hooks,
         )
@@ -871,6 +879,28 @@ mod tests {
     }
 
     use common::types::point::TILE_HEIGHT;
+
+    /// A neighbour's cross-tile fragment must never take over the entrance or exit
+    /// dead end, which would leave it drawn as plain track with no dot.
+    #[test]
+    fn test_entrance_and_exit_are_always_drawn_as_markers() {
+        for (columns, rows) in [(25, 7), (28, 6), (10, 6), (15, 16), (29, 17)] {
+            for seed in 0..20 {
+                let maze = Maze::generate(columns, rows, seed);
+                let markers: Vec<(usize, usize)> = maze
+                    .drawn_fragments(false)
+                    .iter()
+                    .filter(|fragment| fragment.marker)
+                    .map(|fragment| (fragment.coordinate.i, fragment.coordinate.j))
+                    .collect();
+                assert_eq!(
+                    markers,
+                    [(0, 0), (columns - 1, rows - 1)],
+                    "{columns}x{rows} seed {seed}"
+                );
+            }
+        }
+    }
 
     #[test]
     fn test_solution_runs_from_the_entrance_dot_to_the_exit_dot() {

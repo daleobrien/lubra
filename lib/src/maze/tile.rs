@@ -56,11 +56,15 @@ impl Tile {
     /// With `corner_hooks` false, cross-tile fragments that reach a tile across a vertex
     /// (see `is_corner_hook`) are not used; the renderer turns them off for a tile when
     /// they would claim a net that another fragment already draws.
+    ///
+    /// No cross-tile fragment may redraw a net of a tile in `fixed` (the entrance and
+    /// exit, whose dead ends are drawn as markers).
     pub fn generate_hidden_and_visible_nets(
         self,
         coordinate: Coordinate,
         boundaries: bool,
         surrounding_tiles: &[Option<&Tile>; 12],
+        fixed: &[Coordinate],
         debug: bool,
         corner_hooks: bool,
     ) -> CataloguedNet {
@@ -84,6 +88,7 @@ impl Tile {
                 &surrounding_tiles,
                 &net,
                 &tile_nets,
+                fixed,
                 debug,
                 corner_hooks,
             );
@@ -122,12 +127,11 @@ impl Tile {
         surrounding_tiles: &&[Option<&Tile>; 12],
         net: &usize,
         tile_nets: &[usize],
+        fixed: &[Coordinate],
         debug: bool,
         corner_hooks: bool,
     ) -> Option<ComplexNet> {
         let list_of_adj_and_nets = ADJ_CHECKS.get(&(*net as u64));
-
-        let mut complex_net: ComplexNet = ComplexNet::new();
 
         if let Some(list_of_adj_and_nets) = list_of_adj_and_nets {
             // let x = list_of_adj_and_nets
@@ -183,6 +187,7 @@ impl Tile {
                     let bits = new_bits;
 
                     if MAP_PATHS.contains_key(&(bits as u64)) {
+                        let mut complex_net = ComplexNet::new();
                         // if debug {
                         //     println!(
                         //         "__D : {c}  -> \"{b}\"",
@@ -221,6 +226,14 @@ impl Tile {
                             }
                         }
 
+                        // The entrance and exit keep their own markers.
+                        if complex_net
+                            .hidden_neighbours
+                            .iter()
+                            .any(|hidden| fixed.contains(&hidden.coordinate))
+                        {
+                            continue;
+                        }
                         complex_net.complex_net = CoordinateAndNet::new(coordinate, bits);
                         return Some(complex_net);
                     }
