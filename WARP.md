@@ -86,6 +86,7 @@ Root `Cargo.toml` members:
 - `frag_1235` (four-way junctions `1234`/`1235`/`1236`) draws each long wall as straight, one curve of `LONG_WALL_RADIUS`, straight.
 - `frag_1345` (four-way junctions with two edges) draws its long wall straight; any hump pinches the track.
 - `frag_13456` (five-way junctions: two vertices, three edges) rounds the wall beside the missing vertex as one corner of `INNER_CORNER_RADIUS`.
+- `frag_1456` (four-way junctions with three edges) rounds each side-to-bottom wall as one corner of `SIDE_CORNER_RADIUS`.
 - `frag_crescent` draws a vertex-to-vertex track round the far side of a tile (`56/15/26` and rotations) as one semicircle; `CRESCENT_RADIUS` below 0.5 adds a straight between two smaller curves.
 - `renders/kinks.rs` finds kinks in the drawn walls (heading jumps, and tight back-and-forth bends); CLI `-K` rings them on the maze and `--kink-stats N` counts them by fragment over N seeded mazes. Thresholds are the constants at the top of the file.
 - `frag_vertex_s` draws a track through a vertex between two edge openings as one S of two half-circles (`FIRST_HALF_RADIUS`); the partner tile gets a blank. The renderer keeps it only when clear of its neighbours (`VERTEX_S_CLEAR`, measured by `tools/clearance.py`), away from cross-tile fragments, and apart from other S-curves.

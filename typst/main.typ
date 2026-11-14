@@ -695,6 +695,16 @@ straight into the other opening, turning the same way as the junction's other
 corners. It only moves towards the junction, so the track keeps its full width
 and comes no closer to neighbouring tiles.
 
+=== The four-way junction with three edges
+
+`frag_1456` (`1456`, `2456`, `3456`) joins one vertex and all three edges. The
+two walls that run from a side opening to the opening opposite the vertex used
+to curve one way and then tightly back (a 31-unit curve into a 9-unit corner).
+Each is now straight, one corner of `SIDE_CORNER_RADIUS` (35), then straight,
+turning the same way as the two corners beside the vertex arm. The new walls
+sit further out than the old ones, so the junction is roomier; the measured
+clearance tables did not change.
+
 === The crescent
 
 `frag_crescent` (`56/15/26`, `45/24/35`, `46/14/36`) draws a track from one
@@ -783,7 +793,8 @@ a wiggle) and adds the number to the caption. `--kink-stats N` builds $N$ seeded
 mazes instead of drawing one and prints the kinks by fragment, or by pair of
 fragments where the kink is at a join. Over 100 seeded 20 × 12 mazes there were
 9.3 kinks per maze: 68% inside `1456`/`2456`/`3456`, 28% inside
-`1256`/`1346`/`2345`, and 3% at joins between fragments.
+`1256`/`1346`/`2345`, and 3% at joins between fragments. Redrawing the first
+family (below) left 2.8 per maze.
 
 = Documentation pipeline
 
