@@ -1,5 +1,6 @@
 use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::maze::{FileType, Maze};
+use crate::maze::tile::Tile;
 use crate::renders::generated::fragment::MAP_PATHS;
 use crate::renders::net_colours::{net_colour, net_index};
 use crate::renders::node_numbers::{add_node_numbers, add_tile_nets};
@@ -9,6 +10,7 @@ use common::consts::{NL, NX};
 use common::types::bits;
 use common::types::coordinate::{CataloguedNet, Coordinate, CoordinateAndNet};
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs;
 use std::time::Instant;
@@ -39,24 +41,25 @@ impl Maze {
         let mut svg = Svg::new(w, h);
         svg.set_caption(self.caption.clone());
 
-        let mut all_catorised_nets: CataloguedNet = CataloguedNet::new();
-
+        // First, we build a list of nets (masks) and hidden nets at each coordinate
+        // Then we use the still visible ones to build the SVG
+        let mut per_tile: Vec<(Coordinate, CataloguedNet)> = Vec::new();
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
-                let coord: Coordinate = Coordinate { i, j };
+                let coord = Coordinate { i, j };
+                per_tile.push((coord, self.catalogue_tile(coord, debug, true)));
+            }
+        }
 
-                let tile = self.tiles[(j, i)].clone();
-                let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
-
-                // First, we build a list of nets (masks) and hidden nets at each coordinate
-                // Then we use the still visible ones to build the SVG
-                let cat_nets = tile.generate_hidden_and_visible_nets(
-                    coord,
-                    self.boundaries,
-                    &surrounding_tiles,
-                    debug, // Use debug parameter
-                );
-                all_catorised_nets.extend(cat_nets);
+        // A corner hook replaces a net in the tile across a vertex. If another
+        // cross-tile fragment already draws that net, draw this tile the usual way.
+        let conflicts = corner_hook_conflicts(&per_tile);
+        let mut all_catorised_nets: CataloguedNet = CataloguedNet::new();
+        for (coord, catalogue) in per_tile {
+            if conflicts.contains(&coord) {
+                all_catorised_nets.extend(self.catalogue_tile(coord, debug, false));
+            } else {
+                all_catorised_nets.extend(catalogue);
             }
         }
 
@@ -134,6 +137,20 @@ impl Maze {
         }
     }
 
+    /// The fragments for tile `coord` and the neighbouring nets they replace.
+    fn catalogue_tile(&self, coord: Coordinate, debug: bool, corner_hooks: bool) -> CataloguedNet {
+        let Coordinate { i, j } = coord;
+        let tile = self.tiles[(j, i)].clone();
+        let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
+        tile.generate_hidden_and_visible_nets(
+            coord,
+            self.boundaries,
+            &surrounding_tiles,
+            debug,
+            corner_hooks,
+        )
+    }
+
     pub fn save_as_svg(
         &mut self,
         content: String,
@@ -191,6 +208,43 @@ impl Maze {
 
         Ok(())
     }
+}
+
+/// The tiles whose corner hook (see `Tile::is_corner_hook`) claims a net that is also
+/// drawn by another cross-tile fragment: one that replaces the same net, or a
+/// cross-tile fragment of that net's own tile.
+fn corner_hook_conflicts(per_tile: &[(Coordinate, CataloguedNet)]) -> HashSet<Coordinate> {
+    let mut claims: HashMap<CoordinateAndNet, usize> = HashMap::new();
+    let mut drawn_cross_tile: HashSet<CoordinateAndNet> = HashSet::new();
+    for (_, catalogue) in per_tile {
+        for hidden in &catalogue.hidden {
+            *claims.entry(*hidden).or_default() += 1;
+        }
+        for visible in &catalogue.visible {
+            // Upper bits name nets in neighbouring tiles.
+            if (visible.net & NX) >> 6 != 0 {
+                drawn_cross_tile
+                    .insert(CoordinateAndNet::new(visible.coordinate, visible.net & NL));
+            }
+        }
+    }
+    per_tile
+        .iter()
+        .filter(|(_, catalogue)| {
+            catalogue
+                .visible
+                .iter()
+                .any(|v| Tile::is_corner_hook(v.net & NX))
+        })
+        .filter(|(_, catalogue)| {
+            catalogue.hidden.iter().any(|hidden| {
+                claims[hidden] > 1
+                    || drawn_cross_tile
+                        .contains(&CoordinateAndNet::new(hidden.coordinate, hidden.net & NL))
+            })
+        })
+        .map(|(coord, _)| *coord)
+        .collect()
 }
 
 #[cfg(test)]

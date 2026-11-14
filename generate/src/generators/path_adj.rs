@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io::Write;
 
 use common::bit_utils::print_bits;
-use common::consts::{ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
+use common::consts::{ADJ_N1, ADJ_N2, ADJ_N3, ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 
 /// One neighbour check: (neighbour index, must match, expected net in that neighbour).
 type AdjCheck = (usize, bool, usize);
@@ -17,6 +17,9 @@ pub fn generate_adjacent_paths() {
     adj_paths.insert(
         N1 | N4,
         vec![
+            // A dead end across the edge, reached from the tile opposite the vertex:
+            // drawn as one U-turn round the vertex (frag_corner_hook).
+            vec![(ADJ_N4, true, N4), (ADJ_N1, true, N1 | N4)],
             vec![(ADJ_N4, true, N4)], // Adjacent tile to look up, then the expected tile
             vec![(ADJ_N4, true, N2 | N4)],
             vec![(ADJ_N4, true, N3 | N4)],
@@ -27,6 +30,9 @@ pub fn generate_adjacent_paths() {
     adj_paths.insert(
         N1 | N5,
         vec![
+            // A dead end across the edge, reached from the tile opposite the vertex:
+            // drawn as one U-turn round the vertex (frag_corner_hook).
+            vec![(ADJ_N5, true, N5), (ADJ_N1, true, N1 | N5)],
             vec![(ADJ_N5, true, N5)],
             vec![(ADJ_N5, true, N2 | N5)],
             vec![(ADJ_N5, true, N3 | N5)],
@@ -46,6 +52,9 @@ pub fn generate_adjacent_paths() {
     adj_paths.insert(
         N2 | N4,
         vec![
+            // A dead end across the edge, reached from the tile opposite the vertex:
+            // drawn as one U-turn round the vertex (frag_corner_hook).
+            vec![(ADJ_N4, true, N4), (ADJ_N2, true, N2 | N4)],
             vec![(ADJ_N4, true, N4)],
             vec![(ADJ_N4, true, N1 | N4)],
             vec![(ADJ_N4, true, N3 | N4)],
@@ -65,6 +74,9 @@ pub fn generate_adjacent_paths() {
     adj_paths.insert(
         N2 | N6,
         vec![
+            // A dead end across the edge, reached from the tile opposite the vertex:
+            // drawn as one U-turn round the vertex (frag_corner_hook).
+            vec![(ADJ_N6, true, N6), (ADJ_N2, true, N2 | N6)],
             vec![(ADJ_N6, true, N6)],
             vec![(ADJ_N6, true, N1 | N6)],
             vec![(ADJ_N6, true, N3 | N6)],
@@ -84,6 +96,9 @@ pub fn generate_adjacent_paths() {
     adj_paths.insert(
         N3 | N5,
         vec![
+            // A dead end across the edge, reached from the tile opposite the vertex:
+            // drawn as one U-turn round the vertex (frag_corner_hook).
+            vec![(ADJ_N5, true, N5), (ADJ_N3, true, N3 | N5)],
             vec![(ADJ_N5, true, N5)],
             vec![(ADJ_N5, true, N1 | N5)],
             vec![(ADJ_N5, true, N2 | N5)],
@@ -94,6 +109,9 @@ pub fn generate_adjacent_paths() {
     adj_paths.insert(
         N3 | N6,
         vec![
+            // A dead end across the edge, reached from the tile opposite the vertex:
+            // drawn as one U-turn round the vertex (frag_corner_hook).
+            vec![(ADJ_N6, true, N6), (ADJ_N3, true, N3 | N6)],
             vec![(ADJ_N6, true, N6)],
             vec![(ADJ_N6, true, N1 | N6)],
             vec![(ADJ_N6, true, N2 | N6)],

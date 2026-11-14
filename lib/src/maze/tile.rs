@@ -50,12 +50,18 @@ impl Tile {
         format!("[{s}]", s = s.replace("\"", ""))
     }
 
+    /// The fragments to draw for this tile, and the neighbouring nets they replace.
+    ///
+    /// With `corner_hooks` false, cross-tile fragments that reach a tile across a vertex
+    /// (see `is_corner_hook`) are not used; the renderer turns them off for a tile when
+    /// they would claim a net that another fragment already draws.
     pub fn generate_hidden_and_visible_nets(
         self,
         coordinate: Coordinate,
         boundaries: bool,
         surrounding_tiles: &[Option<&Tile>; 12],
         debug: bool,
+        corner_hooks: bool,
     ) -> CataloguedNet {
         //
 
@@ -71,7 +77,8 @@ impl Tile {
             //     println!("\nNET_: {coordinate} -> {:?}", print_bits(net));
             // }
             // This needs to return a net to use, and a list of adjacent nets to remove.
-            let complex_net = Self::find_best_path(coordinate, &surrounding_tiles, &net, debug);
+            let complex_net =
+                Self::find_best_path(coordinate, &surrounding_tiles, &net, debug, corner_hooks);
 
             if let Some(complex_net) = complex_net {
                 render_nets.add(complex_net);
@@ -107,6 +114,7 @@ impl Tile {
         surrounding_tiles: &&[Option<&Tile>; 12],
         net: &usize,
         debug: bool,
+        corner_hooks: bool,
     ) -> Option<ComplexNet> {
         let list_of_adj_and_nets = ADJ_CHECKS.get(net);
 
@@ -127,7 +135,10 @@ impl Tile {
             //     );
             // }
             for &adj_and_nets in list_of_adj_and_nets.iter() {
-                //
+                // Neighbour indices 0-2 are the tiles across the vertices.
+                if !corner_hooks && adj_and_nets.iter().any(|&(index, _, _)| index < 3) {
+                    continue;
+                }
                 if Self::all_match(surrounding_tiles, adj_and_nets, debug) {
                     // For each subnet, merge them into one net
                     let adj_net = adj_and_nets
@@ -257,6 +268,14 @@ impl Tile {
         all_matched
     }
 
+    /// Whether `key` is a corner hook: a cross-tile fragment that also replaces the same
+    /// net in the tile across a vertex (`frag_corner_hook`). Its upper bits then repeat
+    /// the tile's own net.
+    pub fn is_corner_hook(key: usize) -> bool {
+        let own = key & NL;
+        (1..5).any(|k| (key >> (6 * k)) & NL == own)
+    }
+
     pub fn rotate_cw(&self) -> Vec<usize> {
         self.nodes
             .iter()
@@ -310,6 +329,17 @@ impl fmt::Display for Tile {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn test_is_corner_hook() {
+        use common::consts::{A1, A4, A6, B4, IN, N1, N2, N4, N6};
+        // The tile's own net repeated in the upper bits: the tile across the vertex.
+        assert!(Tile::is_corner_hook(N1 | N4 | A1 | A4 | B4));
+        assert!(Tile::is_corner_hook(IN | N1 | N4 | A1 | A4 | B4));
+        // An ordinary cross-tile fragment and a plain net are not corner hooks.
+        assert!(!Tile::is_corner_hook(N2 | N6 | A6));
+        assert!(!Tile::is_corner_hook(N1 | N4));
+    }
+
     use std::{assert_eq, println, vec};
 
     use common::consts::{N1, N2, N3, N4, N5, N6};

@@ -651,6 +651,27 @@ settings allow; a larger value stops the generator with a message. Lifting the
 sides more raises the arch, which allows rounder corners but brings it closer
 to tracks in the neighbouring tiles.
 
+=== The corner hook
+
+Where a track runs into a vertex from one tile and out of it into a dead end in
+the tile opposite, it used to be two pieces: a hook into the vertex and a curl
+out of it. Their turns went opposite ways, which left a bump in the walls.
+`frag_corner_hook` (`14/14/4`, `15/15/5`, `24/24/4`, `26/26/6`, `35/35/5`,
+`36/36/6`, in normal and inverted tiles) draws it as one track that only turns
+one way: it arrives through the opposite tile's edge, makes one U-turn round the
+vertex (`U_TURN_RADIUS`, about 35), then runs straight towards the dead-end node
+and stops short of it with a round cap (`STOP_SHORT`, 22 to the middle of the
+cap).
+
+It is the first cross-tile fragment that reaches a tile across a vertex: its
+`ADJ_CHECKS` entry checks the tile opposite the vertex (neighbour index 0-2) as
+well as the tile across the edge, and is tried first. The opposite tile's net
+can also be drawn by a cross-tile fragment from its other side, so the renderer
+works out every tile's fragments, and any tile whose corner hook claims a net
+that another cross-tile fragment also draws is drawn the usual way instead
+(`corner_hook_conflicts` in `maze/maze/render.rs`). Over 40 seeded 20 × 12
+mazes it was used 11 times, with at least 8.5 units of white to other tracks.
+
 = Documentation pipeline
 
 `make document` runs the `document` crate; `make doc` also regenerates the
