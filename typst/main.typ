@@ -480,9 +480,9 @@ Reaching adds little: over 40 seeded 20 × 12 mazes it filled 29 of 343 empty
 tiles. After growing, most dead ends cannot move because the track they would
 add touches another, and 87% of the empty tiles sit beside a plain track that
 could only reach them with a side branch shorter than `min_length`. The
-side-branch length is what decides how full the maze is: with `--fill 2` the
-blank pockets inside the maze halve, and with `--fill 1` nine in ten go, at
-the cost of one- and two-tile stubs.
+side-branch length is what decides how full the maze is. The default is
+`--fill 2`, which halves the blank pockets inside the maze compared with 3;
+`--fill 1` removes nine in ten, at the cost of one-tile stubs.
 
 The "drawn clear" test uses the tables described under _Separating touching
 tracks_.
@@ -910,7 +910,7 @@ colour for each net (`lib/src/renders/net_colours.rs`).
   [`--remove-cycles`], [on], [Run `remove_cycles`.],
   [`--trim-dead-ends`], [2], [Remove dead ends up to this many tiles long; 0 keeps them all.],
   [`--keep-touching`], [off], [Skip `separate_touching_tracks`.],
-  [`--fill`], [3], [Grow tracks into blank areas; new side branches are at least this many tiles long. 0 leaves blank areas alone.],
+  [`--fill`], [2], [Grow tracks into blank areas; new side branches are at least this many tiles long. 0 leaves blank areas alone.],
 )
 
 = Current limitations

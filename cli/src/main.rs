@@ -65,7 +65,7 @@ struct Args {
 
     /// Grow tracks into blank areas; new side branches are at least this many
     /// tiles long (0 leaves blank areas alone)
-    #[arg(long, default_value_t = 3)]
+    #[arg(long, default_value_t = 2)]
     fill: usize,
 
     /// Leave tracks that are drawn touching each other as they are
