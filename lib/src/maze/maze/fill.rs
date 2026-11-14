@@ -33,7 +33,7 @@ const CROSSING_CHANCE: f64 = 0.35;
 const MAX_REACH: usize = 6;
 
 /// The most tracks such a route may cross.
-const MAX_CROSSINGS: usize = 2;
+const MAX_CROSSINGS: usize = 3;
 
 impl Maze {
     /// Grows new dead-end branches into blank space until no branch of at least
