@@ -778,6 +778,35 @@ claims a net that another cross-tile fragment also draws is drawn the usual way
 instead, with its partner (`corner_hook_conflicts` in `maze/maze/render.rs`). Over 40 seeded 20 × 12
 mazes it was used 11 times, with at least 8.5 units of white to other tracks.
 
+=== The hook fork
+
+Inside a junction, a track that comes in through a vertex and leaves by the
+edge opening beside it turns 120° on a 20-unit centreline. That is the tightest
+curve in the maze, and no redraw of the one tile can loosen it, because the
+turn already ends exactly at the opening. Where the tile across that edge
+carries on along the arc round the same vertex, the track hooks out of the
+vertex and then orbits it.
+
+`frag_hook_fork` draws the hook and the arc as one half-circle of radius 30
+from the vertex to the arc's far opening, the same curve the plain `45/14`
+family uses. What is left of the junction is the plain track from the vertex
+to its third node: straight to the opposite edge, or the one-tile-wide arc to
+another vertex. The two tracks fork at the vertex, and the point where they
+separate is rounded with `JOIN_RADIUS` (9.2).
+
+The arc's tile draws the fragment and hides the junction. There are 18 keys
+(`46/245`, `56/236`, ...): each arc with each junction made of its vertex, one
+of its edges and a third node. Junctions that hook to both edges beside the
+vertex (`145`, `246`, `356`) are left out, since two arc tiles could claim them.
+The rules come after the existing ones in `ADJ_CHECKS`, so a plain hook on the
+arc's other side still wins.
+
+The new shape stays inside the space the two nets already took up, so it is
+used only when every other net on the two tiles was drawn clear of the net it
+replaces, not crossing it (`find_best_path` checks the measured same-tile
+table). Over 100 seeded 20 × 12 mazes it was used about 6 times per maze, with
+at least 7.6 units of white to every other track.
+
 === Finding kinks <kinks>
 
 `renders/kinks.rs` measures kinks in the maze as drawn. Every wall is straight

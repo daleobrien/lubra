@@ -41,6 +41,12 @@ pub(super) fn meeting(position: usize, net: usize, other: usize) -> Meeting {
     }
 }
 
+/// Whether tile nets `net` and `other` of one tile are drawn with white space
+/// between them (not touching and not crossing).
+pub(crate) fn clear_in_same_tile(net: usize, other: usize) -> bool {
+    meeting(SAME_TILE, net, other) == Meeting::Clear
+}
+
 impl Maze {
     /// Whether the vertex S (`frag_vertex_s`) with logical key `key` on tile `(i, j)`
     /// would be drawn against a net it does not join, in its tile or the twelve around

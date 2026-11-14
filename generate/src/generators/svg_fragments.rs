@@ -36,6 +36,7 @@ use crate::fragments::frag_corner_hook::{
     n14_14_4, n15_15_5, n24_24_4, n26_26_6, n35_35_5, n36_36_6,
 };
 use crate::fragments::frag_crescent::{n45_24_35, n46_14_36, n46_15_26};
+use crate::fragments::frag_hook_fork::{hook_fork, hook_forks};
 use crate::fragments::frag_s_curve::{
     n45_14_35, n45_24_15, n46_14_26, n46_24_36, n56_15_36, n56_35_26,
 };
@@ -195,7 +196,11 @@ pub fn generate_all_shapes() {
             (dir | N5 | N6 | A1 | A5 | B3 | B6, n56_15_36(invert)),
             (dir | N5 | N6 | A1 | A5, n56_15(invert)),
             (dir | N5 | N6 | A2 | A6, n56_26(invert)),
-        ] {
+        ]
+        .into_iter()
+        .chain(hook_forks().into_iter().map(|(arc, junction, v, e, x)| {
+            (dir | arc | (junction << 6), hook_fork(invert, v, e, x))
+        })) {
             let sorted_key = sort_upper_bits(key);
             paths.insert(sorted_key.to_usize().unwrap_or_default(), path.clone());
 

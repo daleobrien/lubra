@@ -9,6 +9,7 @@ use common::types::bits;
 use common::types::coordinate::{CataloguedNet, ComplexNet, Coordinate, CoordinateAndNet};
 
 use crate::maze::generated::nets_adjacent::ADJ_CHECKS;
+use crate::maze::maze::touching::clear_in_same_tile;
 use crate::renders::generated::fragment::MAP_PATHS;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -70,6 +71,7 @@ impl Tile {
         // if debug {
         //     println!("NETS: {coordinate} -> {:?}", print_nets(&self.nodes));
         // }
+        let tile_nets = self.nodes.clone();
         for net in self.nodes {
             // Now we need to look for related tiles ...
 
@@ -77,8 +79,14 @@ impl Tile {
             //     println!("\nNET_: {coordinate} -> {:?}", print_bits(net));
             // }
             // This needs to return a net to use, and a list of adjacent nets to remove.
-            let complex_net =
-                Self::find_best_path(coordinate, &surrounding_tiles, &net, debug, corner_hooks);
+            let complex_net = Self::find_best_path(
+                coordinate,
+                &surrounding_tiles,
+                &net,
+                &tile_nets,
+                debug,
+                corner_hooks,
+            );
 
             if let Some(complex_net) = complex_net {
                 render_nets.add(complex_net);
@@ -113,6 +121,7 @@ impl Tile {
         coordinate: Coordinate,
         surrounding_tiles: &&[Option<&Tile>; 12],
         net: &usize,
+        tile_nets: &[usize],
         debug: bool,
         corner_hooks: bool,
     ) -> Option<ComplexNet> {
@@ -137,6 +146,26 @@ impl Tile {
             for &adj_and_nets in list_of_adj_and_nets.iter() {
                 // Neighbour indices 0-2 are the tiles across the vertices.
                 if !corner_hooks && adj_and_nets.iter().any(|&(index, _, _)| index < 3) {
+                    continue;
+                }
+                // A fragment that redraws a neighbouring junction (frag_hook_fork) reshapes
+                // both nets inside the space they already take up. That is only known
+                // to be clear of the other nets on the two tiles when those were drawn
+                // clear of the nets it replaces, not crossing them.
+                let crowded = adj_and_nets
+                    .iter()
+                    .filter(|&&(_, _, junction)| junction.count_ones() > 2)
+                    .any(|&(index, _, junction)| {
+                        let beside = |nets: &[usize], replaced: usize| {
+                            nets.iter().any(|&other| {
+                                other != replaced && !clear_in_same_tile(replaced, other)
+                            })
+                        };
+                        beside(tile_nets, *net)
+                            || surrounding_tiles[index]
+                                .is_some_and(|tile| beside(&tile.nodes, junction))
+                    });
+                if crowded {
                     continue;
                 }
                 if Self::all_match(surrounding_tiles, adj_and_nets, debug) {

@@ -451,4 +451,38 @@ mod tests {
         assert_eq!(svg.matches("stroke-width='3'").count(), kinks);
         assert!(svg.contains(&format!(">caption   kinks: {kinks}</text>")));
     }
+
+    /// The keys of the drawn fragments that redraw a junction in a neighbouring tile.
+    fn junction_redraws(maze: &Maze) -> usize {
+        maze.drawn_fragments(false)
+            .iter()
+            .filter(|fragment| ((fragment.key >> 6) & 0b11_1111).count_ones() == 3)
+            .count()
+    }
+
+    #[test]
+    fn test_hook_fork_is_drawn_only_when_both_tiles_are_clear() {
+        use crate::maze::tile::Tile;
+        use common::consts::{N1, N2, N3, N4, N5, N6};
+
+        // An arc round vertex 2 (edges 4 and 6), and across edge 4 a junction that
+        // hooks from vertex 2 to that edge.
+        let (i, j) = (4, 4);
+        let mut maze = Maze::new(9, 8, false, false, false, None);
+        let (ti, tj) = maze.tile_across(i, j, 3).expect("a tile across edge 4");
+        maze.tiles[(j, i)] = Tile::new(vec![N4 | N6], true);
+        maze.tiles[(tj, ti)] = Tile::new(vec![N2 | N4 | N5], true);
+        assert_eq!(junction_redraws(&maze), 1);
+        // One fragment draws both nets.
+        assert_eq!(maze.drawn_fragments(false).len(), 1);
+
+        // A dead end in the arc's far corner is clear of the arc, so nothing changes.
+        maze.tiles[(j, i)] = Tile::new(vec![N4 | N6, N3], true);
+        assert_eq!(junction_redraws(&maze), 1);
+
+        // A track crossing the arc is not, so both tiles are drawn the usual way.
+        maze.tiles[(j, i)] = Tile::new(vec![N4 | N6, N1 | N5], true);
+        let crosses = !crate::maze::maze::touching::clear_in_same_tile(N4 | N6, N1 | N5);
+        assert_eq!(junction_redraws(&maze), usize::from(!crosses));
+    }
 }

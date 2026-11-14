@@ -13,7 +13,7 @@ mod remove_cycles;
 mod render;
 mod surrounding_coordinates;
 mod tile_lookup;
-mod touching;
+pub(crate) mod touching;
 
 #[derive(Eq, PartialEq)]
 pub enum FileType {

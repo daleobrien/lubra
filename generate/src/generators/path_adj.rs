@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
 
+use crate::fragments::frag_hook_fork::hook_forks;
 use common::bit_utils::print_bits;
 use common::consts::{ADJ_N1, ADJ_N2, ADJ_N3, ADJ_N4, ADJ_N5, ADJ_N6, N1, N2, N3, N4, N5, N6};
 
@@ -168,6 +169,16 @@ pub fn generate_adjacent_paths() {
             vec![(ADJ_N6, true, N3 | N6)],
         ],
     );
+
+    // A junction across an edge that hooks round the arc's own vertex: the hook and
+    // the arc are drawn as one half-circle (frag_hook_fork). Tried after the rules
+    // above, so a plain hook on the arc's other side still comes first.
+    for (arc, junction, _, edge, _) in hook_forks() {
+        adj_paths
+            .entry(arc)
+            .or_default()
+            .push(vec![(edge - 1, true, junction)]);
+    }
 
     // Change this to a look up function rather than a class with a HashMap.
     let mut file =
