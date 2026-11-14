@@ -651,6 +651,16 @@ settings allow; a larger value stops the generator with a message. Lifting the
 sides more raises the arch, which allows rounder corners but brings it closer
 to tracks in the neighbouring tiles.
 
+=== The four-way junction
+
+`frag_1235` (`1234`, `1235`, `1236`) joins three vertices and one edge. Each of
+its two long walls, which run from one vertex arm round to the next, used to
+have a kink: a tight 9-unit corner followed by a 31-unit curve back the other
+way. Each is now straight, one curve of `LONG_WALL_RADIUS` (35), then straight
+again; the generator stops with a message if the curve no longer fits. The
+short walls by the edge opening are unchanged. The curve rounds the inside of
+the junction, so it comes no closer to tracks in neighbouring tiles.
+
 === The corner hook
 
 Where a track runs into a vertex from one tile and out of it into a dead end in

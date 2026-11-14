@@ -5,6 +5,45 @@ use common::types::format::trimf64;
 use common::types::path::Path;
 use common::types::point::{Point, PATH_WIDTH, S2, S3, S4, TILE_WIDTH};
 
+/// Radius of the curve in each of the two long walls (the walls that run from one
+/// vertex arm round to the next), as a fraction of the tile width. Each long wall is
+/// straight, this one curve, then straight again.
+const LONG_WALL_RADIUS: f64 = 35.0 / TILE_WIDTH;
+
+fn unit(p: Point) -> Point {
+    let length = (p.x * p.x + p.y * p.y).sqrt();
+    p * (1.0 / length)
+}
+
+/// A wall that runs straight from `start` along `d_in`, then curves with radius
+/// `radius` onto the straight line that reaches `end` along `d_out`. Returns the
+/// points where the curve starts and ends.
+fn rounded_corner(
+    start: Point,
+    d_in: Point,
+    end: Point,
+    d_out: Point,
+    radius: f64,
+) -> (Point, Point) {
+    // Where the two straight lines meet: start + s * d_in = end - u * d_out.
+    let cross = d_in.x * d_out.y - d_in.y * d_out.x;
+    let gap = end - start;
+    let s = (gap.x * d_out.y - gap.y * d_out.x) / cross;
+    let corner = start + d_in * s;
+    // The curve turns through the angle between the lines.
+    let turn = (d_in.x * d_out.x + d_in.y * d_out.y)
+        .clamp(-1.0, 1.0)
+        .acos();
+    let tangent = radius * (turn / 2.0).tan();
+    let from_end = gap - d_in * s;
+    let room = (from_end.x * from_end.x + from_end.y * from_end.y).sqrt();
+    assert!(
+        tangent <= s && tangent <= room,
+        "frag_1235: LONG_WALL_RADIUS is too large for the wall"
+    );
+    (corner - d_in * tangent, corner + d_out * tangent)
+}
+
 fn base(invert: bool) -> (Vec<String>, Path) {
     let w = PATH_WIDTH;
 
@@ -15,10 +54,6 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let pt2 = Point {
         x: 0.5f64 + -w,
         y: S4,
-    };
-    let pt3 = Point {
-        x: 0.0833333f64 * (8. + -S2 + ((-6.) * S2 * w)),
-        y: (-0.0833333f64) + S4 + ((-0.5f64) * w),
     };
     let pt4 = Point {
         x: 0.0833333f64 * (9. + ((-2.) * S2) + ((-6.) * w)),
@@ -35,10 +70,6 @@ fn base(invert: bool) -> (Vec<String>, Path) {
     let pt7 = Point {
         x: 0.0833333f64 * (9. + ((-2.) * S2) + (6. * w)),
         y: 0.0833333f64 * ((-2.) + (3. * S2) + ((-6.) * S2 * w)),
-    };
-    let pt8 = Point {
-        x: 0.0833333f64 * (10. + -S2 + ((-6.) * S2 * w)),
-        y: 0.0833333f64 * ((-1.) + (2. * S2) + ((-6.) * w)),
     };
     let pt9 = Point {
         x: 0.25f64 * (3. + ((-2.) * w)),
@@ -73,48 +104,56 @@ fn base(invert: bool) -> (Vec<String>, Path) {
         y: S3,
     };
 
+    // The two long walls keep their straight runs (pt1 -> pt2 into pt4 -> pt5, and
+    // pt6 -> pt7 into pt9 -> pt10), joined by one curve each instead of two.
+    let (a_in, a_out) =
+        rounded_corner(pt1, unit(pt2 - pt1), pt5, unit(pt5 - pt4), LONG_WALL_RADIUS);
+    let (b_in, b_out) = rounded_corner(
+        pt6,
+        unit(pt7 - pt6),
+        pt10,
+        unit(pt10 - pt9),
+        LONG_WALL_RADIUS,
+    );
+
     let pts = Path::new(vec![
-        pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8, pt9, pt10, pt11, pt12, pt13, pt14, pt15, pt16,
+        pt1, a_in, a_out, pt5, pt6, b_in, b_out, pt10, pt11, pt12, pt13, pt14, pt15, pt16,
     ]);
 
     let pts = if invert { pts.invert() } else { pts };
     let r1s = trimf64(TILE_WIDTH * (1. / 6. - w));
-    let r1l = trimf64(TILE_WIDTH * (1. / 6. + w));
-    (vec![r1s, r1l], pts)
+    let long = trimf64(TILE_WIDTH * LONG_WALL_RADIUS);
+    (vec![r1s, long], pts)
 }
 
 fn svg(invert: bool, radii: Vec<String>, pts: Path) -> String {
-    let (d1, d2) = if invert { (1, 0) } else { (0, 1) };
-    let pts = pts.str();
-    let r1s = &radii[0];
-    let r1l = &radii[1];
+    let d1 = if invert { 1 } else { 0 };
+    let p = pts.str();
+    let (r1s, long) = (&radii[0], &radii[1]);
+    let wall_a = format!(
+        "M{}L{}A{long} {long} 0 0 {d1} {}L{}",
+        p[0], p[1], p[2], p[3]
+    );
+    let wall_b = format!(
+        "M{}L{}A{long} {long} 0 0 {d1} {}L{}",
+        p[4], p[5], p[6], p[7]
+    );
+    let short_a = format!("M{}L{}A{r1s} {r1s} 0 0 {d1} {}", p[8], p[9], p[10]);
+    let short_b = format!("M{}A{r1s} {r1s} 0 0 {d1} {}L{}", p[11], p[12], p[13]);
+    // The fill runs round the outline: each wall, then on to the next one.
+    let fill = format!(
+        "{wall_a}L{}L{}A{long} {long} 0 0 {d1} {}L{}L{}L{}A{r1s} {r1s} 0 0 {d1} {}L{}A{r1s} {r1s} 0 0 {d1} {}L{}",
+        p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13]
+    );
     format!(
-        "<path fill='{fill}' d='M{a}L{b}A{r1l} {r1l} 0 0 {d2} {c}A{r1s} {r1s} 0 0 {d1} {d}L{e}L{f}L{g}A{r1s} {r1s} 0 0 {d1} {h}A{r1l} {r1l} 0 0 {d2} {i}L{j}L{k}L{l}A{r1s} {r1s} 0 0 {d1} {m}L{n}A{r1s} {r1s} 0 0 {d1} {o}L{p}'/>
-        <path stroke='black' d='M{a}L{b}A{r1l} {r1l} 0 0 {d2} {c}A{r1s} {r1s} 0 0 {d1} {d}L{e}M{f}L{g}A{r1s} {r1s} 0 0 {d1} {h}A{r1l} {r1l} 0 0 {d2} {i}L{j}M{k}L{l}A{r1s} {r1s} 0 0 {d1} {m}M{n}A{r1s} {r1s} 0 0 {d1} {o}L{p}'/>",
-        a = pts[0],
-        b = pts[1],
-        c = pts[2],
-        d = pts[3],
-        e = pts[4],
-        f = pts[5],
-        g = pts[6],
-        h = pts[7],
-        i = pts[8],
-        j = pts[9],
-        k = pts[10],
-        l = pts[11],
-        m = pts[12],
-        n = pts[13],
-        o = pts[14],
-        p = pts[15],
-        fill = FILL,
+        "<path fill='{FILL}' d='{fill}'/><path stroke='black' d='{wall_a}{wall_b}{short_a}{short_b}'/>"
     )
 }
 
 define_shape_family! {
     base: base,
     svg: svg,
-    offset_rotations: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    offset_rotations: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
     variants: {
         n1235: false, false => identity,
         n1234: false, false => rotate_ccw,

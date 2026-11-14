@@ -83,6 +83,7 @@ Root `Cargo.toml` members:
 - The entrance `(0,0)` and exit (last tile) are single dead ends that no pass extends (`is_terminal`); they render as a ring with a red dot via `terminal_fragment` (`lib/src/renders/terminal.rs`).
 - `frag_s_curve` draws the six vertex-to-vertex cross-tile combinations as one S of two tangent arcs; `S_CURVE_TIGHT_RADIUS` (default 26/120) is the one knob, and the wide curve follows from it. Regenerate with `make gen-svg`. `frag_15_35` uses the same builder (`s_curve_base`) with two equal curves of half a tile width.
 - `frag_135` draws the two-vertex junction as one arch (side curves, top curve, rounded corners into the drop); its settings are `SIDE_RADIUS`, `SIDE_TURN` and `CORNER_RADIUS` at the top of the file.
+- `frag_1235` (four-way junctions `1234`/`1235`/`1236`) draws each long wall as straight, one curve of `LONG_WALL_RADIUS`, straight.
 - `frag_corner_hook` draws a U-turn round a vertex into a dead end as one track; its `ADJ_CHECKS` rule also checks the tile across the vertex. The renderer falls back to the usual fragments for a tile when its corner hook would claim a net another cross-tile fragment draws (`corner_hook_conflicts`).
 - `Tile::generate_hidden_and_visible_nets` + `find_best_path` decide whether a path is rendered as a local fragment or a complex multi-tile fragment.
 
