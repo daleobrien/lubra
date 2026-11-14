@@ -1,5 +1,7 @@
 use clap::Parser;
 use lib::maze::maze::{FileType, Maze};
+use lib::renders::kinks::{key_label, KinkKind};
+use std::collections::BTreeMap;
 use std::time::Instant;
 
 #[derive(Parser, Debug)]
@@ -69,6 +71,16 @@ struct Args {
     /// Leave tracks that are drawn touching each other as they are
     #[arg(long, default_value_t = false)]
     keep_touching: bool,
+
+    /// Ring every kink in the drawn tracks (red: a corner, purple: a tight wiggle)
+    /// and add their number to the caption
+    #[arg(short = 'K', long, default_value_t = false)]
+    show_kinks: bool,
+
+    /// Instead of drawing a maze, build this many (seeds counting up from --seed,
+    /// or from 1) and print which fragments their kinks fall in
+    #[arg(long, value_name = "MAZES")]
+    kink_stats: Option<u64>,
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -102,15 +114,8 @@ fn command_line() -> String {
         .join(" ")
 }
 
-fn main() {
-    let args = Args::parse();
-    let total_start = Instant::now();
-
-    // Set up debug output if requested
-    if args.debug {
-        println!("Debug mode enabled");
-    }
-
+/// Builds the maze for `seed` with every pass the arguments ask for.
+fn build_maze(args: &Args, seed: Option<u64>) -> Maze {
     let maze_start = Instant::now();
     let mut maze = Maze::new(
         args.width,
@@ -118,7 +123,7 @@ fn main() {
         args.randomise,
         args.boundaries,
         args.show_node_numbers,
-        args.seed,
+        seed,
     );
     let maze_creation_time = maze_start.elapsed();
     if args.debug {
@@ -174,9 +179,68 @@ fn main() {
             println!("Blank-area filling took: {:?}", fill_start.elapsed());
         }
     }
+    maze
+}
+
+/// Builds `mazes` mazes and prints how many kinks they have and which fragments the
+/// kinks fall in, most common first. A kink inside one fragment is listed under that
+/// fragment; one where two fragments meet is listed under the pair. Wiggles are
+/// listed with the wall radii of their two curves.
+fn print_kink_stats(args: &Args, mazes: u64) {
+    let first_seed = args.seed.unwrap_or(1);
+    let mut counts: BTreeMap<(KinkKind, String), usize> = BTreeMap::new();
+    let mut total = 0;
+    for seed in first_seed..first_seed + mazes {
+        for kink in build_maze(args, Some(seed)).kinks() {
+            let mut names = [key_label(kink.keys.0), key_label(kink.keys.1)];
+            names.sort();
+            let mut place = if names[0] == names[1] {
+                names[0].clone()
+            } else {
+                names.join(" + ")
+            };
+            if kink.kind == KinkKind::Wiggle {
+                place += &format!("  (radii {:.1} and {:.1})", kink.radius, kink.wide_radius);
+            }
+            *counts.entry((kink.kind, place)).or_default() += 1;
+            total += 1;
+        }
+    }
+    println!(
+        "{total} kinks in {mazes} mazes of {} x {} ({:.1} per maze)",
+        args.width,
+        args.height,
+        total as f64 / mazes.max(1) as f64
+    );
+    let mut rows: Vec<_> = counts.into_iter().collect();
+    rows.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+    for ((kind, place), count) in rows {
+        let kind = match kind {
+            KinkKind::Break => "corner",
+            KinkKind::Wiggle => "wiggle",
+        };
+        println!("{count:>6}  {kind}  {place}");
+    }
+}
+
+fn main() {
+    let args = Args::parse();
+    let total_start = Instant::now();
+
+    // Set up debug output if requested
+    if args.debug {
+        println!("Debug mode enabled");
+    }
+
+    if let Some(mazes) = args.kink_stats {
+        print_kink_stats(&args, mazes);
+        return;
+    }
+
+    let mut maze = build_maze(&args, args.seed);
 
     // Generate output filename
-    let filename = if let Some(output) = args.output {
+    let filename = if let Some(output) = args.output.clone() {
         output
     } else {
         format!("{}-by-{}-sample-normal", args.width, args.height)
@@ -209,9 +273,15 @@ fn main() {
     }
 
     maze.set_show_tile_nets(args.show_tile_nets);
+    maze.set_show_kinks(args.show_kinks);
     // With any debug output on, write the command line above the maze (so a drawing
     // can be reproduced from the image alone) and colour each net's track.
-    if args.debug || args.boundaries || args.show_node_numbers || args.show_tile_nets {
+    if args.debug
+        || args.boundaries
+        || args.show_node_numbers
+        || args.show_tile_nets
+        || args.show_kinks
+    {
         maze.set_caption(Some(command_line()));
         maze.set_colour_tracks(true);
     }

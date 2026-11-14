@@ -2,14 +2,16 @@ use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::maze::{FileType, Maze};
 use crate::maze::tile::Tile;
 use crate::renders::generated::fragment::MAP_PATHS;
+use crate::renders::kinks::{find_kinks, DrawnFragment, Kink, KinkKind};
 use crate::renders::net_colours::{net_colour, net_index};
 use crate::renders::node_numbers::{add_node_numbers, add_tile_nets};
 use crate::renders::svg::Svg;
 use crate::renders::terminal::terminal_fragment;
-use common::consts::{NL, NX};
+use common::consts::{NL, NX, WA};
 use common::types::bits;
 use common::types::coordinate::{CataloguedNet, Coordinate, CoordinateAndNet};
 use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fs;
@@ -41,6 +43,68 @@ impl Maze {
         let mut svg = Svg::new(w, h);
         svg.set_caption(self.caption.clone());
 
+        let drawn = self.drawn_fragments(debug);
+        if debug {
+            println!("render took (1) {:?}", start.elapsed());
+        }
+        let start = Instant::now();
+
+        for fragment in &drawn {
+            let Coordinate { i, j } = fragment.coordinate;
+            let point: Point = Point {
+                x: i as f64,
+                y: j as f64,
+            };
+            if self.colour_tracks && !fragment.marker {
+                // Colour the walls by the tile net this fragment draws.
+                if let Some(index) = net_index(&self.tiles[(j, i)].nodes, fragment.nodes) {
+                    let stroke = format!("stroke='{}'", net_colour(i, j, index));
+                    let coloured = fragment.svg.replace("stroke='black'", &stroke);
+                    svg.add_fragment(&coloured, point, 1);
+                    continue;
+                }
+            }
+
+            // Every fragment is drawn on one layer: where tracks cross, the one drawn
+            // later passes over. Cross-tile fragments don't need a layer of their own
+            // because PATH_WIDTH keeps an arc that dips into a neighbouring tile clear
+            // of that tile's openings.
+            svg.add_fragment(&fragment.svg, point, 1);
+        }
+
+        if self.show_kinks {
+            let kinks = find_kinks(&placed(&drawn));
+            for kink in &kinks {
+                let colour = match kink.kind {
+                    KinkKind::Break => KINK_BREAK_COLOUR,
+                    KinkKind::Wiggle => KINK_WIGGLE_COLOUR,
+                };
+                svg.add_ring(kink.x, kink.y, colour, 2);
+            }
+            if let Some(caption) = &self.caption {
+                svg.set_caption(Some(format!("{caption}   kinks: {}", kinks.len())));
+            }
+        }
+
+        if self.show_node_numbers {
+            add_node_numbers(&mut svg, self.number_of_columns, self.number_of_rows);
+        }
+        if self.show_tile_nets {
+            add_tile_nets(&mut svg, &self.tiles, self.colour_tracks);
+        }
+
+        if debug {
+            println!("render took (2) {:?}", start.elapsed());
+        }
+
+        match file_type {
+            SVG => self.save_as_svg(svg.to_string(background), file_name, debug),
+            PNG => self.save_as_png(svg.to_string(background).as_str(), file_name, debug),
+        }
+    }
+
+    /// Every fragment the maze draws, in drawing order.
+    fn drawn_fragments(&self, debug: bool) -> Vec<Drawn> {
         // First, we build a list of nets (masks) and hidden nets at each coordinate
         // Then we use the still visible ones to build the SVG
         let mut per_tile: Vec<(Coordinate, CataloguedNet)> = Vec::new();
@@ -72,11 +136,7 @@ impl Maze {
             }
         }
 
-        if debug {
-            println!("render took (1) {:?}", start.elapsed());
-        }
-        let start = Instant::now();
-
+        let mut drawn = Vec::new();
         for coordinate_and_net in all_catorised_nets.visible.iter() {
             // We don't want to draw the hidden nets
             let masked_net: CoordinateAndNet = CoordinateAndNet {
@@ -84,66 +144,43 @@ impl Maze {
                 net: coordinate_and_net.net & NX,
                 coordinate: coordinate_and_net.coordinate,
             };
-
             if all_catorised_nets.hidden.contains(&masked_net) {
                 continue;
             }
 
-            let net = bits::transform_tile(coordinate_and_net.net, coordinate_and_net.coordinate);
-
-            let point: Point = Point {
-                x: coordinate_and_net.coordinate.i as f64,
-                y: coordinate_and_net.coordinate.j as f64,
-            };
+            let key = bits::transform_tile(coordinate_and_net.net, coordinate_and_net.coordinate);
+            let coordinate = coordinate_and_net.coordinate;
+            let nodes = coordinate_and_net.net & NL;
 
             // The entrance and exit dead ends are drawn as markers.
-            let Coordinate { i, j } = coordinate_and_net.coordinate;
-            if let Some(marker) = terminal_fragment(net).filter(|_| self.is_terminal(i, j)) {
-                svg.add_fragment(&marker, point, 1);
+            let terminal = self.is_terminal(coordinate.i, coordinate.j);
+            if let Some(marker) = terminal_fragment(key).filter(|_| terminal) {
+                drawn.push(Drawn {
+                    coordinate,
+                    key,
+                    nodes,
+                    svg: Cow::Owned(marker),
+                    marker: true,
+                });
                 continue;
             }
-
-            let frag = MAP_PATHS.get(&net);
-
-            if frag.is_none() {
-                continue;
+            match MAP_PATHS.get(&key) {
+                Some(fragment) if !fragment.is_empty() => drawn.push(Drawn {
+                    coordinate,
+                    key,
+                    nodes,
+                    svg: Cow::Borrowed(fragment),
+                    marker: false,
+                }),
+                _ => {}
             }
-            if frag.unwrap().is_empty() {
-                continue;
-            }
-
-            if self.colour_tracks {
-                // Colour the walls by the tile net this fragment draws.
-                let nodes = coordinate_and_net.net & NL;
-                if let Some(index) = net_index(&self.tiles[(j, i)].nodes, nodes) {
-                    let stroke = format!("stroke='{}'", net_colour(i, j, index));
-                    svg.add_fragment(&frag.unwrap().replace("stroke='black'", &stroke), point, 1);
-                    continue;
-                }
-            }
-
-            // Every fragment is drawn on one layer: where tracks cross, the one drawn
-            // later passes over. Cross-tile fragments don't need a layer of their own
-            // because PATH_WIDTH keeps an arc that dips into a neighbouring tile clear
-            // of that tile's openings.
-            svg.add_fragment(frag.unwrap(), point, 1);
         }
+        drawn
+    }
 
-        if self.show_node_numbers {
-            add_node_numbers(&mut svg, self.number_of_columns, self.number_of_rows);
-        }
-        if self.show_tile_nets {
-            add_tile_nets(&mut svg, &self.tiles, self.colour_tracks);
-        }
-
-        if debug {
-            println!("render took (2) {:?}", start.elapsed());
-        }
-
-        match file_type {
-            SVG => self.save_as_svg(svg.to_string(background), file_name, debug),
-            PNG => self.save_as_png(svg.to_string(background).as_str(), file_name, debug),
-        }
+    /// The kinks in the maze as it would be drawn (see `renders::kinks`).
+    pub fn kinks(&self) -> Vec<Kink> {
+        find_kinks(&placed(&self.drawn_fragments(false)))
     }
 
     /// The fragments for tile `coord` and the neighbouring nets they replace.
@@ -217,6 +254,37 @@ impl Maze {
 
         Ok(())
     }
+}
+
+/// Ring colours for the kink overlay.
+const KINK_BREAK_COLOUR: &str = "#E02020";
+const KINK_WIGGLE_COLOUR: &str = "#C020C0";
+
+/// One fragment to draw.
+struct Drawn {
+    coordinate: Coordinate,
+    /// The `MAP_PATHS` key (drawn orientation).
+    key: usize,
+    /// The tile net it draws, as stored in the tile.
+    nodes: usize,
+    svg: Cow<'static, str>,
+    /// Whether it is an entrance or exit marker.
+    marker: bool,
+}
+
+/// The drawn fragments with their positions in drawing units, for kink detection.
+/// Entrance and exit markers and tile outlines are left out: they are not track.
+fn placed(drawn: &[Drawn]) -> Vec<DrawnFragment<'_>> {
+    drawn
+        .iter()
+        .filter(|fragment| !fragment.marker && fragment.key & WA == 0)
+        .map(|fragment| DrawnFragment {
+            key: fragment.key,
+            fragment: &fragment.svg,
+            x: fragment.coordinate.i as f64 * TILE_WIDTH / 2.0,
+            y: fragment.coordinate.j as f64 * TILE_HEIGHT,
+        })
+        .collect()
 }
 
 /// The tiles to draw without fragments that reach across a vertex (see
@@ -360,5 +428,26 @@ mod tests {
             bytes
         };
         assert!(render("lubra-determinism-a") == render("lubra-determinism-b"));
+    }
+
+    #[test]
+    fn test_show_kinks_rings_every_kink_and_counts_them_in_the_caption() {
+        let mut maze = Maze::new(12, 8, true, true, false, Some(3));
+        maze.reduce_nets(1);
+        maze.remove_cycles(false);
+        // The maze draws tile outlines, whose corners must not count.
+        let kinks = maze.kinks().len();
+        assert!((1..40).contains(&kinks), "{kinks} kinks");
+
+        maze.set_show_kinks(true);
+        maze.set_caption(Some("caption".to_string()));
+        let path = std::env::temp_dir().join("lubra-kinks");
+        maze.render(path.to_string_lossy().into_owned(), SVG)
+            .expect("render failed");
+        let svg_path = path.with_extension("svg");
+        let svg = std::fs::read_to_string(&svg_path).expect("missing SVG");
+        let _ = std::fs::remove_file(svg_path);
+        assert_eq!(svg.matches("stroke-width='3'").count(), kinks);
+        assert!(svg.contains(&format!(">caption   kinks: {kinks}</text>")));
     }
 }

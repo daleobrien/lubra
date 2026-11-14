@@ -35,6 +35,7 @@ pub struct Maze {
     pub(crate) show_tile_nets: bool,
     pub(crate) caption: Option<String>,
     pub(crate) colour_tracks: bool,
+    pub(crate) show_kinks: bool,
 }
 
 impl Maze {
@@ -67,12 +68,19 @@ impl Maze {
             show_tile_nets: false,
             caption: None,
             colour_tracks: false,
+            show_kinks: false,
         };
 
         if randomise {
             Self::create_random_grid(&mut obj, number_of_columns, number_of_rows);
         }
         obj
+    }
+
+    /// Whether to ring every kink in the rendered maze (see `renders::kinks`) and add
+    /// their number to the caption.
+    pub fn set_show_kinks(&mut self, show: bool) {
+        self.show_kinks = show;
     }
 
     /// Whether to write each tile's nets (e.g. `12,5`) in blue in the rendered maze.

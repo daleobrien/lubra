@@ -108,7 +108,7 @@ Single steps:
   [`make gen`], [`generate` with no argument: SVG fragments and net tables.],
   [`make gen-svg`], [`generate svg`: fragments, `ADJ_CHECKS` and the `document` helper tables.],
   [`make gen-nets`], [`generate nets`: the small and large net/mass lookup tables.],
-  [`make cli`], [The CLI with `CLI_ARGS` (default `--seed 1 -W 20 -H 12 -B -N -T`: the same square-looking maze every run, with tile boundaries, node numbers and tile nets).],
+  [`make cli`], [The CLI with `CLI_ARGS` (default `--seed 1 -W 20 -H 12 -B -N -T -K`: the same square-looking maze every run, with tile boundaries, node numbers, tile nets and kink rings).],
   [`make document`], [The `document` crate (SVGs and generated Typst files).],
   [`make typst`], [`typst compile` of `shapes.typ`, `tiles.typ` and `main.typ`.],
   [`make build`], [`cargo build --workspace`.],
@@ -741,6 +741,35 @@ works out every tile's fragments, and any tile whose fragment across a vertex
 claims a net that another cross-tile fragment also draws is drawn the usual way
 instead, with its partner (`corner_hook_conflicts` in `maze/maze/render.rs`). Over 40 seeded 20 × 12
 mazes it was used 11 times, with at least 8.5 units of white to other tracks.
+
+=== Finding kinks <kinks>
+
+`renders/kinks.rs` measures kinks in the maze as drawn. Every wall is straight
+lines and circular arcs, so along a wall the heading $theta(s)$ is known
+everywhere and the curvature $kappa = dif theta slash dif s$ is 0 on a line and
+$plus.minus 1 slash r$ on an arc. The walls of all drawn fragments are joined
+end to end where their ends meet (at the openings), cut at the round caps of
+dead ends, and each joined wall is checked for:
+
+- a *corner*: the heading jumps by more than `BREAK_ANGLE` (8°) where two
+  pieces meet;
+- a *wiggle*: the wall turns one way and then back the other with at most
+  `KINK_STRAIGHT` (25) of straight between, the tighter curve under
+  `KINK_RADIUS` (15) and the other under `KINK_WIDE_RADIUS` (35). Two
+  back-to-back bends of a 20-unit centreline have wall radii 9.2 and 30.8,
+  which is every hump and double hook redrawn by hand so far.
+
+A wall that bends one way only has no kink, however tight. A junction's rounded
+corner running into an ordinary arc is not one either, and the S-curve
+fragments (15.2 or more) pass. The two walls of a track kink together, so kinks
+within 30 units of each other count once.
+
+`-K` (`--show-kinks`) rings each kink on the maze (red for a corner, purple for
+a wiggle) and adds the number to the caption. `--kink-stats N` builds $N$ seeded
+mazes instead of drawing one and prints the kinks by fragment, or by pair of
+fragments where the kink is at a join. Over 100 seeded 20 × 12 mazes there were
+9.3 kinks per maze: 68% inside `1456`/`2456`/`3456`, 28% inside
+`1256`/`1346`/`2345`, and 3% at joins between fragments.
 
 = Documentation pipeline
 

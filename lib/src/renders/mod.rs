@@ -1,4 +1,5 @@
 pub mod generated;
+pub mod kinks;
 pub mod math;
 pub mod net_colours;
 pub mod node_numbers;

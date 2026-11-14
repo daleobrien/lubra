@@ -7,10 +7,11 @@ TYPST ?= typst
 
 # Arguments for `make cli`. Width is in columns of half-tiles (60 units each)
 # and height in rows (about 104 units each), so W ~ 1.73 * H looks square.
-# -B draws the tile boundaries, -N the node numbers and -T each tile's nets (the
-# debug overlay); drop them for a clean maze, e.g. make cli CLI_ARGS="-W 20 -H 12".
+# -B draws the tile boundaries, -N the node numbers, -T each tile's nets and -K
+# rings the kinks (the debug overlay); drop them for a clean maze, e.g.
+# make cli CLI_ARGS="-W 20 -H 12".
 # The fixed seed makes every run draw the same maze; change it to see another.
-CLI_ARGS ?= --seed 1 -W 20 -H 12 -B -N -T
+CLI_ARGS ?= --seed 1 -W 20 -H 12 -B -N -T -K
 
 # Arguments for `make maze`, e.g. make maze MAZE_ARGS="--seed 7 -W 20 -H 20"
 MAZE_ARGS ?= --seed 3 -W 40 -H 30 -B -N --debug

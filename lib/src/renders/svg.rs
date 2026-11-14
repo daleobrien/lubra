@@ -15,6 +15,9 @@ pub struct Svg {
 /// Height of the caption strip above the maze, in SVG units.
 const CAPTION_HEIGHT: f64 = 28.0;
 
+/// Radius of the rings drawn by `add_ring`.
+const RING_RADIUS: f64 = 16.0;
+
 /// Escapes text for use inside an SVG element.
 fn escape_xml(text: &str) -> String {
     text.replace('&', "&amp;")
@@ -58,6 +61,13 @@ impl Svg {
             "\n  <use href='#{name}' x='{x:.2}' y='{y:.2}'/>",
             x = index.x * TILE_WIDTH / 2.0,
             y = index.y * TILE_HEIGHT,
+        ));
+    }
+
+    /// Adds an unfilled ring centred on `(x, y)` (drawing units), to mark a spot.
+    pub fn add_ring(&mut self, x: f64, y: f64, colour: &str, layer_index: usize) {
+        self.layers[layer_index].push_str(&format!(
+            "<circle cx='{x:.1}' cy='{y:.1}' r='{RING_RADIUS}' stroke='{colour}' stroke-width='3'/>"
         ));
     }
 
