@@ -1,8 +1,10 @@
+use super::solution::RouteStep;
+use super::touching::crossing_in_same_tile;
 use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::maze::{FileType, Maze};
 use crate::maze::tile::Tile;
 use crate::renders::generated::fragment::MAP_PATHS;
-use crate::renders::ink::{ink_fragment, Pen};
+use crate::renders::ink::{fragment_walls, ink_fragment, solution_markup, Pen};
 use crate::renders::kinks::{find_kinks, DrawnFragment, Kink, KinkKind};
 use crate::renders::net_colours::{net_colour, net_index};
 use crate::renders::node_numbers::{add_node_numbers, add_tile_nets};
@@ -10,9 +12,11 @@ use crate::renders::svg::Svg;
 use crate::renders::terminal::terminal_fragment;
 use crate::renders::vertex_s::is_vertex_s;
 use common::consts::{NL, NX, WA};
+use common::nodes::get_connected_coords_at_coords;
 use common::types::bits;
+use common::types::bits::transform_tile;
 use common::types::coordinate::{CataloguedNet, Coordinate, CoordinateAndNet};
-use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+use common::types::point::{Point, PATH_WIDTH, TILE_HEIGHT, TILE_WIDTH};
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
@@ -80,6 +84,12 @@ impl Maze {
             // because PATH_WIDTH keeps an arc that dips into a neighbouring tile clear
             // of that tile's openings.
             svg.add_fragment(&fragment.svg, point, 1);
+        }
+
+        if self.show_solution {
+            let (over, under) = self.solution_trace(&drawn);
+            let ink_pen = self.ink.then_some(&pen);
+            svg.add_markup(&solution_markup(&over, &under, ink_pen), 1);
         }
 
         if self.show_kinks {
@@ -167,6 +177,7 @@ impl Maze {
             if let Some(marker) = terminal_fragment(key).filter(|_| terminal) {
                 drawn.push(Drawn {
                     coordinate,
+                    logical: coordinate_and_net.net & NX,
                     key,
                     nodes,
                     svg: Cow::Owned(marker),
@@ -177,6 +188,7 @@ impl Maze {
             match MAP_PATHS.get(&key) {
                 Some(fragment) if !fragment.is_empty() => drawn.push(Drawn {
                     coordinate,
+                    logical: coordinate_and_net.net & NX,
                     key,
                     nodes,
                     svg: Cow::Borrowed(fragment),
@@ -186,6 +198,101 @@ impl Maze {
             }
         }
         drawn
+    }
+
+    /// The route from the entrance to the exit as lines in drawing units, split into
+    /// where it is on top and where it passes under another track.
+    ///
+    /// Each stretch of the route drawn by one fragment runs from an opening to an
+    /// opening. Where a wall of that fragment joins the two openings, the trace is
+    /// that wall moved half a track's width inwards, so it follows the track exactly.
+    /// Otherwise (across the middle of a junction) it is a smooth curve leaving and
+    /// arriving square to the openings.
+    fn solution_trace(&self, drawn: &[Drawn]) -> (Vec<Vec<TracePoint>>, Vec<Vec<TracePoint>>) {
+        let route = self.solution_route();
+        // Which drawn fragment draws each tile net.
+        let mut drawer: HashMap<(Coordinate, usize), usize> = HashMap::new();
+        for (index, fragment) in drawn.iter().enumerate() {
+            if fragment.key & WA != 0 {
+                continue;
+            }
+            let own = fragment.logical & NL;
+            drawer.insert((fragment.coordinate, own), index);
+            for group in 1..5 {
+                let net = (fragment.logical >> (6 * group)) & NL;
+                let shared = net & own;
+                if net == 0 || shared == 0 {
+                    continue;
+                }
+                let node = shared.trailing_zeros() as usize;
+                if let Some(across) = get_connected_coords_at_coords(fragment.coordinate, node) {
+                    drawer.insert((across, net), index);
+                }
+            }
+        }
+
+        let (mut over, mut under): (Vec<Vec<TracePoint>>, Vec<Vec<TracePoint>>) =
+            Default::default();
+        let mut previous_under: Option<bool> = None;
+        let mut start = 0;
+        while start < route.len() {
+            let step = route[start];
+            let coordinate = Coordinate {
+                i: step.i,
+                j: step.j,
+            };
+            let Some(&index) = drawer.get(&(coordinate, step.net)) else {
+                start += 1;
+                continue;
+            };
+            // The steps this fragment draws.
+            let mut end = start;
+            while end + 1 < route.len() {
+                let next = route[end + 1];
+                let next_coordinate = Coordinate {
+                    i: next.i,
+                    j: next.j,
+                };
+                if drawer.get(&(next_coordinate, next.net)) != Some(&index) {
+                    break;
+                }
+                end += 1;
+            }
+            let last = route[end];
+            let from = endpoint(step, step.entry);
+            let to = endpoint(last, last.exit);
+            let fragment = &drawn[index];
+            let walls = fragment_walls(&fragment.svg, tile_origin(fragment.coordinate), TRACE_STEP);
+            let line = along_wall(&walls, from, to).unwrap_or_else(|| curve(from, to));
+
+            let beneath = (start..=end).any(|k| self.passes_under(route[k], index, drawn));
+            let lines = if beneath { &mut under } else { &mut over };
+            // Carry on the same line when the last stretch was drawn the same way.
+            match lines.last_mut() {
+                Some(current) if previous_under == Some(beneath) => {
+                    current.extend(line.into_iter().skip(1))
+                }
+                _ => lines.push(line),
+            }
+            previous_under = Some(beneath);
+            start = end + 1;
+        }
+        (over, under)
+    }
+
+    /// Whether the route's tile net `step` passes under another tile net of its tile:
+    /// they cross, and the other is drawn after `index`, the fragment drawing the step.
+    fn passes_under(&self, step: RouteStep, index: usize, drawn: &[Drawn]) -> bool {
+        let coordinate = Coordinate {
+            i: step.i,
+            j: step.j,
+        };
+        drawn.iter().enumerate().skip(index + 1).any(|(_, other)| {
+            other.coordinate == coordinate
+                && other.key & WA == 0
+                && other.nodes & step.net == 0
+                && crossing_in_same_tile(step.net, other.nodes)
+        })
     }
 
     /// The kinks in the maze as it would be drawn (see `renders::kinks`).
@@ -273,6 +380,8 @@ const KINK_WIGGLE_COLOUR: &str = "#C020C0";
 /// One fragment to draw.
 struct Drawn {
     coordinate: Coordinate,
+    /// The key as the tile sees it (its own net, then the neighbouring nets it draws).
+    logical: usize,
     /// The `MAP_PATHS` key (drawn orientation).
     key: usize,
     /// The tile net it draws, as stored in the tile.
@@ -293,6 +402,183 @@ fn placed(drawn: &[Drawn]) -> Vec<DrawnFragment<'_>> {
             fragment: &fragment.svg,
             x: fragment.coordinate.i as f64 * TILE_WIDTH / 2.0,
             y: fragment.coordinate.j as f64 * TILE_HEIGHT,
+        })
+        .collect()
+}
+
+/// A point of the solution trace, in drawing units.
+type TracePoint = (f64, f64);
+
+/// The trace is built from walls flattened to pieces this long.
+const TRACE_STEP: f64 = 2.0;
+
+/// Where tile `coordinate` is placed, in drawing units.
+fn tile_origin(coordinate: Coordinate) -> TracePoint {
+    (
+        coordinate.i as f64 * TILE_WIDTH / 2.0,
+        coordinate.j as f64 * TILE_HEIGHT,
+    )
+}
+
+/// One end of a stretch of the route: a point and the direction into the tile.
+#[derive(Clone, Copy)]
+struct Opening {
+    at: TracePoint,
+    inwards: TracePoint,
+}
+
+fn unit((x, y): TracePoint) -> TracePoint {
+    let length = x.hypot(y);
+    (x / length, y / length)
+}
+
+/// The opening of logical node `node` of the step's tile, or the middle of the tile
+/// (the entrance and exit, where the route starts and ends) when there is none.
+fn endpoint(step: RouteStep, node: Option<usize>) -> Opening {
+    let coordinate = Coordinate {
+        i: step.i,
+        j: step.j,
+    };
+    let (x0, y0) = tile_origin(coordinate);
+    let inverted = (step.i + step.j) % 2 == 1;
+    let y = |y: f64| if inverted { TILE_HEIGHT - y } else { y };
+    let vertices = [
+        (TILE_WIDTH / 2.0, y(TILE_HEIGHT)),
+        (0.0, y(0.0)),
+        (TILE_WIDTH, y(0.0)),
+    ];
+    let centre = (TILE_WIDTH / 2.0, y(TILE_HEIGHT / 3.0));
+    let Some(node) = node else {
+        return Opening {
+            at: (x0 + centre.0, y0 + centre.1),
+            inwards: (0.0, 0.0),
+        };
+    };
+    // The node as drawn: tiles are drawn turned and flipped.
+    let drawn = (transform_tile(1 << node, coordinate) & NL).trailing_zeros() as usize;
+    let at = match drawn {
+        0..=2 => vertices[drawn],
+        _ => {
+            let (a, b) = [(0, 1), (0, 2), (1, 2)][drawn - 3];
+            (
+                (vertices[a].0 + vertices[b].0) / 2.0,
+                (vertices[a].1 + vertices[b].1) / 2.0,
+            )
+        }
+    };
+    Opening {
+        at: (x0 + at.0, y0 + at.1),
+        inwards: unit((centre.0 - at.0, centre.1 - at.1)),
+    }
+}
+
+fn distance(a: TracePoint, b: TracePoint) -> f64 {
+    (a.0 - b.0).hypot(a.1 - b.1)
+}
+
+/// A wall of the fragment that runs from beside opening `from` to beside opening
+/// `to`, moved half a track's width towards the track: the track's middle line. The
+/// walls of one fragment are joined end to end first.
+fn along_wall(walls: &[Vec<TracePoint>], from: Opening, to: Opening) -> Option<Vec<TracePoint>> {
+    let half_width = PATH_WIDTH * TILE_WIDTH;
+    let beside = |opening: Opening, p: TracePoint| {
+        (distance(opening.at, p) - half_width).abs() < 0.6
+            && (opening.inwards == (0.0, 0.0)
+                || ((p.0 - opening.at.0) * opening.inwards.0
+                    + (p.1 - opening.at.1) * opening.inwards.1)
+                    .abs()
+                    < 0.6)
+    };
+    for wall in joined(walls) {
+        let (first, last) = (wall[0], wall[wall.len() - 1]);
+        let points: Vec<TracePoint> = if beside(from, first) && beside(to, last) {
+            wall
+        } else if beside(from, last) && beside(to, first) {
+            wall.into_iter().rev().collect()
+        } else {
+            continue;
+        };
+        for side in [1.0, -1.0] {
+            let moved = offset(&points, side * half_width);
+            if distance(moved[0], from.at) < 1.0 && distance(moved[moved.len() - 1], to.at) < 1.0 {
+                let mut line = moved;
+                line[0] = from.at;
+                let end = line.len() - 1;
+                line[end] = to.at;
+                return Some(line);
+            }
+        }
+    }
+    None
+}
+
+/// The walls with those that meet end to end joined into one.
+fn joined(walls: &[Vec<TracePoint>]) -> Vec<Vec<TracePoint>> {
+    let mut out: Vec<Vec<TracePoint>> = walls.to_vec();
+    let close = |a: TracePoint, b: TracePoint| distance(a, b) < 0.3;
+    let mut merged = true;
+    while merged {
+        merged = false;
+        'search: for a in 0..out.len() {
+            for b in 0..out.len() {
+                if a == b {
+                    continue;
+                }
+                let (a_end, b_start, b_end) = (
+                    out[a][out[a].len() - 1],
+                    out[b][0],
+                    out[b][out[b].len() - 1],
+                );
+                let tail: Vec<TracePoint> = if close(a_end, b_start) {
+                    out[b][1..].to_vec()
+                } else if close(a_end, b_end) {
+                    out[b].iter().rev().skip(1).copied().collect()
+                } else {
+                    continue;
+                };
+                out[a].extend(tail);
+                out.remove(b);
+                merged = true;
+                break 'search;
+            }
+        }
+    }
+    out
+}
+
+/// `points` moved `by` to their left (negative for the right).
+fn offset(points: &[TracePoint], by: f64) -> Vec<TracePoint> {
+    (0..points.len())
+        .map(|k| {
+            let before = points[k.saturating_sub(1)];
+            let after = points[(k + 1).min(points.len() - 1)];
+            let (dx, dy) = unit((after.0 - before.0, after.1 - before.1));
+            (points[k].0 - dy * by, points[k].1 + dx * by)
+        })
+        .collect()
+}
+
+/// A smooth curve from `from` to `to`, leaving and arriving square to the openings.
+fn curve(from: Opening, to: Opening) -> Vec<TracePoint> {
+    let reach = distance(from.at, to.at) * 0.4;
+    let c1 = (
+        from.at.0 + from.inwards.0 * reach,
+        from.at.1 + from.inwards.1 * reach,
+    );
+    let c2 = (
+        to.at.0 + to.inwards.0 * reach,
+        to.at.1 + to.inwards.1 * reach,
+    );
+    let n = 24;
+    (0..=n)
+        .map(|k| {
+            let t = k as f64 / n as f64;
+            let u = 1.0 - t;
+            let (a, b, c, d) = (u * u * u, 3.0 * u * u * t, 3.0 * u * t * t, t * t * t);
+            (
+                a * from.at.0 + b * c1.0 + c * c2.0 + d * to.at.0,
+                a * from.at.1 + b * c1.1 + c * c2.1 + d * to.at.1,
+            )
         })
         .collect()
 }
@@ -529,5 +815,45 @@ mod tests {
         assert!(svg.contains("stroke='#2b2118'"));
         assert_eq!(svg, render("lubra-ink-b", 3));
         assert_ne!(svg, render("lubra-ink-c", 4));
+    }
+
+    use common::types::point::TILE_HEIGHT;
+
+    #[test]
+    fn test_solution_runs_from_the_entrance_dot_to_the_exit_dot() {
+        let mut maze = Maze::new(20, 12, true, false, false, Some(2));
+        maze.reduce_nets(1);
+        maze.remove_cycles(false);
+        maze.trim_dead_ends(2);
+        let drawn = maze.drawn_fragments(false);
+        let (over, under) = maze.solution_trace(&drawn);
+        let lines: Vec<_> = over.iter().chain(&under).collect();
+        assert!(!lines.is_empty());
+        let points: Vec<(f64, f64)> = lines.iter().flat_map(|l| l.iter().copied()).collect();
+        let near = |p: (f64, f64), q: (f64, f64)| (p.0 - q.0).hypot(p.1 - q.1) < 0.5;
+        // The entrance and exit tiles both point up here; their middles are a third of
+        // the way up.
+        let entrance = (60.0, TILE_HEIGHT / 3.0);
+        let exit = (19.0 * 60.0 + 60.0, 11.0 * TILE_HEIGHT + TILE_HEIGHT / 3.0);
+        assert!(
+            points.iter().any(|&p| near(p, entrance)),
+            "no start at the entrance"
+        );
+        assert!(points.iter().any(|&p| near(p, exit)), "no end at the exit");
+    }
+
+    #[test]
+    fn test_show_solution_adds_a_red_trace() {
+        let mut maze = Maze::new(12, 8, true, false, false, Some(3));
+        maze.reduce_nets(1);
+        maze.remove_cycles(false);
+        maze.set_show_solution(true);
+        let path = std::env::temp_dir().join("lubra-solution");
+        maze.render(path.to_string_lossy().into_owned(), SVG)
+            .expect("render failed");
+        let svg_path = path.with_extension("svg");
+        let svg = std::fs::read_to_string(&svg_path).expect("missing SVG");
+        let _ = std::fs::remove_file(svg_path);
+        assert!(svg.contains("stroke='#c0392b'"));
     }
 }

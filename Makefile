@@ -14,8 +14,9 @@ TYPST ?= typst
 CLI_ARGS ?= --seed 1 -W 20 -H 12 -B -N -T -K
 
 # Arguments for `make sample`: the maze shown in the README, without the debug
-# overlay. Drawn in ink, like every maze unless -P (--plain) is given.
-SAMPLE_ARGS ?= --seed 1 -W 20 -H 12 -o ../docs/sample-ink
+# overlay. Drawn in ink, like every maze unless -P (--plain) is given; it is
+# written once as is and once with its solution (-S).
+SAMPLE_ARGS ?= --seed 1 -W 20 -H 12
 
 # Arguments for `make maze`, e.g. make maze MAZE_ARGS="--seed 7 -W 20 -H 20"
 MAZE_ARGS ?= --seed 3 -W 40 -H 30 -B -N --debug
@@ -61,7 +62,8 @@ cli:
 	cd cli && $(CARGO) run -- $(CLI_ARGS)
 
 sample:
-	cd cli && $(CARGO) run --release -- $(SAMPLE_ARGS)
+	cd cli && $(CARGO) run --release -- $(SAMPLE_ARGS) -o ../docs/sample-ink
+	cd cli && $(CARGO) run --release -- $(SAMPLE_ARGS) -S -o ../docs/sample-ink-solved
 
 document:
 	cd document && $(CARGO) run

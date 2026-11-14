@@ -40,6 +40,11 @@ const STEP: f64 = 6.0;
 const SALT_X: u64 = 0x5851_F42D_4C95_7F2D;
 const SALT_Y: u64 = 0x1405_7B7E_F767_814F;
 const SALT_WIDTH: u64 = 0x2545_F491_4F6C_DD1D;
+const SALT_PENCIL: [u64; 3] = [
+    0x9E37_79B9_7F4A_7C15,
+    0xBF58_476D_1CE4_E5B9,
+    0x94D0_49BB_1331_11EB,
+];
 
 type Point = (f64, f64);
 
@@ -79,11 +84,16 @@ impl Pen {
         Pen { seed }
     }
 
-    fn wobble(&self, (x, y): Point) -> Point {
+    fn wobble(&self, p: Point) -> Point {
+        self.wobble_with(p, 0)
+    }
+
+    /// `p` nudged by the noise field `salt` picks (0 for the walls).
+    fn wobble_with(&self, (x, y): Point, salt: u64) -> Point {
         let (nx, ny) = (x / FEATURE, y / FEATURE);
         (
-            x + AMPLITUDE * noise(nx, ny, self.seed ^ SALT_X),
-            y + AMPLITUDE * noise(nx, ny, self.seed ^ SALT_Y),
+            x + AMPLITUDE * noise(nx, ny, self.seed ^ salt ^ SALT_X),
+            y + AMPLITUDE * noise(nx, ny, self.seed ^ salt ^ SALT_Y),
         )
     }
 
@@ -117,12 +127,12 @@ fn distance(p: Point, q: Point) -> f64 {
 }
 
 /// Adds the points of a straight piece from `from` to `to`, `from` excluded.
-fn line_points(out: &mut Vec<Point>, from: Point, to: Point) {
+fn line_points(out: &mut Vec<Point>, from: Point, to: Point, step: f64) {
     let length = distance(from, to);
     if length < 1e-9 {
         return;
     }
-    let n = (length / STEP).ceil().max(1.0) as usize;
+    let n = (length / step).ceil().max(1.0) as usize;
     for k in 1..=n {
         let t = k as f64 / n as f64;
         out.push((from.0 + (to.0 - from.0) * t, from.1 + (to.1 - from.1) * t));
@@ -130,7 +140,14 @@ fn line_points(out: &mut Vec<Point>, from: Point, to: Point) {
 }
 
 /// Adds the points of an SVG arc (equal radii, no rotation), `from` excluded.
-fn arc_points(out: &mut Vec<Point>, from: Point, to: Point, radius: f64, large: bool, sweep: bool) {
+fn arc_points(
+    out: &mut Vec<Point>,
+    from: Point,
+    to: Point,
+    radius: f64,
+    (large, sweep): (bool, bool),
+    step: f64,
+) {
     let (x1, y1) = ((from.0 - to.0) / 2.0, (from.1 - to.1) / 2.0);
     let d2 = x1 * x1 + y1 * y1;
     if d2 < 1e-12 {
@@ -149,7 +166,7 @@ fn arc_points(out: &mut Vec<Point>, from: Point, to: Point, radius: f64, large: 
     } else if !sweep && delta > 0.0 {
         delta -= 2.0 * PI;
     }
-    let n = (delta.abs() * r / STEP).ceil().max(2.0) as usize;
+    let n = (delta.abs() * r / step).ceil().max(2.0) as usize;
     for k in 1..n {
         let angle = theta + delta * k as f64 / n as f64;
         out.push((cx + r * angle.cos(), cy + r * angle.sin()));
@@ -182,9 +199,14 @@ fn tokens(d: &str) -> Vec<&str> {
     out
 }
 
-/// The subpaths of path data, flattened, moved by `offset`. The fragments use only
-/// `M m L l A Z z`; anything else ends the path there.
+/// The subpaths of path data, flattened, moved by `offset`.
 fn lines(d: &str, offset: Point) -> Vec<Line> {
+    flattened(d, offset, STEP)
+}
+
+/// The subpaths of path data, flattened to pieces of at most `step`, moved by
+/// `offset`. The fragments use only `M m L l A Z z`; anything else ends the path there.
+fn flattened(d: &str, offset: Point, step: f64) -> Vec<Line> {
     let tokens = tokens(d);
     let number = |index: usize| tokens.get(index).and_then(|t| t.parse::<f64>().ok());
     let mut out: Vec<Line> = Vec::new();
@@ -222,7 +244,7 @@ fn lines(d: &str, offset: Point) -> Vec<Line> {
                     // Further pairs after a move are lines.
                     command = if relative { "l" } else { "L" };
                 } else if let Some(line) = out.last_mut() {
-                    line_points(&mut line.points, current, to);
+                    line_points(&mut line.points, current, to, step);
                 }
                 current = to;
                 index += 2;
@@ -239,8 +261,8 @@ fn lines(d: &str, offset: Point) -> Vec<Line> {
                         current,
                         to,
                         v[0],
-                        v[3] != 0.0,
-                        v[4] != 0.0,
+                        (v[3] != 0.0, v[4] != 0.0),
+                        step,
                     );
                 }
                 current = to;
@@ -258,6 +280,20 @@ fn attribute<'a>(element: &'a str, name: &str) -> Option<&'a str> {
     let at = element.find(&format!(" {name}='"))? + name.len() + 3;
     let rest = &element[at..];
     Some(&rest[..rest.find('\'')?])
+}
+
+/// The walls (stroked subpaths) of a fragment placed at `offset`, flattened to
+/// pieces of at most `step`, in drawing units. Closing `z`s are not followed.
+pub fn fragment_walls(fragment: &str, offset: Point, step: f64) -> Vec<Vec<Point>> {
+    fragment
+        .split('<')
+        .filter(|element| {
+            attribute(element, "stroke").is_some_and(|s| s != "none" && s != "transparent")
+        })
+        .filter_map(|element| attribute(element, "d"))
+        .flat_map(|d| flattened(d, offset, STEP.min(step)))
+        .map(|line| line.points)
+        .collect()
 }
 
 // ---- writing ----
@@ -347,6 +383,41 @@ pub fn ink_fragment(fragment: &str, offset: Point, pen: &Pen) -> String {
             "<path fill='{PENCIL}' fill-opacity='0.85' stroke='{INK}' stroke-width='{:.2}' d='{dots}'/>",
             PEN_WIDTH * 0.75
         );
+    }
+    out
+}
+
+/// The solution, `over` where it is on top and `under` where it passes beneath a
+/// crossing, as markup. With a `pen` it is pencilled in, gone over twice where on top
+/// and once lightly underneath, as in maze-rs; without, it is a plain red trace.
+pub fn solution_markup(over: &[Vec<Point>], under: &[Vec<Point>], pen: Option<&Pen>) -> String {
+    let mut out = String::new();
+    let mut pass = |lines: &[Vec<Point>], salt: u64, width: f64, opacity: &str| {
+        let mut d = String::new();
+        for line in lines {
+            let points: Vec<Point> = match pen {
+                Some(pen) => line.iter().map(|&p| pen.wobble_with(p, salt)).collect(),
+                None => line.clone(),
+            };
+            push_polyline(&mut d, &points);
+        }
+        if !d.is_empty() {
+            let _ = write!(
+                out,
+                "<path fill='none' stroke='{PENCIL}' stroke-opacity='{opacity}' stroke-width='{width:.2}' stroke-linecap='round' stroke-linejoin='round' d='{d}'/>"
+            );
+        }
+    };
+    match pen {
+        Some(_) => {
+            pass(over, SALT_PENCIL[0], PEN_WIDTH * 2.2, "0.45");
+            pass(over, SALT_PENCIL[1], PEN_WIDTH * 1.5, "0.45");
+            pass(under, SALT_PENCIL[2], PEN_WIDTH * 1.5, "0.18");
+        }
+        None => {
+            pass(over, 0, PEN_WIDTH * 1.5, "0.75");
+            pass(under, 0, PEN_WIDTH * 1.5, "0.25");
+        }
     }
     out
 }

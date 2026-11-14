@@ -6,7 +6,7 @@ single tree, so there is exactly one route between any two points, from the
 entrance (bottom left) to the exit (top right).
 
 <p align="center">
-  <img src="docs/sample-ink.svg" alt="A hand-drawn triangle-tile maze" width="560">
+  <img src="docs/sample-ink-solved.svg" alt="A hand-drawn triangle-tile maze with its solution pencilled in" width="560">
 </p>
 
 ## Quick start
@@ -14,8 +14,9 @@ entrance (bottom left) to the exit (top right).
 ```bash
 cargo build --release
 cd cli
-cargo run --release -- --seed 1 -W 20 -H 12 -o maze    # writes maze.svg
-cargo run --release -- --seed 1 -W 20 -H 12 -P -o maze  # plain, even walls
+cargo run --release -- --seed 1 -W 20 -H 12 -o maze      # writes maze.svg
+cargo run --release -- --seed 1 -W 20 -H 12 -S -o maze   # with its solution
+cargo run --release -- --seed 1 -W 20 -H 12 -P -o maze   # plain, even walls
 cargo run --release -- -W 20 -H 12 -F png -o maze       # a new maze, as PNG
 ```
 
@@ -29,7 +30,12 @@ Mazes are drawn by hand, in brown ink, by default: every wall wobbles slightly
 and the pen's width wanders, after the ink style of
 [maze-rs](https://github.com/daleobrien/maze-rs). The wobble is seeded from the
 maze's seed, so a maze always comes out the same. Add `-P` (`--plain`) for
-even black walls. The sample above was made with `make sample`.
+even black walls.
+
+`-S` (`--solution`) adds the route from the entrance to the exit: pencilled in
+red over the ink, gone over twice, and lightly where it passes under another
+track; with `-P` it is a plain red line. The sample above was made with
+`make sample`, which also writes the maze without its solution.
 
 No two tiles look alike in ink, so tiles can't be reused the way plain ones
 are: expect files several times bigger (`lib/src/renders/ink.rs`).

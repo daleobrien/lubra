@@ -11,6 +11,7 @@ mod net_operations;
 mod net_reduction;
 mod remove_cycles;
 mod render;
+mod solution;
 mod surrounding_coordinates;
 mod tile_lookup;
 pub(crate) mod touching;
@@ -37,6 +38,7 @@ pub struct Maze {
     pub(crate) colour_tracks: bool,
     pub(crate) show_kinks: bool,
     pub(crate) ink: bool,
+    pub(crate) show_solution: bool,
 }
 
 impl Maze {
@@ -71,12 +73,18 @@ impl Maze {
             colour_tracks: false,
             show_kinks: false,
             ink: false,
+            show_solution: false,
         };
 
         if randomise {
             Self::create_random_grid(&mut obj, number_of_columns, number_of_rows);
         }
         obj
+    }
+
+    /// Whether to draw the route from the entrance to the exit, in red.
+    pub fn set_show_solution(&mut self, show: bool) {
+        self.show_solution = show;
     }
 
     /// Whether to draw the maze by hand, in ink (see `renders::ink`).

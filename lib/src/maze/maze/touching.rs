@@ -47,6 +47,11 @@ pub(crate) fn clear_in_same_tile(net: usize, other: usize) -> bool {
     meeting(SAME_TILE, net, other) == Meeting::Clear
 }
 
+/// Whether tile nets `net` and `other` of one tile cross (one passes over the other).
+pub(crate) fn crossing_in_same_tile(net: usize, other: usize) -> bool {
+    meeting(SAME_TILE, net, other) == Meeting::Crossing
+}
+
 impl Maze {
     /// Whether the vertex S (`frag_vertex_s`) with logical key `key` on tile `(i, j)`
     /// would be drawn against a net it does not join, in its tile or the twelve around

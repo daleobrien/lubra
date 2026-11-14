@@ -72,6 +72,10 @@ struct Args {
     #[arg(long, default_value_t = false)]
     keep_touching: bool,
 
+    /// Draw the solution: the route from the entrance to the exit, in red
+    #[arg(short = 'S', long, default_value_t = false)]
+    solution: bool,
+
     /// Draw plain, even walls instead of the default hand-drawn ink
     #[arg(short = 'P', long, default_value_t = false)]
     plain: bool,
@@ -279,6 +283,7 @@ fn main() {
     maze.set_show_tile_nets(args.show_tile_nets);
     maze.set_show_kinks(args.show_kinks);
     maze.set_ink(!args.plain);
+    maze.set_show_solution(args.solution);
     // With any debug output on, write the command line above the maze (so a drawing
     // can be reproduced from the image alone) and colour each net's track.
     if args.debug

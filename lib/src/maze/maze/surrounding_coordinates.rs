@@ -625,6 +625,7 @@ mod tests {
             show_tile_nets: false,
             show_kinks: false,
             ink: false,
+            show_solution: false,
             caption: None,
             colour_tracks: false,
         }

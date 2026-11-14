@@ -109,7 +109,7 @@ Single steps:
   [`make gen-svg`], [`generate svg`: fragments, `ADJ_CHECKS` and the `document` helper tables.],
   [`make gen-nets`], [`generate nets`: the small and large net/mass lookup tables.],
   [`make cli`], [The CLI with `CLI_ARGS` (default `--seed 1 -W 20 -H 12 -B -N -T -K`: the same square-looking maze every run, with tile boundaries, node numbers, tile nets and kink rings).],
-  [`make sample`], [The maze shown in the README (`SAMPLE_ARGS`), written to `docs/sample-ink.svg`.],
+  [`make sample`], [The maze shown in the README (`SAMPLE_ARGS`), written to `docs/sample-ink.svg` and, with its solution, `docs/sample-ink-solved.svg`.],
   [`make document`], [The `document` crate (SVGs and generated Typst files).],
   [`make typst`], [`typst compile` of `shapes.typ`, `tiles.typ` and `main.typ`.],
   [`make build`], [`cargo build --workspace`.],
@@ -880,6 +880,29 @@ alike, so nothing is reused through `<use>`: an inked maze is several times
 bigger than a plain one. `-P` (`--plain`) draws the even black walls instead,
 which is what the library does unless `Maze::set_ink` is called.
 
+== The solution
+
+`-S` (`--solution`) draws the route from the entrance to the exit. `solution_route`
+(`maze/maze/solution.rs`) finds it with a breadth-first search over the nodes:
+node $k$ of a tile is the same place as node $k$ of the tile across it, and the
+nodes of one tile net are joined inside the tile. The maze is a tree, so there is
+one route; it is listed tile by tile, with the node each tile is entered by and
+left by.
+
+`solution_trace` (`maze/maze/render.rs`) turns it into lines. Each stretch drawn
+by one fragment (one tile, or two or more for a cross-tile fragment) runs from an
+opening to an opening. Where one of that fragment's walls joins the two openings,
+the trace is that wall moved half a track's width inwards, so it follows the
+track exactly through S-curves, hooks and junction corners. Where none does,
+which is a track running straight through a junction with arms on both sides, it
+is a smooth curve leaving and arriving square to the openings. The route starts
+and ends in the middle of the entrance and exit dots.
+
+Where the route passes under another track (they cross in one tile and the other
+is drawn later), that stretch is drawn faintly. In ink the trace is pencilled as
+in maze-rs: two wobbled passes on top, one light pass underneath. Plain, it is
+one red line.
+
 = Documentation pipeline
 
 `make document` runs the `document` crate; `make doc` also regenerates the
@@ -931,6 +954,7 @@ colour for each net (`lib/src/renders/net_colours.rs`).
   [`--keep-touching`], [off], [Skip `separate_touching_tracks`.],
   [`--fill`], [2], [Grow tracks into blank areas; new side branches are at least this many tiles long. 0 leaves blank areas alone.],
   [`-P`, `--plain`], [off], [Even black walls instead of hand-drawn ink.],
+  [`-S`, `--solution`], [off], [Draw the route from the entrance to the exit in red.],
   [`-K`, `--show-kinks`], [off], [Ring every kink and count them in the caption.],
   [`--kink-stats`], [], [Build this many seeded mazes and print their kinks by fragment, instead of drawing.],
 )
