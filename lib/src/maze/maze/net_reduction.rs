@@ -17,7 +17,7 @@ use common::types::coordinate::Coordinate;
 /// indices into `get_connected_titles_for_tile`: the two edge neighbours that share
 /// the vertex and the two tiles beside the opposite tile. A path through a vertex
 /// only continues into the opposite tile, so none of these may use the vertex.
-const VERTEX_FLANKS: [[usize; 4]; 3] = [[3, 4, 6, 7], [3, 5, 8, 9], [4, 5, 10, 11]];
+pub(super) const VERTEX_FLANKS: [[usize; 4]; 3] = [[3, 4, 6, 7], [3, 5, 8, 9], [4, 5, 10, 11]];
 
 /// A tile net, identified by its tile and one of its nodes.
 #[derive(Clone, Copy)]

@@ -20,6 +20,8 @@ pub fn generate_adjacent_paths() {
             // A dead end across the edge, reached from the tile opposite the vertex:
             // drawn as one U-turn round the vertex (frag_corner_hook).
             vec![(ADJ_N4, true, N4), (ADJ_N1, true, N1 | N4)],
+            // The track goes on through the vertex into the tile opposite: one S (frag_vertex_s).
+            vec![(ADJ_N1, true, N1 | N5)],
             vec![(ADJ_N4, true, N4)], // Adjacent tile to look up, then the expected tile
             vec![(ADJ_N4, true, N2 | N4)],
             vec![(ADJ_N4, true, N3 | N4)],
@@ -33,6 +35,8 @@ pub fn generate_adjacent_paths() {
             // A dead end across the edge, reached from the tile opposite the vertex:
             // drawn as one U-turn round the vertex (frag_corner_hook).
             vec![(ADJ_N5, true, N5), (ADJ_N1, true, N1 | N5)],
+            // The track goes on through the vertex into the tile opposite: one S (frag_vertex_s).
+            vec![(ADJ_N1, true, N1 | N4)],
             vec![(ADJ_N5, true, N5)],
             vec![(ADJ_N5, true, N2 | N5)],
             vec![(ADJ_N5, true, N3 | N5)],
@@ -55,6 +59,8 @@ pub fn generate_adjacent_paths() {
             // A dead end across the edge, reached from the tile opposite the vertex:
             // drawn as one U-turn round the vertex (frag_corner_hook).
             vec![(ADJ_N4, true, N4), (ADJ_N2, true, N2 | N4)],
+            // The track goes on through the vertex into the tile opposite: one S (frag_vertex_s).
+            vec![(ADJ_N2, true, N2 | N6)],
             vec![(ADJ_N4, true, N4)],
             vec![(ADJ_N4, true, N1 | N4)],
             vec![(ADJ_N4, true, N3 | N4)],
@@ -77,6 +83,8 @@ pub fn generate_adjacent_paths() {
             // A dead end across the edge, reached from the tile opposite the vertex:
             // drawn as one U-turn round the vertex (frag_corner_hook).
             vec![(ADJ_N6, true, N6), (ADJ_N2, true, N2 | N6)],
+            // The track goes on through the vertex into the tile opposite: one S (frag_vertex_s).
+            vec![(ADJ_N2, true, N2 | N4)],
             vec![(ADJ_N6, true, N6)],
             vec![(ADJ_N6, true, N1 | N6)],
             vec![(ADJ_N6, true, N3 | N6)],
@@ -99,6 +107,8 @@ pub fn generate_adjacent_paths() {
             // A dead end across the edge, reached from the tile opposite the vertex:
             // drawn as one U-turn round the vertex (frag_corner_hook).
             vec![(ADJ_N5, true, N5), (ADJ_N3, true, N3 | N5)],
+            // The track goes on through the vertex into the tile opposite: one S (frag_vertex_s).
+            vec![(ADJ_N3, true, N3 | N6)],
             vec![(ADJ_N5, true, N5)],
             vec![(ADJ_N5, true, N1 | N5)],
             vec![(ADJ_N5, true, N2 | N5)],
@@ -112,6 +122,8 @@ pub fn generate_adjacent_paths() {
             // A dead end across the edge, reached from the tile opposite the vertex:
             // drawn as one U-turn round the vertex (frag_corner_hook).
             vec![(ADJ_N6, true, N6), (ADJ_N3, true, N3 | N6)],
+            // The track goes on through the vertex into the tile opposite: one S (frag_vertex_s).
+            vec![(ADJ_N3, true, N3 | N5)],
             vec![(ADJ_N6, true, N6)],
             vec![(ADJ_N6, true, N1 | N6)],
             vec![(ADJ_N6, true, N2 | N6)],

@@ -25,4 +25,5 @@ pub mod frag_complex_arcs;
 pub mod frag_corner_hook;
 pub mod frag_math;
 pub mod frag_s_curve;
+pub mod frag_vertex_s;
 pub mod frag_wall;

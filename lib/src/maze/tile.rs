@@ -268,12 +268,15 @@ impl Tile {
         all_matched
     }
 
-    /// Whether `key` is a corner hook: a cross-tile fragment that also replaces the same
-    /// net in the tile across a vertex (`frag_corner_hook`). Its upper bits then repeat
-    /// the tile's own net.
-    pub fn is_corner_hook(key: usize) -> bool {
+    /// Whether `key` is a cross-tile fragment that replaces a net in the tile across a
+    /// vertex (`frag_corner_hook`, `frag_vertex_s`): one of its neighbour nets meets the
+    /// tile's own net only at a vertex (node 1-3).
+    pub fn reaches_across_vertex(key: usize) -> bool {
         let own = key & NL;
-        (1..5).any(|k| (key >> (6 * k)) & NL == own)
+        (1..5).any(|k| {
+            let shared = (key >> (6 * k)) & NL & own;
+            shared != 0 && shared.trailing_zeros() < 3
+        })
     }
 
     pub fn rotate_cw(&self) -> Vec<usize> {
@@ -330,14 +333,18 @@ impl fmt::Display for Tile {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn test_is_corner_hook() {
-        use common::consts::{A1, A4, A6, B4, IN, N1, N2, N4, N6};
-        // The tile's own net repeated in the upper bits: the tile across the vertex.
-        assert!(Tile::is_corner_hook(N1 | N4 | A1 | A4 | B4));
-        assert!(Tile::is_corner_hook(IN | N1 | N4 | A1 | A4 | B4));
-        // An ordinary cross-tile fragment and a plain net are not corner hooks.
-        assert!(!Tile::is_corner_hook(N2 | N6 | A6));
-        assert!(!Tile::is_corner_hook(N1 | N4));
+    fn test_reaches_across_vertex() {
+        use common::consts::{A1, A2, A3, A4, A5, A6, B3, B4, B5, IN, N1, N2, N3, N4, N5, N6};
+        // Corner hook: the same net in the tile across vertex 1.
+        assert!(Tile::reaches_across_vertex(N1 | N4 | A1 | A4 | B4));
+        assert!(Tile::reaches_across_vertex(IN | N1 | N4 | A1 | A4 | B4));
+        // Vertex S: vertex 3 and the other edge in the tile across it.
+        assert!(Tile::reaches_across_vertex(N3 | N6 | A3 | A5));
+        // Ordinary cross-tile fragments meet their neighbours at an edge.
+        assert!(!Tile::reaches_across_vertex(N2 | N6 | A6));
+        assert!(!Tile::reaches_across_vertex(N4 | N5 | A1 | A4 | B3 | B5));
+        assert!(!Tile::reaches_across_vertex(N5 | N6 | A2 | A6));
+        assert!(!Tile::reaches_across_vertex(N1 | N4));
     }
 
     use std::{assert_eq, println, vec};

@@ -51,9 +51,18 @@ impl Maze {
             }
         }
 
-        // A corner hook replaces a net in the tile across a vertex. If another
-        // cross-tile fragment already draws that net, draw this tile the usual way.
-        let conflicts = corner_hook_conflicts(&per_tile);
+        // Some fragments replace a net in the tile across a vertex. Where that net is
+        // already drawn by something else, draw those tiles the usual way.
+        let conflicts = corner_hook_conflicts(
+            &per_tile,
+            |coord, key| self.vertex_s_blocked(coord.i, coord.j, key),
+            |coord, key| {
+                self.vertex_s_footprint(coord.i, coord.j, key)
+                    .into_iter()
+                    .map(|(i, j)| Coordinate { i, j })
+                    .collect()
+            },
+        );
         let mut all_catorised_nets: CataloguedNet = CataloguedNet::new();
         for (coord, catalogue) in per_tile {
             if conflicts.contains(&coord) {
@@ -210,10 +219,27 @@ impl Maze {
     }
 }
 
-/// The tiles whose corner hook (see `Tile::is_corner_hook`) claims a net that is also
-/// drawn by another cross-tile fragment: one that replaces the same net, or a
-/// cross-tile fragment of that net's own tile.
-fn corner_hook_conflicts(per_tile: &[(Coordinate, CataloguedNet)]) -> HashSet<Coordinate> {
+/// The tiles to draw without fragments that reach across a vertex (see
+/// `Tile::reaches_across_vertex`).
+///
+/// A tile is dropped when such a fragment claims a net that something else also draws
+/// (another fragment replacing the same net, or a cross-tile fragment of that net's own
+/// tile), or when `blocked(tile, key)` says its drawing would run into a neighbouring
+/// track. Two vertex S fragments must not share any tile round their vertices
+/// (`footprint`), as their half-circles would cross; the first in grid order is kept. Fragments across a vertex come in pairs (one draws, the tile opposite gets a
+/// blank that hides the first tile's net), so when one tile of a pair is dropped, so is
+/// the other; otherwise the blank would hide a net that is no longer drawn.
+fn corner_hook_conflicts(
+    per_tile: &[(Coordinate, CataloguedNet)],
+    blocked: impl Fn(Coordinate, usize) -> bool,
+    footprint: impl Fn(Coordinate, usize) -> Vec<Coordinate>,
+) -> HashSet<Coordinate> {
+    let across = |catalogue: &CataloguedNet| {
+        catalogue
+            .visible
+            .iter()
+            .any(|v| Tile::reaches_across_vertex(v.net & NX))
+    };
     let mut claims: HashMap<CoordinateAndNet, usize> = HashMap::new();
     let mut drawn_cross_tile: HashSet<CoordinateAndNet> = HashSet::new();
     for (_, catalogue) in per_tile {
@@ -221,30 +247,96 @@ fn corner_hook_conflicts(per_tile: &[(Coordinate, CataloguedNet)]) -> HashSet<Co
             *claims.entry(*hidden).or_default() += 1;
         }
         for visible in &catalogue.visible {
-            // Upper bits name nets in neighbouring tiles.
-            if (visible.net & NX) >> 6 != 0 {
-                drawn_cross_tile
-                    .insert(CoordinateAndNet::new(visible.coordinate, visible.net & NL));
+            // Upper bits name nets in neighbouring tiles. Fragments across a vertex are
+            // checked through their claims instead, as their partner draws a blank.
+            let net = visible.net & NX;
+            if net >> 6 != 0 && !Tile::reaches_across_vertex(net) {
+                drawn_cross_tile.insert(CoordinateAndNet::new(visible.coordinate, net & NL));
             }
         }
     }
-    per_tile
+    let mut dropped: HashSet<Coordinate> = per_tile
         .iter()
-        .filter(|(_, catalogue)| {
-            catalogue
+        .filter(|(_, catalogue)| across(catalogue))
+        .filter(|(coord, catalogue)| {
+            let runs_into = catalogue
                 .visible
                 .iter()
-                .any(|v| Tile::is_corner_hook(v.net & NX))
-        })
-        .filter(|(_, catalogue)| {
-            catalogue.hidden.iter().any(|hidden| {
-                claims[hidden] > 1
-                    || drawn_cross_tile
-                        .contains(&CoordinateAndNet::new(hidden.coordinate, hidden.net & NL))
-            })
+                .any(|v| blocked(*coord, v.net & NX));
+            runs_into
+                || catalogue.hidden.iter().any(|hidden| {
+                    claims[hidden] > 1
+                        || drawn_cross_tile
+                            .contains(&CoordinateAndNet::new(hidden.coordinate, hidden.net & NL))
+                })
         })
         .map(|(coord, _)| *coord)
-        .collect()
+        .collect();
+
+    // A vertex S swings into the tiles flanking its vertex. Their own fragments are
+    // checked by `blocked`, but only in their single-tile shapes, so keep the S out of
+    // flanking tiles that draw, or are drawn by, a cross-tile fragment.
+    let cross_tile_tiles: HashSet<Coordinate> = per_tile
+        .iter()
+        .filter(|(_, c)| c.visible.iter().any(|v| (v.net & NX) >> 6 != 0))
+        .map(|(coord, _)| *coord)
+        .chain(
+            per_tile
+                .iter()
+                .flat_map(|(_, c)| c.hidden.iter().map(|h| h.coordinate)),
+        )
+        .collect();
+    for (coord, catalogue) in per_tile {
+        for visible in &catalogue.visible {
+            let tiles = footprint(*coord, visible.net & NX);
+            // The first two are the S's own tile and its partner across the vertex.
+            if tiles.iter().skip(2).any(|t| cross_tile_tiles.contains(t)) {
+                dropped.insert(*coord);
+            }
+        }
+    }
+
+    // Keep vertex S fragments apart.
+    let mut taken: HashSet<Coordinate> = HashSet::new();
+    for (coord, catalogue) in per_tile {
+        if dropped.contains(coord) {
+            continue;
+        }
+        let tiles: Vec<Coordinate> = catalogue
+            .visible
+            .iter()
+            .flat_map(|v| footprint(*coord, v.net & NX))
+            .collect();
+        if tiles.iter().any(|t| taken.contains(t)) {
+            dropped.insert(*coord);
+        } else {
+            taken.extend(tiles);
+        }
+    }
+
+    // Drop partners with them: tiles whose across-vertex fragment hides a net in a
+    // dropped tile, or whose net a dropped tile's fragment hides.
+    loop {
+        let mut grew = false;
+        for (coord, catalogue) in per_tile.iter().filter(|(_, c)| across(c)) {
+            let hides_dropped = catalogue
+                .hidden
+                .iter()
+                .any(|h| dropped.contains(&h.coordinate));
+            let hidden_by_dropped = per_tile.iter().any(|(other, c)| {
+                dropped.contains(other)
+                    && across(c)
+                    && c.hidden.iter().any(|h| h.coordinate == *coord)
+            });
+            if !dropped.contains(coord) && (hides_dropped || hidden_by_dropped) {
+                dropped.insert(*coord);
+                grew = true;
+            }
+        }
+        if !grew {
+            return dropped;
+        }
+    }
 }
 
 #[cfg(test)]

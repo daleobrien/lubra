@@ -244,6 +244,35 @@ mod tests {
             }
         }
         std::fs::write(format!("{dir}/manifest.txt"), manifest).unwrap();
+
+        // The vertex S (frag_vertex_s) alone on each centre tile, one per orientation, in
+        // the same frame as the single-net drawings.
+        {
+            use crate::renders::generated::fragment::MAP_PATHS;
+            use crate::renders::svg::Svg;
+            use crate::renders::vertex_s::VERTEX_S_KEYS;
+            use common::types::bits::transform_tile;
+            use common::types::coordinate::Coordinate;
+            use common::types::point::{Point, TILE_HEIGHT, TILE_WIDTH};
+            let margin = 5.0;
+            let width = 10.0 * TILE_WIDTH / 2.0 + 5.0 * margin;
+            let height = 8.0 * TILE_HEIGHT + 5.0 * margin;
+            for (i, j) in [(3usize, 3usize), (4, 3), (5, 3), (3, 4), (4, 4), (5, 4)] {
+                for (index, &key) in VERTEX_S_KEYS.iter().enumerate() {
+                    let drawn = transform_tile(key, Coordinate { i, j });
+                    let fragment = MAP_PATHS.get(&drawn).expect("vertex S fragment");
+                    let mut svg = Svg::new(width, height);
+                    let at = Point {
+                        x: i as f64,
+                        y: j as f64,
+                    };
+                    svg.add_fragment(fragment, at, 1);
+                    std::fs::write(format!("{dir}/s{index}_{i}_{j}.svg"), svg.to_string(false))
+                        .unwrap();
+                }
+            }
+        }
+
         for (i, j) in tiles {
             for net in 1..64 {
                 let mut maze = Maze::new(9, 8, false, false, false, None);

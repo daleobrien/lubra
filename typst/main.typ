@@ -671,6 +671,33 @@ it is now straight. A smoother hump into the junction always pinched the track
 below its full width, and a bow outwards crossed into the neighbouring tile
 near an edge opening, so straight is the only kink-free wall that fits.
 
+=== The vertex S
+
+Where a track passes through a vertex from an edge opening in one tile to an edge
+opening in the tile opposite, it used to be two hooks that met at the vertex
+with opposite turns, which left a kink. The two openings point the same way and
+sit side by side, so a smooth track has to turn a half-circle one way and a
+half-circle back. `frag_vertex_s` (`15/14`, `24/26`, `36/35`, in normal and
+inverted tiles) draws it as one S of two half-circles meeting at the vertex;
+`FIRST_HALF_RADIUS` (30) sets the first, and the two add up to 60.
+
+One tile draws the S and the tile opposite gets a blank fragment (added by the
+generator), so it is drawn once. Its `ADJ_CHECKS` rules check the tile across
+the vertex.
+
+The half-circles swing into the tiles flanking the vertex, so the renderer only
+keeps an S when:
+
+- it is drawn clear of every net round it that it does not join, from the
+  measured `VERTEX_S_CLEAR` table (`tools/clearance.py` measures it with the
+  other tables);
+- none of the flanking tiles draws, or is drawn by, a cross-tile fragment, whose
+  shapes the table does not cover;
+- no other S shares a tile round its vertex.
+
+Otherwise it and its partner are drawn as the two hooks. Over 100 seeded 20 × 12
+mazes this left 5 S-curves, none touching another track.
+
 === The corner hook
 
 Where a track runs into a vertex from one tile and out of it into a dead end in
@@ -687,9 +714,9 @@ It is the first cross-tile fragment that reaches a tile across a vertex: its
 `ADJ_CHECKS` entry checks the tile opposite the vertex (neighbour index 0-2) as
 well as the tile across the edge, and is tried first. The opposite tile's net
 can also be drawn by a cross-tile fragment from its other side, so the renderer
-works out every tile's fragments, and any tile whose corner hook claims a net
-that another cross-tile fragment also draws is drawn the usual way instead
-(`corner_hook_conflicts` in `maze/maze/render.rs`). Over 40 seeded 20 × 12
+works out every tile's fragments, and any tile whose fragment across a vertex
+claims a net that another cross-tile fragment also draws is drawn the usual way
+instead, with its partner (`corner_hook_conflicts` in `maze/maze/render.rs`). Over 40 seeded 20 × 12
 mazes it was used 11 times, with at least 8.5 units of white to other tracks.
 
 = Documentation pipeline

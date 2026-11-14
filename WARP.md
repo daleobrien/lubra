@@ -85,6 +85,7 @@ Root `Cargo.toml` members:
 - `frag_135` draws the two-vertex junction as one arch (side curves, top curve, rounded corners into the drop); its settings are `SIDE_RADIUS`, `SIDE_TURN` and `CORNER_RADIUS` at the top of the file.
 - `frag_1235` (four-way junctions `1234`/`1235`/`1236`) draws each long wall as straight, one curve of `LONG_WALL_RADIUS`, straight.
 - `frag_1345` (four-way junctions with two edges) draws its long wall straight; any hump pinches the track.
+- `frag_vertex_s` draws a track through a vertex between two edge openings as one S of two half-circles (`FIRST_HALF_RADIUS`); the partner tile gets a blank. The renderer keeps it only when clear of its neighbours (`VERTEX_S_CLEAR`, measured by `tools/clearance.py`), away from cross-tile fragments, and apart from other S-curves.
 - `frag_corner_hook` draws a U-turn round a vertex into a dead end as one track; its `ADJ_CHECKS` rule also checks the tile across the vertex. The renderer falls back to the usual fragments for a tile when its corner hook would claim a net another cross-tile fragment draws (`corner_hook_conflicts`).
 - `Tile::generate_hidden_and_visible_nets` + `find_best_path` decide whether a path is rendered as a local fragment or a complex multi-tile fragment.
 

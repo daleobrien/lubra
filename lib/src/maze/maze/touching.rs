@@ -4,9 +4,11 @@ use std::collections::{HashMap, HashSet};
 
 use super::dead_ends::{Link, TileNet};
 use super::fill_clearance::{DRAWN_CLEAR, DRAWN_CROSSING};
+use super::net_reduction::VERTEX_FLANKS;
 use crate::maze::maze::Maze;
 use crate::maze::net::Node;
-use common::consts::NODE_TO_COORD;
+use crate::renders::vertex_s::{vertex_s_index, VERTEX_S_CLEAR};
+use common::consts::{NL, NODE_TO_COORD};
 
 /// The position index of a tile itself in the clearance tables; 0-11 are its neighbours.
 const SAME_TILE: usize = 12;
@@ -40,6 +42,62 @@ pub(super) fn meeting(position: usize, net: usize, other: usize) -> Meeting {
 }
 
 impl Maze {
+    /// Whether the vertex S (`frag_vertex_s`) with logical key `key` on tile `(i, j)`
+    /// would be drawn against a net it does not join, in its tile or the twelve around
+    /// it (from the measured `VERTEX_S_CLEAR`). Returns false for other keys.
+    ///
+    /// The nets it joins are its own, the other half across the vertex, and the two
+    /// nets at its openings: across its own edge, and across the far half's edge.
+    pub(crate) fn vertex_s_blocked(&self, i: usize, j: usize, key: usize) -> bool {
+        let Some(index) = vertex_s_index(key) else {
+            return false;
+        };
+        let own = key & NL;
+        let opposite_net = (key >> 6) & NL;
+        let shared = own & opposite_net;
+        let vertex = shared.trailing_zeros() as usize;
+        let edge = (own & !shared).trailing_zeros() as usize;
+        let far_edge = (opposite_net & !shared).trailing_zeros() as usize;
+        let opposite = self.neighbour(i, j, vertex);
+        let far = opposite.and_then(|(oi, oj)| self.tile_across(oi, oj, far_edge));
+
+        (0..=SAME_TILE).any(|position| {
+            let at = if position == SAME_TILE {
+                Some((i, j))
+            } else {
+                self.neighbour(i, j, position)
+            };
+            let Some(tile) = at else {
+                return false;
+            };
+            self.tiles[(tile.1, tile.0)].nodes.iter().any(|&net| {
+                let joined = (position == SAME_TILE && net == own)
+                    || (Some(tile) == opposite && net == opposite_net)
+                    || (position == edge && net & (1 << edge) != 0)
+                    || (Some(tile) == far && net & (1 << far_edge) != 0);
+                !joined && VERTEX_S_CLEAR[index][position] & (1 << (net & 63)) == 0
+            })
+        })
+    }
+
+    /// The tiles round the vertex that the vertex S with logical key `key` on tile
+    /// `(i, j)` turns round: its own tile, then the tile opposite the vertex, then the
+    /// (up to) four that flank it. Its half-circles swing into them. Empty for other keys.
+    pub(crate) fn vertex_s_footprint(&self, i: usize, j: usize, key: usize) -> Vec<(usize, usize)> {
+        if vertex_s_index(key).is_none() {
+            return Vec::new();
+        }
+        let vertex = ((key & NL) & ((key >> 6) & NL)).trailing_zeros() as usize;
+        let mut tiles = vec![(i, j)];
+        tiles.extend(self.neighbour(i, j, vertex));
+        tiles.extend(
+            VERTEX_FLANKS[vertex]
+                .iter()
+                .filter_map(|&p| self.neighbour(i, j, p)),
+        );
+        tiles
+    }
+
     /// The tile at `position` (0-11) around tile `(i, j)`, if it is inside the grid.
     fn neighbour(&self, i: usize, j: usize, position: usize) -> Option<(usize, usize)> {
         let (di, dj) = NODE_TO_COORD[(i + 3 * (j % 2)) % 6][position];

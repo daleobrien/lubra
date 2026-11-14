@@ -40,6 +40,7 @@ use crate::fragments::frag_corner_hook::{
 use crate::fragments::frag_s_curve::{
     n45_14_35, n45_24_15, n46_14_26, n46_24_36, n56_15_36, n56_35_26,
 };
+use crate::fragments::frag_vertex_s::{n15_14, n24_26, n36_35};
 use crate::fragments::frag_wall::l_wall;
 
 pub fn trim_whitespace(s: &str) -> String {
@@ -146,11 +147,13 @@ pub fn generate_all_shapes() {
             (dir | N1 | N5 | A2 | A5, n15_25(invert)),
             (dir | N1 | N5 | A3 | A5, n15_35(invert)),
             (dir | N1 | N5 | A1 | A5 | B5, n15_15_5(invert)),
+            (dir | N1 | N5 | A1 | A4, n15_14(invert)),
             (dir | N1 | N5 | A5, n15_5(invert)),
             //
             (dir | N2 | N4 | A1 | A4, n24_14(invert)),
             (dir | N2 | N4 | A3 | A4, n24_34(invert)),
             (dir | N2 | N4 | A2 | A4 | B4, n24_24_4(invert)),
+            (dir | N2 | N4 | A2 | A6, n24_26(invert)),
             (dir | N2 | N4 | A4, n24_4(invert)),
             //
             (dir | N2 | N6 | A1 | A6, n26_16(invert)),
@@ -164,6 +167,7 @@ pub fn generate_all_shapes() {
             (dir | N3 | N6 | A1 | A6, n36_16(invert)),
             (dir | N3 | N6 | A2 | A6, n36_26(invert)),
             (dir | N3 | N6 | A3 | A6 | B6, n36_36_6(invert)),
+            (dir | N3 | N6 | A3 | A5, n36_35(invert)),
             (dir | N3 | N6 | A6, n36_6(invert)),
             // 4-5
             (dir | N4 | N5, n45(invert)),
