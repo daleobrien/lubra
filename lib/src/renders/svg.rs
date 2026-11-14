@@ -71,6 +71,11 @@ impl Svg {
         ));
     }
 
+    /// Adds markup drawn in place (not reused), in drawing units.
+    pub fn add_markup(&mut self, markup: &str, layer_index: usize) {
+        self.layers[layer_index].push_str(markup);
+    }
+
     pub fn add_text(&mut self, text: &str, position: Point, layer_index: usize) {
         self.add_coloured_text(text, position, layer_index, "red");
     }

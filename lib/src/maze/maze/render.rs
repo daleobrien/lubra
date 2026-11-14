@@ -2,6 +2,7 @@ use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::maze::{FileType, Maze};
 use crate::maze::tile::Tile;
 use crate::renders::generated::fragment::MAP_PATHS;
+use crate::renders::ink::{ink_fragment, Pen};
 use crate::renders::kinks::{find_kinks, DrawnFragment, Kink, KinkKind};
 use crate::renders::net_colours::{net_colour, net_index};
 use crate::renders::node_numbers::{add_node_numbers, add_tile_nets};
@@ -50,12 +51,20 @@ impl Maze {
         }
         let start = Instant::now();
 
+        let pen = Pen::new(self.seed.unwrap_or_default());
         for fragment in &drawn {
             let Coordinate { i, j } = fragment.coordinate;
             let point: Point = Point {
                 x: i as f64,
                 y: j as f64,
             };
+            // Drawn by hand, every tile is different, so it is written out in place.
+            // Tile outlines stay plain: they are a debugging aid, not track.
+            if self.ink && fragment.key & WA == 0 {
+                let offset = (i as f64 * TILE_WIDTH / 2.0, j as f64 * TILE_HEIGHT);
+                svg.add_markup(&ink_fragment(&fragment.svg, offset, &pen), 1);
+                continue;
+            }
             if self.colour_tracks && !fragment.marker {
                 // Colour the walls by the tile net this fragment draws.
                 if let Some(index) = net_index(&self.tiles[(j, i)].nodes, fragment.nodes) {
@@ -497,5 +506,28 @@ mod tests {
         maze.tiles[(j, i)] = Tile::new(vec![N4 | N6, N1 | N5], true);
         let crosses = !crate::maze::maze::touching::clear_in_same_tile(N4 | N6, N1 | N5);
         assert_eq!(junction_redraws(&maze), usize::from(!crosses));
+    }
+
+    #[test]
+    fn test_ink_draws_every_track_in_place_and_repeats_for_a_seed() {
+        let render = |name: &str, seed: u64| {
+            let mut maze = Maze::new(12, 8, true, false, false, Some(seed));
+            maze.reduce_nets(1);
+            maze.remove_cycles(false);
+            maze.set_ink(true);
+            let path = std::env::temp_dir().join(name);
+            maze.render(path.to_string_lossy().into_owned(), SVG)
+                .expect("render failed");
+            let svg_path = path.with_extension("svg");
+            let svg = std::fs::read_to_string(&svg_path).expect("missing SVG");
+            let _ = std::fs::remove_file(svg_path);
+            svg
+        };
+        let svg = render("lubra-ink-a", 3);
+        // No fragment is reused: there is nothing in the defs and nothing placed.
+        assert!(!svg.contains("<use"), "tracks were placed, not inked");
+        assert!(svg.contains("stroke='#2b2118'"));
+        assert_eq!(svg, render("lubra-ink-b", 3));
+        assert_ne!(svg, render("lubra-ink-c", 4));
     }
 }

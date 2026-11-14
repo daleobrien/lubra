@@ -1,4 +1,5 @@
 pub mod generated;
+pub mod ink;
 pub mod kinks;
 pub mod math;
 pub mod net_colours;

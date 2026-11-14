@@ -109,6 +109,7 @@ Single steps:
   [`make gen-svg`], [`generate svg`: fragments, `ADJ_CHECKS` and the `document` helper tables.],
   [`make gen-nets`], [`generate nets`: the small and large net/mass lookup tables.],
   [`make cli`], [The CLI with `CLI_ARGS` (default `--seed 1 -W 20 -H 12 -B -N -T -K`: the same square-looking maze every run, with tile boundaries, node numbers, tile nets and kink rings).],
+  [`make ink`], [The same maze as `make cli`, drawn by hand in ink (`INK_ARGS`), written to `cli/maze-ink.svg`.],
   [`make document`], [The `document` crate (SVGs and generated Typst files).],
   [`make typst`], [`typst compile` of `shapes.typ`, `tiles.typ` and `main.typ`.],
   [`make build`], [`cargo build --workspace`.],
@@ -860,6 +861,23 @@ fragments where the kink is at a join. Over 100 seeded 20 × 12 mazes there were
 9.3 kinks per maze: 68% inside `1456`/`2456`/`3456`, 28% inside
 `1256`/`1346`/`2345`, and 3% at joins between fragments. Redrawing the first
 family (below) left 2.8 per maze, and redrawing the second left none.
+
+== Drawing by hand in ink
+
+`-I` (`--ink`) draws the maze as if by hand, after maze-rs's ink style
+(`renders/ink.rs`). Every fragment is flattened to pieces of at most 6 units,
+each point is nudged up to 2 units by a smooth noise field, and the walls are
+drawn in brown ink with a pen whose width wanders between three widths. The
+noise is seeded from the maze's seed, so a maze always comes out the same, and
+depends only on where a point is on the page, so walls that meet at a tile edge
+still meet after the wobble. The entrance and exit dots are pencilled in red.
+
+Tracks pass over one another, so each fragment's inside is painted white
+(wobbled the same way) before its walls: the track drawn later hides the walls
+of the one beneath, which reads as a break in the ink, as in maze-rs. Tile
+outlines (`-B`) and the other debugging aids stay plain. No two tiles look
+alike, so nothing is reused through `<use>`: an inked maze is several times
+bigger than a plain one.
 
 = Documentation pipeline
 

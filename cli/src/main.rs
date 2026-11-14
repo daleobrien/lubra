@@ -72,6 +72,10 @@ struct Args {
     #[arg(long, default_value_t = false)]
     keep_touching: bool,
 
+    /// Draw the maze by hand, in ink (the wobble is fixed by the seed)
+    #[arg(short = 'I', long, default_value_t = false)]
+    ink: bool,
+
     /// Ring every kink in the drawn tracks (red: a corner, purple: a tight wiggle)
     /// and add their number to the caption
     #[arg(short = 'K', long, default_value_t = false)]
@@ -274,6 +278,7 @@ fn main() {
 
     maze.set_show_tile_nets(args.show_tile_nets);
     maze.set_show_kinks(args.show_kinks);
+    maze.set_ink(args.ink);
     // With any debug output on, write the command line above the maze (so a drawing
     // can be reproduced from the image alone) and colour each net's track.
     if args.debug

@@ -36,6 +36,7 @@ pub struct Maze {
     pub(crate) caption: Option<String>,
     pub(crate) colour_tracks: bool,
     pub(crate) show_kinks: bool,
+    pub(crate) ink: bool,
 }
 
 impl Maze {
@@ -69,12 +70,18 @@ impl Maze {
             caption: None,
             colour_tracks: false,
             show_kinks: false,
+            ink: false,
         };
 
         if randomise {
             Self::create_random_grid(&mut obj, number_of_columns, number_of_rows);
         }
         obj
+    }
+
+    /// Whether to draw the maze by hand, in ink (see `renders::ink`).
+    pub fn set_ink(&mut self, ink: bool) {
+        self.ink = ink;
     }
 
     /// Whether to ring every kink in the rendered maze (see `renders::kinks`) and add
