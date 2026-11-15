@@ -28,8 +28,42 @@ pub(super) enum Meeting {
     Touching,
 }
 
+/// The worse of two ways of meeting: touching, then crossing, then clear.
+fn worse(a: Meeting, b: Meeting) -> Meeting {
+    match (a, b) {
+        (Meeting::Touching, _) | (_, Meeting::Touching) => Meeting::Touching,
+        (Meeting::Crossing, _) | (_, Meeting::Crossing) => Meeting::Crossing,
+        _ => Meeting::Clear,
+    }
+}
+
+/// The position of tile `(i, j)` as seen from its neighbour at `position`: the index
+/// in the neighbour's `NODE_TO_COORD` row that points back.
+fn reverse_position(i: usize, j: usize, position: usize) -> Option<usize> {
+    let (di, dj) = NODE_TO_COORD[(i + 3 * (j % 2)) % 6][position];
+    let (ni, nj) = (i as i32 + di, j as i32 + dj);
+    let kind = (ni + 3 * nj.rem_euclid(2)).rem_euclid(6) as usize;
+    NODE_TO_COORD[kind]
+        .iter()
+        .position(|&back| back == (-di, -dj))
+}
+
+/// How tile net `net` on tile `(i, j)` meets tile net `other` at `position` around it
+/// (0-11 for the neighbours in `NODE_TO_COORD` order, 12 for the same tile), seen from
+/// both sides: the measured tables can differ by rounding, so the worse answer counts.
+fn meeting_between(i: usize, j: usize, position: usize, net: usize, other: usize) -> Meeting {
+    let back = if position == SAME_TILE {
+        Some(SAME_TILE)
+    } else {
+        reverse_position(i, j, position)
+    };
+    let seen = meeting(position, net, other);
+    back.map_or(seen, |back| worse(seen, meeting(back, other, net)))
+}
+
 /// How tile net `net` meets tile net `other` at `position` (0-11 for the neighbours
-/// in `NODE_TO_COORD` order, 12 for the same tile), from the measured tables.
+/// in `NODE_TO_COORD` order, 12 for the same tile), from the measured tables, as seen
+/// from `net`'s side (see `meeting_between` for both sides).
 pub(super) fn meeting(position: usize, net: usize, other: usize) -> Meeting {
     let bit = 1 << (other & 63);
     if DRAWN_CLEAR[position][net & 63] & bit != 0 {
@@ -44,12 +78,12 @@ pub(super) fn meeting(position: usize, net: usize, other: usize) -> Meeting {
 /// Whether tile nets `net` and `other` of one tile are drawn with white space
 /// between them (not touching and not crossing).
 pub(crate) fn clear_in_same_tile(net: usize, other: usize) -> bool {
-    meeting(SAME_TILE, net, other) == Meeting::Clear
+    meeting_between(0, 0, SAME_TILE, net, other) == Meeting::Clear
 }
 
 /// Whether tile nets `net` and `other` of one tile cross (one passes over the other).
 pub(crate) fn crossing_in_same_tile(net: usize, other: usize) -> bool {
-    meeting(SAME_TILE, net, other) == Meeting::Crossing
+    meeting_between(0, 0, SAME_TILE, net, other) == Meeting::Crossing
 }
 
 impl Maze {
@@ -132,7 +166,7 @@ impl Maze {
         for &other in &self.tiles[(j, i)].nodes {
             if other & net == 0 {
                 let at = TileNet { i, j, bits: other };
-                found.push((at, SAME_TILE, meeting(SAME_TILE, net, other)));
+                found.push((at, SAME_TILE, meeting_between(i, j, SAME_TILE, net, other)));
             }
         }
         for position in 0..SAME_TILE {
@@ -149,7 +183,7 @@ impl Maze {
                         j: nj,
                         bits: other,
                     };
-                    found.push((at, position, meeting(position, net, other)));
+                    found.push((at, position, meeting_between(i, j, position, net, other)));
                 }
             }
         }

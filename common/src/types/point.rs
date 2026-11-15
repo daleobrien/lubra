@@ -20,7 +20,7 @@ pub const TILE_HEIGHT: f64 = 120f64 * S3;
 //pub const PATH_WIDTH: f64 = 0.08f64;
 //pub const PATH_WIDTH: f64 = 0.04;
 //pub const PATH_WIDTH: f64 = 0.16666f64; // Max is 1/6
-pub const PATH_WIDTH: f64 = 0.09f64; // Narrow enough that arcs dipping into a neighbouring tile don't cut across its openings
+pub const PATH_WIDTH: f64 = 0.12f64; // Run `make width` after changing it (see the README); 0.09 to 0.15 are tested
 
 impl Add for Point {
     type Output = Self;

@@ -141,10 +141,12 @@ and _inverted_ (flipped vertically, flag `IN`).
 )
 
 `TILE_WIDTH` is 120 SVG units, `TILE_HEIGHT` is $120 dot sqrt(3) / 2$, and
-tracks are `PATH_WIDTH` $= 0.09$ tile widths wide. Some arcs (for example
-the vertex arc 2–3) bulge past their tile's edge. At this width they stay
-clear of the neighbouring tile's opening, so a track that passes over another
-never leaves a seam where it crosses a tile boundary (see @rendering).
+tracks are `PATH_WIDTH` $= 0.12$ tile widths wide (anything from 0.09 to
+0.15 works; `make width` regenerates the fragments and the clearance tables
+after changing it). Some arcs (for example the vertex arc 2–3) bulge past
+their tile's edge; the clearance tables, measured from the fragments as drawn,
+keep such tracks apart from their neighbours or layer them where they cross
+(see @rendering).
 
 == Grid and orientation
 

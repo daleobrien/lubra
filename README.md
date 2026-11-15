@@ -43,8 +43,8 @@ are: expect files several times bigger (`lib/src/renders/ink.rs`).
 ## Track width
 
 The tracks are `PATH_WIDTH` (in `common/src/types/point.rs`) wide on each side
-of their middle, as a fraction of a tile: 0.09 by default, and anything up to
-0.15 works. After changing it, run `make width`: it regenerates the fragments
+of their middle, as a fraction of a tile: 0.12 by default, and anything from
+0.09 to 0.15 works. After changing it, run `make width`: it regenerates the fragments
 and re-measures how tracks meet, which decides where they cross and keeps them
 apart. Wider tracks touch more often.
 
