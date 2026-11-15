@@ -93,6 +93,8 @@ impl Maze {
     /// `can_grow_out_of`, so the route touches nothing and ends clear of the last
     /// track it crossed.
     fn reach_gaps(&mut self, rng: &mut ChaCha8Rng) -> bool {
+        // Without crossings, a branch may not pass under any other track.
+        let crossings = if self.crossings { MAX_CROSSINGS } else { 0 };
         let mut dead_ends = Vec::new();
         for j in 0..self.number_of_rows {
             for i in 0..self.number_of_columns {
@@ -113,7 +115,7 @@ impl Maze {
             // An earlier route may have crossed this tile, but never changes a dead end.
             for reach in 1..=MAX_REACH {
                 let mut undo = Vec::new();
-                if self.route_to_gap(at, bits, reach, MAX_CROSSINGS, &mut undo, rng) {
+                if self.route_to_gap(at, bits, reach, crossings, &mut undo, rng) {
                     reached = true;
                     break;
                 }
@@ -278,7 +280,8 @@ impl Maze {
             if length >= limit {
                 break;
             }
-            let may_cross = rng.gen_bool(CROSSING_CHANCE);
+            // Always drawn, so the choices that follow are the same either way.
+            let may_cross = rng.gen_bool(CROSSING_CHANCE) && self.crossings;
             let exits: Vec<usize> = (0..6)
                 .filter(|&k| self.can_grow_out_of(here.0, here.1, net, k, may_cross))
                 .collect();

@@ -6,6 +6,7 @@ use crate::maze::generated::mass_large::list_of_possible_mass_for_a_mask as mass
 use crate::maze::generated::mass_small::list_of_possible_mass_for_a_mask as mass_small;
 use crate::maze::generated::nets_large::list_of_possible_nets_for_a_mask as nets_large;
 use crate::maze::generated::nets_small::list_of_possible_nets_for_a_mask as nets_small;
+use crate::maze::maze::touching::crossing_in_same_tile;
 
 pub fn random_tile(mask: usize, seed: Option<u64>, reduced_lookup: bool) -> Vec<usize> {
     let possible_nets = if reduced_lookup {
@@ -38,6 +39,57 @@ pub fn random_tile(mask: usize, seed: Option<u64>, reduced_lookup: bool) -> Vec<
     // Shuffle the nets so that the render order changes
     nets.shuffle(&mut rng);
     nets
+}
+
+/// As `random_tile`, but leaving out any choice with tracks that cross (one passing
+/// under another), when there is one without. Used for mazes with no crossings.
+pub fn random_tile_without_crossings(
+    mask: usize,
+    seed: Option<u64>,
+    reduced_lookup: bool,
+) -> Vec<usize> {
+    let (possible_nets, possible_mass) = if reduced_lookup {
+        (nets_small(mask), mass_small(mask))
+    } else {
+        (nets_large(mask), mass_large(mask))
+    };
+    let keep: Vec<usize> = (0..possible_nets.len())
+        .filter(|&index| !crosses(possible_nets[index]))
+        .collect();
+    if keep.is_empty() {
+        return random_tile(mask, seed, reduced_lookup);
+    }
+    if keep.len() == 1 {
+        return possible_nets[keep[0]].to_vec();
+    }
+
+    let mut rng = match seed {
+        Some(s) => ChaCha8Rng::seed_from_u64(s),
+        None => ChaCha8Rng::from_rng(thread_rng()).unwrap(),
+    };
+    // Weighted random pick among the choices kept; with no weight among them
+    // (only empty tiles), each is as likely.
+    let mut mass: Vec<u32> = keep
+        .iter()
+        .map(|&index| possible_mass.get(index).copied().unwrap_or(0))
+        .collect();
+    if mass.iter().all(|&weight| weight == 0) {
+        mass.fill(1);
+    }
+    let nets_table = WalkerTableBuilder::new(&mass).build();
+    let mut nets = possible_nets[keep[nets_table.next_rng(&mut rng)]].to_vec();
+    // Shuffle the nets so that the render order changes
+    nets.shuffle(&mut rng);
+    nets
+}
+
+/// Whether any two of a tile's nets cross.
+fn crosses(nets: &[usize]) -> bool {
+    nets.iter().enumerate().any(|(k, &net)| {
+        nets[k + 1..]
+            .iter()
+            .any(|&other| crossing_in_same_tile(net, other))
+    })
 }
 
 /// Selects a random element from a vector, seeded when `seed` is given.

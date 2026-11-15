@@ -1,6 +1,6 @@
 use crate::maze::adjacent::get_surrounding_tile_connections;
 use crate::maze::maze::Maze;
-use crate::maze::random::random_tile;
+use crate::maze::random::{random_tile, random_tile_without_crossings};
 use crate::maze::tile::Tile;
 use common::consts::NODE_TO_COORD;
 use common::types::coordinate::add;
@@ -58,11 +58,16 @@ impl Maze {
         let surrounding_tiles = self.get_connected_titles_for_tile(i, j);
         let mask = get_surrounding_tile_connections(&surrounding_tiles);
 
+        let pick = if self.crossings {
+            random_tile
+        } else {
+            random_tile_without_crossings
+        };
         // Try simple, then complex options
-        let mut nets = random_tile(mask, self.seed, true);
+        let mut nets = pick(mask, self.seed, true);
         if mask != 0 && nets.is_empty() {
             // If we can't find a tile that fits, try again without the mask
-            nets = random_tile(mask, self.seed, false);
+            nets = pick(mask, self.seed, false);
         }
 
         Tile::new(nets, true)

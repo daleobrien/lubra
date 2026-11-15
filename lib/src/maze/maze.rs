@@ -40,6 +40,8 @@ pub struct Maze {
     pub(crate) show_kinks: bool,
     pub(crate) ink: bool,
     pub(crate) show_solution: bool,
+    /// Whether tracks may cross, one passing under another.
+    pub(crate) crossings: bool,
 }
 
 impl Maze {
@@ -75,6 +77,7 @@ impl Maze {
             show_kinks: false,
             ink: false,
             show_solution: false,
+            crossings: true,
         };
 
         if randomise {
@@ -120,7 +123,15 @@ impl Maze {
     /// trimmed, touching tracks separated and blank areas filled with side branches of
     /// two tiles or more.
     pub fn generate(columns: usize, rows: usize, seed: u64) -> Maze {
-        let mut maze = Maze::new(columns, rows, true, false, false, Some(seed));
+        Maze::generate_with(columns, rows, seed, true)
+    }
+
+    /// As `generate`, with or without `crossings`: without them no track passes
+    /// under another, in a tile or where a gap is filled.
+    pub fn generate_with(columns: usize, rows: usize, seed: u64, crossings: bool) -> Maze {
+        let mut maze = Maze::new(columns, rows, false, false, false, Some(seed));
+        maze.crossings = crossings;
+        maze.create_random_grid(columns, rows);
         maze.reduce_nets(1);
         maze.remove_cycles(false);
         maze.trim_dead_ends(2);

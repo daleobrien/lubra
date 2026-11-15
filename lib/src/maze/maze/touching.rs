@@ -368,3 +368,42 @@ mod tests {
         assert_eq!(run(5), run(5));
     }
 }
+
+#[cfg(test)]
+mod crossing_tests {
+    use super::*;
+
+    /// How many pairs of tile nets in the maze cross, one passing under the other.
+    fn crossings(maze: &Maze) -> usize {
+        let mut count = 0;
+        for j in 0..maze.number_of_rows {
+            for i in 0..maze.number_of_columns {
+                let nets = maze.tile_nets(i, j);
+                for (k, &net) in nets.iter().enumerate() {
+                    count += nets[k + 1..]
+                        .iter()
+                        .filter(|&&other| crossing_in_same_tile(net, other))
+                        .count();
+                }
+            }
+        }
+        count
+    }
+
+    #[test]
+    fn test_a_maze_without_crossings_has_none() {
+        let mut with = 0;
+        for (columns, rows) in [(20, 12), (9, 7), (31, 18)] {
+            for seed in 0..10 {
+                let maze = Maze::generate_with(columns, rows, seed, false);
+                assert_eq!(crossings(&maze), 0, "{columns}x{rows} seed {seed}");
+                assert!(
+                    !maze.solution_route().is_empty(),
+                    "it still has a way through"
+                );
+                with += crossings(&Maze::generate(columns, rows, seed));
+            }
+        }
+        assert!(with > 0, "mazes with crossings have some");
+    }
+}

@@ -626,6 +626,7 @@ mod tests {
             show_kinks: false,
             ink: false,
             show_solution: false,
+            crossings: true,
             caption: None,
             colour_tracks: false,
         }

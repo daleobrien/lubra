@@ -6,7 +6,7 @@ use rand::seq::SliceRandom;
 use rand_chacha::ChaCha8Rng;
 
 use super::net_operations::DisjointSets;
-use super::touching::Meeting;
+use super::touching::{crossing_in_same_tile, Meeting};
 use crate::maze::maze::Maze;
 use crate::maze::net::Node;
 use crate::maze::tile::Tile;
@@ -121,6 +121,16 @@ impl Maze {
             })
     }
 
+    /// Whether tile net `bits`, drawn on tile `(i, j)`, would cross another tile net
+    /// there (one it does not replace) in a maze without crossings.
+    fn would_cross(&self, i: usize, j: usize, bits: usize) -> bool {
+        !self.crossings
+            && self.tiles[(j, i)]
+                .nodes
+                .iter()
+                .any(|&other| other & bits == 0 && crossing_in_same_tile(bits, other))
+    }
+
     /// Maps every node position to the index of its net in `self.nets`.
     fn net_owners(&self) -> HashMap<Node, usize> {
         self.nets
@@ -224,7 +234,9 @@ impl Maze {
         let mut joined = false;
         for (a, b) in candidates {
             let merged = self.bits_of(a) | self.bits_of(b);
-            if tidy && self.would_touch(a.i, a.j, merged, &[]) {
+            if (tidy && self.would_touch(a.i, a.j, merged, &[]))
+                || self.would_cross(a.i, a.j, merged)
+            {
                 continue;
             }
             if joined_nets.union(owners[&a.position()], owners[&b.position()]) {
@@ -272,6 +284,11 @@ impl Maze {
             if tidy
                 && (self.would_touch(a.i, a.j, bits_a | (1 << k), &[(k, bits_b)])
                     || self.would_touch(b.i, b.j, bits_b | (1 << k), &[(k, bits_a)]))
+            {
+                continue;
+            }
+            if self.would_cross(a.i, a.j, bits_a | (1 << k))
+                || self.would_cross(b.i, b.j, bits_b | (1 << k))
             {
                 continue;
             }
@@ -340,6 +357,11 @@ impl Maze {
             {
                 continue;
             }
+            if self.would_cross(a.i, a.j, bits_a | (1 << k1))
+                || self.would_cross(b.i, b.j, bits_b | (1 << k2))
+            {
+                continue;
+            }
             if joined_nets.union(owners[&a.position()], owners[&b.position()]) {
                 self.tiles[(j, i)] = Tile::new(vec![(1 << k1) | (1 << k2)], true);
                 self.extend_tile_net(a, k1);
@@ -387,6 +409,7 @@ mod tests {
             show_kinks: false,
             ink: false,
             show_solution: false,
+            crossings: true,
             caption: None,
             colour_tracks: false,
         };
