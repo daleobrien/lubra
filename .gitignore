@@ -27,3 +27,4 @@ __pycache__/main.cpython-313.pyc
 .idea/copilot.data.migration.ask2agent.xml
 .idea/copilot.data.migration.edit.xml
 .claude/settings.local.json
+.idea/aws.xml
