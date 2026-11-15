@@ -467,7 +467,8 @@ mod tests {
 
             assert_eq!(maze.nets.len(), 1, "seed {seed}");
             assert_eq!(maze.loop_count(), 0, "seed {seed}");
-            assert_eq!(maze.touching_count(), touching, "seed {seed}");
+            // Growing may take a dead end out of a touch, but never adds one.
+            assert!(maze.touching_count() <= touching, "seed {seed}");
         }
         // Wider tracks leave no clear route past others from about 0.13 of a tile, so
         // there reaching gaps may fill nothing; it must still never add empty tiles.

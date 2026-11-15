@@ -28,6 +28,18 @@ pub(super) enum Meeting {
     Touching,
 }
 
+/// A number in [0, 1) for tile `(i, j)` of the maze made from `seed`, the same each
+/// time (a SplitMix64 hash), to pick tiles at random without drawing on a generator.
+fn tile_fraction(seed: u64, i: usize, j: usize) -> f64 {
+    let mut h = seed ^ (((i as u64) << 32) | j as u64);
+    h = h.wrapping_add(0x9E37_79B9_7F4A_7C15);
+    h = (h ^ (h >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+    h = (h ^ (h >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+    h ^= h >> 31;
+    // The top 53 bits, as a fraction of 2^53.
+    (h >> 11) as f64 / (1u64 << 53) as f64
+}
+
 /// The worse of two ways of meeting: touching, then crossing, then clear.
 fn worse(a: Meeting, b: Meeting) -> Meeting {
     match (a, b) {
@@ -143,6 +155,22 @@ impl Maze {
         tiles
     }
 
+    /// Whether tile net `net` crosses another in its tile and that crossing is to be
+    /// kept when touching tracks are separated: every crossing from `crossing_level`
+    /// 1 up, and below that the share it gives, picked by tile. Never in a maze
+    /// without crossings.
+    fn keeps_crossing(&self, net: &TileNet) -> bool {
+        let share = self.crossing_level.min(1.0);
+        if !self.crossings || share <= 0.0 {
+            return false;
+        }
+        let crosses = self.tiles[(net.j, net.i)]
+            .nodes
+            .iter()
+            .any(|&other| other & net.bits == 0 && crossing_in_same_tile(net.bits, other));
+        crosses && (share >= 1.0 || tile_fraction(self.seed.unwrap_or(0), net.i, net.j) < share)
+    }
+
     /// The tile at `position` (0-11) around tile `(i, j)`, if it is inside the grid.
     fn neighbour(&self, i: usize, j: usize, position: usize) -> Option<(usize, usize)> {
         let (di, dj) = NODE_TO_COORD[(i + 3 * (j % 2)) % 6][position];
@@ -243,7 +271,9 @@ impl Maze {
     /// unless the maze has no crossings: then they are separated too.
     ///
     /// The route from the entrance to the exit is never broken: a pair with both
-    /// tile nets on the route is left touching. Pieces that could not be joined
+    /// tile nets on the route is left touching. Nor are the crossings kept by the
+    /// maze's crossing level (see `CROSSING_LEVEL`): a touch that could only be
+    /// removed by taking out or cutting short one of their tracks is left. Pieces that could not be joined
     /// back on are removed at the end, so the maze is one loop-free tree again.
     ///
     /// Returns the number of touching pairs left. `self.nets` is rebuilt afterwards.
@@ -281,13 +311,18 @@ impl Maze {
             // Prefer the one with the fewest tracks hanging off it.
             let choice = [a, b]
                 .into_iter()
-                .filter(|net| !route.contains(net))
+                .filter(|net| !route.contains(net) && !self.keeps_crossing(net))
                 .min_by_key(link_count);
             let Some(net) = choice else {
                 continue;
             };
             let joined = links.get(&net).cloned().unwrap_or_default();
-            if joined.iter().any(|link| changed.contains(&link.to)) {
+            // The tile nets it is joined to lose a node, so a kept crossing there
+            // would be cut short.
+            if joined
+                .iter()
+                .any(|link| changed.contains(&link.to) || self.keeps_crossing(&link.to))
+            {
                 continue;
             }
 
@@ -383,8 +418,14 @@ mod tests {
 
     #[test]
     fn test_separate_touching_tracks_random_mazes() {
-        for seed in [1, 2, 3, 7, 42] {
+        // At level 0 no crossing is kept, so almost every touch goes; at the default
+        // level kept crossings can leave touches, but the maze is still one tree.
+        for (seed, level) in [1, 2, 3, 7, 42]
+            .into_iter()
+            .flat_map(|seed| [(seed, 0.0), (seed, crate::maze::maze::CROSSING_LEVEL)])
+        {
             let mut maze = Maze::new(30, 20, true, false, false, Some(seed));
+            maze.set_crossing_level(level);
             maze.reduce_nets(1);
             maze.remove_cycles(false);
             maze.trim_dead_ends(2);
@@ -396,18 +437,72 @@ mod tests {
 
             assert_eq!(left, maze.touching_count(), "seed {seed}");
             // Only touches along the entrance-to-exit route can be left.
-            assert!(left * 4 < before, "seed {seed}: {before} -> {left}");
+            if level == 0.0 {
+                assert!(left * 4 < before, "seed {seed}: {before} -> {left}");
+            }
             assert_eq!(maze.nets.len(), 1, "seed {seed}");
             assert_eq!(maze.loop_count(), 0, "seed {seed}");
             assert_eq!(maze.tiles[(0, 0)].nodes, entrance, "seed {seed}");
             assert_eq!(maze.tiles[(19, 29)].nodes, exit, "seed {seed}");
 
-            // Filling afterwards adds track without adding a touch.
+            // Filling afterwards adds track without adding a touch (growing a dead
+            // end that touches can take it out of the touch).
             maze.fill_blank_areas(3);
-            assert_eq!(maze.touching_count(), left, "seed {seed}");
+            assert!(maze.touching_count() <= left, "seed {seed}");
             assert_eq!(maze.nets.len(), 1, "seed {seed}");
             assert_eq!(maze.loop_count(), 0, "seed {seed}");
         }
+    }
+
+    /// A finished maze, made as `Maze::generate` makes one, at crossing level `level`.
+    fn generate_at_level(columns: usize, rows: usize, seed: u64, level: f64) -> Maze {
+        let mut maze = Maze::new(columns, rows, false, false, false, Some(seed));
+        maze.set_crossing_level(level);
+        maze.create_random_grid(columns, rows);
+        maze.reduce_nets(1);
+        maze.remove_cycles(false);
+        maze.trim_dead_ends(2);
+        maze.separate_touching_tracks();
+        maze.fill_blank_areas(2);
+        maze
+    }
+
+    #[test]
+    fn test_crossing_level_adds_crossings() {
+        let crossings = |level: f64| -> usize {
+            (0..5)
+                .map(|seed| generate_at_level(16, 10, seed, level).crossing_count())
+                .sum()
+        };
+        let none_kept = crossings(0.0);
+        let half_kept = crossings(0.5);
+        let all_kept = crossings(1.0);
+        let weighted = crossings(4.0);
+        assert!(none_kept < half_kept, "{none_kept} -> {half_kept}");
+        assert!(half_kept < all_kept, "{half_kept} -> {all_kept}");
+        assert!(all_kept < weighted, "{all_kept} -> {weighted}");
+        assert!(
+            weighted >= 3 * none_kept.max(1),
+            "{none_kept} -> {weighted}"
+        );
+    }
+
+    #[test]
+    fn test_crossing_level_is_repeatable() {
+        let svg = || generate_at_level(12, 8, 5, 0.5).svg_markup(true, false);
+        assert_eq!(svg(), svg());
+    }
+
+    #[test]
+    fn test_tile_fraction() {
+        let fractions: Vec<f64> = (0..40)
+            .flat_map(|i| (0..25).map(move |j| tile_fraction(7, i, j)))
+            .collect();
+        assert!(fractions.iter().all(|f| (0.0..1.0).contains(f)));
+        let mean = fractions.iter().sum::<f64>() / fractions.len() as f64;
+        assert!((mean - 0.5).abs() < 0.05, "mean {mean}");
+        assert_eq!(tile_fraction(7, 3, 4), tile_fraction(7, 3, 4));
+        assert_ne!(tile_fraction(7, 3, 4), tile_fraction(8, 3, 4));
     }
 
     #[test]

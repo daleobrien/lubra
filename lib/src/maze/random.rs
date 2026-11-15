@@ -9,6 +9,18 @@ use crate::maze::generated::nets_small::list_of_possible_nets_for_a_mask as nets
 use crate::maze::maze::touching::crossing_in_same_tile;
 
 pub fn random_tile(mask: usize, seed: Option<u64>, reduced_lookup: bool) -> Vec<usize> {
+    random_tile_with_crossing_weight(mask, seed, reduced_lookup, 1.0)
+}
+
+/// As `random_tile`, with each choice that has tracks crossing in the tile weighted
+/// `crossing_weight` times as much as its mass. A weight of 1 or less leaves the
+/// masses as they are (and the pick exactly as `random_tile` makes it).
+pub fn random_tile_with_crossing_weight(
+    mask: usize,
+    seed: Option<u64>,
+    reduced_lookup: bool,
+    crossing_weight: f64,
+) -> Vec<usize> {
     let possible_nets = if reduced_lookup {
         nets_small(mask)
     } else {
@@ -31,8 +43,22 @@ pub fn random_tile(mask: usize, seed: Option<u64>, reduced_lookup: bool) -> Vec<
     };
 
     // Weighted Random pick
-    let builder = WalkerTableBuilder::new(possible_mass);
-    let nets_table = builder.build();
+    let nets_table = if crossing_weight > 1.0 {
+        let mass: Vec<u32> = possible_nets
+            .iter()
+            .zip(possible_mass)
+            .map(|(&nets, &mass)| {
+                if crosses(nets) {
+                    (f64::from(mass) * crossing_weight).round() as u32
+                } else {
+                    mass
+                }
+            })
+            .collect();
+        WalkerTableBuilder::new(&mass).build()
+    } else {
+        WalkerTableBuilder::new(possible_mass).build()
+    };
 
     let index = nets_table.next_rng(&mut rng);
     let mut nets = possible_nets[index].to_vec();

@@ -410,6 +410,7 @@ mod tests {
             ink: false,
             show_solution: false,
             crossings: true,
+            crossing_level: crate::maze::maze::CROSSING_LEVEL,
             caption: None,
             colour_tracks: false,
         };

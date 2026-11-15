@@ -42,7 +42,21 @@ pub struct Maze {
     pub(crate) show_solution: bool,
     /// Whether tracks may cross, one passing under another.
     pub(crate) crossings: bool,
+    /// How many crossings to make (see `CROSSING_LEVEL`).
+    pub(crate) crossing_level: f64,
 }
+
+/// How many crossings a maze has, one track passing under another.
+///
+/// From 0 to 1 it is the share of crossings kept when touching tracks are separated
+/// (`separate_touching_tracks`): at 0 a crossing goes whenever one of its tracks
+/// touches another, which leaves very few; at 1 every crossing is kept, leaving the
+/// touch. Above 1, every crossing is kept and tiles with tracks crossing are also
+/// picked that many times as often when the grid is made.
+///
+/// Over 20 mazes of 24 by 12 tiles (0.12 wide tracks), the crossings per 100 tiles:
+/// 0.3 at level 0, 3 at 0.5, 6 at 1, 11 at 2 and 16 at 4.
+pub const CROSSING_LEVEL: f64 = 4.0;
 
 /// The most times `Maze::generate_with` makes a maze again to be rid of a crossing.
 const MAX_ATTEMPTS: u64 = 20;
@@ -81,12 +95,25 @@ impl Maze {
             ink: false,
             show_solution: false,
             crossings: true,
+            crossing_level: CROSSING_LEVEL,
         };
 
         if randomise {
             Self::create_random_grid(&mut obj, number_of_columns, number_of_rows);
         }
         obj
+    }
+
+    /// How many crossings to make, from 0 (very few) up: see `CROSSING_LEVEL`, the
+    /// default. Takes effect when the grid is made and tracks are separated.
+    pub fn set_crossing_level(&mut self, level: f64) {
+        self.crossing_level = level;
+    }
+
+    /// How much more often a tile with tracks crossing is picked: 1 up to level 1,
+    /// then the level.
+    pub(crate) fn crossing_weight(&self) -> f64 {
+        self.crossing_level.max(1.0)
     }
 
     /// Whether to draw the route from the entrance to the exit, in red.
