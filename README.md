@@ -54,9 +54,11 @@ How often one track passes under another is `CROSSING_LEVEL` (in
 `lib/src/maze/maze.rs`, or `Maze::set_crossing_level`): 4 by default. Tidying a
 maze takes out tracks drawn against each other, and with them most crossings, as
 a crossing's tracks often touch a neighbour. From 0 to 1 the level is the share of
-crossings kept (their touches stay); above 1 every crossing is kept and tiles with
-crossing tracks are also picked that many times as often. Over 24 by 12 tile
-mazes that gives about 0.3 crossings per 100 tiles at level 0, 6 at 1 and 16 at 4.
+crossings kept: tidying takes out the other track instead, and gives up a kept
+crossing only when nothing else clears the touch. Above 1 every crossing is kept
+and tiles with crossing tracks are also picked that many times as often. Over 24
+by 12 tile mazes that gives about 0.3 crossings per 100 tiles at level 0, 4 at 1,
+10 at 4 and 13.5 at 10, with fewer tracks left touching as the level goes up.
 
 ## Debugging
 

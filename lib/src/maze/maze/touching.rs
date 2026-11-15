@@ -219,7 +219,12 @@ impl Maze {
     }
 
     /// Every pair of tile nets drawn touching each other, each pair once, in grid order.
+    ///
+    /// Two tracks of a kept crossing (see `keeps_crossing`) are not counted where
+    /// they meet again just beyond the crossing's tile: that is the crossing itself,
+    /// drawn across a tile edge (see `part_of_a_crossing`).
     pub(super) fn touching_pairs(&self) -> Vec<(TileNet, TileNet)> {
+        let links = (self.crossings && self.crossing_level > 0.0).then(|| self.tile_net_links());
         let mut pairs = Vec::new();
         let mut seen = HashSet::new();
         for j in 0..self.number_of_rows {
@@ -230,7 +235,13 @@ impl Maze {
                         // In a maze without crossings, tracks that cross are as bad.
                         let bad = how == Meeting::Touching
                             || (how == Meeting::Crossing && !self.crossings);
-                        if bad && !seen.contains(&(other, here)) && seen.insert((here, other)) {
+                        if bad
+                            && !seen.contains(&(other, here))
+                            && seen.insert((here, other))
+                            && !links
+                                .as_ref()
+                                .is_some_and(|links| self.part_of_a_crossing(here, other, links))
+                        {
                             pairs.push((here, other));
                         }
                     }
@@ -238,6 +249,29 @@ impl Maze {
             }
         }
         pairs
+    }
+
+    /// Whether tile nets `a` and `b` are the two tracks of a kept crossing: each is,
+    /// or is joined to, one of two tile nets of one tile that cross there, and that
+    /// crossing is kept. Where two such pieces meet, beside the crossing's tile, the
+    /// crossing is drawn across the tile edge.
+    fn part_of_a_crossing(
+        &self,
+        a: TileNet,
+        b: TileNet,
+        links: &HashMap<TileNet, Vec<Link>>,
+    ) -> bool {
+        let near = |net: TileNet| {
+            std::iter::once(net).chain(links.get(&net).into_iter().flatten().map(|link| link.to))
+        };
+        near(a).any(|x| {
+            self.keeps_crossing(&x)
+                && near(b).any(|y| {
+                    (y.i, y.j) == (x.i, x.j)
+                        && x.bits & y.bits == 0
+                        && crossing_in_same_tile(x.bits, y.bits)
+                })
+        })
     }
 
     /// The number of pairs of tile nets that cross in their tile, one passing under
@@ -271,10 +305,12 @@ impl Maze {
     /// unless the maze has no crossings: then they are separated too.
     ///
     /// The route from the entrance to the exit is never broken: a pair with both
-    /// tile nets on the route is left touching. Nor are the crossings kept by the
-    /// maze's crossing level (see `CROSSING_LEVEL`): a touch that could only be
-    /// removed by taking out or cutting short one of their tracks is left. Pieces that could not be joined
-    /// back on are removed at the end, so the maze is one loop-free tree again.
+    /// tile nets on the route is left touching. Of the two tile nets of a touching
+    /// pair, one that crosses nothing is taken out before one joined to a crossing
+    /// kept by the maze's crossing level (see `CROSSING_LEVEL`), and that before the
+    /// crossing's own: a crossing is given up only when nothing else clears the
+    /// touch. Pieces that could not be joined back on are removed at the end, so the
+    /// maze is one loop-free tree again.
     ///
     /// Returns the number of touching pairs left. `self.nets` is rebuilt afterwards.
     /// Run `fill_blank_areas` after this to grow new branches into freed space.
@@ -308,21 +344,34 @@ impl Maze {
             if changed.contains(&a) || changed.contains(&b) {
                 continue;
             }
-            // Prefer the one with the fewest tracks hanging off it.
+            // Prefer a track that crosses nothing and is not joined to a kept
+            // crossing, then one joined to a kept crossing (cutting that crossing's
+            // track short), then a kept crossing itself: a crossing is given up only
+            // when nothing else clears the touch. Then the fewest tracks hanging off.
+            let cost = |net: &TileNet| {
+                let tier = if self.keeps_crossing(net) {
+                    2
+                } else if links
+                    .get(net)
+                    .into_iter()
+                    .flatten()
+                    .any(|link| self.keeps_crossing(&link.to))
+                {
+                    1
+                } else {
+                    0
+                };
+                (tier, link_count(net))
+            };
             let choice = [a, b]
                 .into_iter()
-                .filter(|net| !route.contains(net) && !self.keeps_crossing(net))
-                .min_by_key(link_count);
+                .filter(|net| !route.contains(net))
+                .min_by_key(cost);
             let Some(net) = choice else {
                 continue;
             };
             let joined = links.get(&net).cloned().unwrap_or_default();
-            // The tile nets it is joined to lose a node, so a kept crossing there
-            // would be cut short.
-            if joined
-                .iter()
-                .any(|link| changed.contains(&link.to) || self.keeps_crossing(&link.to))
-            {
+            if joined.iter().any(|link| changed.contains(&link.to)) {
                 continue;
             }
 
@@ -481,8 +530,9 @@ mod tests {
         assert!(none_kept < half_kept, "{none_kept} -> {half_kept}");
         assert!(half_kept < all_kept, "{half_kept} -> {all_kept}");
         assert!(all_kept < weighted, "{all_kept} -> {weighted}");
+        // Narrow tracks keep many crossings even at level 0.
         assert!(
-            weighted >= 3 * none_kept.max(1),
+            weighted >= 2 * none_kept.max(1),
             "{none_kept} -> {weighted}"
         );
     }

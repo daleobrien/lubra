@@ -51,12 +51,13 @@ pub struct Maze {
 ///
 /// From 0 to 1 it is the share of crossings kept when touching tracks are separated
 /// (`separate_touching_tracks`): at 0 a crossing goes whenever one of its tracks
-/// touches another, which leaves very few; at 1 every crossing is kept, leaving the
-/// touch. Above 1, every crossing is kept and tiles with tracks crossing are also
-/// picked that many times as often when the grid is made.
+/// touches another, which leaves very few; a kept crossing gives up its track only
+/// when nothing else clears a touch. Above 1, every crossing is kept and tiles with
+/// tracks crossing are also picked that many times as often when the grid is made.
 ///
-/// Over 20 mazes of 24 by 12 tiles (0.12 wide tracks), the crossings per 100 tiles:
-/// 0.3 at level 0, 3 at 0.5, 6 at 1, 11 at 2 and 16 at 4.
+/// Over 20 mazes of 24 by 12 tiles (0.12 wide tracks), the crossings per 100 tiles
+/// (and touching pairs left over the 20): 0.3 at level 0 (137), 2 at 0.5 (123), 4 at
+/// 1 (105), 7 at 2 (79), 10 at 4 (48) and 13.5 at 10 (33).
 pub const CROSSING_LEVEL: f64 = 4.0;
 
 /// The most times `Maze::generate_with` makes a maze again to be rid of a crossing.
