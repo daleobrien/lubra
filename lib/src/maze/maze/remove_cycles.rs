@@ -4,6 +4,7 @@
 use std::collections::HashMap;
 
 use super::net_operations::DisjointSets;
+use super::touching::crossing_in_same_tile;
 use crate::maze::maze::Maze;
 use crate::maze::net::Node;
 use crate::maze::tile::Tile;
@@ -84,7 +85,9 @@ impl Maze {
     /// Joins are added to a union-find in this order (Kruskal's algorithm):
     /// 1. all crossing joins (each position has at most one partner across a tile
     ///    boundary, so these can never form a loop on their own);
-    /// 2. the tile-net joins, shuffled with the maze's seed.
+    /// 2. the tile-net joins, shuffled with the maze's seed. In a maze without
+    ///    crossings, those whose cut would leave crossing tracks go first, so they
+    ///    are kept wherever a loop can be cut elsewhere.
     ///
     /// A tile-net join whose ends are already connected would close a loop, so it is
     /// cut: that node is detached from its tile net and kept as a single-node net (a
@@ -99,6 +102,11 @@ impl Maze {
 
         let mut tile_joins = graph.tile_joins.clone();
         tile_joins.shuffle(&mut self.seeded_rng());
+        if !self.crossings {
+            // a stable sort, so the order is still shuffled within each kind
+            tile_joins
+                .sort_by_key(|&(_, position)| !self.cut_would_cross(graph.positions[position]));
+        }
 
         let cuts: Vec<Node> = tile_joins
             .into_iter()
@@ -118,6 +126,21 @@ impl Maze {
                 self.nets.len()
             );
         }
+    }
+
+    /// Whether detaching `node` (see `detach_node`) would leave tracks crossing in its
+    /// tile that did not before.
+    fn cut_would_cross(&self, node: Node) -> bool {
+        let mask = 1 << node.node;
+        let nets = &self.tiles[(node.j, node.i)].nodes;
+        let Some(&net) = nets.iter().find(|&&net| net & mask != 0) else {
+            return false;
+        };
+        let reduced = net & !mask;
+        nets.iter().filter(|&&other| other != net).any(|&other| {
+            (reduced != 0 && crossing_in_same_tile(reduced, other))
+                || crossing_in_same_tile(mask, other)
+        })
     }
 
     /// Moves `node` out of its tile net into a single-node tile net of its own.

@@ -40,6 +40,14 @@ track; with `-P` it is a plain red line. The sample above was made with
 No two tiles look alike in ink, so tiles can't be reused the way plain ones
 are: expect files several times bigger (`lib/src/renders/ink.rs`).
 
+## Track width
+
+The tracks are `PATH_WIDTH` (in `common/src/types/point.rs`) wide on each side
+of their middle, as a fraction of a tile: 0.09 by default, and anything up to
+0.15 works. After changing it, run `make width`: it regenerates the fragments
+and re-measures how tracks meet, which decides where they cross and keeps them
+apart. Wider tracks touch more often.
+
 ## Debugging
 
 `make cli` draws a fixed maze with the debugging overlay: tile outlines (`-B`),

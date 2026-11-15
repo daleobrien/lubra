@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 
+use super::touching::crossing_in_same_tile;
 use crate::maze::maze::Maze;
 use crate::maze::net::Node;
 use crate::maze::tile::Tile;
@@ -84,6 +85,20 @@ impl Maze {
             };
             if chain.len() > max_length || chain.iter().any(is_protected) {
                 continue;
+            }
+            // In a maze without crossings, keep a branch whose junction would become
+            // a plain track crossing another in its tile.
+            if !self.crossings {
+                let reduced = junction.bits & !(1 << link.node);
+                let crosses = self.tiles[(junction.j, junction.i)]
+                    .nodes
+                    .iter()
+                    .any(|&other| {
+                        other & junction.bits == 0 && crossing_in_same_tile(reduced, other)
+                    });
+                if crosses {
+                    continue;
+                }
             }
             doomed.extend(chain);
             closed_branches.push((junction, link.node));

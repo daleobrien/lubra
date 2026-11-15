@@ -96,7 +96,15 @@ mod tests {
         // N6 of a normal tile is the middle of the bottom edge; the walls are
         // PATH_WIDTH either side of it, matching the ordinary dead end.
         let fragment = terminal_fragment(N6).unwrap();
-        assert!(fragment.contains("d='M49.2 0.0L"), "{fragment}");
-        assert!(fragment.contains("L70.8 0.0'"), "{fragment}");
+        let half = PATH_WIDTH * TILE_WIDTH;
+        let (left, right) = (TILE_WIDTH / 2.0 - half, TILE_WIDTH / 2.0 + half);
+        assert!(
+            fragment.contains(&format!("d='M{left:.1} 0.0L")),
+            "{fragment}"
+        );
+        assert!(
+            fragment.contains(&format!("L{right:.1} 0.0'")),
+            "{fragment}"
+        );
     }
 }

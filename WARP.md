@@ -147,8 +147,9 @@ Run `make` to list targets. Pipelines (each step runs from its crate's directory
 - `make maze`: builds CLI and times one debug maze (override with `MAZE_ARGS="..."`).
 - `make doc`: runs generator `svg`, then document crate, then `typst compile` for docs.
 - `make full`: runs generator `nets` + `svg`, then CLI, then document.
+- `make width`: after changing the track width (`PATH_WIDTH` in `common/src/types/point.rs`, 0.09 of a tile by default; 0.11 to 0.15 are tested), regenerates the fragments and re-measures the clearance tables (`make clearance`: `tools/clearance.py`, needs rsvg-convert, numpy, Pillow and OpenCV). At 0.09 it reproduces the committed files exactly. `frag_135`'s rounded corners shrink to fit wider tracks. Wider tracks touch more often, and fill fewer gaps by going under other tracks.
 
-Single steps: `make gen`, `gen-svg`, `gen-nets`, `cli`, `document`, `typst`, `build`, `test`.
+Single steps: `make gen`, `gen-svg`, `gen-nets`, `clearance`, `cli`, `document`, `typst`, `build`, `test`.
 
 ## Build/Test Commands
 

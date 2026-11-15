@@ -543,9 +543,14 @@ mod tests {
 
     #[test]
     fn test_dead_end_cap_is_not_a_wiggle() {
-        // Up one side of a curved track, round its cap and back down the other side.
-        let fragment = "<path stroke='black' d='M30.8 0A30.8 30.8 0 0 1 0 30.8A10.8 10.8 0 0 1 0 9.2A9.2 9.2 0 0 0 9.2 0'/>";
-        assert!(find_kinks(&[drawn(fragment)]).is_empty());
+        // Up one side of a track curving round (0, 0) at radius 20, round its cap (as
+        // wide as the track) and back down the other side.
+        let half = PATH_WIDTH * TILE_WIDTH;
+        let (outer, inner) = (20.0 + half, 20.0 - half);
+        let fragment = format!(
+            "<path stroke='black' d='M{outer} 0A{outer} {outer} 0 0 1 0 {outer}A{half} {half} 0 0 1 0 {inner}A{inner} {inner} 0 0 0 {inner} 0'/>"
+        );
+        assert!(find_kinks(&[drawn(&fragment)]).is_empty());
     }
 
     #[test]

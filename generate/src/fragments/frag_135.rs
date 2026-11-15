@@ -20,9 +20,56 @@ const SIDE_RADIUS: f64 = 60.0 / TILE_WIDTH;
 /// How far the side curves turn, in degrees. More turn lifts the arch higher.
 const SIDE_TURN: f64 = 20.0;
 /// Radius of the rounded corners where the drop meets the arch (the wall itself), as a
-/// fraction of the tile width. With the settings above, about 13/120 is the most that
-/// fits above the edge; a larger value panics the generator.
+/// fraction of the tile width. A wider track leaves less room above the edge, so the
+/// corners shrink to the largest radius that fits, up to this (see `corner_radius`).
 const CORNER_RADIUS: f64 = 13.0 / TILE_WIDTH;
+
+/// The top curve's centre and radius (to the middle of the track), in the local frame
+/// of `local_arch`.
+fn top_curve() -> (Point, f64) {
+    let a = SIDE_RADIUS;
+    let start_heading = 30f64.to_radians();
+    let top_heading = start_heading + SIDE_TURN.to_radians();
+    let side_centre = left_of(start_heading) * a;
+    let side_end = side_centre - left_of(top_heading) * a;
+    let right = left_of(top_heading) * -1.0;
+    let top_radius = (0.5 - side_end.x) / right.x;
+    (side_end + right * top_radius, top_radius)
+}
+
+/// Where a corner of `radius` sits, against the drop's left wall and inside the top
+/// curve's lower wall, for a track of half-width `w`: its centre, if it fits above the
+/// edge.
+fn corner_centre(radius: f64, w: f64) -> Option<Point> {
+    let (top_centre, top_radius) = top_curve();
+    let lower = top_radius - w;
+    let corner_x = 0.5 - w - radius;
+    let reach = (lower - radius).powi(2) - (corner_x - top_centre.x).powi(2);
+    let corner_y = top_centre.y + reach.max(0.0).sqrt();
+    (reach >= 0.0 && corner_y >= 0.0).then(|| Point::new(corner_x, corner_y))
+}
+
+/// The corners' radius for a track of half-width `w`: `CORNER_RADIUS`, or the largest
+/// radius below it that fits above the edge (to a hundredth of a unit).
+fn corner_radius(w: f64) -> f64 {
+    if corner_centre(CORNER_RADIUS, w).is_some() {
+        return CORNER_RADIUS;
+    }
+    let (mut fits, mut too_big) = (0.0, CORNER_RADIUS);
+    while (too_big - fits) * TILE_WIDTH > 0.01 {
+        let middle = (fits + too_big) / 2.0;
+        if corner_centre(middle, w).is_some() {
+            fits = middle;
+        } else {
+            too_big = middle;
+        }
+    }
+    assert!(
+        fits > 0.0,
+        "frag_135: no rounded corner fits a track this wide"
+    );
+    fits
+}
 
 fn left_of(heading: f64) -> Point {
     Point::new(-heading.sin(), heading.cos())
@@ -48,20 +95,13 @@ fn local_arch() -> ([f64; 5], Vec<Point>) {
     let side_centre = left_of(start_heading) * a;
     let side_end = side_centre - left_of(top_heading) * a;
     // Top curve (a right turn) centred on the middle of the chord.
-    let right = left_of(top_heading) * -1.0;
-    let top_radius = (0.5 - side_end.x) / right.x;
-    let top_centre = side_end + right * top_radius;
+    let (top_centre, top_radius) = top_curve();
 
     // Rounded corner: inside the top curve's lower wall, against the drop's left wall.
     let lower = top_radius - w;
-    let corner_x = 0.5 - w - CORNER_RADIUS;
-    let reach = (lower - CORNER_RADIUS).powi(2) - (corner_x - top_centre.x).powi(2);
-    let corner_y = top_centre.y + reach.max(0.0).sqrt();
-    assert!(
-        reach >= 0.0 && corner_y >= 0.0,
-        "frag_135: CORNER_RADIUS is too large for SIDE_RADIUS and SIDE_TURN"
-    );
-    let corner_centre = Point::new(corner_x, corner_y);
+    let corner = corner_radius(w);
+    let corner_centre = corner_centre(corner, w).expect("corner_radius fits");
+    let corner_y = corner_centre.y;
     let towards = (corner_centre - top_centre) * (1.0 / length(corner_centre - top_centre));
     let corner_start = top_centre + towards * lower;
     let corner_end = Point::new(0.5 - w, corner_y);
@@ -88,7 +128,7 @@ fn local_arch() -> ([f64; 5], Vec<Point>) {
         bottom_side_end,
         bottom_start,
     ];
-    let radii = [a - w, a + w, top_radius + w, lower, CORNER_RADIUS];
+    let radii = [a - w, a + w, top_radius + w, lower, corner];
     (radii, points)
 }
 

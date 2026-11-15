@@ -44,6 +44,9 @@ pub struct Maze {
     pub(crate) crossings: bool,
 }
 
+/// The most times `Maze::generate_with` makes a maze again to be rid of a crossing.
+const MAX_ATTEMPTS: u64 = 20;
+
 impl Maze {
     pub fn new(
         number_of_columns: usize,
@@ -128,15 +131,28 @@ impl Maze {
 
     /// As `generate`, with or without `crossings`: without them no track passes
     /// under another, in a tile or where a gap is filled.
+    ///
+    /// Without crossings, the rare maze that still ends up with one (where every way
+    /// to cut a loop crosses) is made again from a seed derived from `seed`, so the
+    /// same seed still always gives the same maze.
     pub fn generate_with(columns: usize, rows: usize, seed: u64, crossings: bool) -> Maze {
-        let mut maze = Maze::new(columns, rows, false, false, false, Some(seed));
-        maze.crossings = crossings;
-        maze.create_random_grid(columns, rows);
-        maze.reduce_nets(1);
-        maze.remove_cycles(false);
-        maze.trim_dead_ends(2);
-        maze.separate_touching_tracks();
-        maze.fill_blank_areas(2);
+        let build = |seed: u64| {
+            let mut maze = Maze::new(columns, rows, false, false, false, Some(seed));
+            maze.crossings = crossings;
+            maze.create_random_grid(columns, rows);
+            maze.reduce_nets(1);
+            maze.remove_cycles(false);
+            maze.trim_dead_ends(2);
+            maze.separate_touching_tracks();
+            maze.fill_blank_areas(2);
+            maze
+        };
+        let mut maze = build(seed);
+        let mut attempt = 0;
+        while !crossings && maze.crossing_count() > 0 && attempt < MAX_ATTEMPTS {
+            attempt += 1;
+            maze = build(seed.wrapping_add(attempt.wrapping_mul(0x9E37_79B9_7F4A_7C15)));
+        }
         maze
     }
 

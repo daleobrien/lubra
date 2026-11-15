@@ -165,10 +165,10 @@ impl Maze {
                 for &bits in &self.tiles[(j, i)].nodes {
                     let here = TileNet { i, j, bits };
                     for (other, _, how) in self.meetings(i, j, bits) {
-                        if how == Meeting::Touching
-                            && !seen.contains(&(other, here))
-                            && seen.insert((here, other))
-                        {
+                        // In a maze without crossings, tracks that cross are as bad.
+                        let bad = how == Meeting::Touching
+                            || (how == Meeting::Crossing && !self.crossings);
+                        if bad && !seen.contains(&(other, here)) && seen.insert((here, other)) {
                             pairs.push((here, other));
                         }
                     }
@@ -176,6 +176,24 @@ impl Maze {
             }
         }
         pairs
+    }
+
+    /// The number of pairs of tile nets that cross in their tile, one passing under
+    /// the other.
+    pub fn crossing_count(&self) -> usize {
+        let mut count = 0;
+        for j in 0..self.number_of_rows {
+            for i in 0..self.number_of_columns {
+                let nets = &self.tiles[(j, i)].nodes;
+                for (k, &net) in nets.iter().enumerate() {
+                    count += nets[k + 1..]
+                        .iter()
+                        .filter(|&&other| crossing_in_same_tile(net, other))
+                        .count();
+                }
+            }
+        }
+        count
     }
 
     /// The number of pairs of tile nets drawn touching each other.
@@ -187,7 +205,8 @@ impl Maze {
     ///
     /// Each round takes one tile net out of every touching pair, then joins the
     /// pieces that were beyond it back on somewhere else, using only joins that do
-    /// not touch anything (`rejoin_nets_tidily`). Tracks that cross are left alone.
+    /// not touch anything (`rejoin_nets_tidily`). Tracks that cross are left alone,
+    /// unless the maze has no crossings: then they are separated too.
     ///
     /// The route from the entrance to the exit is never broken: a pair with both
     /// tile nets on the route is left touching. Pieces that could not be joined
@@ -317,8 +336,12 @@ mod tests {
 
     #[test]
     fn test_meeting_same_tile_edge_tracks() {
-        // Two dead ends on different edges of one tile are drawn apart.
-        assert_eq!(meeting(SAME_TILE, N4, N6), Meeting::Clear);
+        // Two dead ends on different edges of one tile never cross, and are drawn
+        // apart unless the track is very wide (at 0.15 of a tile their caps touch).
+        assert_ne!(meeting(SAME_TILE, N4, N6), Meeting::Crossing);
+        if common::types::point::PATH_WIDTH <= 0.13 {
+            assert_eq!(meeting(SAME_TILE, N4, N6), Meeting::Clear);
+        }
         // A tile net is never compared with one that shares its nodes, so such a
         // pair is in neither table.
         assert_eq!(meeting(SAME_TILE, N4 | N5, N5 | N6), Meeting::Touching);
@@ -373,35 +396,18 @@ mod tests {
 mod crossing_tests {
     use super::*;
 
-    /// How many pairs of tile nets in the maze cross, one passing under the other.
-    fn crossings(maze: &Maze) -> usize {
-        let mut count = 0;
-        for j in 0..maze.number_of_rows {
-            for i in 0..maze.number_of_columns {
-                let nets = maze.tile_nets(i, j);
-                for (k, &net) in nets.iter().enumerate() {
-                    count += nets[k + 1..]
-                        .iter()
-                        .filter(|&&other| crossing_in_same_tile(net, other))
-                        .count();
-                }
-            }
-        }
-        count
-    }
-
     #[test]
     fn test_a_maze_without_crossings_has_none() {
         let mut with = 0;
         for (columns, rows) in [(20, 12), (9, 7), (31, 18)] {
             for seed in 0..10 {
                 let maze = Maze::generate_with(columns, rows, seed, false);
-                assert_eq!(crossings(&maze), 0, "{columns}x{rows} seed {seed}");
+                assert_eq!(maze.crossing_count(), 0, "{columns}x{rows} seed {seed}");
                 assert!(
                     !maze.solution_route().is_empty(),
                     "it still has a way through"
                 );
-                with += crossings(&Maze::generate(columns, rows, seed));
+                with += Maze::generate(columns, rows, seed).crossing_count();
             }
         }
         assert!(with > 0, "mazes with crossings have some");

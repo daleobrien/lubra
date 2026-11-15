@@ -304,14 +304,23 @@ mod tests {
     #[test]
     fn test_half_circle_starts_at_the_vertex_and_ends_at_the_far_opening() {
         // Arc 46 with junction 245 across edge 4: the half-circle runs from vertex 2
-        // at the origin to the middle of edge 6, so its inner wall is 19.2 from (30, 0).
+        // at the origin to the middle of edge 6, so its inner wall is half a track
+        // short of 30 from (30, 0) (19.2 at the usual width).
+        let half = PATH_WIDTH * TILE_WIDTH;
+        let inner = trimf64(30.0 - half);
         let fragment = hook_fork(false, 2, 4, 5);
         assert!(
-            fragment.contains("M10.8 0A19.2 19.2 0 0 0 30 19.2"),
+            fragment.contains(&format!(
+                "M{} 0A{inner} {inner} 0 0 0 30 {inner}",
+                trimf64(half)
+            )),
             "{fragment}"
         );
         assert!(
-            fragment.ends_with("A19.2 19.2 0 0 0 49.2 0'/>"),
+            fragment.ends_with(&format!(
+                "A{inner} {inner} 0 0 0 {} 0'/>",
+                trimf64(60.0 - half)
+            )),
             "{fragment}"
         );
     }

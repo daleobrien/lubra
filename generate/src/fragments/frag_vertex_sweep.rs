@@ -128,9 +128,10 @@ mod tests {
         let walls = fragment.split("stroke='black' d='").nth(1).expect("walls");
         assert_eq!(walls.matches('M').count(), 2, "{fragment}");
         assert_eq!(walls.matches('A').count(), 4, "{fragment}");
-        assert!(
-            walls.contains("49.2 0") && walls.contains("70.8 0"),
-            "{fragment}"
-        );
+        // the edge opening's walls, half a track either side of its middle
+        let half = PATH_WIDTH * TILE_WIDTH;
+        let near = format!("{} 0", trimf64(60.0 - half));
+        let far = format!("{} 0", trimf64(60.0 + half));
+        assert!(walls.contains(&near) && walls.contains(&far), "{fragment}");
     }
 }
