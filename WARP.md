@@ -146,7 +146,7 @@ Run `make` to list targets. Pipelines (each step runs from its crate's directory
 - `make generate`: runs generator (both), then CLI, then document.
 - `make both`: runs generator `svg`, then CLI.
 - `make maze`: builds CLI and times one debug maze (override with `MAZE_ARGS="..."`).
-- `make doc`: runs generator `svg`, then document crate, then `typst compile` for docs.
+- `make doc`: runs generator `svg`, then document crate, then `typst compile` for docs (PDFs into `docs/`).
 - `make full`: runs generator `nets` + `svg`, then CLI, then document.
 - `make width`: after changing the track width (`PATH_WIDTH` in `common/src/types/point.rs`, 0.12 of a tile by default; 0.09 to 0.15 are tested), regenerates the fragments and re-measures the clearance tables (`make clearance`: `tools/clearance.py`, needs rsvg-convert, numpy, Pillow and OpenCV). Run with an unchanged width, it reproduces the committed files exactly. Tracks meet as the worse of the two tables' answers (one from each side), since they can differ by rounding. `frag_135`'s rounded corners shrink to fit wider tracks. Wider tracks touch more often, and fill fewer gaps by going under other tracks.
 

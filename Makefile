@@ -32,7 +32,7 @@ help:
 	@echo "  make generate  generator (svg + nets), then CLI, then document"
 	@echo "  make both      generator svg, then CLI"
 	@echo "  make maze      build CLI and time one debug maze"
-	@echo "  make doc       generator svg, document, then typst compile"
+	@echo "  make doc       generator svg, document, then typst compile (PDFs into docs/)"
 	@echo "  make full      generator nets + svg, then CLI, then document"
 	@echo "  make width     after changing PATH_WIDTH: fragments, then the clearance tables"
 	@echo "Steps:"
@@ -83,10 +83,11 @@ sample:
 document:
 	cd document && $(CARGO) run
 
+# The PDFs go into docs/, next to the README's images.
 typst:
-	cd typst && $(TYPST) compile shapes.typ
-	cd typst && $(TYPST) compile tiles.typ
-	cd typst && $(TYPST) compile main.typ
+	cd typst && $(TYPST) compile shapes.typ ../docs/shapes.pdf
+	cd typst && $(TYPST) compile tiles.typ ../docs/tiles.pdf
+	cd typst && $(TYPST) compile main.typ ../docs/main.pdf
 
 build:
 	$(CARGO) build --workspace

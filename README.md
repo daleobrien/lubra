@@ -1,13 +1,23 @@
-# Lubra
+<h1 align="center">Lubra</h1>
 
-A Rust generator for **triangle-tile mazes**: winding tracks drawn on a grid of
-triangles, with tracks that pass over and under one another. Every maze is a
-single tree, so there is exactly one route between any two points, from the
-entrance (bottom left) to the exit (top right).
+<p align="center">Hand-drawn triangle-tile mazes, generated in Rust.</p>
 
 <p align="center">
-  <img src="docs/sample-ink-solved.svg" alt="A hand-drawn triangle-tile maze with its solution pencilled in" width="560">
+  <a href="https://maze.do.id.au/?maze=curvy"><b>Play</b></a> &nbsp;·&nbsp;
+  <a href="#quick-start">Quick start</a> &nbsp;·&nbsp;
+  <a href="#how-it-works">How it works</a> &nbsp;·&nbsp;
+  <a href="#crossings">Crossings</a>
 </p>
+
+<p align="center">
+  <img src="docs/cover.png" alt="A hand-drawn triangle-tile maze" width="100%">
+</p>
+
+Lubra makes **triangle-tile mazes**: winding tracks drawn on a grid of
+triangles, with tracks that pass over and under one another. Every maze is a
+single tree, so there is exactly one route between any two points, from the
+entrance (bottom left) to the exit (top right). Play them in the browser at
+[maze.do.id.au](https://maze.do.id.au/?maze=curvy).
 
 ## Quick start
 
@@ -34,8 +44,12 @@ even black walls.
 
 `-S` (`--solution`) adds the route from the entrance to the exit: pencilled in
 red over the ink, gone over twice, and lightly where it passes under another
-track; with `-P` it is a plain red line. The sample above was made with
+track; with `-P` it is a plain red line. The sample below was made with
 `make sample`, which also writes the maze without its solution.
+
+<p align="center">
+  <img src="docs/sample-ink-solved.svg" alt="A hand-drawn triangle-tile maze with its solution pencilled in" width="560">
+</p>
 
 No two tiles look alike in ink, so tiles can't be reused the way plain ones
 are: expect files several times bigger (`lib/src/renders/ink.rs`).
@@ -77,6 +91,14 @@ The workspace has four crates:
   tables, into `lib`.
 - `document`: draws every fragment for the design notes in `typst/`.
 
-The design notes (`typst/main.typ`, `make doc`) explain the tiles, the passes
-that turn random tiles into one maze, and how each fragment is drawn.
-`WARP.md` is a shorter guide to the code.
+The design notes (`typst/main.typ`) explain the tiles, the passes that turn
+random tiles into one maze, and how each fragment is drawn. `make doc` builds
+them, with the tile shapes (`shapes.typ`, `tiles.typ`), as PDFs in `docs/`; it
+needs [Typst](https://typst.app). `WARP.md` is a shorter guide to the code.
+
+The cover at the top is `docs/cover.png`, 1280 by 640, which is also the size
+of GitHub's social preview.
+
+---
+
+<p align="center"><sub>Part of <a href="https://daleobrien.github.io/#mazes">Mazes</a> &nbsp;·&nbsp; more at <a href="https://daleobrien.github.io">daleobrien.github.io</a></sub></p>
