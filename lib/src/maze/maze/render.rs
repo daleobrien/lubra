@@ -1,3 +1,4 @@
+use super::draw_order::Piece;
 use super::solution::RouteStep;
 use super::touching::crossing_in_same_tile;
 use crate::maze::maze::FileType::{PNG, SVG};
@@ -88,10 +89,9 @@ impl Maze {
                 }
             }
 
-            // Every fragment is drawn on one layer: where tracks cross, the one drawn
-            // later passes over. Cross-tile fragments don't need a layer of their own
-            // because PATH_WIDTH keeps an arc that dips into a neighbouring tile clear
-            // of that tile's openings.
+            // Every fragment is drawn on one layer, in the order `drawn_fragments`
+            // gives (see `draw_order`): where tracks cross, the one drawn later passes
+            // over.
             svg.add_fragment(&fragment.svg, point, 1);
         }
 
@@ -202,7 +202,22 @@ impl Maze {
                 _ => {}
             }
         }
-        drawn
+        let pieces: Vec<Piece> = drawn
+            .iter()
+            .map(|fragment| Piece {
+                i: fragment.coordinate.i,
+                j: fragment.coordinate.j,
+                nodes: fragment.nodes,
+                track: !fragment.marker && fragment.key & WA == 0,
+                svg: &fragment.svg,
+            })
+            .collect();
+        let order = self.drawing_order(&pieces);
+        let mut slots: Vec<Option<Drawn>> = drawn.into_iter().map(Some).collect();
+        order
+            .into_iter()
+            .filter_map(|index| slots[index].take())
+            .collect()
     }
 
     /// The route from the entrance to the exit as lines in drawing units, split into

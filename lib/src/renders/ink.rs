@@ -296,6 +296,21 @@ pub fn fragment_walls(fragment: &str, offset: Point, step: f64) -> Vec<Vec<Point
         .collect()
 }
 
+/// The filled areas of a fragment placed at `offset`, as outlines flattened to
+/// pieces of at most `step`, in drawing units. An outline is closed whether or not
+/// its path ends in `z`, as a fill is.
+pub fn fragment_fills(fragment: &str, offset: Point, step: f64) -> Vec<Vec<Point>> {
+    fragment
+        .split('<')
+        .filter(|element| {
+            attribute(element, "fill").is_some_and(|f| f != "none" && f != "transparent")
+        })
+        .filter_map(|element| attribute(element, "d"))
+        .flat_map(|d| flattened(d, offset, STEP.min(step)))
+        .map(|line| line.points)
+        .collect()
+}
+
 // ---- writing ----
 
 /// Appends a polyline as path data.

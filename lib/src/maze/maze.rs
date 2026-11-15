@@ -4,6 +4,7 @@ use array2d::Array2D;
 
 // Import the implementation modules
 mod dead_ends;
+mod draw_order;
 mod fill;
 mod fill_clearance;
 mod grid_generation;
