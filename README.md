@@ -5,8 +5,8 @@
 <p align="center">
   <a href="https://maze.do.id.au/?maze=curvy"><b>Play</b></a> &nbsp;·&nbsp;
   <a href="#quick-start">Quick start</a> &nbsp;·&nbsp;
-  <a href="#how-it-works">How it works</a> &nbsp;·&nbsp;
-  <a href="#crossings">Crossings</a>
+  <a href="#documents">Documents</a> &nbsp;·&nbsp;
+  <a href="#how-it-works">How it works</a>
 </p>
 
 <p align="center">
@@ -14,72 +14,36 @@
 </p>
 
 Lubra makes **triangle-tile mazes**: winding tracks drawn on a grid of
-triangles, with tracks that pass over and under one another. Every maze is a
-single tree, so there is exactly one route between any two points, from the
-entrance (bottom left) to the exit (top right). Play them in the browser at
+triangles, in ink, with tracks that pass over and under one another. Every maze
+is a single tree, so there is exactly one route from the entrance (bottom left)
+to the exit (top right). Play them in the browser at
 [maze.do.id.au](https://maze.do.id.au/?maze=curvy).
 
 ## Quick start
 
 ```bash
-cargo build --release
-cd cli
-cargo run --release -- --seed 1 -W 20 -H 12 -o maze      # writes maze.svg
-cargo run --release -- --seed 1 -W 20 -H 12 -S -o maze   # with its solution
-cargo run --release -- --seed 1 -W 20 -H 12 -P -o maze   # plain, even walls
-cargo run --release -- -W 20 -H 12 -F png -o maze       # a new maze, as PNG
+make build                                        # build everything
+make cli CLI_ARGS="--seed 1 -W 20 -H 12 -o maze"  # draw a maze: cli/maze.svg
+make test                                         # run the tests
+make                                              # list every task
 ```
 
-`-W` and `-H` are in columns and rows of tiles; about 1.7 columns per row looks
-square. The same `--seed` always gives the same maze. Run with `--help` to see
-every option. The Makefile wraps the common tasks: run `make` to list them.
+Add `-S` to `CLI_ARGS` for the solution, or `-P` for plain walls; see
+[Drawing a maze](docs/drawing.md) for more.
 
-## Hand-drawn ink
+## Documents
 
-Mazes are drawn by hand, in brown ink, by default: every wall wobbles slightly
-and the pen's width wanders, after the ink style of
-[maze-rs](https://github.com/daleobrien/maze-rs). The wobble is seeded from the
-maze's seed, so a maze always comes out the same. Add `-P` (`--plain`) for
-even black walls.
+| Document | What's in it |
+| -------- | ------------ |
+| [Drawing a maze](docs/drawing.md) | The command line, the ink and the solution |
+| [Settings](docs/settings.md) | Track width and how many crossings there are |
+| [Debugging](docs/debugging.md) | The debugging overlay and kink statistics |
+| [Design notes](docs/main.pdf) (PDF) | The tiles, the passes that make one maze, and how each fragment is drawn |
+| [Shapes](docs/shapes.pdf), [Tiles](docs/tiles.pdf) (PDF) | Every fragment and tile, drawn |
+| [WARP.md](WARP.md) | A short guide to the code |
 
-`-S` (`--solution`) adds the route from the entrance to the exit: pencilled in
-red over the ink, gone over twice, and lightly where it passes under another
-track; with `-P` it is a plain red line. The sample below was made with
-`make sample`, which also writes the maze without its solution.
-
-<p align="center">
-  <img src="docs/sample-ink-solved.svg" alt="A hand-drawn triangle-tile maze with its solution pencilled in" width="560">
-</p>
-
-No two tiles look alike in ink, so tiles can't be reused the way plain ones
-are: expect files several times bigger (`lib/src/renders/ink.rs`).
-
-## Track width
-
-The tracks are `PATH_WIDTH` (in `common/src/types/point.rs`) wide on each side
-of their middle, as a fraction of a tile: 0.12 by default, and anything from
-0.09 to 0.15 works. After changing it, run `make width`: it regenerates the fragments
-and re-measures how tracks meet, which decides where they cross and keeps them
-apart. Wider tracks touch more often.
-
-## Crossings
-
-How often one track passes under another is `CROSSING_LEVEL` (in
-`lib/src/maze/maze.rs`, or `Maze::set_crossing_level`): 4 by default. Tidying a
-maze takes out tracks drawn against each other, and with them most crossings, as
-a crossing's tracks often touch a neighbour. From 0 to 1 the level is the share of
-crossings kept: tidying takes out the other track instead, and gives up a kept
-crossing only when nothing else clears the touch. Above 1 every crossing is kept
-and tiles with crossing tracks are also picked that many times as often. Over 24
-by 12 tile mazes that gives about 0.3 crossings per 100 tiles at level 0, 4 at 1,
-10 at 4 and 13.5 at 10, with fewer tracks left touching as the level goes up.
-
-## Debugging
-
-`make cli` draws a fixed maze with the debugging overlay: tile outlines (`-B`),
-node numbers (`-N`), each tile's nets (`-T`) and rings round any kinks in the
-tracks (`-K`), with each net in its own colour and the command line written
-above the maze. `--kink-stats N` counts the kinks over `N` seeded mazes.
+`make doc` builds the PDFs into `docs/` from `typst/`; it needs
+[Typst](https://typst.app).
 
 ## How it works
 
@@ -89,15 +53,12 @@ The workspace has four crates:
 - `cli`: the command line.
 - `generate`: writes the SVG fragment for every tile shape, and the lookup
   tables, into `lib`.
-- `document`: draws every fragment for the design notes in `typst/`.
+- `document`: draws every fragment for the design notes.
 
-The design notes (`typst/main.typ`) explain the tiles, the passes that turn
-random tiles into one maze, and how each fragment is drawn. `make doc` builds
-them, with the tile shapes (`shapes.typ`, `tiles.typ`), as PDFs in `docs/`; it
-needs [Typst](https://typst.app). `WARP.md` is a shorter guide to the code.
-
-The cover at the top is `docs/cover.png`, 1280 by 640, which is also the size
-of GitHub's social preview.
+A maze starts as a grid of random tiles, each picked to fit its neighbours.
+Passes then join the tracks into one tree, trim short dead ends, pull apart
+tracks drawn against each other and grow branches into the gaps. The
+[design notes](docs/main.pdf) go through each step.
 
 ---
 
