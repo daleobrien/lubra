@@ -1,4 +1,6 @@
 //! The entrance and exit markers: a dead end that opens into a ring with a dot in it.
+//! With `--circles`, other dead ends that have their tile to themselves open into the
+//! same ring, without the dot.
 
 use common::consts::{FILL, IN, N4, N5, N6};
 use common::types::point::{PATH_WIDTH, TILE_HEIGHT, TILE_WIDTH};
@@ -23,6 +25,12 @@ const DOT_COLOUR: &str = "#E02020";
 /// leaves the track on a small blend curve and joins a ring around the centre, so the
 /// outline never has a corner.
 pub fn terminal_fragment(net: usize) -> Option<String> {
+    ring_fragment(net, true)
+}
+
+/// As [`terminal_fragment`], with the red dot only if `dot` is set: the ring that
+/// ends any dead end with `--circles`.
+pub fn ring_fragment(net: usize, dot: bool) -> Option<String> {
     let inverted = net & IN != 0;
     // Tile-local positions: the middle of the node's edge and the tile's centre.
     let edge_y = if inverted { TILE_HEIGHT } else { 0.0 };
@@ -60,9 +68,8 @@ pub fn terminal_fragment(net: usize) -> Option<String> {
     let ring_x = length - run * RING_RADIUS / reach;
     let ring_y = rise * RING_RADIUS / reach;
 
-    Some(format!(
-        "<path stroke='black' fill='{FILL}' d='M{a}L{b}A{f} {f} 0 0 1 {c}A{r} {r} 0 1 0 {d}A{f} {f} 0 0 1 {e}L{g}'/>\
-         <circle cx='{cx:.1}' cy='{cy:.1}' r='{DOT_RADIUS}' fill='{DOT_COLOUR}' fill-opacity='1'/>",
+    let ring = format!(
+        "<path stroke='black' fill='{FILL}' d='M{a}L{b}A{f} {f} 0 0 1 {c}A{r} {r} 0 1 0 {d}A{f} {f} 0 0 1 {e}L{g}'/>",
         a = point(0.0, half_width),
         b = point(blend_x, half_width),
         c = point(ring_x, ring_y),
@@ -71,6 +78,12 @@ pub fn terminal_fragment(net: usize) -> Option<String> {
         g = point(0.0, -half_width),
         f = BLEND_RADIUS,
         r = RING_RADIUS,
+    );
+    if !dot {
+        return Some(ring);
+    }
+    Some(format!(
+        "{ring}<circle cx='{cx:.1}' cy='{cy:.1}' r='{DOT_RADIUS}' fill='{DOT_COLOUR}' fill-opacity='1'/>",
         cx = centre.0,
         cy = centre.1,
     ))
@@ -89,6 +102,18 @@ mod tests {
         for net in [0, N1, N2, N4 | N5, N5 | N6 | IN] {
             assert!(terminal_fragment(net).is_none(), "net {net}");
         }
+    }
+
+    #[test]
+    fn test_ring_fragment_is_the_marker_without_its_dot() {
+        for net in [N4, N5, N6, N4 | IN, N5 | IN, N6 | IN] {
+            let ring = ring_fragment(net, false).unwrap();
+            let marker = terminal_fragment(net).unwrap();
+            assert!(!ring.contains("<circle"), "{ring}");
+            assert!(marker.starts_with(&ring), "{marker}");
+            assert!(marker.contains("<circle"), "{marker}");
+        }
+        assert!(ring_fragment(N4 | N5, false).is_none());
     }
 
     #[test]

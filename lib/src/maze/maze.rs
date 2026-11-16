@@ -40,6 +40,9 @@ pub struct Maze {
     pub(crate) colour_tracks: bool,
     pub(crate) show_kinks: bool,
     pub(crate) ink: bool,
+    /// Whether every dead end that has its tile to itself ends in a ring, like
+    /// the entrance and exit (without their red dot).
+    pub(crate) circles: bool,
     pub(crate) show_solution: bool,
     /// Whether tracks may cross, one passing under another.
     pub(crate) crossings: bool,
@@ -95,6 +98,7 @@ impl Maze {
             colour_tracks: false,
             show_kinks: false,
             ink: false,
+            circles: false,
             show_solution: false,
             crossings: true,
             crossing_level: CROSSING_LEVEL,
@@ -126,6 +130,12 @@ impl Maze {
     /// Whether to draw the maze by hand, in ink (see `renders::ink`).
     pub fn set_ink(&mut self, ink: bool) {
         self.ink = ink;
+    }
+
+    /// Whether every dead end that has its tile to itself ends in a ring, like the
+    /// entrance and exit markers but without their red dot (see `renders::terminal`).
+    pub fn set_circles(&mut self, circles: bool) {
+        self.circles = circles;
     }
 
     /// Whether to ring every kink in the rendered maze (see `renders::kinks`) and add

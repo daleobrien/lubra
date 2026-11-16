@@ -29,6 +29,19 @@ black walls.
 No two tiles look alike in ink, so tiles can't be reused the way plain ones
 are: expect files several times bigger (`lib/src/renders/ink.rs`).
 
+## Rings at dead ends
+
+The entrance and exit end in a ring with a red dot in it. Add `-C`
+(`--circles`) to end other dead ends in the same ring, without the dot:
+
+```bash
+make cli CLI_ARGS="--seed 1 -W 20 -H 12 -C -o maze"
+```
+
+A ring sits on its tile's centre, so only a dead end that has its tile to
+itself gets one; a dead end sharing its tile with another track keeps its
+usual rounded end.
+
 ## The solution
 
 `-S` (`--solution`) adds the route from the entrance to the exit: pencilled in

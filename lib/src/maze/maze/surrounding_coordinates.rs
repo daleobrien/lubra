@@ -625,6 +625,7 @@ mod tests {
             show_tile_nets: false,
             show_kinks: false,
             ink: false,
+            circles: false,
             show_solution: false,
             crossings: true,
             crossing_level: crate::maze::maze::CROSSING_LEVEL,

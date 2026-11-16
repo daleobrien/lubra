@@ -80,6 +80,11 @@ struct Args {
     #[arg(short = 'P', long, default_value_t = false)]
     plain: bool,
 
+    /// End every dead end that has its tile to itself in a ring, like the entrance
+    /// and exit
+    #[arg(short = 'C', long, default_value_t = false)]
+    circles: bool,
+
     /// Ring every kink in the drawn tracks (red: a corner, purple: a tight wiggle)
     /// and add their number to the caption
     #[arg(short = 'K', long, default_value_t = false)]
@@ -283,6 +288,7 @@ fn main() {
     maze.set_show_tile_nets(args.show_tile_nets);
     maze.set_show_kinks(args.show_kinks);
     maze.set_ink(!args.plain);
+    maze.set_circles(args.circles);
     maze.set_show_solution(args.solution);
     // With any debug output on, write the command line above the maze (so a drawing
     // can be reproduced from the image alone) and colour each net's track.

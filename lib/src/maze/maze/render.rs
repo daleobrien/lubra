@@ -10,7 +10,7 @@ use crate::renders::kinks::{find_kinks, DrawnFragment, Kink, KinkKind};
 use crate::renders::net_colours::{net_colour, net_index};
 use crate::renders::node_numbers::{add_node_numbers, add_tile_nets};
 use crate::renders::svg::Svg;
-use crate::renders::terminal::terminal_fragment;
+use crate::renders::terminal::{ring_fragment, terminal_fragment};
 use crate::renders::vertex_s::is_vertex_s;
 use common::consts::{NL, NX, WA};
 use common::nodes::get_connected_coords_at_coords;
@@ -187,6 +187,21 @@ impl Maze {
                     nodes,
                     svg: Cow::Owned(marker),
                     marker: true,
+                });
+                continue;
+            }
+            // With `--circles`, other dead ends end in the same ring, without the dot.
+            // Only where the dead end has its tile to itself: the ring sits on the
+            // tile's centre, where another track in the tile could run.
+            let alone = self.tiles[(coordinate.j, coordinate.i)].nodes.len() == 1;
+            if let Some(ring) = ring_fragment(key, false).filter(|_| self.circles && alone) {
+                drawn.push(Drawn {
+                    coordinate,
+                    logical: coordinate_and_net.net & NX,
+                    key,
+                    nodes,
+                    svg: Cow::Owned(ring),
+                    marker: false,
                 });
                 continue;
             }
