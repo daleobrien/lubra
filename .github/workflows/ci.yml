@@ -1,0 +1,51 @@
+# Checks every push and pull request: formatting, clippy (warnings are errors) and the
+# tests, then renders a few sample mazes with the CLI and keeps them as an artifact
+# so a change to the drawing can be looked at without building anything.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace
+
+      # The CLI is run from its own directory, as the Makefile does (`make sample`).
+      # Same maze each time (--seed 1, 20 by 12): ink, ink with the solution, plain,
+      # and ink without the faint hidden tracks.
+      - name: Render samples
+        run: |
+          mkdir -p samples
+          cd cli
+          cargo build --release
+          ../target/release/lubra --seed 1 -W 20 -H 12 -o ../samples/ink
+          ../target/release/lubra --seed 1 -W 20 -H 12 -S -o ../samples/ink-solved
+          ../target/release/lubra --seed 1 -W 20 -H 12 -P -o ../samples/plain
+          ../target/release/lubra --seed 1 -W 20 -H 12 --no-faint-under -o ../samples/ink-no-faint
+          ../target/release/lubra --seed 2 -W 30 -H 18 -o ../samples/ink-large
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: samples
+          path: samples/
