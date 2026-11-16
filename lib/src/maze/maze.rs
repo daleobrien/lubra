@@ -41,6 +41,8 @@ pub struct Maze {
     pub(crate) show_kinks: bool,
     pub(crate) ink: bool,
     pub(crate) show_solution: bool,
+    /// Whether a track passing under another shows faintly through it.
+    pub(crate) faint_under: bool,
     /// Whether tracks may cross, one passing under another.
     pub(crate) crossings: bool,
     /// How many crossings to make (see `CROSSING_LEVEL`).
@@ -96,6 +98,7 @@ impl Maze {
             show_kinks: false,
             ink: false,
             show_solution: false,
+            faint_under: true,
             crossings: true,
             crossing_level: CROSSING_LEVEL,
         };
@@ -121,6 +124,12 @@ impl Maze {
     /// Whether to draw the route from the entrance to the exit, in red.
     pub fn set_show_solution(&mut self, show: bool) {
         self.show_solution = show;
+    }
+
+    /// Whether a track passing under another shows faintly through the one on top (on
+    /// by default). Off, the hidden walls are simply not drawn.
+    pub fn set_faint_under(&mut self, faint: bool) {
+        self.faint_under = faint;
     }
 
     /// Whether to draw the maze by hand, in ink (see `renders::ink`).

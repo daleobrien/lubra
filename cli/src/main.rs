@@ -80,6 +80,10 @@ struct Args {
     #[arg(short = 'P', long, default_value_t = false)]
     plain: bool,
 
+    /// Do not show a track passing under another faintly through the one on top
+    #[arg(long, default_value_t = false)]
+    no_faint_under: bool,
+
     /// Ring every kink in the drawn tracks (red: a corner, purple: a tight wiggle)
     /// and add their number to the caption
     #[arg(short = 'K', long, default_value_t = false)]
@@ -283,6 +287,7 @@ fn main() {
     maze.set_show_tile_nets(args.show_tile_nets);
     maze.set_show_kinks(args.show_kinks);
     maze.set_ink(!args.plain);
+    maze.set_faint_under(!args.no_faint_under);
     maze.set_show_solution(args.solution);
     // With any debug output on, write the command line above the maze (so a drawing
     // can be reproduced from the image alone) and colour each net's track.

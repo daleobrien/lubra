@@ -154,7 +154,10 @@ impl Maze {
     /// passing under is drawn after it. The tiles' own crossings are settled first;
     /// a pair already settled the other way is left so. Otherwise pieces keep the
     /// order given.
-    pub(super) fn drawing_order(&self, pieces: &[Piece]) -> Vec<usize> {
+    ///
+    /// Also the pieces that pass under: those drawn before a piece they meet, whose
+    /// walls the other's fill may hide.
+    pub(super) fn drawing_order(&self, pieces: &[Piece]) -> (Vec<usize>, HashSet<usize>) {
         let mut by_net: HashMap<(usize, usize, usize), Vec<usize>> = HashMap::new();
         let mut by_tile: HashMap<(usize, usize), Vec<usize>> = HashMap::new();
         for (index, piece) in pieces.iter().enumerate() {
@@ -252,7 +255,16 @@ impl Maze {
             }
         }
 
-        topological_order(&after)
+        let order = topological_order(&after);
+        let mut position = vec![0usize; pieces.len()];
+        for (at, &index) in order.iter().enumerate() {
+            position[index] = at;
+        }
+        let under = meets
+            .iter()
+            .map(|&(a, b)| if position[a] < position[b] { a } else { b })
+            .collect();
+        (order, under)
     }
 }
 

@@ -335,11 +335,50 @@ fn circle(cx: f64, cy: f64, r: f64) -> Vec<Point> {
 /// the paper colour, then its walls in ink, then any dot (the entrance and exit) in
 /// pencil.
 pub fn ink_fragment(fragment: &str, offset: Point, pen: &Pen) -> String {
+    ink_parts(fragment, offset, pen, false)
+}
+
+/// Only the walls of one fragment in ink, as `ink_fragment` draws them (the same
+/// points, so they lie exactly on those walls): no insides and no dots. Drawn faintly
+/// over the track on top, they show a track passing underneath.
+pub fn ink_walls(fragment: &str, offset: Point, pen: &Pen) -> String {
+    ink_parts(fragment, offset, pen, true)
+}
+
+/// The fragment with its insides and dots dropped, leaving the walls as plain strokes
+/// with no fill: the plain-drawing counterpart of `ink_walls`.
+pub fn fragment_outline(fragment: &str) -> String {
+    let mut out = String::new();
+    for element in fragment.split('<').filter(|e| !e.trim().is_empty()) {
+        if !attribute(element, "stroke").is_some_and(|s| s != "none" && s != "transparent") {
+            continue;
+        }
+        out.push('<');
+        // The root's fill is transparent, so a path with no fill attribute has none.
+        match element.find(" fill='") {
+            Some(start) => {
+                let value = start + " fill='".len();
+                let end = element[value..]
+                    .find('\'')
+                    .map_or(element.len(), |quote| value + quote + 1);
+                out.push_str(&element[..start]);
+                out.push_str(&element[end..]);
+            }
+            None => out.push_str(element),
+        }
+    }
+    out
+}
+
+fn ink_parts(fragment: &str, offset: Point, pen: &Pen, walls_only: bool) -> String {
     let mut out = String::new();
     let mut walls: [String; 3] = Default::default();
     let mut dots = String::new();
     for element in fragment.split('<').filter(|e| !e.trim().is_empty()) {
         if element.starts_with("circle") {
+            if walls_only {
+                continue;
+            }
             let get = |name| attribute(element, name).and_then(|v| v.parse::<f64>().ok());
             if let (Some(cx), Some(cy), Some(r)) = (get("cx"), get("cy"), get("r")) {
                 let points: Vec<Point> = circle(cx + offset.0, cy + offset.1, r)
@@ -358,7 +397,7 @@ pub fn ink_fragment(fragment: &str, offset: Point, pen: &Pen) -> String {
         let stroked =
             attribute(element, "stroke").is_some_and(|s| s != "none" && s != "transparent");
         let shapes = lines(d, offset);
-        if filled {
+        if filled && !walls_only {
             let mut inside = String::new();
             for line in &shapes {
                 let points: Vec<Point> = line.points.iter().map(|&p| pen.wobble(p)).collect();
@@ -529,5 +568,26 @@ mod tests {
         let a = ink_fragment(fragment, (0.0, 0.0), &Pen::new(5));
         assert_eq!(a, ink_fragment(fragment, (0.0, 0.0), &Pen::new(5)));
         assert_ne!(a, ink_fragment(fragment, (0.0, 0.0), &Pen::new(6)));
+    }
+
+    #[test]
+    fn test_ink_walls_are_the_walls_of_the_fragment_and_nothing_else() {
+        let pen = Pen::new(1);
+        let fragment = "<path stroke='black' fill='#FFF' d='M0 0L10 0A5 5 0 0 1 10 10L0 10'/><circle cx='5' cy='5' r='3' fill='#E02020'/>";
+        let whole = ink_fragment(fragment, (30.0, 40.0), &pen);
+        let walls = ink_walls(fragment, (30.0, 40.0), &pen);
+        assert!(!walls.is_empty());
+        assert!(!walls.contains(PAPER) && !walls.contains(PENCIL), "{walls}");
+        // The same pen strokes, at the same places, so they lie on the walls exactly.
+        assert!(whole.contains(&walls), "{walls} is not part of {whole}");
+    }
+
+    #[test]
+    fn test_fragment_outline_keeps_strokes_and_drops_fills() {
+        let fragment = "<path fill='#FFF' d='M0 0L5 5z'/><path stroke='black' fill='#FFF' d='M0 0L10 0'/><path stroke='black' d='M1 1L2 2'/><circle cx='5' cy='5' r='3' fill='#E02020'/>";
+        assert_eq!(
+            fragment_outline(fragment),
+            "<path stroke='black' d='M0 0L10 0'/><path stroke='black' d='M1 1L2 2'/>"
+        );
     }
 }
