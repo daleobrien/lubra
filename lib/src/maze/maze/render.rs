@@ -5,7 +5,9 @@ use crate::maze::maze::FileType::{PNG, SVG};
 use crate::maze::maze::{FileType, Maze};
 use crate::maze::tile::Tile;
 use crate::renders::generated::fragment::MAP_PATHS;
-use crate::renders::ink::{fragment_walls, ink_fragment, solution_markup, Pen};
+use crate::renders::ink::{
+    fragment_outline, fragment_walls, ink_fragment, ink_walls, solution_markup, Pen,
+};
 use crate::renders::kinks::{find_kinks, DrawnFragment, Kink, KinkKind};
 use crate::renders::net_colours::{net_colour, net_index};
 use crate::renders::node_numbers::{add_node_numbers, add_tile_nets};
@@ -95,6 +97,10 @@ impl Maze {
             svg.add_fragment(&fragment.svg, point, 1);
         }
 
+        if self.faint_under {
+            self.add_faint_under(&mut svg, &drawn, &pen);
+        }
+
         if self.show_solution {
             let (over, under) = self.solution_trace(&drawn);
             let ink_pen = self.ink.then_some(&pen);
@@ -126,6 +132,34 @@ impl Maze {
             println!("render took (2) {:?}", start.elapsed());
         }
         svg.to_string(background)
+    }
+
+    /// Draws the walls of every fragment that passes under another again, faintly, so
+    /// they show through the track on top. Drawn after all fragments, the copy shows
+    /// only where the track on top hid the walls; elsewhere it lies on the ink already
+    /// there. Tiles with no crossing add nothing.
+    fn add_faint_under(&self, svg: &mut Svg, drawn: &[Drawn], pen: &Pen) {
+        let mut under = drawn.iter().filter(|fragment| fragment.under).peekable();
+        if under.peek().is_none() {
+            return;
+        }
+        // One group, so walls of the copies that overlap do not darken each other.
+        svg.add_markup(&format!("<g opacity='{FAINT_UNDER_OPACITY}'>"), 1);
+        for fragment in under {
+            let Coordinate { i, j } = fragment.coordinate;
+            if self.ink {
+                // The same pen at the same place, so the wobble lines up exactly.
+                let offset = (i as f64 * TILE_WIDTH / 2.0, j as f64 * TILE_HEIGHT);
+                svg.add_markup(&ink_walls(&fragment.svg, offset, pen), 1);
+            } else {
+                let point = Point {
+                    x: i as f64,
+                    y: j as f64,
+                };
+                svg.add_fragment(&fragment_outline(&fragment.svg), point, 1);
+            }
+        }
+        svg.add_markup("</g>", 1);
     }
 
     /// Every fragment the maze draws, in drawing order.
@@ -187,6 +221,7 @@ impl Maze {
                     nodes,
                     svg: Cow::Owned(marker),
                     marker: true,
+                    under: false,
                 });
                 continue;
             }
@@ -198,6 +233,7 @@ impl Maze {
                     nodes,
                     svg: Cow::Borrowed(fragment),
                     marker: false,
+                    under: false,
                 }),
                 _ => {}
             }
@@ -212,11 +248,15 @@ impl Maze {
                 svg: &fragment.svg,
             })
             .collect();
-        let order = self.drawing_order(&pieces);
+        let (order, under) = self.drawing_order(&pieces);
         let mut slots: Vec<Option<Drawn>> = drawn.into_iter().map(Some).collect();
         order
             .into_iter()
-            .filter_map(|index| slots[index].take())
+            .filter_map(|index| {
+                let mut fragment = slots[index].take()?;
+                fragment.under = under.contains(&index);
+                Some(fragment)
+            })
             .collect()
     }
 
@@ -449,6 +489,9 @@ impl Maze {
     }
 }
 
+/// How strongly a track passing under another shows through the one on top.
+const FAINT_UNDER_OPACITY: &str = "0.2";
+
 /// Ring colours for the kink overlay.
 const KINK_BREAK_COLOUR: &str = "#E02020";
 const KINK_WIGGLE_COLOUR: &str = "#C020C0";
@@ -465,6 +508,8 @@ struct Drawn {
     svg: Cow<'static, str>,
     /// Whether it is an entrance or exit marker.
     marker: bool,
+    /// Whether it passes under a track drawn after it, which may hide its walls.
+    under: bool,
 }
 
 /// The drawn fragments with their positions in drawing units, for kink detection.
@@ -953,5 +998,39 @@ mod tests {
         let svg = std::fs::read_to_string(&svg_path).expect("missing SVG");
         let _ = std::fs::remove_file(svg_path);
         assert!(svg.contains("stroke='#c0392b'"));
+    }
+
+    /// The faint copy of the hidden walls is there exactly when a track passes under
+    /// another, in ink and plain, and `set_faint_under(false)` leaves it out.
+    #[test]
+    fn test_faint_under_appears_only_where_tracks_cross() {
+        const GROUP: &str = "<g opacity='0.2'>";
+        let mut with_crossings = 0;
+        for seed in 0..12 {
+            for ink in [true, false] {
+                let mut maze = Maze::generate(20, 12, seed);
+                maze.set_ink(ink);
+                let crosses = maze.drawn_fragments(false).iter().any(|f| f.under);
+                assert_eq!(
+                    maze.svg_markup(false, false).contains(GROUP),
+                    crosses,
+                    "seed {seed}, ink {ink}"
+                );
+                maze.set_faint_under(false);
+                assert!(!maze.svg_markup(false, false).contains(GROUP));
+                with_crossings += usize::from(crosses);
+            }
+        }
+        assert!(with_crossings > 0, "no sample maze had a crossing");
+    }
+
+    /// Only some fragments are copied, never the entrance and exit markers.
+    #[test]
+    fn test_faint_under_copies_only_some_fragments() {
+        let maze = Maze::generate(20, 12, 1);
+        let drawn = maze.drawn_fragments(false);
+        let under = drawn.iter().filter(|f| f.under).count();
+        assert!(under < drawn.len(), "{under} of {}", drawn.len());
+        assert!(drawn.iter().filter(|f| f.under).all(|f| !f.marker));
     }
 }
